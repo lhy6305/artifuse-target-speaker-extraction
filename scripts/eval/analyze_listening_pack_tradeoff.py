@@ -14,6 +14,10 @@ import soundfile as sf
 ROOT = Path(__file__).resolve().parents[2]
 
 TARGET_COMPONENT_KINDS = {"target_raw"}
+SPEECH_COMPONENT_TOKENS = ("speech", "friend", "guodegang", "raw")
+MUSIC_COMPONENT_TOKENS = ("music",)
+SINGING_COMPONENT_TOKENS = ("sing", "vocal")
+NOISE_COMPONENT_TOKENS = ("noise", "ambient")
 
 
 def parse_args() -> argparse.Namespace:
@@ -337,6 +341,103 @@ def average_optional(values: list[float | None]) -> float | None:
     return float(sum(filtered) / len(filtered))
 
 
+def categorize_component_kind(kind: str) -> str:
+    if kind in TARGET_COMPONENT_KINDS:
+        return "target"
+    lowered = kind.lower()
+    if any(token in lowered for token in MUSIC_COMPONENT_TOKENS):
+        return "music"
+    if any(token in lowered for token in SINGING_COMPONENT_TOKENS):
+        return "singing"
+    if any(token in lowered for token in NOISE_COMPONENT_TOKENS):
+        return "noise"
+    if any(token in lowered for token in SPEECH_COMPONENT_TOKENS):
+        return "speech"
+    return "other"
+
+
+def derive_group_labels(original_sample_meta: dict[str, Any]) -> dict[str, str]:
+    kinds = [component["kind"] for component in original_sample_meta["components"]]
+    categories = [categorize_component_kind(kind) for kind in kinds]
+    target_present = "target" in categories
+    interference_categories = sorted({category for category in categories if category != "target"})
+
+    if not interference_categories:
+        interference_profile = "none"
+    else:
+        interference_profile = "_plus_".join(interference_categories)
+
+    target_status = "target_present" if target_present else "target_absent"
+    target_interference_bucket = f"{target_status}__{interference_profile}"
+    return {
+        "scenario": str(original_sample_meta.get("scenario", "")),
+        "target_status": target_status,
+        "interference_profile": interference_profile,
+        "target_interference_bucket": target_interference_bucket,
+    }
+
+
+def summarize_group_rows(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    return {
+        "count": len(rows),
+        "sample_ids": [str(row["sample_id"]) for row in rows],
+        "decoded_label_counts": {
+            "better_source_retention_label": count_decoded_choice(rows, "better_source_retention_candidate"),
+            "more_interference_leaky_label": count_decoded_choice(rows, "more_interference_leaky_candidate"),
+            "more_residual_heavy_label": count_decoded_choice(rows, "more_residual_heavy_candidate"),
+            "better_retention_minus_leak_label": count_decoded_choice(rows, "better_retention_minus_leak_candidate"),
+        },
+        "decoded_mean_metrics_by_label": build_decoded_means(rows),
+    }
+
+
+def count_value(rows: list[dict[str, Any]], key: str) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for row in rows:
+        value = str(row[key])
+        counts[value] = counts.get(value, 0) + 1
+    return counts
+
+
+def build_decoded_means(rows: list[dict[str, Any]]) -> dict[str, dict[str, float | None]]:
+    metric_names = (
+        "target_capture_db",
+        "interference_capture_db",
+        "retention_minus_leak_db",
+        "residual_output_share",
+        "joint_fit_r2",
+    )
+    buckets: dict[str, dict[str, list[float | None]]] = {}
+    for row in rows:
+        for label_key in ("file_a_label", "file_b_label"):
+            label = str(row[label_key])
+            metric_key = "file_a_metrics" if label_key == "file_a_label" else "file_b_metrics"
+            label_bucket = buckets.setdefault(label, {name: [] for name in metric_names})
+            for metric_name in metric_names:
+                label_bucket[metric_name].append(row[metric_key].get(metric_name))
+    return {
+        label: {metric_name: average_optional(values) for metric_name, values in metrics.items()}
+        for label, metrics in buckets.items()
+    }
+
+
+def decode_candidate_choice(row: dict[str, Any], key: str) -> str:
+    raw_value = str(row[key])
+    if raw_value == "file_a":
+        return str(row["file_a_label"])
+    if raw_value == "file_b":
+        return str(row["file_b_label"])
+    return raw_value
+
+
+def count_decoded_choice(rows: list[dict[str, Any]], key: str) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for row in rows:
+        value = decode_candidate_choice(row, key)
+        counts[value] = counts.get(value, 0) + 1
+    return counts
+
+
 def main() -> None:
     args = parse_args()
     output_dir = args.output_dir or (args.pack_dir / "tradeoff_analysis")
@@ -358,7 +459,6 @@ def main() -> None:
     )
 
     pair_rows: list[dict[str, Any]] = []
-    decoded_metric_buckets: dict[str, dict[str, list[float | None]]] = {}
 
     for sample_dir in sample_dirs:
         sample_meta = load_json(sample_dir / "sample_meta.json")
@@ -372,6 +472,7 @@ def main() -> None:
 
         original_mixture_path = ROOT / sample_meta["mixture_audio_path"]
         original_sample_meta = load_json(original_mixture_path.parent / "sample_meta.json")
+        group_labels = derive_group_labels(original_sample_meta)
         recon = reconstruct_tracks(
             sample_id=sample_id,
             original_sample_meta=original_sample_meta,
@@ -420,6 +521,9 @@ def main() -> None:
             "note": sample_meta.get("note", ""),
             "better_output": listening_sheet.get(sample_id, {}).get("better_output", ""),
             "scenario": original_sample_meta.get("scenario", ""),
+            "target_status": group_labels["target_status"],
+            "interference_profile": group_labels["interference_profile"],
+            "target_interference_bucket": group_labels["target_interference_bucket"],
             "file_a_label": file_a_label,
             "file_b_label": file_b_label,
             "component_kinds": [component["kind"] for component in original_sample_meta["components"]],
@@ -439,31 +543,8 @@ def main() -> None:
             "better_retention_minus_leak_candidate": better_retention_minus_leak_candidate,
         }
         pair_rows.append(row)
-
-        if blind_key is not None:
-            for label, metrics in (
-                (file_a_label, metrics_a),
-                (file_b_label, metrics_b),
-            ):
-                bucket = decoded_metric_buckets.setdefault(
-                    label,
-                    {
-                        "target_capture_db": [],
-                        "interference_capture_db": [],
-                        "retention_minus_leak_db": [],
-                        "residual_output_share": [],
-                        "joint_fit_r2": [],
-                    },
-                )
-                for key in bucket:
-                    bucket[key].append(metrics.get(key))
-
     def count_key(rows: list[dict[str, Any]], key: str) -> dict[str, int]:
-        counts: dict[str, int] = {}
-        for row in rows:
-            value = row[key]
-            counts[value] = counts.get(value, 0) + 1
-        return counts
+        return count_value(rows, key)
 
     label_level_rows: list[dict[str, Any]] = []
     if blind_key is not None:
@@ -478,6 +559,9 @@ def main() -> None:
                 "sample_id": row["sample_id"],
                 "better_output": row["better_output"],
                 "scenario": row["scenario"],
+                "target_status": row["target_status"],
+                "interference_profile": row["interference_profile"],
+                "target_interference_bucket": row["target_interference_bucket"],
                 "target_present": row["target_present"],
                 "interference_present": row["interference_present"],
                 "delta_target_capture_db_b_minus_a": row["delta_target_capture_db_b_minus_a"],
@@ -494,18 +578,40 @@ def main() -> None:
                 else:
                     decoded_row[key.replace("_candidate", "_label")] = raw_value
             label_level_rows.append(decoded_row)
-
-    decoded_means = {
-        label: {key: average_optional(values) for key, values in metrics.items()}
-        for label, metrics in decoded_metric_buckets.items()
-    }
+    decoded_means = build_decoded_means(pair_rows)
 
     def count_label_key(rows: list[dict[str, Any]], key: str) -> dict[str, int]:
-        counts: dict[str, int] = {}
-        for row in rows:
-            value = row[key]
-            counts[value] = counts.get(value, 0) + 1
-        return counts
+        return count_value(rows, key)
+
+    group_summaries = {
+        "scenario_groups": {},
+        "target_status_groups": {},
+        "interference_profile_groups": {},
+        "target_interference_bucket_groups": {},
+    }
+    if pair_rows:
+        grouped_rows: dict[str, dict[str, list[dict[str, Any]]]] = {
+            "scenario_groups": {},
+            "target_status_groups": {},
+            "interference_profile_groups": {},
+            "target_interference_bucket_groups": {},
+        }
+        for row in pair_rows:
+            for key, field in (
+                ("scenario_groups", "scenario"),
+                ("target_status_groups", "target_status"),
+                ("interference_profile_groups", "interference_profile"),
+                ("target_interference_bucket_groups", "target_interference_bucket"),
+            ):
+                group_key = str(row[field])
+                grouped_rows[key].setdefault(group_key, []).append(row)
+        group_summaries = {
+            group_name: {
+                group_key: summarize_group_rows(rows)
+                for group_key, rows in sorted(group_map.items())
+            }
+            for group_name, group_map in grouped_rows.items()
+        }
 
     summary = {
         "pack_dir": serialize_repo_path(args.pack_dir),
@@ -526,6 +632,7 @@ def main() -> None:
             "better_retention_minus_leak_label": count_label_key(label_level_rows, "better_retention_minus_leak_label"),
         },
         "decoded_mean_metrics_by_label": decoded_means,
+        **group_summaries,
         "top_abs_target_capture_deltas": sorted(
             [row for row in pair_rows if row["delta_target_capture_db_b_minus_a"] is not None],
             key=lambda row: abs(float(row["delta_target_capture_db_b_minus_a"])),

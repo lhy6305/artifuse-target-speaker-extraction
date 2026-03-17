@@ -1581,3 +1581,121 @@
 3. 每次改完 `.gitignore`，至少补看一次 `git status --short --ignored`，确认：
    - 摘要文件没有被误伤
    - 重资产仍留在本地边界内
+
+### 56. near-real trade-off 只看整包均值，很容易把“某个桶明显更好、另一个桶明显更差”的候选误判成中庸或稳定
+
+现象：
+
+- `analyze_listening_pack_tradeoff.py` 早期 summary 主要给：
+  - 整包计数
+  - 整包 decoded means
+- 这足以看大方向，但不够直接回答：
+  - `speech-only near-real` 是不是修好了
+  - `target absent` 的收益到底落在哪个桶
+  - 某个 candidate 的正收益是不是只是被 `music` 或 mixed bucket 拉起来
+
+影响：
+
+- 如果只看整包均值，很容易把：
+  - `legacy_transient_leakguard_probe_v1`
+  - `legacy_transient_leakguard_probe_v3_w0005`
+  - `legacy_transient_leakguard_probe_v4_speechfocus_ft1`
+  - `legacy_transient_leakguard_probe_v5_absentguard_ft1`
+  这些分支之间真正的症状差异压平。
+- 结果就是：
+  - 某些“只在 music 桶更好”的版本会看起来像整体候选；
+  - 某些“只在 target-absent speech 桶更强，但会压坏 raw-only”的版本，也会被误读成只是“整体更 residual-heavy”。
+
+处理：
+
+- 已给 `scripts/eval/analyze_listening_pack_tradeoff.py` 增加：
+  - `scenario_groups`
+  - `target_status_groups`
+  - `interference_profile_groups`
+  - `target_interference_bucket_groups`
+- 已实际在 `v1 / v3_w0005 / v4_speechfocus_ft1 / v5_absentguard_ft1` 的 near-real blind 包上重跑。
+
+当前新增结论：
+
+1. `legacy_transient_leakguard_probe_v1` 的主要收益集中在：
+   - `target_present__music`
+   - `target_present__music_plus_speech`
+2. 当前真正没修好的主缺口更明确地落在：
+   - `target_present__speech`
+   - `target_present__none`
+3. `legacy_transient_leakguard_probe_v4_speechfocus_ft1` 没有修好 `target_present__speech`
+4. `legacy_transient_leakguard_probe_v5_absentguard_ft1` 的收益主要落在：
+   - `target_absent__speech`
+   但代价分散到：
+   - `target_present__none`
+   - `target_present__music`
+   - `target_present__music_plus_speech`
+
+后续要求：
+
+1. 以后看 near-real trade-off，不能只盯整包均值。
+2. objective-only 候选默认至少同时过这三类桶：
+   - `target_present__speech`
+   - `target_present__none`
+   - `target_absent__speech`
+3. 若某个版本只在 `music` 桶变强，但 `speech` 或 `raw-only` 桶继续输给 `legacy_stage2`，不能把它误判成“下一主候选”。
+
+### 57. 即使已经按桶看 near-real，如果 gate 规则仍停留在自然语言里，后续还是会反复回到“这个候选整体看着还行”的模糊判断
+
+现象：
+
+- 在补了 `target_interference_bucket_groups` 之后，已经能更清楚地看见：
+  - `v1` 的收益主要集中在带 `music` 的桶；
+  - `v3 / v4` 主要卡在 `target_present__speech`；
+  - `v5` 主要卡在 `target_present__speech` 与 `target_present__none`
+- 但如果这些结论只写在日报里，后续仍很容易再次退回到：
+  - 看整包 summary
+  - 口头回忆“上次好像是这个桶有问题”
+  - 再重新人工解释一次
+
+影响：
+
+- 同样的 near-real 放行条件会被反复人工重述。
+- 很容易出现：
+  - 某个分支已经明显卡在 `speech-only target-present`
+  - 但因为整包上还有别的亮点，又被误当成“可以继续保留的主候选”
+
+处理：
+
+- 已新增：
+  - `scripts/eval/gate_near_real_tradeoff.py`
+- 当前已把以下三类桶正式固化为 hard gate：
+  - `target_present__speech`
+  - `target_present__none`
+  - `target_absent__speech`
+- 并已实际跑在：
+  - `legacy_transient_leakguard_probe_v1`
+  - `legacy_transient_leakguard_probe_v3_w0005`
+  - `legacy_transient_leakguard_probe_v4_speechfocus_ft1`
+  - `legacy_transient_leakguard_probe_v5_absentguard_ft1`
+
+当前新增结论：
+
+1. `v1`
+   - fail:
+     - `target_present__speech`
+     - `target_present__none`
+2. `v3_w0005`
+   - fail:
+     - `target_present__speech`
+3. `v4_speechfocus_ft1`
+   - fail:
+     - `target_present__speech`
+4. `v5_absentguard_ft1`
+   - fail:
+     - `target_present__speech`
+     - `target_present__none`
+
+后续要求：
+
+1. 以后 near-real objective-only 候选，默认先过 `gate_near_real_tradeoff.py`，再谈是否值得继续保留。
+2. 若一个候选已经明确 fail 某个关键桶，不能再只因为整包上某些局部亮点就把它当成“下一主候选”。
+3. 后续若要改 gate，必须：
+   - 先在文档里写清改动理由；
+   - 再改脚本；
+   - 不能只在对话里临时换标准。

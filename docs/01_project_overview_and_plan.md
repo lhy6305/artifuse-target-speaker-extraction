@@ -721,6 +721,49 @@
   - 诊断参考：`legacy_transient_leakguard_probe_v4_speechfocus_ft1`
   - 诊断参考：`legacy_transient_leakguard_probe_v5_absentguard_ft1`
   - 不保留：`legacy_transient_leakguard_probe_v2_musiconly`
+- 已为 `scripts/eval/analyze_listening_pack_tradeoff.py` 补充 near-real 场景分桶汇总：
+  - `scenario_groups`
+  - `target_status_groups`
+  - `interference_profile_groups`
+  - `target_interference_bucket_groups`
+- 已在以下 near-real blind 包上重跑新的 bucketized trade-off 分析：
+  - `legacy_transient_leakguard_probe_v1`
+  - `legacy_transient_leakguard_probe_v3_w0005`
+  - `legacy_transient_leakguard_probe_v4_speechfocus_ft1`
+  - `legacy_transient_leakguard_probe_v5_absentguard_ft1`
+- 已新增 near-real hard gate 脚本：
+  - `scripts/eval/gate_near_real_tradeoff.py`
+- 已在以下分支上实际跑出 `gate_summary.json`：
+  - `legacy_transient_leakguard_probe_v1`
+  - `legacy_transient_leakguard_probe_v3_w0005`
+  - `legacy_transient_leakguard_probe_v4_speechfocus_ft1`
+  - `legacy_transient_leakguard_probe_v5_absentguard_ft1`
+- 当前 hard gate 结果进一步收敛为：
+  - `v1` 卡在：
+    - `target_present__speech`
+    - `target_present__none`
+  - `v3_w0005` 只卡在：
+    - `target_present__speech`
+  - `v4_speechfocus_ft1` 只卡在：
+    - `target_present__speech`
+  - `v5_absentguard_ft1` 卡在：
+    - `target_present__speech`
+    - `target_present__none`
+- 因此当前 objective-only 小步 follow-up 的真正 gate 已可明确写成：
+  - 必须修掉 `target_present__speech`
+  - 不能再伤 `target_present__none`
+  - 同时不能丢 `target_absent__speech`
+- 当前 bucketized 结论进一步收敛为：
+  - `legacy_transient_leakguard_probe_v1` 的主收益集中在带 `music` 的桶；
+  - 真正还没修好的 near-real 主缺口更明确地落在：
+    - `target_present__speech`
+    - `target_present__none`
+  - `legacy_transient_leakguard_probe_v4_speechfocus_ft1` 没有修好 `target_present__speech`
+  - `legacy_transient_leakguard_probe_v5_absentguard_ft1` 虽然修到了 `target_absent__speech`，但把：
+    - `target_present__none`
+    - `target_present__music`
+    - `target_present__music_plus_speech`
+    一起推向更 residual-heavy / over-suppressed
 
 ### 未开始
 
@@ -909,6 +952,22 @@
    - 原始/敏感/重资产继续留本地
    - 但 `train_summary.json`、`eval_summary.json`、compare `summary.json`、blind pack `README.md / blind_key.json / sample_meta.json` 不再被整类忽略
 73. 对仍指向本地/非公开资产的 manifest，当前保持本地策略，不直接纳入版本控制；后续若要公开，必须先做脱敏或生成公开安全副本。
+74. near-real `tradeoff_analysis` 现已支持按场景家族自动分桶；后续 objective-only 候选默认至少同时看：
+   - `target_present__speech`
+   - `target_present__none`
+   - `target_absent__speech`
+75. 当前 bucketized 结果进一步说明：
+   - `speech-only selector` 不是当前主问题的根因解；
+   - `high-weight absent guardrail` 也不是可直接晋升的主候选解；
+   - 若继续小步 follow-up，更适合：
+     - 以 `legacy_transient_leakguard_probe_v1` 为主基座
+     - 以 `legacy_transient_leakguard_probe_v3_w0005` 为副作用锚点
+     - 明确按上述三类桶做 gate，而不是只看整包均值
+76. 上述三类桶现已进一步固化为可执行 hard gate；后续 near-real objective-only 候选默认至少要通过：
+   - `target_present__speech`
+   - `target_present__none`
+   - `target_absent__speech`
+   的 `gate_near_real_tradeoff.py` 检查，再谈是否值得继续保留
 
 ## 9. 文档入口
 
@@ -939,5 +998,7 @@
 - 本轮 interference leak guardrail probe 记录：`reports/daily/2026-03-17_interference_leak_guardrail_probe.md`
 - 本轮 speech-only leak guardrail follow-up：`reports/daily/2026-03-17_speech_only_leakguard_followup.md`
 - 本轮 target-absent guardrail follow-up：`reports/daily/2026-03-18_absent_guardrail_probe.md`
+- 本轮 near-real trade-off 分桶复盘：`reports/daily/2026-03-18_near_real_tradeoff_bucketization.md`
+- 本轮 near-real hard gate 复盘：`reports/daily/2026-03-18_near_real_hard_gate.md`
 - 本轮仓库与 `.gitignore` 审计：`reports/daily/2026-03-18_repo_gitignore_audit.md`
 - 本轮全仓库评估总结：`reports/daily/2026-03-17_repo_evaluation_summary.md`
