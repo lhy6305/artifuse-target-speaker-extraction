@@ -1,0 +1,114 @@
+{
+  "manifest": "F:\\proj_dev\\tmp\\workdir-4-1\\data\\synthetic\\val_manifest.jsonl",
+  "checkpoint": "experiments\\checkpoints\\baseline_stft_mask_stage2_ref_film_sisdr0004\\best.pt",
+  "device": "cuda",
+  "batch_size": 2,
+  "sample_rate": 16000,
+  "save_audio_count": 8,
+  "model_config": {
+    "n_fft": 512,
+    "hop_length": 128,
+    "win_length": 512,
+    "hidden_dim": 256,
+    "reference_dim": 128,
+    "gru_layers": 2,
+    "conditioning_mode": "ref_film"
+  },
+  "loss_config": {
+    "stft_weight": 0.5,
+    "sisdr_weight": 0.0004
+  },
+  "start_time": "2026-03-16T21:35:20",
+  "end_time": "2026-03-16T21:35:25",
+  "elapsed_sec": 4.582,
+  "num_batches": 256,
+  "num_samples": 512,
+  "metrics": {
+    "loss": 0.025097289151744917,
+    "waveform_l1": 0.01295015948744549,
+    "stft_l1": 0.02429425943773822,
+    "sisdr_db": -8.887158902012743
+  },
+  "pattern_metrics": {
+    "target_absent_head": {
+      "count": 87,
+      "avg_l1": 0.012607371720924288,
+      "avg_sisdr_db": -9.53423231223534
+    },
+    "target_absent_tail": {
+      "count": 102,
+      "avg_l1": 0.012665224763765639,
+      "avg_sisdr_db": -8.843541904991747
+    },
+    "target_full": {
+      "count": 240,
+      "avg_l1": 0.013187725213356316,
+      "avg_sisdr_db": -8.822053899367651
+    },
+    "target_intermittent": {
+      "count": 83,
+      "avg_l1": 0.012626916467470217,
+      "avg_sisdr_db": -8.450758165264704
+    }
+  },
+  "recipe_metrics": {
+    "target_clean_plus_music": {
+      "count": 95,
+      "avg_l1": 0.01394420025968238,
+      "avg_sisdr_db": -11.666979421439924
+    },
+    "target_clean_speech": {
+      "count": 137,
+      "avg_l1": 0.01353900091056406,
+      "avg_sisdr_db": -10.149913860498554
+    },
+    "target_hard_plus_music": {
+      "count": 65,
+      "avg_l1": 0.012485942552582575,
+      "avg_sisdr_db": -8.043944043379563
+    },
+    "target_hard_speech": {
+      "count": 100,
+      "avg_l1": 0.012119718533940614,
+      "avg_sisdr_db": -7.414488705396653
+    },
+    "target_music": {
+      "count": 51,
+      "avg_l1": 0.011761320216179478,
+      "avg_sisdr_db": -7.76359389167206
+    },
+    "target_only": {
+      "count": 25,
+      "avg_l1": 0.011854438483715058,
+      "avg_sisdr_db": -6.245544109344483
+    },
+    "target_singing_vocal": {
+      "count": 39,
+      "avg_l1": 0.012884456968794648,
+      "avg_sisdr_db": -6.024025142192841
+    }
+  },
+  "target_present_ratio_bucket_metrics": {
+    "ratio_0.6_0.8": {
+      "count": 209,
+      "avg_l1": 0.012517997350000094,
+      "avg_sisdr_db": -8.873338716879987
+    },
+    "ratio_0.8_0.95": {
+      "count": 47,
+      "avg_l1": 0.014100391358295654,
+      "avg_sisdr_db": -9.740670356344669
+    },
+    "ratio_ge_0.95": {
+      "count": 240,
+      "avg_l1": 0.013187725213356316,
+      "avg_sisdr_db": -8.822053899367651
+    },
+    "ratio_lt_0.6": {
+      "count": 16,
+      "avg_l1": 0.009859280777163804,
+      "avg_sisdr_db": -7.537069663405418
+    }
+  },
+  "saved_samples_dir": "reports/eval/baseline_stft_mask_stage2_ref_film_sisdr0004_eval/samples"
+}

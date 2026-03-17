@@ -1,0 +1,80 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Python cache / local env
+__pycache__/
+*.py[cod]
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+env/
+
+# Local tools / runtime artifacts
+python.exe
+codex_perm_cleanup_static.exe
+tmp/
+*.log
+
+# Raw or non-public data
+data_in/
+data/curated/
+data/interim/
+data/references/
+data/synthetic/
+# Manifests that point at local/private assets stay local by default
+data/manifests/
+
+# Generated experiment artifacts:
+# keep small structured summaries versionable, keep weights/binaries local
+experiments/*
+!experiments/README.md
+!experiments/checkpoints/
+!experiments/logs/
+experiments/checkpoints/**
+!experiments/checkpoints/**/
+!experiments/checkpoints/**/train_summary.json
+experiments/logs/**
+!experiments/logs/**/
+!experiments/logs/**/*.json
+!experiments/logs/**/*.md
+!experiments/logs/**/*.txt
+
+# Generated evaluation artifacts:
+# keep public-safe structured summaries versionable, keep audio packs local
+reports/eval/**
+!reports/eval/**/
+!reports/eval/**/README.md
+!reports/eval/**/summary.json
+!reports/eval/**/eval_summary.json
+!reports/eval/**/blind_key.json
+!reports/eval/**/listening_results_summary.json
+!reports/eval/**/listening_rubric.json
+!reports/eval/**/sample_meta.json
+
+# Audio / annotation assets stay local by default
+*.wav
+*.flac
+*.mp3
+*.m4a
+*.ogg
+*.opus
+*.aac
+*.lab
+
+# Optional large local caches
+*.npy
+*.npz
+*.pt
+*.ckpt
+*.pth
+
+# github auth key and push tools
+ssh-*
+git-*.bat
+git-*.sh

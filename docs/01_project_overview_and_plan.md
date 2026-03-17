@@ -1,0 +1,943 @@
+# 项目总览与阶段计划
+
+## 1. 项目定位
+
+本项目是独立于现有 VC 主线的前置模块，目标是：
+
+- 输入混合录音和目标说话人参考音频；
+- 输出尽量只保留目标说话人的净化语音；
+- 作为后续 VC 模型的更干净 `source` 输入。
+
+当前阶段不做：
+
+- 与 VC 主模型联合训练；
+- 共享 VC 项目的实验体系；
+- 直接追求大规模复杂训练。
+
+## 2. 当前目录扫描事实
+
+截至 2026-03-16，仓库当前已观察到的关键事实如下：
+
+- 根目录原本只有 `initial_design.md`、`docs/00_context_bootstrap.md`、`data_in/` 和本地运行文件。
+- `docs/00_context_bootstrap.md` 引用了 `docs/01_project_overview_and_plan.md`、`docs/02_pitfalls_log.md`、`initial_design_judg.md`，但这些文件原先不存在。
+- `data_in/source_segments/segments/` 下当前可见 537 个切片文件，可作为首批目标说话人语音池候选。
+- `data_in/genshin_voice_extract/` 下当前可见 214534 个文件，包含大量 `wav/lab`，可作为 clean speech interference 原始来源。
+- `data_in/voice_music_dataset/normal/` 下当前可见 168 个文件。
+- `data_in/voice_music_dataset/uvr_voice_only/` 下当前可见 121 个文件，可作为 singing vocal interference 原始来源。
+- `data_in/pure_music_dataset/` 下当前可见 12 个文件，可作为首批音乐干扰来源。
+- `data_in/friend_dataset_fuhuo_raw_concat.wav` 当前是单个长音频，尚未切片，不适合直接进入 hard negative 池。
+- `scripts/data/prepare_curated_pools.py` 已于 2026-03-16 实际跑通，并在 `data/manifests/` 生成首批正式数据清单。
+- `speech_interference_clean_pool` 已重建为 coverage-weighted 版本，当前正式子集保存在 `data/curated/genshin_clean_subset_cover_v1/`。
+- 当前 clean pool 已进一步做过一轮声学 embedding 聚类下采样，正式子集现保存在 `data/curated/genshin_clean_subset_cover_embed_prune_v1/`。
+- embedding 下采样前的可读 clean pool 为 836 个说话人 / 23170 条；下采样后为 836 个说话人 / 13667 条。
+- 本轮 embedding 提取过程中识别出 487 条无法被 `soundfile`、`torchaudio`、`ffmpeg` 解码的坏文件，已跳过并写入报告。
+- 新 embedding-pruned clean 子集当前文件数为 27334，体量约 7.00 GB。
+- 顶层类别覆盖核对结果为：836 个说话人中，所有已纳入说话人的候选类别都至少保留了 1 条样本，类别覆盖率 100%。
+- 项目根目录已初始化 Git 仓库，当前分支为 `main`，远端为 `https://github.com/lhy6305/artifuse-target-speaker-extraction.git`。
+- 已补齐面向公开仓库的建仓文件：
+  - `.gitignore`
+  - `LICENSE`
+  - `NOTICE`
+  - 根目录 `README.md`
+- 当前公开仓库策略已明确：
+  - 只发布代码、配置、方案、评估、公开安全的模型或中间产物；
+  - 不发布原始音频、游戏来源语音包、标注文本、合成音频数据及本地运行缓存。
+- 当前 Git 仓库已有提交历史；截至 `2026-03-17 18:21:59 +0800`，`HEAD` 为 `2430e8d9b535f0c9daf3d82f2a48f32aaac09f1b`。
+- Git 提交记录由用户手动维护；当前约定下，助手只使用 Git 做状态核对、差异检查和误操作恢复辅助。
+- 根目录敏感文件 `ssh-key-private` 当前命中 `.gitignore` 规则，未被跟踪。
+- 环境检查结果表明当前无需新增安装包即可完成这轮下采样；已实际使用：
+  - `numpy`
+  - `scipy`
+  - `scikit-learn`
+  - `torch`
+  - `torchaudio`
+  - `librosa`
+  - `soundfile`
+- `speechbrain` / `wespeaker` 当前环境中不存在，但这轮未使用它们。
+- 当前已落地的首批清单规模为：
+  - `target_speech_pool`: 219
+  - `target_reference_pool`: 64
+  - `speech_interference_clean_pool`: 13667
+  - `speech_interference_hard_pool`: 140
+  - `music_interference_pool`: 12
+  - `singing_vocal_interference_pool`: 96
+- `data/interim/friend_hard_negative_segments/` 已生成 140 个 hard negative 切片文件。
+
+## 3. 现阶段数据桶映射
+
+| 设计数据桶 | 当前对应来源 | 当前状态 | 备注 |
+|---|---|---|---|
+| `target_speech_pool` | `data_in/source_segments/segments/` | 可启动 | 后续需补 manifest 与质量过滤字段 |
+| `target_reference_pool` | 从 `data_in/source_segments/segments/` 中二次拆分 | 待生成 | 必须与 target 采样隔离 |
+| `speech_interference_clean_pool` | `data_in/genshin_voice_extract/` | 可启动 | 需先筛出可用 `wav`，忽略 `lab` |
+| `speech_interference_hard_pool` | `data_in/friend_dataset_fuhuo_raw_concat.wav` | 待处理 | 需要先切片、过滤、写 manifest |
+| `music_interference_pool` | `data_in/pure_music_dataset/` | 可启动 | 后续可补更系统的伴奏来源 |
+| `singing_vocal_interference_pool` | `data_in/voice_music_dataset/uvr_voice_only/` | 可启动 | 建议单独控比使用 |
+| `ambient_noise_pool` | 暂无正式目录 | 缺失 | 后续需要补采样或整理来源 |
+
+## 4. 已建立的正式项目结构
+
+### 顶层目录
+
+- `configs/`
+- `src/`
+- `scripts/`
+- `data/`
+- `experiments/`
+- `reports/`
+- `docs/`
+- `tmp/`
+
+### 细分目录
+
+- `src/tse_prefix/data/`
+- `src/tse_prefix/models/`
+- `src/tse_prefix/pipeline/`
+- `src/tse_prefix/utils/`
+- `scripts/data/`
+- `scripts/train/`
+- `scripts/eval/`
+- `data/manifests/`
+- `data/references/`
+- `data/interim/`
+- `data/synthetic/train/`
+- `data/synthetic/val/`
+- `data/synthetic/test/`
+- `experiments/logs/`
+- `experiments/checkpoints/`
+- `reports/daily/`
+- `reports/eval/`
+- `docs/archive/`
+
+## 5. 当前阶段目标
+
+当前阶段定义为 Phase A 的 manifest 落地与 synthetic 前准备子阶段，目标是：
+
+1. 保持清晰目录边界和可恢复文档链路。
+2. 将设计稿中的数据桶真正落地为可消费的正式 manifest。
+3. 为下一步 synthetic mixture 生成器和最小 baseline 闭环提供稳定输入。
+4. 在进入训练前先把明显的数据组织风险记录清楚。
+
+## 6. 当前阶段验收标准
+
+当前阶段视为完成的最低标准：
+
+1. 根目录不再把正式代码、实验、文档、临时文件混放。
+2. `docs/00_context_bootstrap.md` 中引用的核心文档可被实际读取。
+3. `data/manifests/` 中至少存在 target、reference、clean speech、hard speech、music、singing vocal 的正式清单。
+4. 后续开发者能仅靠磁盘文档理解：
+   - 项目目标是什么；
+   - 当前有哪些数据；
+   - 已经产出了哪些 manifest；
+   - 下一步应该先做什么。
+
+## 7. 当前进度
+
+### 已完成
+
+- 已阅读 `initial_design.md`。
+- 已读取 `docs/00_context_bootstrap.md`。
+- 已扫描当前目录与主要数据区。
+- 已建立独立子项目的目录骨架。
+- 已补齐项目总览、踩坑记录、结构说明与评审占位文档。
+- 已实现并执行 `scripts/data/prepare_curated_pools.py`。
+- 已生成首批正式 manifest 与 hard negative 切片中间产物。
+- 已将 `target_reference_pool` 抽样逻辑改为在可用候选中均匀抽样，避免只取排序靠前样本。
+- 已实现 `scripts/data/build_synthetic_dataset.py` 的首版。
+- 已实际生成最小 synthetic 样本并验证 `mixture.wav`、`target.wav`、`reference.wav`、`metadata.json` 均可正常落盘。
+- `scripts/data/build_synthetic_dataset.py` 已从“目标全程存在”的 MVP 版本扩展为 richer temporal patterns 版本。
+- 当前已实际生成并验证的目标时序模式包括：
+  - `target_full`
+  - `target_absent_head`
+  - `target_absent_tail`
+  - `target_intermittent`
+- 当前 synthetic metadata 已记录：
+  - `temporal_pattern`
+  - `target_present_ratio`
+  - `target_segments`
+  - `target_absent_intervals`
+- 训练 / 评估管线现已消费 `target_absent_intervals`，并支持 `absent_interval_l1` loss / metric。
+- 已验证 `target.wav` 与 `mixture.wav` 在这些模式下仍保持等长。
+- 已实现并执行 `scripts/data/materialize_genshin_clean_subset.py`。
+- 已实现并执行 `scripts/data/rebuild_genshin_clean_pool.py`。
+- 已实现并执行 `scripts/data/downsample_genshin_clean_pool_with_acoustic_embeddings.py`。
+- clean interference manifest 已改写为指向 `data/curated/genshin_clean_subset_cover_embed_prune_v1/`。
+- 已给 `prepare_curated_pools.py` 加保护逻辑，避免重新扫描原神原目录后覆盖任意 `data/curated/` 下的正式 clean manifest。
+- 已验证新的 clean manifest 仍可被 `prepare_curated_pools.py` 与 `build_synthetic_dataset.py` 正常消费。
+- 已完成公开 GitHub 仓库的本地初始化与基础忽略规则设置。
+- 已确认敏感根目录文件当前未进入 Git 跟踪与提交历史。
+- 已实现最小 baseline 训练闭环：
+  - `src/tse_prefix/data/synthetic_dataset.py`
+  - `src/tse_prefix/models/stft_mask_baseline.py`
+  - `src/tse_prefix/pipeline/baseline_train.py`
+  - `scripts/train/train_stft_mask_baseline.py`
+- 已完成 baseline smoke training，确认：
+  - synthetic manifest 可被 DataLoader 正常读取
+  - 模型前向和 loss 可正常反传
+  - checkpoint 与 `train_summary.json` 可正常落盘
+- 已实现 baseline 评估入口 `scripts/eval/eval_stft_mask_baseline.py`。
+- 已能基于 checkpoint + synthetic val manifest 跑批量评估，并落盘：
+  - 数值指标汇总 `eval_summary.json`
+  - 少量样例的 `estimate.wav / target.wav / mixture.wav`
+- 当前 smoke checkpoint 在 synthetic val 集上的首轮指标为：
+  - `loss`: 0.046444
+  - `waveform_l1`: 0.023725
+  - `stft_l1`: 0.045437
+  - `sisdr_db`: -26.484
+- 已将 synthetic 集扩展到：
+  - train: 512
+  - val: 128
+- 已完成 baseline stage1 小规模正式训练：
+  - 5 epochs
+  - batch size 8
+  - global steps 320
+  - best val loss 0.025460
+- 已完成 stage1 checkpoint 的评估，当前 synthetic val 集指标为：
+  - `loss`: 0.028332
+  - `waveform_l1`: 0.014389
+  - `stft_l1`: 0.027886
+  - `sisdr_db`: -13.101
+- 相比 smoke checkpoint，stage1 当前提升为：
+  - `loss`: -0.018112
+  - `waveform_l1`: -0.009336
+  - `stft_l1`: -0.017551
+  - `sisdr_db`: +13.383 dB
+- 当前 smoke run 产物位于：
+  - `experiments/checkpoints/baseline_stft_mask_smoke/latest.pt`
+  - `experiments/checkpoints/baseline_stft_mask_smoke/best.pt`
+  - `experiments/checkpoints/baseline_stft_mask_smoke/train_summary.json`
+- 当前首轮 eval 产物位于：
+  - `reports/eval/baseline_stft_mask_smoke_eval/eval_summary.json`
+  - `reports/eval/baseline_stft_mask_smoke_eval/samples/`
+- 当前 stage1 训练产物位于：
+  - `experiments/checkpoints/baseline_stft_mask_stage1/latest.pt`
+  - `experiments/checkpoints/baseline_stft_mask_stage1/best.pt`
+  - `experiments/checkpoints/baseline_stft_mask_stage1/train_summary.json`
+- 当前 stage1 eval 产物位于：
+  - `reports/eval/baseline_stft_mask_stage1_eval/eval_summary.json`
+  - `reports/eval/baseline_stft_mask_stage1_eval/samples/`
+- 已将 synthetic 集进一步扩展到 stage2 规模：
+  - train: 2048
+  - val: 512
+- 已完成 baseline stage2 训练：
+  - 6 epochs
+  - batch size 16
+  - global steps 768
+  - best val loss 0.020418
+- 已完成 stage2 checkpoint 的评估，当前 synthetic val 集指标为：
+  - `loss`: 0.024478
+  - `waveform_l1`: 0.013034
+  - `stft_l1`: 0.022888
+  - `sisdr_db`: -10.324
+- 相比 stage1，stage2 当前进一步提升为：
+  - `loss`: -0.003855
+  - `waveform_l1`: -0.001356
+  - `stft_l1`: -0.004997
+  - `sisdr_db`: +2.777 dB
+- stage2 eval 已支持按以下维度分组统计：
+  - `temporal_pattern`
+  - `recipe`
+  - `target_present_ratio` bucket
+- 当前 stage2 中较难的 recipe 主要是：
+  - `target_clean_plus_music`
+  - `target_clean_speech`
+- 当前 stage2 训练产物位于：
+  - `experiments/checkpoints/baseline_stft_mask_stage2/latest.pt`
+  - `experiments/checkpoints/baseline_stft_mask_stage2/best.pt`
+  - `experiments/checkpoints/baseline_stft_mask_stage2/train_summary.json`
+- 当前 stage2 eval 产物位于：
+  - `reports/eval/baseline_stft_mask_stage2_eval/eval_summary.json`
+  - `reports/eval/baseline_stft_mask_stage2_eval/samples/`
+- 已完成一个与 stage2 同规模的 hard-recipe-focus 受控对照实验：
+  - train: 2048
+  - val: 512
+  - train recipe profile: `hard_recipe_focus`
+  - val recipe profile: `default`
+- 该受控对照结果明显差于 stage2 默认配比：
+  - `loss`: +0.005526
+  - `waveform_l1`: +0.000980
+  - `stft_l1`: +0.009092
+  - `sisdr_db`: -8.976 dB
+- 对照实验中，当前最难的两个 recipe 也没有被救回来，反而进一步恶化：
+  - `target_clean_speech`: `sisdr_db` 再降约 9.127 dB
+  - `target_clean_plus_music`: `sisdr_db` 再降约 10.182 dB
+- 因此当前主线不采用 pure `hard_recipe_focus` 作为默认训练分布。
+- 当前工作区 synthetic manifest 已恢复到 stage2 默认配比：
+  - train: 2048 / default
+  - val: 512 / default
+- 已完成 baseline 模型侧的一轮 reference conditioning 升级：
+  - 从 `legacy_bias` 版“reference 全局加性偏置”
+  - 升级到 `ref_film` 版“reference attention pooling + FiLM gate + similarity feature”
+- 训练 checkpoint 现已显式记录 `model_config`，评估脚本也已支持：
+  - 新结构按 checkpoint 中的 `model_config` 复现
+  - 旧 checkpoint 自动识别为 `legacy_bias` 并继续可评估
+- 已完成 `ref_film` 结构的 smoke 训练与评估验证：
+  - 训练：1 epoch / 6 steps
+  - eval loss: `0.041898`
+  - eval sisdr_db: `-21.665`
+- 已验证旧的 stage2 checkpoint 仍可被新版 eval 脚本正确加载，指标与历史结果一致。
+- 已完成 `ref_film` 与 `legacy_bias` 的同预算 stage2 正式对照：
+  - synthetic 分布：2048 / 512 / default
+  - 训练预算：6 epochs / batch size 16 / 768 steps
+- `ref_film` 相对当前 legacy stage2：
+  - `loss`: `-0.000904`
+  - `stft_l1`: `-0.002323`
+  - `waveform_l1`: `+0.000257`
+  - `sisdr_db`: `-0.236 dB`
+- 当前结论：
+  - `ref_film` 已证明可稳定训练与评估
+  - 但尚未证明整体优于 `legacy_bias`
+  - 当前默认主线仍保持 `legacy_bias + stage2 default`
+- 已完成训练损失扩展，当前 baseline 已支持可配置的 `SI-SDR loss`：
+  - 训练脚本新增 `loss_config`
+  - checkpoint / summary / eval 已同步记录
+- 已完成两个同预算 stage2 损失对照：
+  - `legacy_bias + sisdr001`
+  - `ref_film + sisdr001`
+- 当前观察到的关键结果：
+  - `legacy_bias + sisdr001` 虽能提升 `sisdr_db`，但重建类指标退化较明显
+  - `ref_film + sisdr001` 相对 legacy stage2：
+    - `loss`: `+0.000931`
+    - `waveform_l1`: `-0.000036`
+    - `stft_l1`: `+0.001933`
+    - `sisdr_db`: `+1.880 dB`
+  - `ref_film + sisdr001` 相对 `legacy_bias + sisdr001`：
+    - 四项指标全部更优
+- 当前可把 `ref_film + sisdr001` 视为新的“分离导向候选主线”，但在没有听感验证前，仍保留 legacy stage2 作为回退对照。
+- 已完成一轮小范围损失权重扫描，当前结论更新为：
+  - `ref_film + stft0.5 + sisdr0.0005` 优于 `ref_film + sisdr0.001`
+  - 相对 legacy stage2：
+    - `loss`: `-0.000181`
+    - `waveform_l1`: `-0.000276`
+    - `stft_l1`: `+0.000190`
+    - `sisdr_db`: `+2.231 dB`
+  - 这说明当前最平衡的候选主线已经从 `sisdr001` 更新为 `sisdr0005`
+- 已确认 `stft_weight=0.6` 的两组对照都明显更差，当前不再沿这个方向继续消耗算力。
+- 已完成 `sisdr_weight` 的窄范围复扫：
+  - 新增对照点：`0.0003 / 0.0004 / 0.0006`
+  - 结果表明 `0.0005` 不是偶然点，而是当前窄区间内的明确最优点
+  - `0.0005` 相对 `0.0004` 仍四项主指标全部更优
+  - `0.0003` 与 `0.0006` 都明显退化
+- 当前主线已可收敛到：
+  - `ref_film + stft0.5 + sisdr0.0005`
+  - 暂不继续扫描更远的 `sisdr_weight`
+- 已完成听感验证准备侧的工程落地：
+  - 新增双 checkpoint A/B 导出脚本 `scripts/eval/export_ab_listening_pack.py`
+  - 已导出一套 synthetic hard-case 试听包：
+    - `reports/eval/ab_listening_pack_stage2_vs_ref_film_sisdr0005/`
+  - 已导出一套 blind A/B 试听包：
+    - `reports/eval/ab_listening_pack_stage2_vs_ref_film_sisdr0005_blind/`
+  - 已额外导出一套只聚焦 `target_clean_plus_music` 的 blind 试听包：
+    - `reports/eval/ab_listening_pack_clean_plus_music_blind/`
+  - 当前试听包对照的是：
+    - `legacy stage2`
+    - `ref_film + stft0.5 + sisdr0.0005`
+  - 样本选择同时覆盖：
+    - 明显收益样本
+    - 明显退化样本
+    - 接近平手样本
+- 当前仓库仍缺少正式的真实验证集 manifest；因此本轮完成的是“听感验证准备”，不是“真实验证已完成”。
+- 已收到第一批人工盲听反馈：
+  - `val_000071`：用户主观更偏向新模型
+  - `val_000089`、`val_000090`：用户主观更偏向旧模型
+  - 当前已知的主观回退点主要落在 `target_clean_plus_music`
+- 已完成一轮“主观反馈后的自动跟进分析”：
+  - 当前确认 `clean_plus_music` 是最需要重点盯的回退 recipe
+  - 已做轻量 hybrid probe：`legacy/new` 推理期线性融合
+  - 当前 `alpha_new=0.75` 是客观上最值得保留的折中点，但暂未升级为主线
+- 已完成修正后 GUI 口径下的主线 blind A/B 复核：
+  - 听评包：`reports/eval/ab_listening_pack_stage2_vs_ref_film_sisdr0005_blind/`
+  - 解盲后真实偏好：
+    - `legacy_stage2`: `7`
+    - `ref_film_sisdr0005`: `1`
+    - `tie`: `1`
+    - `uncertain`: `3`
+  - 当前 `target_clean_plus_music` 上的主观偏好也仍明显更偏向旧主线：
+    - `legacy_stage2`: `4`
+    - `ref_film_sisdr0005`: `1`
+    - `uncertain`: `1`
+  - 因此当前不把 `ref_film + stft0.5 + sisdr0.0005` 升为新的默认主线。
+  - 当前默认主线保持：
+    - `legacy stage2`
+- 已补真实验证入口脚本与模板：
+  - `scripts/eval/export_ab_inference_from_manifest.py`
+  - `data/references/real_eval_manifest_template.jsonl`
+  - 后续若整理出真实或近真实样本，只需填 manifest 即可直接导出双模型结果。
+- 已为 baseline 训练脚本补充 warm-start 能力：
+  - `scripts/train/train_stft_mask_baseline.py` 新增 `--init-checkpoint`
+  - 当前支持从既有 checkpoint 加载模型权重后继续微调
+- 已完成一轮 `clean_plus_music` 定向微调实验：
+  - 实验名：`baseline_stft_mask_stage2_ref_film_sisdr0005_cpm_focus_ft1`
+  - 初始化自：`baseline_stft_mask_stage2_ref_film_sisdr0005`
+  - focused train manifest：`data/synthetic/train_manifest_clean_plus_music_regression_focus_v1.jsonl`
+  - 训练配置：3 epochs / batch size 16 / lr 3e-4
+  - 当前整体 eval 相对 `ref_film + sisdr0005` 为：
+    - `loss`: `-0.000158`
+    - `waveform_l1`: `+0.000012`
+    - `stft_l1`: `-0.000340`
+    - `sisdr_db`: `+0.067887 dB`
+  - 当前 `target_clean_plus_music` recipe 的 `sisdr_db` 改善为：
+    - `+0.176268 dB`
+- 已导出一套“原主候选 vs clean_plus_music 定向微调”的 blind A/B 试听包：
+  - `reports/eval/ab_listening_pack_ref_film_sisdr0005_vs_cpm_focus_ft1_clean_plus_music_blind/`
+  - 当前用于直接核对 focused fine-tune 是否真的救回主观回退点。
+- 在暂无试听条件的前提下，已补一轮 purely objective follow-up：
+  - 新增 focused manifest 生成脚本 `scripts/data/build_recipe_focused_manifest.py`
+  - 新增双 checkpoint 自动对比脚本 `scripts/eval/compare_checkpoints_on_manifest.py`
+- 已生成一个来源可复现的 focused manifest：
+  - `data/synthetic/train_manifest_clean_plus_music_recipe_focus_v2.jsonl`
+  - 当前总样本数 `364`，recipe 预算对齐旧 `v1`
+- 已完成 `ref_film_sisdr0005` vs `cpm_focus_ft1` 的自动对比：
+  - 全验证集：`avg_sisdr_delta_db = +0.062616`
+  - `target_clean_plus_music`：`avg_sisdr_delta_db = +0.177162`
+  - 但仍呈现明显“有赢有输”的分布，而非单边支配
+- 已完成一轮受控 `ft2`，只替换为可复现 focused manifest：
+  - 实验名：`baseline_stft_mask_stage2_ref_film_sisdr0005_cpm_recipe_focus_v2_ft2`
+  - train manifest：`data/synthetic/train_manifest_clean_plus_music_recipe_focus_v2.jsonl`
+  - warm-start：`baseline_stft_mask_stage2_ref_film_sisdr0005`
+  - 训练预算：3 epochs / batch size 16 / lr 3e-4
+- `ft2` 当前已成为 focused 分支里的客观最优点：
+  - 相对 `base`：
+    - `loss`: `-0.000115`
+    - `waveform_l1`: `-0.000036`
+    - `stft_l1`: `-0.000158`
+    - `sisdr_db`: `+0.145066 dB`
+  - `target_clean_plus_music`：
+    - `avg_sisdr_db`: `-10.319467 -> -10.033389`
+    - `avg delta`: `+0.310862 dB`
+  - `target_hard_speech` 的退化已较 `ft1` 明显收回：
+    - `base`: `-7.002237`
+    - `ft1`: `-7.093016`
+    - `ft2`: `-7.016520`
+- 已补 `base vs ft2` 的 blind A/B 试听包：
+  - `reports/eval/ab_listening_pack_ref_film_sisdr0005_vs_cpm_recipe_focus_v2_ft2_clean_plus_music_blind/`
+- 已完成一轮 very small `ft3`：
+  - 实验名：`baseline_stft_mask_stage2_ref_film_sisdr0005_cpm_recipe_focus_v2_ft3`
+  - init checkpoint：`cpm_recipe_focus_v2_ft2`
+  - lr: `1e-4`
+  - 当前只带来很小的客观增益，尚未形成足够强的新证据替代 `ft2`
+- 已重构 blind 听评标准并同步到导出脚本：
+  - `scripts/eval/export_ab_listening_pack.py`
+  - `scripts/eval/export_ab_inference_from_manifest.py`
+  - 当前听评表已改为：
+    - `better_output`
+    - `source_retention`
+    - `interference_leak`
+    - `volume_fluctuation`
+    - `artifact`
+    - `decision_tags`
+- 已补一套 focused 分支的 guardrail blind pack：
+  - `reports/eval/ab_listening_pack_ref_film_sisdr0005_vs_cpm_recipe_focus_v2_ft2_guardrail_blind/`
+  - 当前用于试听 `clean_speech + hard_speech` 副作用边界
+- 已补本地 blind listening pack GUI：
+  - `scripts/eval/listening_pack_gui.py`
+  - 当前支持：
+    - blind 包文件夹加载
+    - recipe / pattern / 状态筛选
+    - `mixture/reference/file_a/file_b/target` 直接播放
+    - 峰值统一拉伸开关
+    - 结构化打分录入
+    - 一键导出 `listening_sheet.csv` 与结果汇总
+- 已完成一轮基于 GUI 的 focused 主观听评补回，当前结论更新为：
+  - `cpm_focus_ft1` 相对 `ref_film_sisdr0005` 在 `clean_plus_music` 上几乎纯平手
+  - `cpm_recipe_focus_v2_ft2` 相对 `ref_film_sisdr0005` 在 `clean_plus_music` 与 guardrail 包上都未形成稳定可听优势
+  - 因此当前不把 focused fine-tune 分支升为新的主候选
+- 已确认 GUI 早期“峰值统一拉伸”实现与听评原意不一致：
+  - 旧实现是按单文件分别拉峰值
+  - 现已修正为同一样本目录共享增益
+  - 旧口径下的主观结果仍可参考，但在细粒度差异判断上需更谨慎解释
+- 已修正仓库内路径的落盘口径：
+  - `SyntheticTSEDataset` 下游传递的 `metadata_path`
+  - A/B 听评导出、双 checkpoint 对比、baseline train/eval 汇总
+  - 后续优先写仓库相对路径，减少工作目录改名导致的恢复偏差
+- 已补第一版近真实验证资产：
+  - 构建脚本：`scripts/data/build_near_real_eval_manifest.py`
+  - manifest：`data/references/real_eval_manifest_near_real_v1.jsonl`
+  - 样本目录：`data/references/real_eval_near_real_v1/`
+  - blind A/B 包：`reports/eval/ab_listening_pack_real_eval_near_real_v1_stage2_vs_ref_film_sisdr0005_blind/`
+- `near_real_v1` 当前覆盖：
+  - raw target only
+  - target + friend speech
+  - target + music
+  - target + external speech
+  - target absent
+  - target absent + music
+- 当前该资产明确定位为：
+  - near-real eval
+  - 不是最终真实现场验证集
+- 已为 synthetic 生成器补入 `--output-tag`：
+  - 可将 probe 数据写到独立的 `data/synthetic/*_{tag}` 目录与 manifest
+  - 避免 side experiment 覆盖主线 `train_manifest.jsonl / val_manifest.jsonl`
+- 已完成首轮 small reverb probe：
+  - 实验名：`baseline_stft_mask_stage2_legacy_reverb_probe_v1`
+  - synthetic tag：`legacy_reverb_probe_v1`
+  - train / val：`256 / 64`
+  - 轻混响配置：`target_reverb_prob=0.35`、`speech_reverb_prob=0.45`
+  - warm-start 自：`baseline_stft_mask_stage2`
+- `legacy_reverb_probe_v1` 当前结果为：
+  - 默认 val 相对 `legacy stage2`：`sisdr_db -0.264 dB`、`waveform_l1 +0.000129`
+  - probe val 相对 `legacy stage2`：`sisdr_db -0.194 dB`、`waveform_l1 +0.000113`
+  - 当前不继续沿“target + speech 一起加轻混响”方向扩大训练
+- 已完成第二轮 speech-only small reverb probe：
+  - 实验名：`baseline_stft_mask_stage2_legacy_speechreverb_probe_v2`
+  - synthetic tag：`legacy_speechreverb_probe_v2`
+  - train / val：`256 / 64`
+  - 轻混响配置：`target_reverb_prob=0.0`、`speech_reverb_prob=0.55`
+  - warm-start 自：`baseline_stft_mask_stage2`
+- `legacy_speechreverb_probe_v2` 当前结果为：
+  - 默认 val 相对 `legacy stage2`：`sisdr_db -0.183 dB`、`waveform_l1 +0.000031`
+  - probe val 相对 `legacy stage2`：`sisdr_db -0.195 dB`、`waveform_l1 +0.000034`
+  - 在 probe 集上，`target_clean_speech` 与 `target_clean_plus_music` 仅出现 very small 平均改善，整体仍未转正
+- 已导出两套 near-real blind A/B 包，用于核对 reverb probe 是否真能修正 near-real 暴露的问题：
+  - `reports/eval/ab_listening_pack_real_eval_near_real_v1_stage2_vs_legacy_reverb_probe_v1_blind/`
+  - `reports/eval/ab_listening_pack_real_eval_near_real_v1_stage2_vs_legacy_speechreverb_probe_v2_blind/`
+- `legacy_speechreverb_probe_v2` 的 near-real blind 听评已完成，当前结果为：
+  - `legacy_stage2`: `1`
+  - `legacy_speechreverb_probe_v2`: `0`
+  - `tie`: `8`
+  - `uncertain`: `1`
+- 当前这轮人听暴露出的新增主观问题为：
+  - 输出存在明显“电话音 / 降采样感”式的带宽收窄
+  - 更像是某些频率被削掉，而不只是普通噪声或混响伪影
+- 已补一版听评包频带诊断脚本：
+  - `scripts/eval/analyze_listening_pack_bandwidth.py`
+  - 当前可直接对 blind A/B 包输出逐样本带宽收窄指标与摘要
+- 已补一版听评包瞬态诊断脚本：
+  - `scripts/eval/analyze_listening_pack_transients.py`
+  - 当前可直接对 blind A/B 包输出“高频瞬态相对中频是否被削掉”的逐样本指标
+- 当前该脚本在 near-real 包上的首轮观察为：
+  - `legacy_speechreverb_probe_v2` 没有表现成“全局统一低通”
+  - 更像是局部频带 / 高频瞬态 / 清辅音边缘被削掉
+  - `legacy_reverb_probe_v1` 的带宽收窄问题比 `v2` 更频繁、更明显
+- 当前瞬态诊断的补充观察为：
+  - `legacy_speechreverb_probe_v2` 在 `near_real_0005 / 0007 / 0010` 上仍会被标成更 transient-lossy
+  - `legacy_reverb_probe_v1` 在 near-real 上的瞬态缺失问题整体比 `v2` 更重
+- 已把“瞬态 / 清辅音保真”从纯诊断推进到可训练钩子：
+  - `src/tse_prefix/pipeline/baseline_train.py` 新增 `transient_presence_l1_loss`
+  - `scripts/train/train_stft_mask_baseline.py` 新增 `--loss-transient-weight`
+  - checkpoint / train summary / eval summary 已同步记录 `transient_presence_l1`
+- 已完成一轮 transient loss smoke 验证：
+  - 训练产物：`experiments/checkpoints/baseline_stft_mask_transient_smoke/`
+  - 评估产物：`reports/eval/baseline_stft_mask_transient_smoke_eval/`
+  - 说明当前该 loss 已能实际参与 train / val / eval 流程，而不只是停留在诊断脚本层
+- 已完成两轮基于 `legacy stage2` 的 small transient-loss warm-start probe：
+  - `baseline_stft_mask_stage2_legacy_transient_probe_v1`
+    - `transient_weight=0.005`
+    - 默认 synthetic val 上 `avg_sisdr_delta_db = -0.412`
+    - `transient_presence_l1: 0.7489 -> 0.5665`
+  - `baseline_stft_mask_stage2_legacy_transient_probe_v2`
+    - `transient_weight=0.002`
+    - 默认 synthetic val 上 `avg_sisdr_delta_db = -0.314`
+    - `transient_presence_l1: 0.7489 -> 0.5788`
+- `legacy_transient_probe_v2` 当前在 focused synthetic recipe 上出现了第一批可保留信号：
+  - `target_clean_speech + target_clean_plus_music` 合并后 `avg_sisdr_delta_db = +0.112`
+  - 其中：
+    - `target_clean_speech`: `+0.263 dB`
+    - `target_clean_plus_music`: `-0.105 dB`
+- 已导出一套 near-real blind A/B 包，用于直接核对 transient loss 是否真能减轻“电话音 / 瞬态缺失”：
+  - `reports/eval/ab_listening_pack_real_eval_near_real_v1_stage2_vs_legacy_transient_probe_v2_blind/`
+- 已对这套 near-real 包补跑自动诊断，并结合 `blind_key.json` 解码得到：
+  - 带宽收窄 heuristic：`legacy_transient_probe_v2` 被标成更窄带 `4` 条，`legacy_stage2` 为 `0` 条，`tie = 6`
+  - 瞬态缺失 heuristic：`legacy_transient_probe_v2` 被标成更 transient-lossy `7` 条，`legacy_stage2` 为 `1` 条，`tie = 2`
+- `legacy_transient_probe_v2` 的 near-real blind 听评现已完成，当前真实偏好为：
+  - `legacy_transient_probe_v2`: `2`
+  - `legacy_stage2`: `0`
+  - `tie`: `8`
+  - `uncertain`: `0`
+- 但这两次主观胜出都不算“干净强胜”：
+  - `near_real_0005`：仅 very small 差异，主观更像略多保住一点 source retention
+  - `near_real_0007`：source retention 更好，但同时带来更多 interference leak
+- 当前主观补充观察为：
+  - “电话音 / 伪影”主观上似乎有些许减轻
+  - 但用户已明确要求这点不计入主结论，当前只作为弱观察保留
+- 已完成一轮“更局部、更保守”的 transient-loss 选择器改造：
+  - 训练脚本现支持：
+    - `--loss-transient-focus-recipes`
+    - `--loss-transient-focus-patterns`
+    - `--loss-transient-min-target-ratio`
+    - `--loss-transient-max-target-ratio`
+  - 当前可把 transient loss 只施加到指定 recipe / pattern / ratio 子集，而不是全 batch 默认生效
+- 已完成两轮 selector-based transient probe：
+  - `legacy_transient_focus_probe_v3`
+    - 选择器：`clean_speech + clean_plus_music`，排除 `intermittent`
+    - 默认 synthetic val：`avg_sisdr_delta_db = -0.368`
+    - 当前不保留
+  - `legacy_transient_focus_probe_v4`
+    - 选择器：仅 `target_clean_speech`，pattern 限于 `target_full / absent_head / absent_tail`
+    - 默认 synthetic val：`avg_sisdr_delta_db = -0.228`
+    - `target_clean_speech`: `+0.315 dB`
+    - `target_clean_speech + target_clean_plus_music`: `+0.063 dB`
+    - 相对全局 `legacy_transient_probe_v2`，当前是更平衡的局部候选
+- 已导出 `legacy_transient_focus_probe_v4` 的 near-real blind 包：
+  - `reports/eval/ab_listening_pack_real_eval_near_real_v1_stage2_vs_legacy_transient_focus_probe_v4_blind/`
+- 已对这套 near-real 包补跑自动诊断，并结合 `blind_key.json` 解码得到：
+  - 带宽收窄 heuristic：`legacy_transient_focus_probe_v4` 被标成更窄带 `2` 条，`legacy_stage2` 为 `0` 条，`tie = 8`
+  - 瞬态缺失 heuristic：`legacy_transient_focus_probe_v4` 被标成更 transient-lossy `7` 条，`legacy_stage2` 为 `1` 条，`tie = 2`
+- 已基于 `legacy_transient_leakguard_probe_v1` 完成两轮更细的 leak-guardrail follow-up：
+  - `legacy_transient_leakguard_probe_v2_musiconly`
+    - 仅对 `target_music / target_clean_plus_music / target_hard_plus_music` 施加 interference selector
+    - synthetic 默认 val 相对 `legacy stage2`：`avg_sisdr_delta_db = +0.665876`
+    - `interference_projection_ratio = 0.0319`
+    - 但相对 `legacy_transient_leakguard_probe_v1`：`avg_sisdr_delta_db = -0.183896`
+    - 当前判断：过度向 music-like leakage 收缩，不保留为后续主候选
+  - `legacy_transient_leakguard_probe_v3_w0005`
+    - 保持全 interference selector，但将 `interference_weight` 从 `0.01` 下调到 `0.005`
+    - synthetic 默认 val 相对 `legacy stage2`：`avg_sisdr_delta_db = +0.383818`
+    - `waveform_l1` 基本持平，`interference_projection_ratio = 0.0560`
+    - 但相对 `legacy_transient_leakguard_probe_v1`：`avg_sisdr_delta_db = -0.465955`
+- 已导出并补跑 `legacy stage2 vs legacy_transient_leakguard_probe_v3_w0005` 的 near-real blind 自动诊断包：
+  - `reports/eval/ab_listening_pack_real_eval_near_real_v1_stage2_vs_legacy_transient_leakguard_probe_v3_w0005_blind/`
+- `legacy_transient_leakguard_probe_v3_w0005` 当前 near-real 自动结论为：
+  - 带宽收窄 heuristic：`legacy_transient_leakguard_probe_v3_w0005 = 3`，`legacy_stage2 = 0`，`tie = 7`
+  - 瞬态缺失 heuristic：`legacy_transient_leakguard_probe_v3_w0005 = 4`，`legacy_stage2 = 4`，`tie = 2`
+  - trade-off 解码均值：
+    - `target_capture_db`: `-12.578 -> -9.558`
+    - `interference_capture_db`: `-45.209 -> -43.697`
+    - `retention_minus_leak_db`: `27.905 -> 28.585`
+    - `residual_output_share`: `0.661 -> 0.654`
+- `legacy_transient_leakguard_probe_v3_w0005` 相对 `v1` 的当前定位为：
+  - 更像“更保守、residual 更轻”的 follow-up
+  - `more_residual_heavy` 已从 `v1` 的 `6` 条显著收回到 `1` 条
+  - 但 `retention_minus_leak_db` 仍低于 `v1`：`28.938 -> 28.585`
+  - 且带宽收窄计数从 `2` 条升到 `3` 条
+  - 当前仍不足以替代 `legacy_transient_leakguard_probe_v1`
+
+### 进行中
+
+- synthetic 生成器已具备 richer temporal patterns 版本，但仍未覆盖更复杂的多段真实重叠场景。
+- clean pool 已完成一轮基于手工声学 embedding 的聚类式去冗余，但尚未上更强的预训练 speaker embedding。
+- 公开仓库边界已定义，但首次实际公开提交前仍需人工核对一遍将被纳入的文件集合。
+- 公开仓库的 ignore 策略已补过一次“恢复性收口”：
+  - checkpoint、音频、synthetic 数据、指向本地资产的 manifest 继续留本地
+  - `experiments/**/train_summary.json` 与 `reports/eval/**` 下的小型结构化摘要重新保持可跟踪
+- baseline 已进入 stage2，小规模正式训练和分组评估已完成。
+- recipe profile 的受控对照已完成，当前已知最佳主线仍是 stage2 默认配比。
+- 新的 `ref_film` conditioning 结构与轻量 `SI-SDR loss` 组合已完成 stage2 正式对照与小范围权重扫描，客观上最强候选仍是 `ref_film + stft0.5 + sisdr0.0005`。
+- 但该候选已完成修正后 GUI 口径下的主观主线复核，当前未能替代 `legacy stage2`。
+- A/B 听感导出流程已落地，后续若补出真实或近真实 manifest，可直接复用同一脚本导出双模型对照结果。
+- 已完成一轮 `clean_plus_music` 定向微调试探，但当前仍处于“客观略有改善、主观尚待确认”的状态。
+- `clean_plus_music` focused fine-tune 所用 manifest 已存在，但其生成过程尚未正式登记为脚本或文档，当前仍有可恢复性风险。
+- 该可恢复性风险已部分缓解：后续 focused manifest 已有正式生成脚本和可复现的 `recipe_focus_v2` 版本。
+- 但历史 `regression_focus_v1` 仍不是严格可复刻资产，当前应逐步退出主工作流。
+- `recipe_focus_v2` 已经过一轮受控 `ft2` 验证，当前比历史 `v1 + ft1` 分支更值得保留。
+- 听评执行环境已从“纯文件夹手动点击”升级为本地 GUI，并已补回 focused 分支的首轮主观结果。
+- 当前若还要继续做主观判断，优先改成：
+  - 修正后 GUI 口径下的少量关键样本复核
+  - 而不是继续整包扩听
+- 当前默认优先级已进一步收敛为：
+  - 先基于现有主观结果收敛主线判断
+  - 暂不继续新增训练分支
+- 当前已从“只有真实验证模板”推进到“已有 near-real blind 包待听”的状态。
+- 但 `near_real_v1` 仍不是现场真实混合录音集；后续若有更真实素材，仍需继续扩成正式 real eval。
+- `near_real_v1` 的 blind 听评已完成，当前结果为：
+  - `legacy_stage2`: `6`
+  - `ref_film_sisdr0005`: `1`
+  - `tie`: `2`
+  - `uncertain`: `1`
+- 当前 near-real 听评暴露出的新问题聚焦为：
+  - 混响输入处理不稳
+  - target absent 时出现目标样瞬态
+  - 处理中间伪影可能被误当作目标相关成分
+- 已在 `scripts/data/build_synthetic_dataset.py` 中补入可选轻混响增强入口：
+  - `--target-reverb-prob`
+  - `--speech-reverb-prob`
+  - 当前默认仍为 `0.0`，用于保持历史主线可复现性
+- 当前已完成两轮 small reverb probe：
+  - `legacy_reverb_probe_v1` 客观上明显差于 `legacy stage2`
+  - `legacy_speechreverb_probe_v2` 明显优于 `v1`，但相对 `legacy stage2` 仍整体小幅回退
+- 两套 reverb probe 的 near-real blind 包已导出，但当前尚未完成听评：
+  - 当前人工优先级更高的是 `legacy_speechreverb_probe_v2`
+- `legacy_speechreverb_probe_v2` 的 near-real blind 听评现已完成：
+  - 结果没有形成主观优势
+  - 当前更像“多数平手，但更容易带出带宽缺失感”
+- 当前已具备一版可复跑的带宽收窄诊断：
+  - 可直接复盘听评包里的 `candidate_a / candidate_b`
+  - 但阈值和特征仍是第一版，后续还可继续细化
+- 当前已具备一版可复跑的瞬态缺失诊断：
+  - 可直接把“电话音 / 清辅音被削”拆成 frame-level presence-vs-mid retention 指标
+  - 但当前仍是 heuristic 诊断，不作为单独判定主线优劣的唯一依据
+- 当前已具备一版可配置的 transient-presence 训练损失钩子：
+  - 可作为后续“瞬态 / 辅音保真”候选实验的最小实现基础
+  - 但尚未开始正式 budget 下的对照训练
+- transient-loss 对照现已完成第一轮 small-budget 试探：
+  - 说明它在 synthetic 上能明显压低 `transient_presence_l1`
+  - 但默认全分布上仍有较高概率伤到 `target_only / hard_speech / hard_plus_music`
+  - 当前还不能把它直接视为“减电话音”的安全主线方案
+- transient-loss 候选现已补完 near-real 听评：
+  - 没有出现主观负偏好
+  - 但也没有形成足够强、足够干净的可听优势
+  - 当前更像“多数平手，少量样本上 source retention 有弱收益，但伴随泄漏风险”
+- transient-loss 的 selector-based 局部版本现已完成第一轮客观试探：
+  - `v3` 证明“选得太宽”并不会自动变稳
+  - `v4` 证明“只打 `target_clean_speech`”能把默认全分布代价继续收窄
+  - 但自动 near-real 瞬态诊断仍未比全局 `v2` 更明显转正
+- leak-guardrail 分支已继续向下做过 `v2_musiconly / v3_w0005` 两轮 follow-up：
+  - `v2_musiconly` 已证实为过窄 selector，不再保留
+  - `v3_w0005` 已证实“减 residual-heavy”可做到，但还不足以替代 `v1`
+- 已完成 `legacy_transient_leakguard_probe_v4_speechfocus_ft1` follow-up：
+  - 从 `legacy_transient_leakguard_probe_v1` warm-start
+  - 将 `interference selector` 收窄到 `target_clean_speech / target_hard_speech`
+  - synthetic 默认 val 相对 `legacy stage2` 为：`avg_sisdr_delta_db = +0.969665`
+  - 相对 `legacy_transient_leakguard_probe_v1` 仍有：`avg_sisdr_delta_db = +0.119893`
+- 但 `legacy_transient_leakguard_probe_v4_speechfocus_ft1` 的 near-real 自动结论仍未放行：
+  - 带宽收窄 heuristic：`legacy_transient_leakguard_probe_v4_speechfocus_ft1 = 3`，`legacy_stage2 = 1`，`tie = 6`
+  - 瞬态缺失 heuristic：`legacy_transient_leakguard_probe_v4_speechfocus_ft1 = 7`，`legacy_stage2 = 1`，`tie = 2`
+  - trade-off 解码后：`more_interference_leaky = 5`，`better_retention_minus_leak = 2`
+  - `near_real_0003 / 0004` 这两条 speech-only 回退点仍未修正
+- `legacy_transient_leakguard_probe_v4_speechfocus_ft1` 当前更像：
+  - synthetic speech-like recipe 的继续提分版本
+  - 以及“只收窄到 speech-only selector 并不会自动修好 speech-only near-real 回退”的诊断性反例
+- 已完成 `legacy_transient_leakguard_probe_v5_absentguard_ft1`：
+  - 从 `legacy_transient_leakguard_probe_v1` warm-start
+  - 新增 `target_absent_intervals -> absent_interval_l1` guardrail
+  - `absent_weight = 20`
+  - focused 在 `target_clean_speech / target_hard_speech / target_clean_plus_music / target_hard_plus_music`
+  - pattern 限于 `target_absent_head / target_absent_tail / target_intermittent`
+- `legacy_transient_leakguard_probe_v5_absentguard_ft1` 的 synthetic 结论是：
+  - `absent_interval_l1` 相对 `v1` 从 `0.00010835` 降到 `0.00001870`
+  - 但默认 val 相对 `legacy stage2` 只剩：`avg_sisdr_delta_db = +0.187692`
+  - 相对 `legacy_transient_leakguard_probe_v1` 变成：`avg_sisdr_delta_db = -0.662080`
+  - 在 focused absent-guard recipes 上也仍为：`avg_sisdr_delta_db = -0.894569`
+- `legacy_transient_leakguard_probe_v5_absentguard_ft1` 的 near-real 自动结论也不放行：
+  - 带宽收窄 heuristic：`tie = 9`，`legacy_transient_leakguard_probe_v5_absentguard_ft1 = 1`
+  - 瞬态缺失 heuristic：`tie = 2`，`legacy_stage2 = 4`，`legacy_transient_leakguard_probe_v5_absentguard_ft1 = 4`
+  - trade-off 解码后：`better_source_retention = legacy_stage2 7`
+  - `more_interference_leaky = legacy_stage2 8`
+  - `more_residual_heavy = legacy_transient_leakguard_probe_v5_absentguard_ft1 7`
+  - `near_real_0003 / 0005 / 0007 / 0010` 仍存在明显过抑制或 transient-lossy 回退
+- `legacy_transient_leakguard_probe_v5_absentguard_ft1` 当前更像：
+  - 证明 absent leakage 可被显式压低的机制探针
+  - 但也是“高权重 target-absent guardrail 会把模型推向 residual-heavy / over-suppressed”的反例
+- 已补一个更保守的 quick gate：`legacy_transient_leakguard_probe_v6_absentguard_w5_ft1`
+  - 只把 `absent_weight` 从 `20` 收到 `5`
+  - `absent_interval_l1` 回到 `0.00004554`
+  - 相对 `legacy stage2` 仍有：`avg_sisdr_delta_db = +0.493601`
+  - 但相对 `legacy_transient_leakguard_probe_v1` 仍为：`avg_sisdr_delta_db = -0.356172`
+  - focused absent-guard recipes 上也仍为：`avg_sisdr_delta_db = -0.501773`
+  - 因而未继续导出 near-real blind 包，直接止损
+- 当前 objective-only 候选层级已更新为：
+  - 第一保留：`legacy_transient_leakguard_probe_v1`
+  - 第二保留：`legacy_transient_leakguard_probe_v3_w0005`
+  - 诊断参考：`legacy_transient_leakguard_probe_v4_speechfocus_ft1`
+  - 诊断参考：`legacy_transient_leakguard_probe_v5_absentguard_ft1`
+  - 不保留：`legacy_transient_leakguard_probe_v2_musiconly`
+
+### 未开始
+
+- 更真实验证集评估与后续模型结构升级。
+- focused fine-tune 在修正后 GUI 口径下，是否还需要做最后一轮小样本复核。
+- 在无试听条件下，基于 `recipe_focus_v2` 的下一轮 focused fine-tune 是否值得继续推进。
+- 后续是否需要在 `ft2` 基础上继续做更保守的小步 `ft3`。
+- `legacy stage2` 与 `ref_film_sisdr0005` 是否还需要仅围绕少量 `uncertain` 样本补最后一轮复核。
+- 若后续还要继续做 realism 方向实验，需要先决定是否专门围绕“频带缺失 / 电话音”建立更贴症状的诊断和指标，而不是直接再扩 mixed reverb 训练规模。
+
+## 8. 下一阶段任务
+
+建议按以下顺序推进：
+
+1. 生成 `data/manifests/target_speech_pool.jsonl`。
+2. 基于同源切片拆出 `target_reference_pool.jsonl`，保证与 target 采样隔离。
+3. 为 `genshin_voice_extract` 建立只含可用 `wav` 的 clean interference manifest。
+4. 对 `friend_dataset_fuhuo_raw_concat.wav` 做切片与初筛，形成 hard negative manifest。
+5. 为音乐与 singing vocal 建立最小 manifest。
+6. 编写首版合成样本生成脚本和元数据格式。
+
+上述 1-6 已完成。当前优先补充：
+
+7. 扩展 synthetic 时序模式，加入 `target intermittent`、`target absent tail` 等场景。
+8. 生成一小批更系统的 train/val 样本做人工抽检和抽听。
+9. 若 clean pool 还需继续去冗余，可在当前 embedding-pruned 版本基础上补更强的预训练 speaker embedding 聚类。
+10. 再决定 baseline 是先做纯 inference 验证，还是直接最小训练闭环。
+11. 首次对外推送前，再人工核对一次 `git status` 与将被纳入的文件集合，确保仓库只含公开安全内容。
+
+上述第 7 步已部分完成。当前优先改为：
+
+12. 若继续增强 synthetic realism，可补三段式 intermittent、更多 partial overlap 和 target absent 尾段干扰增强。
+13. 在现有 temporal patterns 基础上挑一批样本人工抽听。
+14. 在当前 stage1 基础上扩大 synthetic 规模，进入 stage2 训练。
+15. 基于现有 eval 入口，补按 recipe、目标占空比、干扰类型的更细粒度统计。
+16. 在没有试听环境的前提下，继续以指标和样例导出为主；待有试听条件后再补听感判断。
+
+上述 14-15 已完成。当前优先改为：
+
+17. 基于 stage2 分组指标，针对较难 recipe 补更有针对性的 synthetic 配比或模型改进。
+18. 若继续推 baseline，可进入 stage3：
+   - 更大 synthetic 规模
+   - 更长训练
+   - 或更强条件建模结构
+19. 条件允许后补听感验证，核对数值改善是否对应真实可听改善。
+
+当前对第 17 点的结论更新为：
+
+20. 不采用 pure `hard_recipe_focus` 作为默认配比；后续若继续调数据分布，应尝试更温和的混合方案或直接转向模型改进。
+
+当前对模型主线的推进补充为：
+
+21. `ref_film` 已完成 stage2 同预算 A/B，对总 loss / STFT 指标有改善，但整体 `sisdr_db` 略退化；当前不升为默认结构。
+22. 轻量 `SI-SDR loss` 已验证能有效补齐分离主指标，但收益依赖于与 `ref_film` 结构配合。
+23. 小范围权重扫描已完成，当前最佳平衡点为 `sisdr_weight=0.0005`。
+24. `sisdr_weight 0.0003 ~ 0.0006` 的窄范围复扫已完成，`0.0005` 仍为当前明确最优点。
+25. “继续扫权重”已阶段性停止；当前优先任务改为保留双基线并推进更真实验证或听感验证。
+26. 当前主听感对照应固定为：
+   - legacy stage2
+   - `ref_film + stft0.5 + sisdr0.0005`
+27. 在没有正式真实验证 manifest 的前提下，先使用已导出的 synthetic hard-case blind A/B 试听包做人工听感核对。
+28. 若后续补出真实样本，优先按 `data/references/real_eval_manifest_template.jsonl` 建清单，再用 arbitrary-pair A/B 导出脚本直接生成真实试听包。
+29. 当前人工听感已显示新模型存在 `clean_plus_music` 回退点；后续分析与试听应优先盯这类样本，而不是只看整体平均指标。
+30. 若后续听感继续显示“旧模型更稳、新模型更激进”，可把推理期 hybrid 作为低成本退路继续推进。
+31. 当前已完成 `clean_plus_music` focused fine-tune 试探；下一步优先听：
+   - `reports/eval/ab_listening_pack_ref_film_sisdr0005_vs_cpm_focus_ft1_clean_plus_music_blind/`
+32. 在 focused fine-tune 的人工听感出来前，不把 `cpm_focus_ft1` 升为新主线，只把它视作待验证分支。
+33. 若后续继续做 focused manifest 实验，必须先把 manifest 的生成规则或脚本正式落盘，避免实验可重复性断掉。
+34. 该生成规则已经开始正式化；后续 focused manifest 优先改用：
+   - `scripts/data/build_recipe_focused_manifest.py`
+   - `data/synthetic/train_manifest_clean_plus_music_recipe_focus_v2.jsonl`
+35. 在暂无试听条件时，继续推进的原则改为：
+   - 控制实验数量
+   - 强制做双 checkpoint 自动对比
+   - 同时盯 `clean_plus_music` 收益和 `hard_speech` 侧向代价
+36. 当前 focused 客观最优分支已从 `cpm_focus_ft1` 更新为：
+   - `cpm_recipe_focus_v2_ft2`
+37. 在没有试听条件的前提下，当前不再继续开很多近邻分支；优先保留：
+   - `base`
+   - `cpm_recipe_focus_v2_ft2`
+   作为下一轮真正需要听的对照。
+38. `ft3` 已完成，但当前只表现为 very small gain；在没有更强证据前，不把它替换 `ft2` 的位置。
+39. 下一步试听范围收敛为两包：
+   - 主包：`base vs ft2` / `target_clean_plus_music`
+   - guardrail 包：`base vs ft2` / `target_clean_speech + target_hard_speech`
+40. 后续盲测填写规则统一改成：
+   - 先填 `better_output`
+   - 再填四类标签强度
+   - 最后补自由备注
+41. 当前已具备 GUI 听评入口，下一步不再需要手工逐目录点开 wav；优先直接用 GUI 补回主观结果。
+42. 当前阶段若继续推进，默认顺序改为：
+   - 先保持 `legacy stage2` 作为默认主线
+   - 再决定是否还需要补听 `base vs ft2`
+43. 当前 Git 只用于核对改动和恢复，不作为助手自动维护提交记录的工具链环节。
+44. 当前已补第一版 near-real blind 包；后续主线听评的第一优先级改为：
+   - `reports/eval/ab_listening_pack_real_eval_near_real_v1_stage2_vs_ref_film_sisdr0005_blind/`
+45. 若这包 near-real 听评仍偏向 `legacy stage2`，则当前更不应把 `ref_film_sisdr0005` 升为默认主线。
+46. 当前这包 near-real 已实际听完，结果继续偏向 `legacy stage2`；主线不切换。
+47. 当前下一阶段优先改为：
+   - 先补混响 / 尾音拖尾 realism
+   - 再专门盯 target absent 下的目标样瞬态与伪影误保留
+48. 该 realism 入口已完成第一步工程落地，但尚未正式重建训练集和重训；下一步应先做小规模 reverb probe，再决定是否扩到 stage2 规模。
+49. small reverb probe 的当前结论已初步收敛：
+   - `legacy_reverb_probe_v1` 不继续扩大
+   - `legacy_speechreverb_probe_v2` 暂列为唯一保留的 realism 候选
+50. `legacy_speechreverb_probe_v2` 的 near-real blind 听评现已完成：
+   - 未形成主观优势
+   - 并新增暴露出“电话音 / 带宽收窄感”问题
+51. 因此当前不继续加大 mixed reverb 训练预算，优先转回：
+   - 梳理更贴近问题类型的 realism 方案
+   - 单独加强 `raw target only` 与 `target absent` guardrail
+52. 若后续继续推进这条线，优先补：
+   - 面向频带缺失的客观诊断
+   - 而不是先继续堆新的 reverb 概率或更长训练
+53. 上述诊断已进一步落到训练入口：当前可直接基于 `--loss-transient-weight` 开第一轮小预算对照，优先验证“减电话音感”是否能在不明显伤害主线 guardrail 的前提下成立。
+54. 这轮小预算对照已完成；当前更接近可保留候选的是 `legacy_transient_probe_v2 (transient_weight=0.002)`，但是否真能减轻 near-real 的“电话音 / 瞬态缺失感”，仍必须以 blind 听评为准。
+55. 这包 blind 听评现已完成；当前结论更新为：
+   - `legacy_transient_probe_v2` 值得保留，但还不足以升成新主线
+   - 若继续推进，优先改成更局部、更保守的 recipe / pattern 约束，而不是直接在默认全分布上扩大 transient loss 预算
+56. 上述更局部的 recipe / pattern 约束现已完成第一轮实现与客观试探；训练侧 / synthetic 侧当前最平衡的 selector-based 候选仍是：
+   - `legacy_transient_focus_probe_v4`
+57. 但 near-real 新增 `tradeoff_analysis` 之后，当前判断已更新为：
+   - `legacy_transient_probe_v2` 与 `legacy_transient_focus_probe_v4` 都更像“多保一点目标、也多漏一点干扰”的分支
+   - 其中 `legacy_transient_focus_probe_v4` 在新脚本里的 `retention_minus_leak` 表现还不如 `legacy_transient_probe_v2`
+58. 上述 leak-guardrail follow-up 现已完成第一轮小预算验证；当前新候选为：
+   - `legacy_transient_leakguard_probe_v1`
+   - 其 synthetic 默认 val 相对 `legacy_stage2` 已转为明显正增益：
+     - `avg_sisdr_delta_db = +0.849772`
+   - 且 `interference_projection_ratio` 从：
+     - `legacy_stage2: 0.0713`
+     - `legacy_transient_focus_probe_v4: 0.0801`
+     - 收敛到 `legacy_transient_leakguard_probe_v1: 0.0444`
+59. 但 near-real 自动诊断仍未完全放行：
+   - 带宽收窄：`legacy_transient_leakguard_probe_v1 = 2`, `legacy_stage2 = 0`, `tie = 8`
+   - 瞬态缺失：`legacy_transient_leakguard_probe_v1 = 7`, `legacy_stage2 = 1`, `tie = 2`
+   - trade-off 的 `better_retention_minus_leak` 仍是：
+     - `legacy_transient_leakguard_probe_v1 = 2`
+     - `legacy_stage2 = 3`
+60. 因此当前无新增人耳听评条件下，下一步优先级更新为：
+   - 以 `legacy_transient_leakguard_probe_v1` 作为当前最佳 objective-only 候选保留
+   - 不再单扫更窄的 transient selector
+   - 转向修 speech-only near-real 回退点的更细 leak / residual guardrail
+61. 本轮新增的 near-real trade-off 自动诊断入口为：
+   - `scripts/eval/analyze_listening_pack_tradeoff.py`
+   - 已实跑：
+     - `reports/eval/ab_listening_pack_real_eval_near_real_v1_stage2_vs_legacy_transient_probe_v2_blind/tradeoff_analysis/`
+     - `reports/eval/ab_listening_pack_real_eval_near_real_v1_stage2_vs_legacy_transient_focus_probe_v4_blind/tradeoff_analysis/`
+     - `reports/eval/ab_listening_pack_real_eval_near_real_v1_stage2_vs_legacy_transient_leakguard_probe_v1_blind/tradeoff_analysis/`
+62. leak-guardrail follow-up 的更窄 interference selector 已完成第一轮验证：
+   - `legacy_transient_leakguard_probe_v2_musiconly`
+   - 虽然相对 `legacy stage2` 仍有 `+0.665876 dB` 的 synthetic 默认 val 增益
+   - 但相对 `legacy_transient_leakguard_probe_v1` 已出现大面积回退，不再保留
+63. 更保守的权重回收版也已完成：
+   - `legacy_transient_leakguard_probe_v3_w0005`
+   - 当前说明“降低 `interference_weight`”能明显收回 residual-heavy 副作用
+   - 但仍未把 near-real 的 leakage / 窄带化风险一起压到足够安全
+64. 因此当前 objective-only 候选顺位进一步收敛为：
+   - 第一保留：`legacy_transient_leakguard_probe_v1`
+   - 第二保留：`legacy_transient_leakguard_probe_v3_w0005`
+   - 诊断参考：`legacy_transient_leakguard_probe_v4_speechfocus_ft1`
+65. `legacy_transient_leakguard_probe_v4_speechfocus_ft1` 已完成：
+   - synthetic 上相对 `legacy stage2` 更强
+   - 相对 `v1` 也有小幅正增益
+   - 但它没有修正 `near_real_0003 / 0004` 这类 speech-only 回退点
+   - 且 `more_interference_leaky` 仍为 `5` 条，`better_retention_minus_leak` 仍落后 `legacy stage2`
+66. 因此当前对 `v4_speechfocus_ft1` 的判断是：
+   - 可保留为诊断性 follow-up
+   - 但不把它抬到 `v1` 或 `v3_w0005` 之前
+67. 若继续推进，优先围绕 speech-only near-real 回退点做更细 residual / leak guardrail 或 target-absent guardrail，而不是继续扫 music-only selector、speech-only selector 或单纯降权重
+68. `target_absent_intervals` 现已正式接入训练 / 评估管线，当前可直接用 `absent_interval_l1` 同时做 loss 与 metric，不需要再重复补基础工程。
+69. 基于这条入口完成的 `legacy_transient_leakguard_probe_v5_absentguard_ft1` 已证明：
+   - absent leakage 可以显著下降
+   - 但高权重 absent guardrail 会把模型明显推向更强 over-suppression / residual-heavy
+   - 因而它不能替代 `v1`，也不进入当前保留候选顺位
+70. 进一步补的保守版 `legacy_transient_leakguard_probe_v6_absentguard_w5_ft1` 也未回到 `v1`：
+   - 虽然比 `v5` 更温和
+   - 但默认全分布与 focused absent-guard recipes 仍都系统性落后于 `v1`
+   - 因而当前不再为这条线继续消耗 near-real 诊断预算
+71. 若后续继续沿 target-absent guardrail 往下走，只应做更保守的小步版本，并继续同时盯：
+   - `absent_interval_l1`
+   - 默认 val 相对 `v1` 的回退
+   - near-real `more_residual_heavy`
+   - near-real `better_source_retention`
+   - `near_real_0003 / 0004 / 0005 / 0007 / 0010`
+72. 当前公开仓库的 `.gitignore` 策略已按“最大可恢复目标”重新审过一轮：
+   - 原始/敏感/重资产继续留本地
+   - 但 `train_summary.json`、`eval_summary.json`、compare `summary.json`、blind pack `README.md / blind_key.json / sample_meta.json` 不再被整类忽略
+73. 对仍指向本地/非公开资产的 manifest，当前保持本地策略，不直接纳入版本控制；后续若要公开，必须先做脱敏或生成公开安全副本。
+
+## 9. 文档入口
+
+- 规范入口：`docs/00_context_bootstrap.md`
+- 当前总览：`docs/01_project_overview_and_plan.md`
+- 踩坑记录：`docs/02_pitfalls_log.md`
+- 结构说明：`docs/03_project_structure.md`
+- 人耳复核指南：`docs/04_human_listening_review_guide.md`
+- 初始设计：`initial_design.md`
+- 设计评审占位：`initial_design_judg.md`
+- 本轮模型条件化升级记录：`reports/daily/2026-03-16_ref_conditioning_upgrade.md`
+- 本轮损失对齐与隔离对照记录：`reports/daily/2026-03-16_sisdr_loss_alignment.md`
+- 本轮损失权重扫描记录：`reports/daily/2026-03-16_loss_weight_sweep.md`
+- 本轮窄范围权重复扫记录：`reports/daily/2026-03-16_loss_weight_narrow_sweep.md`
+- 本轮 A/B 试听包准备记录：`reports/daily/2026-03-16_ab_listening_pack.md`
+- 本轮主观反馈跟进与 hybrid probe：`reports/daily/2026-03-16_subjective_followup_and_hybrid_probe.md`
+- 本轮 `clean_plus_music` 定向微调记录：`reports/daily/2026-03-16_clean_plus_music_focus_finetune.md`
+- 本轮“无试听条件下”的客观跟进：`reports/daily/2026-03-16_objective_followup_without_listening.md`
+- 本轮受控 `recipe_focus_v2 ft2` 记录：`reports/daily/2026-03-16_recipe_focus_v2_ft2.md`
+- 本轮 `ft3` 与听评标准改造：`reports/daily/2026-03-16_ft3_and_listening_rubric.md`
+- 本轮 GUI 听评工具记录：`reports/daily/2026-03-17_listening_gui.md`
+- 本轮主线 blind A/B 听评结论：`reports/daily/2026-03-17_mainline_ab_listening_review.md`
+- 本轮 near-real eval v1 记录：`reports/daily/2026-03-17_near_real_eval_v1.md`
+- 本轮 near-real blind 听评结论：`reports/daily/2026-03-17_near_real_listening_review.md`
+- 本轮 reverb probe 跟进记录：`reports/daily/2026-03-17_reverb_probe_followup.md`
+- 本轮 `legacy_speechreverb_probe_v2` near-real 听评补记：`reports/daily/2026-03-17_reverb_probe_followup.md`
+- 本轮 transient loss probe 记录：`reports/daily/2026-03-17_transient_loss_probe.md`
+- 本轮 interference leak guardrail probe 记录：`reports/daily/2026-03-17_interference_leak_guardrail_probe.md`
+- 本轮 speech-only leak guardrail follow-up：`reports/daily/2026-03-17_speech_only_leakguard_followup.md`
+- 本轮 target-absent guardrail follow-up：`reports/daily/2026-03-18_absent_guardrail_probe.md`
+- 本轮仓库与 `.gitignore` 审计：`reports/daily/2026-03-18_repo_gitignore_audit.md`
+- 本轮全仓库评估总结：`reports/daily/2026-03-17_repo_evaluation_summary.md`

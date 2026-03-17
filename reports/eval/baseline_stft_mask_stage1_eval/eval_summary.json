@@ -1,0 +1,42 @@
+{
+  "manifest": "F:\\proj_dev\\tmp\\workdir-4-1\\data\\synthetic\\val_manifest.jsonl",
+  "checkpoint": "experiments\\checkpoints\\baseline_stft_mask_stage1\\best.pt",
+  "device": "cuda",
+  "batch_size": 2,
+  "sample_rate": 16000,
+  "save_audio_count": 6,
+  "start_time": "2026-03-16T19:02:19",
+  "end_time": "2026-03-16T19:02:21",
+  "elapsed_sec": 1.442,
+  "num_batches": 64,
+  "num_samples": 128,
+  "metrics": {
+    "loss": 0.028332312998827547,
+    "waveform_l1": 0.014389460542588495,
+    "stft_l1": 0.027885705087101087,
+    "sisdr_db": -13.101354904472828
+  },
+  "pattern_metrics": {
+    "target_absent_head": {
+      "count": 30,
+      "avg_l1": 0.014619231689721346,
+      "avg_sisdr_db": -14.947641245524089
+    },
+    "target_absent_tail": {
+      "count": 29,
+      "avg_l1": 0.014565398852372992,
+      "avg_sisdr_db": -12.292693228557193
+    },
+    "target_full": {
+      "count": 43,
+      "avg_l1": 0.01498887587208734,
+      "avg_sisdr_db": -13.713442203610443
+    },
+    "target_intermittent": {
+      "count": 26,
+      "avg_l1": 0.013489532463539105,
+      "avg_sisdr_db": -10.860695215371939
+    }
+  },
+  "saved_samples_dir": "reports/eval/baseline_stft_mask_stage1_eval/samples"
+}

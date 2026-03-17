@@ -1,0 +1,71 @@
+{
+  "sample_id": "near_real_0007",
+  "mixture_audio_path": "data/references/real_eval_near_real_v1/near_real_0007/mixture.wav",
+  "reference_audio_path": "data/references/real_eval_near_real_v1/near_real_0007/reference.wav",
+  "note": "harder near-real case with raw target, friend speech, and music together",
+  "exports": {
+    "estimate_a": "candidate_a.wav",
+    "estimate_b": "candidate_b.wav"
+  },
+  "comparison": {
+    "legacy_stage2": {
+      "checkpoint": "experiments/checkpoints/baseline_stft_mask_stage2/best.pt",
+      "model_config": {
+        "conditioning_mode": "legacy_bias"
+      },
+      "loss_config": {}
+    },
+    "legacy_transient_leakguard_probe_v1": {
+      "checkpoint": "experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v1/best.pt",
+      "model_config": {
+        "n_fft": 512,
+        "hop_length": 128,
+        "win_length": 512,
+        "hidden_dim": 256,
+        "reference_dim": 128,
+        "gru_layers": 2,
+        "conditioning_mode": "legacy_bias"
+      },
+      "loss_config": {
+        "sample_rate": 16000,
+        "stft_weight": 0.5,
+        "sisdr_weight": 0.0,
+        "transient_weight": 0.002,
+        "interference_weight": 0.01,
+        "transient_focus_recipes": [
+          "target_clean_speech"
+        ],
+        "transient_focus_patterns": [
+          "target_full",
+          "target_absent_head",
+          "target_absent_tail"
+        ],
+        "transient_min_target_ratio": null,
+        "transient_max_target_ratio": null,
+        "interference_focus_recipes": [
+          "target_clean_speech",
+          "target_hard_speech",
+          "target_music",
+          "target_clean_plus_music",
+          "target_hard_plus_music",
+          "target_singing_vocal"
+        ],
+        "interference_focus_patterns": [
+          "target_full",
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "interference_min_target_ratio": null,
+        "interference_max_target_ratio": null,
+        "transient_top_ratio": 0.12,
+        "transient_min_count": 8,
+        "transient_mid_low_hz": 800.0,
+        "transient_mid_high_hz": 3000.0,
+        "transient_presence_low_hz": 3000.0,
+        "transient_presence_high_hz": 8000.0,
+        "transient_ratio_weight": 0.5
+      }
+    }
+  }
+}

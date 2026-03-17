@@ -1,0 +1,121 @@
+{
+  "manifest": "data/synthetic/val_manifest.jsonl",
+  "checkpoint": "experiments/checkpoints/baseline_stft_mask_stage2/best.pt",
+  "device": "cuda",
+  "batch_size": 16,
+  "sample_rate": 16000,
+  "save_audio_count": 0,
+  "model_config": {
+    "conditioning_mode": "legacy_bias"
+  },
+  "loss_config": {},
+  "start_time": "2026-03-17T22:10:00",
+  "end_time": "2026-03-17T22:10:04",
+  "elapsed_sec": 3.824,
+  "num_batches": 32,
+  "num_samples": 512,
+  "metrics": {
+    "loss": 0.020418131665792316,
+    "waveform_l1": 0.013091343629639596,
+    "stft_l1": 0.014653575839474797,
+    "sisdr_db": -10.251678079366684,
+    "transient_presence_l1": 0.7488684505224228
+  },
+  "pattern_metrics": {
+    "target_absent_head": {
+      "count": 87,
+      "avg_l1": 0.01264922992037288,
+      "avg_sisdr_db": -10.555869872542633,
+      "avg_transient_presence_l1": 0.789830940722049
+    },
+    "target_absent_tail": {
+      "count": 102,
+      "avg_l1": 0.012749214597302033,
+      "avg_sisdr_db": -9.833847707393122,
+      "avg_transient_presence_l1": 0.6941998926740066
+    },
+    "target_full": {
+      "count": 240,
+      "avg_l1": 0.01331606819294393,
+      "avg_sisdr_db": -10.583231044079488,
+      "avg_transient_presence_l1": 0.7657763285562396
+    },
+    "target_intermittent": {
+      "count": 83,
+      "avg_l1": 0.01269819021382066,
+      "avg_sisdr_db": -9.487596983740847,
+      "avg_transient_presence_l1": 0.7242246343787894
+    }
+  },
+  "recipe_metrics": {
+    "target_clean_plus_music": {
+      "count": 95,
+      "avg_l1": 0.013797034759466585,
+      "avg_sisdr_db": -12.809213124450885,
+      "avg_transient_presence_l1": 0.9482728054648951
+    },
+    "target_clean_speech": {
+      "count": 137,
+      "avg_l1": 0.013510549522555657,
+      "avg_sisdr_db": -11.747953371736255,
+      "avg_transient_presence_l1": 0.8716697337201041
+    },
+    "target_hard_plus_music": {
+      "count": 65,
+      "avg_l1": 0.01257483338793883,
+      "avg_sisdr_db": -9.37510696374453,
+      "avg_transient_presence_l1": 0.8716624113229605
+    },
+    "target_hard_speech": {
+      "count": 100,
+      "avg_l1": 0.012291652103886008,
+      "avg_sisdr_db": -8.711713110208512,
+      "avg_transient_presence_l1": 0.7131014484167099
+    },
+    "target_music": {
+      "count": 51,
+      "avg_l1": 0.012021424668822802,
+      "avg_sisdr_db": -9.09047615294363,
+      "avg_transient_presence_l1": 0.5021014602160921
+    },
+    "target_only": {
+      "count": 25,
+      "avg_l1": 0.012356584388762713,
+      "avg_sisdr_db": -7.801630665957927,
+      "avg_transient_presence_l1": 0.3612609398365021
+    },
+    "target_singing_vocal": {
+      "count": 39,
+      "avg_l1": 0.013346379766097436,
+      "avg_sisdr_db": -7.264255703355257,
+      "avg_transient_presence_l1": 0.28997627741251236
+    }
+  },
+  "target_present_ratio_bucket_metrics": {
+    "ratio_0.6_0.8": {
+      "count": 209,
+      "avg_l1": 0.01256683561950922,
+      "avg_sisdr_db": -9.850250315188505,
+      "avg_transient_presence_l1": 0.7369589183889508
+    },
+    "ratio_0.8_0.95": {
+      "count": 47,
+      "avg_l1": 0.014244603211099797,
+      "avg_sisdr_db": -10.995915775603436,
+      "avg_transient_presence_l1": 0.7354090622764953
+    },
+    "ratio_ge_0.95": {
+      "count": 240,
+      "avg_l1": 0.01331606819294393,
+      "avg_sisdr_db": -10.583231044079488,
+      "avg_transient_presence_l1": 0.7657763285562396
+    },
+    "ratio_lt_0.6": {
+      "count": 16,
+      "avg_l1": 0.009930480271577835,
+      "avg_sisdr_db": -8.335833586752415,
+      "avg_transient_presence_l1": 0.6903553549200296
+    }
+  },
+  "saved_samples_dir": "reports/eval/baseline_stft_mask_stage2_eval_with_transient_metric/samples"
+}

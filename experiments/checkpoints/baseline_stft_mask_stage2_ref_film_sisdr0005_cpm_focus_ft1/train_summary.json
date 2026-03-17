@@ -1,0 +1,72 @@
+{
+  "train_manifest": "data\\synthetic\\train_manifest_clean_plus_music_regression_focus_v1.jsonl",
+  "val_manifest": "data\\synthetic\\val_manifest.jsonl",
+  "output_dir": "experiments\\checkpoints\\baseline_stft_mask_stage2_ref_film_sisdr0005_cpm_focus_ft1",
+  "device": "cuda",
+  "epochs": 3,
+  "batch_size": 16,
+  "learning_rate": 0.0003,
+  "model_config": {
+    "n_fft": 512,
+    "hop_length": 128,
+    "win_length": 512,
+    "hidden_dim": 256,
+    "reference_dim": 128,
+    "gru_layers": 2,
+    "conditioning_mode": "ref_film"
+  },
+  "loss_config": {
+    "stft_weight": 0.5,
+    "sisdr_weight": 0.0005
+  },
+  "init_checkpoint": "experiments\\checkpoints\\baseline_stft_mask_stage2_ref_film_sisdr0005\\best.pt",
+  "global_steps": 69,
+  "start_time": "2026-03-16T22:37:34",
+  "end_time": "2026-03-16T22:37:48",
+  "elapsed_sec": 13.954,
+  "best_val_loss": 0.024076416331809014,
+  "history": [
+    {
+      "epoch": 1,
+      "global_step": 23,
+      "train_loss": 0.02686448265676913,
+      "train_waveform_l1": 0.014075116780789002,
+      "train_stft_l1": 0.01670882571488619,
+      "train_sisdr_loss": 8.869905927906865,
+      "train_sisdr_db": -8.869905927906865,
+      "val_loss": 0.024192430602852255,
+      "val_waveform_l1": 0.012839397881180048,
+      "val_stft_l1": 0.014680016116471961,
+      "val_sisdr_loss": 8.026048868894577,
+      "val_sisdr_db": -8.026048868894577
+    },
+    {
+      "epoch": 2,
+      "global_step": 46,
+      "train_loss": 0.0261954044032356,
+      "train_waveform_l1": 0.013964363657262014,
+      "train_stft_l1": 0.015957828773104626,
+      "train_sisdr_loss": 8.504252537437107,
+      "train_sisdr_db": -8.504252537437107,
+      "val_loss": 0.024076416331809014,
+      "val_waveform_l1": 0.012790277163730934,
+      "val_stft_l1": 0.014589042257284746,
+      "val_sisdr_loss": 7.983235865831375,
+      "val_sisdr_db": -7.983235865831375
+    },
+    {
+      "epoch": 3,
+      "global_step": 69,
+      "train_loss": 0.02640594307171262,
+      "train_waveform_l1": 0.013934942164822765,
+      "train_stft_l1": 0.016593137432051742,
+      "train_sisdr_loss": 8.348863767540973,
+      "train_sisdr_db": -8.348863767540973,
+      "val_loss": 0.024079783994238824,
+      "val_waveform_l1": 0.012821168638765812,
+      "val_stft_l1": 0.014452776231337339,
+      "val_sisdr_loss": 8.064453646540642,
+      "val_sisdr_db": -8.064453646540642
+    }
+  ]
+}

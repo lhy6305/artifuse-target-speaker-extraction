@@ -1,0 +1,54 @@
+{
+  "sample_id": "near_real_0003",
+  "mixture_audio_path": "data/references/real_eval_near_real_v1/near_real_0003/mixture.wav",
+  "reference_audio_path": "data/references/real_eval_near_real_v1/near_real_0003/reference.wav",
+  "note": "raw target clip mixed with domain-matched friend speech",
+  "exports": {
+    "estimate_a": "candidate_a.wav",
+    "estimate_b": "candidate_b.wav"
+  },
+  "comparison": {
+    "legacy_stage2": {
+      "checkpoint": "experiments/checkpoints/baseline_stft_mask_stage2/best.pt",
+      "model_config": {
+        "conditioning_mode": "legacy_bias"
+      },
+      "loss_config": {}
+    },
+    "legacy_transient_focus_probe_v4": {
+      "checkpoint": "experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_focus_probe_v4/best.pt",
+      "model_config": {
+        "n_fft": 512,
+        "hop_length": 128,
+        "win_length": 512,
+        "hidden_dim": 256,
+        "reference_dim": 128,
+        "gru_layers": 2,
+        "conditioning_mode": "legacy_bias"
+      },
+      "loss_config": {
+        "sample_rate": 16000,
+        "stft_weight": 0.5,
+        "sisdr_weight": 0.0,
+        "transient_weight": 0.002,
+        "transient_focus_recipes": [
+          "target_clean_speech"
+        ],
+        "transient_focus_patterns": [
+          "target_full",
+          "target_absent_head",
+          "target_absent_tail"
+        ],
+        "transient_min_target_ratio": null,
+        "transient_max_target_ratio": null,
+        "transient_top_ratio": 0.12,
+        "transient_min_count": 8,
+        "transient_mid_low_hz": 800.0,
+        "transient_mid_high_hz": 3000.0,
+        "transient_presence_low_hz": 3000.0,
+        "transient_presence_high_hz": 8000.0,
+        "transient_ratio_weight": 0.5
+      }
+    }
+  }
+}

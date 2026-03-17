@@ -1,0 +1,55 @@
+{
+  "train_manifest": "data/synthetic/train_manifest.jsonl",
+  "val_manifest": "data/synthetic/val_manifest.jsonl",
+  "output_dir": "experiments/checkpoints/baseline_stft_mask_transient_smoke",
+  "device": "cuda",
+  "epochs": 1,
+  "batch_size": 1,
+  "learning_rate": 0.001,
+  "model_config": {
+    "n_fft": 512,
+    "hop_length": 128,
+    "win_length": 512,
+    "hidden_dim": 256,
+    "reference_dim": 128,
+    "gru_layers": 2,
+    "conditioning_mode": "ref_film"
+  },
+  "loss_config": {
+    "sample_rate": 16000,
+    "stft_weight": 0.5,
+    "sisdr_weight": 0.0,
+    "transient_weight": 0.1,
+    "transient_top_ratio": 0.12,
+    "transient_min_count": 8,
+    "transient_mid_low_hz": 800.0,
+    "transient_mid_high_hz": 3000.0,
+    "transient_presence_low_hz": 3000.0,
+    "transient_presence_high_hz": 8000.0,
+    "transient_ratio_weight": 0.5
+  },
+  "init_checkpoint": null,
+  "global_steps": 1,
+  "start_time": "2026-03-17T22:06:13",
+  "end_time": "2026-03-17T22:06:22",
+  "elapsed_sec": 9.474,
+  "best_val_loss": 0.1868955972859112,
+  "history": [
+    {
+      "epoch": 1,
+      "global_step": 1,
+      "train_loss": 0.3052760660648346,
+      "train_waveform_l1": 0.02262125164270401,
+      "train_stft_l1": 0.06836067140102386,
+      "train_sisdr_loss": 35.51036071777344,
+      "train_sisdr_db": -35.51036071777344,
+      "train_transient_presence_l1": 2.4847447872161865,
+      "val_loss": 0.1868955972859112,
+      "val_waveform_l1": 0.026311918017199787,
+      "val_stft_l1": 0.06770555259936373,
+      "val_sisdr_loss": 23.450885946163908,
+      "val_sisdr_db": -23.450885946163908,
+      "val_transient_presence_l1": 1.2673090143653098
+    }
+  ]
+}

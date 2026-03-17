@@ -1,0 +1,66 @@
+{
+  "train_manifest": "F:\\proj_dev\\tmp\\workdir-4-1\\data\\synthetic\\train_manifest.jsonl",
+  "val_manifest": "F:\\proj_dev\\tmp\\workdir-4-1\\data\\synthetic\\val_manifest.jsonl",
+  "output_dir": "experiments\\checkpoints\\baseline_stft_mask_stage1",
+  "device": "cuda",
+  "epochs": 5,
+  "batch_size": 8,
+  "learning_rate": 0.001,
+  "global_steps": 320,
+  "start_time": "2026-03-16T19:01:42",
+  "end_time": "2026-03-16T19:02:01",
+  "elapsed_sec": 19.09,
+  "best_val_loss": 0.025460483855567873,
+  "history": [
+    {
+      "epoch": 1,
+      "global_step": 64,
+      "train_loss": 0.028046929190168157,
+      "train_waveform_l1": 0.015681143122492358,
+      "train_stft_l1": 0.024731572542805225,
+      "val_loss": 0.0287912207422778,
+      "val_waveform_l1": 0.015876833989750594,
+      "val_stft_l1": 0.025828773039393127
+    },
+    {
+      "epoch": 2,
+      "global_step": 128,
+      "train_loss": 0.026719342858996242,
+      "train_waveform_l1": 0.015014658565632999,
+      "train_stft_l1": 0.023409368805005215,
+      "val_loss": 0.028594836476258934,
+      "val_waveform_l1": 0.015799637360032648,
+      "val_stft_l1": 0.025590397883206606
+    },
+    {
+      "epoch": 3,
+      "global_step": 192,
+      "train_loss": 0.026276223245076835,
+      "train_waveform_l1": 0.014666007249616086,
+      "train_stft_l1": 0.023220431845402345,
+      "val_loss": 0.027921804692596197,
+      "val_waveform_l1": 0.014975140744354576,
+      "val_stft_l1": 0.0258933276636526
+    },
+    {
+      "epoch": 4,
+      "global_step": 256,
+      "train_loss": 0.025971305381972343,
+      "train_waveform_l1": 0.014447457666392438,
+      "train_stft_l1": 0.023047695300192572,
+      "val_loss": 0.0270986343966797,
+      "val_waveform_l1": 0.01446888066129759,
+      "val_stft_l1": 0.02525950747076422
+    },
+    {
+      "epoch": 5,
+      "global_step": 320,
+      "train_loss": 0.024808363668853417,
+      "train_waveform_l1": 0.014017213776241988,
+      "train_stft_l1": 0.02158229956694413,
+      "val_loss": 0.025460483855567873,
+      "val_waveform_l1": 0.01437358744442463,
+      "val_stft_l1": 0.02217379305511713
+    }
+  ]
+}

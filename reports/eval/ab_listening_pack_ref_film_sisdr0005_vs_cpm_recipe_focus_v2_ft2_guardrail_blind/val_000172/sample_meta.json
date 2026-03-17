@@ -1,0 +1,53 @@
+{
+  "sample_id": "val_000172",
+  "recipe": "target_clean_speech",
+  "temporal_pattern": "target_absent_head",
+  "target_present_ratio": 0.650227,
+  "metadata_path": "data/synthetic/val/val_000172/metadata.json",
+  "comparison": {
+    "ref_film_sisdr0005": {
+      "sisdr_db": -3.005725145339966,
+      "waveform_l1": 0.008666001260280609,
+      "checkpoint": "experiments\\checkpoints\\baseline_stft_mask_stage2_ref_film_sisdr0005\\best.pt",
+      "model_config": {
+        "n_fft": 512,
+        "hop_length": 128,
+        "win_length": 512,
+        "hidden_dim": 256,
+        "reference_dim": 128,
+        "gru_layers": 2,
+        "conditioning_mode": "ref_film"
+      },
+      "loss_config": {
+        "stft_weight": 0.5,
+        "sisdr_weight": 0.0005
+      }
+    },
+    "cpm_recipe_focus_v2_ft2": {
+      "sisdr_db": -0.5463651418685913,
+      "waveform_l1": 0.007076467853039503,
+      "checkpoint": "experiments\\checkpoints\\baseline_stft_mask_stage2_ref_film_sisdr0005_cpm_recipe_focus_v2_ft2\\best.pt",
+      "model_config": {
+        "n_fft": 512,
+        "hop_length": 128,
+        "win_length": 512,
+        "hidden_dim": 256,
+        "reference_dim": 128,
+        "gru_layers": 2,
+        "conditioning_mode": "ref_film"
+      },
+      "loss_config": {
+        "stft_weight": 0.5,
+        "sisdr_weight": 0.0005
+      }
+    }
+  },
+  "delta": {
+    "sisdr_db": 2.4593600034713745,
+    "waveform_l1": -0.001589533407241106
+  },
+  "export_names": {
+    "estimate_a": "candidate_a.wav",
+    "estimate_b": "candidate_b.wav"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "sample_id": "near_real_0010",
+  "mixture_audio_path": "data/references/real_eval_near_real_v1/near_real_0010/mixture.wav",
+  "reference_audio_path": "data/references/real_eval_near_real_v1/near_real_0010/reference.wav",
+  "note": "target absent; friend speech and music together",
+  "exports": {
+    "estimate_a": "candidate_a.wav",
+    "estimate_b": "candidate_b.wav"
+  },
+  "comparison": {
+    "legacy_stage2": {
+      "checkpoint": "experiments/checkpoints/baseline_stft_mask_stage2/best.pt",
+      "model_config": {
+        "conditioning_mode": "legacy_bias"
+      },
+      "loss_config": {}
+    },
+    "ref_film_sisdr0005": {
+      "checkpoint": "experiments/checkpoints/baseline_stft_mask_stage2_ref_film_sisdr0005/best.pt",
+      "model_config": {
+        "n_fft": 512,
+        "hop_length": 128,
+        "win_length": 512,
+        "hidden_dim": 256,
+        "reference_dim": 128,
+        "gru_layers": 2,
+        "conditioning_mode": "ref_film"
+      },
+      "loss_config": {
+        "stft_weight": 0.5,
+        "sisdr_weight": 0.0005
+      }
+    }
+  }
+}

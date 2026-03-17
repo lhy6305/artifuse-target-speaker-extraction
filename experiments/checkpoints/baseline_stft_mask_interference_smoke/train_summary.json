@@ -1,0 +1,84 @@
+{
+  "train_manifest": "data/synthetic/train_manifest.jsonl",
+  "val_manifest": "data/synthetic/val_manifest.jsonl",
+  "output_dir": "experiments/checkpoints/baseline_stft_mask_interference_smoke",
+  "device": "cuda",
+  "epochs": 1,
+  "batch_size": 4,
+  "learning_rate": 0.001,
+  "model_config": {
+    "n_fft": 512,
+    "hop_length": 128,
+    "win_length": 512,
+    "hidden_dim": 256,
+    "reference_dim": 128,
+    "gru_layers": 2,
+    "conditioning_mode": "legacy_bias"
+  },
+  "loss_config": {
+    "sample_rate": 16000,
+    "stft_weight": 0.5,
+    "sisdr_weight": 0.0,
+    "transient_weight": 0.002,
+    "interference_weight": 0.05,
+    "transient_focus_recipes": [
+      "target_clean_speech"
+    ],
+    "transient_focus_patterns": [
+      "target_full",
+      "target_absent_head",
+      "target_absent_tail"
+    ],
+    "transient_min_target_ratio": null,
+    "transient_max_target_ratio": null,
+    "interference_focus_recipes": [
+      "target_clean_speech",
+      "target_hard_speech",
+      "target_music",
+      "target_clean_plus_music",
+      "target_hard_plus_music",
+      "target_singing_vocal"
+    ],
+    "interference_focus_patterns": [
+      "target_full",
+      "target_absent_head",
+      "target_absent_tail",
+      "target_intermittent"
+    ],
+    "interference_min_target_ratio": null,
+    "interference_max_target_ratio": null,
+    "transient_top_ratio": 0.12,
+    "transient_min_count": 8,
+    "transient_mid_low_hz": 800.0,
+    "transient_mid_high_hz": 3000.0,
+    "transient_presence_low_hz": 3000.0,
+    "transient_presence_high_hz": 8000.0,
+    "transient_ratio_weight": 0.5
+  },
+  "init_checkpoint": "experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_focus_probe_v4/best.pt",
+  "global_steps": 1,
+  "start_time": "2026-03-17T23:21:10",
+  "end_time": "2026-03-17T23:21:18",
+  "elapsed_sec": 7.791,
+  "best_val_loss": 0.02673123790009413,
+  "history": [
+    {
+      "epoch": 1,
+      "global_step": 1,
+      "train_loss": 0.03930702432990074,
+      "train_waveform_l1": 0.01713234931230545,
+      "train_stft_l1": 0.02619549259543419,
+      "train_sisdr_loss": 12.405848503112793,
+      "train_sisdr_db": -12.405848503112793,
+      "train_transient_presence_l1": 0.7242482304573059,
+      "train_interference_projection_ratio": 0.15256868302822113,
+      "val_loss": 0.02673123790009413,
+      "val_waveform_l1": 0.01317148237285437,
+      "val_stft_l1": 0.0201120121855638,
+      "val_sisdr_loss": 11.693810064345598,
+      "val_sisdr_db": -11.693810064345598,
+      "val_transient_presence_l1": 0.5417051236145198,
+      "val_interference_projection_ratio": 0.0484067838624469
+    }
+  ]
+}

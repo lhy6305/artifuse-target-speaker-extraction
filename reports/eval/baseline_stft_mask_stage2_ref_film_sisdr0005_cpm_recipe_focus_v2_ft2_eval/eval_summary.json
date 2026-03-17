@@ -1,0 +1,114 @@
+{
+  "manifest": "data\\synthetic\\val_manifest.jsonl",
+  "checkpoint": "experiments\\checkpoints\\baseline_stft_mask_stage2_ref_film_sisdr0005_cpm_recipe_focus_v2_ft2\\best.pt",
+  "device": "cuda",
+  "batch_size": 2,
+  "sample_rate": 16000,
+  "save_audio_count": 8,
+  "model_config": {
+    "n_fft": 512,
+    "hop_length": 128,
+    "win_length": 512,
+    "hidden_dim": 256,
+    "reference_dim": 128,
+    "gru_layers": 2,
+    "conditioning_mode": "ref_film"
+  },
+  "loss_config": {
+    "stft_weight": 0.5,
+    "sisdr_weight": 0.0005
+  },
+  "start_time": "2026-03-16T23:20:29",
+  "end_time": "2026-03-16T23:20:39",
+  "elapsed_sec": 10.086,
+  "num_batches": 256,
+  "num_samples": 512,
+  "metrics": {
+    "loss": 0.02418136662527104,
+    "waveform_l1": 0.012721240918835974,
+    "stft_l1": 0.022920251478353748,
+    "sisdr_db": -7.947634885233128
+  },
+  "pattern_metrics": {
+    "target_absent_head": {
+      "count": 87,
+      "avg_l1": 0.01232014969794144,
+      "avg_sisdr_db": -8.413504047297883
+    },
+    "target_absent_tail": {
+      "count": 102,
+      "avg_l1": 0.012473871643819353,
+      "avg_sisdr_db": -7.9264273152631874
+    },
+    "target_full": {
+      "count": 240,
+      "avg_l1": 0.012969879546047499,
+      "avg_sisdr_db": -7.918087555421517
+    },
+    "target_intermittent": {
+      "count": 83,
+      "avg_l1": 0.012396224572446692,
+      "avg_sisdr_db": -7.570814560694867
+    }
+  },
+  "recipe_metrics": {
+    "target_clean_plus_music": {
+      "count": 95,
+      "avg_l1": 0.013671743752140747,
+      "avg_sisdr_db": -10.033389099020708
+    },
+    "target_clean_speech": {
+      "count": 137,
+      "avg_l1": 0.01312155868300665,
+      "avg_sisdr_db": -8.657719134047193
+    },
+    "target_hard_plus_music": {
+      "count": 65,
+      "avg_l1": 0.01233213055305756,
+      "avg_sisdr_db": -7.492270291997836
+    },
+    "target_hard_speech": {
+      "count": 100,
+      "avg_l1": 0.012002991936169565,
+      "avg_sisdr_db": -7.01652014695108
+    },
+    "target_music": {
+      "count": 51,
+      "avg_l1": 0.01155661242813164,
+      "avg_sisdr_db": -7.22001636850045
+    },
+    "target_only": {
+      "count": 25,
+      "avg_l1": 0.01185562513768673,
+      "avg_sisdr_db": -5.977630228996277
+    },
+    "target_singing_vocal": {
+      "count": 39,
+      "avg_l1": 0.012864382668899802,
+      "avg_sisdr_db": -5.733292311429977
+    }
+  },
+  "target_present_ratio_bucket_metrics": {
+    "ratio_0.6_0.8": {
+      "count": 209,
+      "avg_l1": 0.012262450146787403,
+      "avg_sisdr_db": -7.842433459165564
+    },
+    "ratio_0.8_0.95": {
+      "count": 47,
+      "avg_l1": 0.01392928798227234,
+      "avg_sisdr_db": -8.824147958070673
+    },
+    "ratio_ge_0.95": {
+      "count": 240,
+      "avg_l1": 0.012969879546047499,
+      "avg_sisdr_db": -7.918087555421517
+    },
+    "ratio_lt_0.6": {
+      "count": 16,
+      "avg_l1": 0.009721622191136703,
+      "avg_sisdr_db": -7.190281238406897
+    }
+  },
+  "saved_samples_dir": "reports/eval/baseline_stft_mask_stage2_ref_film_sisdr0005_cpm_recipe_focus_v2_ft2_eval/samples"
+}

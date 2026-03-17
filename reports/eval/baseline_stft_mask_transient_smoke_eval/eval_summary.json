@@ -1,0 +1,139 @@
+{
+  "manifest": "data/synthetic/val_manifest.jsonl",
+  "checkpoint": "experiments/checkpoints/baseline_stft_mask_transient_smoke/best.pt",
+  "device": "cuda",
+  "batch_size": 1,
+  "sample_rate": 16000,
+  "save_audio_count": 0,
+  "model_config": {
+    "n_fft": 512,
+    "hop_length": 128,
+    "win_length": 512,
+    "hidden_dim": 256,
+    "reference_dim": 128,
+    "gru_layers": 2,
+    "conditioning_mode": "ref_film"
+  },
+  "loss_config": {
+    "sample_rate": 16000,
+    "stft_weight": 0.5,
+    "sisdr_weight": 0.0,
+    "transient_weight": 0.1,
+    "transient_top_ratio": 0.12,
+    "transient_min_count": 8,
+    "transient_mid_low_hz": 800.0,
+    "transient_mid_high_hz": 3000.0,
+    "transient_presence_low_hz": 3000.0,
+    "transient_presence_high_hz": 8000.0,
+    "transient_ratio_weight": 0.5
+  },
+  "start_time": "2026-03-17T22:06:36",
+  "end_time": "2026-03-17T22:06:45",
+  "elapsed_sec": 8.677,
+  "num_batches": 512,
+  "num_samples": 512,
+  "metrics": {
+    "loss": 0.1868955972859112,
+    "waveform_l1": 0.026311918017199787,
+    "stft_l1": 0.06770555259936373,
+    "sisdr_db": -23.451335969381034,
+    "transient_presence_l1": 1.2673090143653098
+  },
+  "pattern_metrics": {
+    "target_absent_head": {
+      "count": 87,
+      "avg_l1": 0.025652502347640264,
+      "avg_sisdr_db": -23.966727004654107,
+      "avg_transient_presence_l1": 1.2821356090663494
+    },
+    "target_absent_tail": {
+      "count": 102,
+      "avg_l1": 0.027384847594315514,
+      "avg_sisdr_db": -25.516307634465836,
+      "avg_transient_presence_l1": 1.2055984885961402
+    },
+    "target_full": {
+      "count": 240,
+      "avg_l1": 0.02600276907905936,
+      "avg_sisdr_db": -22.10475084781647,
+      "avg_transient_presence_l1": 1.3457447437569499
+    },
+    "target_intermittent": {
+      "count": 83,
+      "avg_l1": 0.02657849870128445,
+      "avg_sisdr_db": -24.26717090032187,
+      "avg_transient_presence_l1": 1.1008028075637588
+    }
+  },
+  "recipe_metrics": {
+    "target_clean_plus_music": {
+      "count": 95,
+      "avg_l1": 0.03639082696877028,
+      "avg_sisdr_db": -27.26310510133442,
+      "avg_transient_presence_l1": 1.8242510745399876
+    },
+    "target_clean_speech": {
+      "count": 137,
+      "avg_l1": 0.033537427724821725,
+      "avg_sisdr_db": -26.51182896899481,
+      "avg_transient_presence_l1": 1.8281315264910678
+    },
+    "target_hard_plus_music": {
+      "count": 65,
+      "avg_l1": 0.022740193657003915,
+      "avg_sisdr_db": -23.02860448543842,
+      "avg_transient_presence_l1": 1.21675859277065
+    },
+    "target_hard_speech": {
+      "count": 100,
+      "avg_l1": 0.019608043096959592,
+      "avg_sisdr_db": -21.153694937229158,
+      "avg_transient_presence_l1": 1.0028874497115612
+    },
+    "target_music": {
+      "count": 51,
+      "avg_l1": 0.018561882551248167,
+      "avg_sisdr_db": -19.5909746020448,
+      "avg_transient_presence_l1": 0.4923667343808155
+    },
+    "target_only": {
+      "count": 25,
+      "avg_l1": 0.014689900800585748,
+      "avg_sisdr_db": -18.886895761489868,
+      "avg_transient_presence_l1": 0.29025683462619783
+    },
+    "target_singing_vocal": {
+      "count": 39,
+      "avg_l1": 0.017105783132883984,
+      "avg_sisdr_db": -17.98532253656632,
+      "avg_transient_presence_l1": 0.3425427262599652
+    }
+  },
+  "target_present_ratio_bucket_metrics": {
+    "ratio_0.6_0.8": {
+      "count": 209,
+      "avg_l1": 0.026384162504903295,
+      "avg_sisdr_db": -24.7652332018437,
+      "avg_transient_presence_l1": 1.1949030708468131
+    },
+    "ratio_0.8_0.95": {
+      "count": 47,
+      "avg_l1": 0.029965484316678757,
+      "avg_sisdr_db": -25.485039629834763,
+      "avg_transient_presence_l1": 1.3094388347990968
+    },
+    "ratio_ge_0.95": {
+      "count": 240,
+      "avg_l1": 0.02600276907905936,
+      "avg_sisdr_db": -22.10475084781647,
+      "avg_transient_presence_l1": 1.3457447437569499
+    },
+    "ratio_lt_0.6": {
+      "count": 16,
+      "avg_l1": 0.019273114041425288,
+      "avg_sisdr_db": -20.513325691223145,
+      "avg_transient_presence_l1": 0.9128193631768227
+    }
+  },
+  "saved_samples_dir": "reports/eval/baseline_stft_mask_transient_smoke_eval/samples"
+}

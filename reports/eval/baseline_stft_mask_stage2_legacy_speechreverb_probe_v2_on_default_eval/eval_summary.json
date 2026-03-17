@@ -1,0 +1,114 @@
+{
+  "manifest": "data/synthetic/val_manifest.jsonl",
+  "checkpoint": "experiments/checkpoints/baseline_stft_mask_stage2_legacy_speechreverb_probe_v2/best.pt",
+  "device": "cuda",
+  "batch_size": 8,
+  "sample_rate": 16000,
+  "save_audio_count": 4,
+  "model_config": {
+    "n_fft": 512,
+    "hop_length": 128,
+    "win_length": 512,
+    "hidden_dim": 256,
+    "reference_dim": 128,
+    "gru_layers": 2,
+    "conditioning_mode": "legacy_bias"
+  },
+  "loss_config": {
+    "stft_weight": 0.5,
+    "sisdr_weight": 0.0
+  },
+  "start_time": "2026-03-17T20:59:50",
+  "end_time": "2026-03-17T20:59:55",
+  "elapsed_sec": 4.776,
+  "num_batches": 64,
+  "num_samples": 512,
+  "metrics": {
+    "loss": 0.021335459110559896,
+    "waveform_l1": 0.013101404154440388,
+    "stft_l1": 0.016468109824927524,
+    "sisdr_db": -10.427165240049362
+  },
+  "pattern_metrics": {
+    "target_absent_head": {
+      "count": 87,
+      "avg_l1": 0.012707670486864003,
+      "avg_sisdr_db": -10.850130622414337
+    },
+    "target_absent_tail": {
+      "count": 102,
+      "avg_l1": 0.012729945834543482,
+      "avg_sisdr_db": -9.930308326786639
+    },
+    "target_full": {
+      "count": 240,
+      "avg_l1": 0.013336126116337254,
+      "avg_sisdr_db": -10.726500559474031
+    },
+    "target_intermittent": {
+      "count": 83,
+      "avg_l1": 0.012711161265082389,
+      "avg_sisdr_db": -9.728863282824856
+    }
+  },
+  "recipe_metrics": {
+    "target_clean_plus_music": {
+      "count": 95,
+      "avg_l1": 0.013810089269750997,
+      "avg_sisdr_db": -13.225738008398759
+    },
+    "target_clean_speech": {
+      "count": 137,
+      "avg_l1": 0.013455862053636,
+      "avg_sisdr_db": -11.585543681887815
+    },
+    "target_hard_plus_music": {
+      "count": 65,
+      "avg_l1": 0.012625162847913228,
+      "avg_sisdr_db": -9.714753857025734
+    },
+    "target_hard_speech": {
+      "count": 100,
+      "avg_l1": 0.012369852280244231,
+      "avg_sisdr_db": -9.021104871332646
+    },
+    "target_music": {
+      "count": 51,
+      "avg_l1": 0.01204087744996536,
+      "avg_sisdr_db": -9.214631565645629
+    },
+    "target_only": {
+      "count": 25,
+      "avg_l1": 0.012388733085244893,
+      "avg_sisdr_db": -7.992630206644535
+    },
+    "target_singing_vocal": {
+      "count": 39,
+      "avg_l1": 0.013407256107968397,
+      "avg_sisdr_db": -7.479809029744222
+    }
+  },
+  "target_present_ratio_bucket_metrics": {
+    "ratio_0.6_0.8": {
+      "count": 209,
+      "avg_l1": 0.012595123606934502,
+      "avg_sisdr_db": -10.09119741101727
+    },
+    "ratio_0.8_0.95": {
+      "count": 47,
+      "avg_l1": 0.014208699081172334,
+      "avg_sisdr_db": -10.954414471666864
+    },
+    "ratio_ge_0.95": {
+      "count": 240,
+      "avg_l1": 0.013336126116337254,
+      "avg_sisdr_db": -10.726500559474031
+    },
+    "ratio_lt_0.6": {
+      "count": 16,
+      "avg_l1": 0.009928656363626942,
+      "avg_sisdr_db": -8.776920430362225
+    }
+  },
+  "saved_samples_dir": "reports/eval/baseline_stft_mask_stage2_legacy_speechreverb_probe_v2_on_default_eval/samples"
+}

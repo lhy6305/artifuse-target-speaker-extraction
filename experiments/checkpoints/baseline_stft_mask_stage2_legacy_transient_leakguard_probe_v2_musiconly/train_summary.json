@@ -1,0 +1,117 @@
+{
+  "train_manifest": "data/synthetic/train_manifest.jsonl",
+  "val_manifest": "data/synthetic/val_manifest.jsonl",
+  "output_dir": "experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v2_musiconly",
+  "device": "cuda",
+  "epochs": 3,
+  "batch_size": 16,
+  "learning_rate": 0.0003,
+  "model_config": {
+    "n_fft": 512,
+    "hop_length": 128,
+    "win_length": 512,
+    "hidden_dim": 256,
+    "reference_dim": 128,
+    "gru_layers": 2,
+    "conditioning_mode": "legacy_bias"
+  },
+  "loss_config": {
+    "sample_rate": 16000,
+    "stft_weight": 0.5,
+    "sisdr_weight": 0.0,
+    "transient_weight": 0.002,
+    "interference_weight": 0.01,
+    "transient_focus_recipes": [
+      "target_clean_speech"
+    ],
+    "transient_focus_patterns": [
+      "target_full",
+      "target_absent_head",
+      "target_absent_tail"
+    ],
+    "transient_min_target_ratio": null,
+    "transient_max_target_ratio": null,
+    "interference_focus_recipes": [
+      "target_music",
+      "target_clean_plus_music",
+      "target_hard_plus_music"
+    ],
+    "interference_focus_patterns": [
+      "target_full",
+      "target_absent_head",
+      "target_absent_tail",
+      "target_intermittent"
+    ],
+    "interference_min_target_ratio": null,
+    "interference_max_target_ratio": null,
+    "transient_top_ratio": 0.12,
+    "transient_min_count": 8,
+    "transient_mid_low_hz": 800.0,
+    "transient_mid_high_hz": 3000.0,
+    "transient_presence_low_hz": 3000.0,
+    "transient_presence_high_hz": 8000.0,
+    "transient_ratio_weight": 0.5
+  },
+  "init_checkpoint": "experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_focus_probe_v4/best.pt",
+  "global_steps": 384,
+  "start_time": "2026-03-17T23:31:21",
+  "end_time": "2026-03-17T23:32:36",
+  "elapsed_sec": 75.164,
+  "best_val_loss": 0.021997235948219895,
+  "history": [
+    {
+      "epoch": 1,
+      "global_step": 128,
+      "train_loss": 0.02260350450524129,
+      "train_waveform_l1": 0.013299233367433771,
+      "train_stft_l1": 0.01514281034906162,
+      "train_sisdr_loss": 9.708389647305012,
+      "train_sisdr_db": -9.708389647305012,
+      "train_transient_presence_l1": 0.6189259585225955,
+      "train_interference_projection_ratio": 0.049501404209877364,
+      "val_loss": 0.022151516459416598,
+      "val_waveform_l1": 0.012920273031340912,
+      "val_stft_l1": 0.014786426821956411,
+      "val_sisdr_loss": 9.6593556702137,
+      "val_sisdr_db": -9.6593556702137,
+      "val_transient_presence_l1": 0.7201535440981388,
+      "val_interference_projection_ratio": 0.039772302960045636
+    },
+    {
+      "epoch": 2,
+      "global_step": 256,
+      "train_loss": 0.022418162945541553,
+      "train_waveform_l1": 0.013249134986835998,
+      "train_stft_l1": 0.015056993019243237,
+      "train_sisdr_loss": 9.497056443244219,
+      "train_sisdr_db": -9.497056443244219,
+      "train_transient_presence_l1": 0.6075550654204562,
+      "train_interference_projection_ratio": 0.04254211456282064,
+      "val_loss": 0.022114228922873735,
+      "val_waveform_l1": 0.01305116360890679,
+      "val_stft_l1": 0.014262778771808371,
+      "val_sisdr_loss": 9.46505220234394,
+      "val_sisdr_db": -9.46505220234394,
+      "val_transient_presence_l1": 0.7087873965501785,
+      "val_interference_projection_ratio": 0.051410122629022226
+    },
+    {
+      "epoch": 3,
+      "global_step": 384,
+      "train_loss": 0.022449760959716514,
+      "train_waveform_l1": 0.013249322721094359,
+      "train_stft_l1": 0.015307708403270226,
+      "train_sisdr_loss": 9.480320673435926,
+      "train_sisdr_db": -9.480320673435926,
+      "train_transient_presence_l1": 0.5690432600677013,
+      "train_interference_projection_ratio": 0.04084975070145447,
+      "val_loss": 0.021997235948219895,
+      "val_waveform_l1": 0.012993204727536067,
+      "val_stft_l1": 0.014290177903603762,
+      "val_sisdr_loss": 9.56346508860588,
+      "val_sisdr_db": -9.56346508860588,
+      "val_transient_presence_l1": 0.6887079197913408,
+      "val_interference_projection_ratio": 0.04815263696946204
+    }
+  ]
+}

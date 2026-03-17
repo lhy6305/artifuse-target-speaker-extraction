@@ -1,0 +1,372 @@
+{
+  "pack_dir": "reports/eval/ab_listening_pack_real_eval_near_real_v1_stage2_vs_legacy_transient_leakguard_probe_v4_speechfocus_ft1_blind",
+  "num_samples": 10,
+  "n_fft": 1024,
+  "hop_length": 256,
+  "rolloff_percent": 0.95,
+  "narrow_rolloff_threshold_hz": 250.0,
+  "narrow_upper_vs_mid_threshold_db": 1.0,
+  "narrow_frame_upper_p90_threshold": 0.15,
+  "narrow_score_threshold": 2,
+  "narrower_candidate_counts": {
+    "tie": 6,
+    "file_a": 2,
+    "file_b": 2
+  },
+  "top_abs_rolloff_deltas": [
+    {
+      "sample_id": "near_real_0007",
+      "file_a_label": "legacy_stage2",
+      "file_b_label": "legacy_transient_leakguard_probe_v4_speechfocus_ft1",
+      "delta_rolloff_hz_b_minus_a": 265.625,
+      "delta_upper_vs_mid_db_b_minus_a": -4.998268194943048,
+      "delta_frame_upper_share_p90_b_minus_a": -0.26212435960769653,
+      "narrower_candidate": "file_b",
+      "narrowing_score_file_a": 1,
+      "narrowing_score_file_b": 2,
+      "narrowing_evidence_file_a": [
+        "lower_rolloff"
+      ],
+      "narrowing_evidence_file_b": [
+        "lower_upper_vs_mid",
+        "lower_frame_upper_p90"
+      ],
+      "better_output": "",
+      "note": "harder near-real case with raw target, friend speech, and music together"
+    },
+    {
+      "sample_id": "near_real_0003",
+      "file_a_label": "legacy_stage2",
+      "file_b_label": "legacy_transient_leakguard_probe_v4_speechfocus_ft1",
+      "delta_rolloff_hz_b_minus_a": 250.0,
+      "delta_upper_vs_mid_db_b_minus_a": 1.2316882005935277,
+      "delta_frame_upper_share_p90_b_minus_a": -0.07205334305763245,
+      "narrower_candidate": "file_a",
+      "narrowing_score_file_a": 2,
+      "narrowing_score_file_b": 0,
+      "narrowing_evidence_file_a": [
+        "lower_rolloff",
+        "lower_upper_vs_mid"
+      ],
+      "narrowing_evidence_file_b": [],
+      "better_output": "",
+      "note": "raw target clip mixed with domain-matched friend speech"
+    },
+    {
+      "sample_id": "near_real_0010",
+      "file_a_label": "legacy_stage2",
+      "file_b_label": "legacy_transient_leakguard_probe_v4_speechfocus_ft1",
+      "delta_rolloff_hz_b_minus_a": -187.5,
+      "delta_upper_vs_mid_db_b_minus_a": -3.586301324114901,
+      "delta_frame_upper_share_p90_b_minus_a": -0.1544493794441224,
+      "narrower_candidate": "file_b",
+      "narrowing_score_file_a": 0,
+      "narrowing_score_file_b": 2,
+      "narrowing_evidence_file_a": [],
+      "narrowing_evidence_file_b": [
+        "lower_upper_vs_mid",
+        "lower_frame_upper_p90"
+      ],
+      "better_output": "",
+      "note": "target absent; friend speech and music together"
+    },
+    {
+      "sample_id": "near_real_0004",
+      "file_a_label": "legacy_stage2",
+      "file_b_label": "legacy_transient_leakguard_probe_v4_speechfocus_ft1",
+      "delta_rolloff_hz_b_minus_a": 62.5,
+      "delta_upper_vs_mid_db_b_minus_a": 0.16731762661834892,
+      "delta_frame_upper_share_p90_b_minus_a": -0.27496681213378904,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 0,
+      "narrowing_score_file_b": 1,
+      "narrowing_evidence_file_a": [],
+      "narrowing_evidence_file_b": [
+        "lower_frame_upper_p90"
+      ],
+      "better_output": "",
+      "note": "raw target clip mixed with another friend speech slice"
+    },
+    {
+      "sample_id": "near_real_0002",
+      "file_a_label": "legacy_stage2",
+      "file_b_label": "legacy_transient_leakguard_probe_v4_speechfocus_ft1",
+      "delta_rolloff_hz_b_minus_a": 46.875,
+      "delta_upper_vs_mid_db_b_minus_a": 2.676994584700516,
+      "delta_frame_upper_share_p90_b_minus_a": -0.3395131409168243,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 1,
+      "narrowing_score_file_b": 1,
+      "narrowing_evidence_file_a": [
+        "lower_upper_vs_mid"
+      ],
+      "narrowing_evidence_file_b": [
+        "lower_frame_upper_p90"
+      ],
+      "better_output": "",
+      "note": "second raw target clip only; another target-present sanity check with different prosody"
+    },
+    {
+      "sample_id": "near_real_0001",
+      "file_a_label": "legacy_stage2",
+      "file_b_label": "legacy_transient_leakguard_probe_v4_speechfocus_ft1",
+      "delta_rolloff_hz_b_minus_a": 15.625,
+      "delta_upper_vs_mid_db_b_minus_a": 0.33337150781035163,
+      "delta_frame_upper_share_p90_b_minus_a": -0.31533620953559877,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 0,
+      "narrowing_score_file_b": 1,
+      "narrowing_evidence_file_a": [],
+      "narrowing_evidence_file_b": [
+        "lower_frame_upper_p90"
+      ],
+      "better_output": "",
+      "note": "raw target clip only; used to inspect source retention and over-suppression on target-present speech"
+    },
+    {
+      "sample_id": "near_real_0006",
+      "file_a_label": "legacy_transient_leakguard_probe_v4_speechfocus_ft1",
+      "file_b_label": "legacy_stage2",
+      "delta_rolloff_hz_b_minus_a": -15.625,
+      "delta_upper_vs_mid_db_b_minus_a": -0.1873729033592717,
+      "delta_frame_upper_share_p90_b_minus_a": -0.04341747313737873,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 0,
+      "narrowing_score_file_b": 0,
+      "narrowing_evidence_file_a": [],
+      "narrowing_evidence_file_b": [],
+      "better_output": "",
+      "note": "raw target clip mixed with external speech from the Guodegang source"
+    },
+    {
+      "sample_id": "near_real_0008",
+      "file_a_label": "legacy_transient_leakguard_probe_v4_speechfocus_ft1",
+      "file_b_label": "legacy_stage2",
+      "delta_rolloff_hz_b_minus_a": 15.625,
+      "delta_upper_vs_mid_db_b_minus_a": 3.1751258078259,
+      "delta_frame_upper_share_p90_b_minus_a": 0.37344554662704454,
+      "narrower_candidate": "file_a",
+      "narrowing_score_file_a": 2,
+      "narrowing_score_file_b": 0,
+      "narrowing_evidence_file_a": [
+        "lower_upper_vs_mid",
+        "lower_frame_upper_p90"
+      ],
+      "narrowing_evidence_file_b": [],
+      "better_output": "",
+      "note": "target absent; only friend speech is present, used to inspect hallucination and suppression behavior"
+    },
+    {
+      "sample_id": "near_real_0005",
+      "file_a_label": "legacy_stage2",
+      "file_b_label": "legacy_transient_leakguard_probe_v4_speechfocus_ft1",
+      "delta_rolloff_hz_b_minus_a": 0.0,
+      "delta_upper_vs_mid_db_b_minus_a": -1.5163010673095076,
+      "delta_frame_upper_share_p90_b_minus_a": 0.13817104101181044,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 0,
+      "narrowing_score_file_b": 1,
+      "narrowing_evidence_file_a": [],
+      "narrowing_evidence_file_b": [
+        "lower_upper_vs_mid"
+      ],
+      "better_output": "",
+      "note": "raw target clip mixed with real music interference"
+    },
+    {
+      "sample_id": "near_real_0009",
+      "file_a_label": "legacy_transient_leakguard_probe_v4_speechfocus_ft1",
+      "file_b_label": "legacy_stage2",
+      "delta_rolloff_hz_b_minus_a": 0.0,
+      "delta_upper_vs_mid_db_b_minus_a": -0.9084576631103642,
+      "delta_frame_upper_share_p90_b_minus_a": 0.2692459791898727,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 1,
+      "narrowing_score_file_b": 0,
+      "narrowing_evidence_file_a": [
+        "lower_frame_upper_p90"
+      ],
+      "narrowing_evidence_file_b": [],
+      "better_output": "",
+      "note": "target absent; only external speech is present"
+    }
+  ],
+  "top_abs_upper_vs_mid_deltas": [
+    {
+      "sample_id": "near_real_0007",
+      "file_a_label": "legacy_stage2",
+      "file_b_label": "legacy_transient_leakguard_probe_v4_speechfocus_ft1",
+      "delta_rolloff_hz_b_minus_a": 265.625,
+      "delta_upper_vs_mid_db_b_minus_a": -4.998268194943048,
+      "delta_frame_upper_share_p90_b_minus_a": -0.26212435960769653,
+      "narrower_candidate": "file_b",
+      "narrowing_score_file_a": 1,
+      "narrowing_score_file_b": 2,
+      "narrowing_evidence_file_a": [
+        "lower_rolloff"
+      ],
+      "narrowing_evidence_file_b": [
+        "lower_upper_vs_mid",
+        "lower_frame_upper_p90"
+      ],
+      "better_output": "",
+      "note": "harder near-real case with raw target, friend speech, and music together"
+    },
+    {
+      "sample_id": "near_real_0010",
+      "file_a_label": "legacy_stage2",
+      "file_b_label": "legacy_transient_leakguard_probe_v4_speechfocus_ft1",
+      "delta_rolloff_hz_b_minus_a": -187.5,
+      "delta_upper_vs_mid_db_b_minus_a": -3.586301324114901,
+      "delta_frame_upper_share_p90_b_minus_a": -0.1544493794441224,
+      "narrower_candidate": "file_b",
+      "narrowing_score_file_a": 0,
+      "narrowing_score_file_b": 2,
+      "narrowing_evidence_file_a": [],
+      "narrowing_evidence_file_b": [
+        "lower_upper_vs_mid",
+        "lower_frame_upper_p90"
+      ],
+      "better_output": "",
+      "note": "target absent; friend speech and music together"
+    },
+    {
+      "sample_id": "near_real_0008",
+      "file_a_label": "legacy_transient_leakguard_probe_v4_speechfocus_ft1",
+      "file_b_label": "legacy_stage2",
+      "delta_rolloff_hz_b_minus_a": 15.625,
+      "delta_upper_vs_mid_db_b_minus_a": 3.1751258078259,
+      "delta_frame_upper_share_p90_b_minus_a": 0.37344554662704454,
+      "narrower_candidate": "file_a",
+      "narrowing_score_file_a": 2,
+      "narrowing_score_file_b": 0,
+      "narrowing_evidence_file_a": [
+        "lower_upper_vs_mid",
+        "lower_frame_upper_p90"
+      ],
+      "narrowing_evidence_file_b": [],
+      "better_output": "",
+      "note": "target absent; only friend speech is present, used to inspect hallucination and suppression behavior"
+    },
+    {
+      "sample_id": "near_real_0002",
+      "file_a_label": "legacy_stage2",
+      "file_b_label": "legacy_transient_leakguard_probe_v4_speechfocus_ft1",
+      "delta_rolloff_hz_b_minus_a": 46.875,
+      "delta_upper_vs_mid_db_b_minus_a": 2.676994584700516,
+      "delta_frame_upper_share_p90_b_minus_a": -0.3395131409168243,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 1,
+      "narrowing_score_file_b": 1,
+      "narrowing_evidence_file_a": [
+        "lower_upper_vs_mid"
+      ],
+      "narrowing_evidence_file_b": [
+        "lower_frame_upper_p90"
+      ],
+      "better_output": "",
+      "note": "second raw target clip only; another target-present sanity check with different prosody"
+    },
+    {
+      "sample_id": "near_real_0005",
+      "file_a_label": "legacy_stage2",
+      "file_b_label": "legacy_transient_leakguard_probe_v4_speechfocus_ft1",
+      "delta_rolloff_hz_b_minus_a": 0.0,
+      "delta_upper_vs_mid_db_b_minus_a": -1.5163010673095076,
+      "delta_frame_upper_share_p90_b_minus_a": 0.13817104101181044,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 0,
+      "narrowing_score_file_b": 1,
+      "narrowing_evidence_file_a": [],
+      "narrowing_evidence_file_b": [
+        "lower_upper_vs_mid"
+      ],
+      "better_output": "",
+      "note": "raw target clip mixed with real music interference"
+    },
+    {
+      "sample_id": "near_real_0003",
+      "file_a_label": "legacy_stage2",
+      "file_b_label": "legacy_transient_leakguard_probe_v4_speechfocus_ft1",
+      "delta_rolloff_hz_b_minus_a": 250.0,
+      "delta_upper_vs_mid_db_b_minus_a": 1.2316882005935277,
+      "delta_frame_upper_share_p90_b_minus_a": -0.07205334305763245,
+      "narrower_candidate": "file_a",
+      "narrowing_score_file_a": 2,
+      "narrowing_score_file_b": 0,
+      "narrowing_evidence_file_a": [
+        "lower_rolloff",
+        "lower_upper_vs_mid"
+      ],
+      "narrowing_evidence_file_b": [],
+      "better_output": "",
+      "note": "raw target clip mixed with domain-matched friend speech"
+    },
+    {
+      "sample_id": "near_real_0009",
+      "file_a_label": "legacy_transient_leakguard_probe_v4_speechfocus_ft1",
+      "file_b_label": "legacy_stage2",
+      "delta_rolloff_hz_b_minus_a": 0.0,
+      "delta_upper_vs_mid_db_b_minus_a": -0.9084576631103642,
+      "delta_frame_upper_share_p90_b_minus_a": 0.2692459791898727,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 1,
+      "narrowing_score_file_b": 0,
+      "narrowing_evidence_file_a": [
+        "lower_frame_upper_p90"
+      ],
+      "narrowing_evidence_file_b": [],
+      "better_output": "",
+      "note": "target absent; only external speech is present"
+    },
+    {
+      "sample_id": "near_real_0001",
+      "file_a_label": "legacy_stage2",
+      "file_b_label": "legacy_transient_leakguard_probe_v4_speechfocus_ft1",
+      "delta_rolloff_hz_b_minus_a": 15.625,
+      "delta_upper_vs_mid_db_b_minus_a": 0.33337150781035163,
+      "delta_frame_upper_share_p90_b_minus_a": -0.31533620953559877,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 0,
+      "narrowing_score_file_b": 1,
+      "narrowing_evidence_file_a": [],
+      "narrowing_evidence_file_b": [
+        "lower_frame_upper_p90"
+      ],
+      "better_output": "",
+      "note": "raw target clip only; used to inspect source retention and over-suppression on target-present speech"
+    },
+    {
+      "sample_id": "near_real_0006",
+      "file_a_label": "legacy_transient_leakguard_probe_v4_speechfocus_ft1",
+      "file_b_label": "legacy_stage2",
+      "delta_rolloff_hz_b_minus_a": -15.625,
+      "delta_upper_vs_mid_db_b_minus_a": -0.1873729033592717,
+      "delta_frame_upper_share_p90_b_minus_a": -0.04341747313737873,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 0,
+      "narrowing_score_file_b": 0,
+      "narrowing_evidence_file_a": [],
+      "narrowing_evidence_file_b": [],
+      "better_output": "",
+      "note": "raw target clip mixed with external speech from the Guodegang source"
+    },
+    {
+      "sample_id": "near_real_0004",
+      "file_a_label": "legacy_stage2",
+      "file_b_label": "legacy_transient_leakguard_probe_v4_speechfocus_ft1",
+      "delta_rolloff_hz_b_minus_a": 62.5,
+      "delta_upper_vs_mid_db_b_minus_a": 0.16731762661834892,
+      "delta_frame_upper_share_p90_b_minus_a": -0.27496681213378904,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 0,
+      "narrowing_score_file_b": 1,
+      "narrowing_evidence_file_a": [],
+      "narrowing_evidence_file_b": [
+        "lower_frame_upper_p90"
+      ],
+      "better_output": "",
+      "note": "raw target clip mixed with another friend speech slice"
+    }
+  ]
+}

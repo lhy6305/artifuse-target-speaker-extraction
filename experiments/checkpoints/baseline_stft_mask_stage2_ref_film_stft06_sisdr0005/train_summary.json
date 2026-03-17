@@ -1,0 +1,113 @@
+{
+  "train_manifest": "F:\\proj_dev\\tmp\\workdir-4-1\\data\\synthetic\\train_manifest.jsonl",
+  "val_manifest": "F:\\proj_dev\\tmp\\workdir-4-1\\data\\synthetic\\val_manifest.jsonl",
+  "output_dir": "experiments\\checkpoints\\baseline_stft_mask_stage2_ref_film_stft06_sisdr0005",
+  "device": "cuda",
+  "epochs": 6,
+  "batch_size": 16,
+  "learning_rate": 0.001,
+  "model_config": {
+    "n_fft": 512,
+    "hop_length": 128,
+    "win_length": 512,
+    "hidden_dim": 256,
+    "reference_dim": 128,
+    "gru_layers": 2,
+    "conditioning_mode": "ref_film"
+  },
+  "loss_config": {
+    "stft_weight": 0.6,
+    "sisdr_weight": 0.0005
+  },
+  "global_steps": 768,
+  "start_time": "2026-03-16T21:23:39",
+  "end_time": "2026-03-16T21:25:19",
+  "elapsed_sec": 100.074,
+  "best_val_loss": 0.032837086415383965,
+  "history": [
+    {
+      "epoch": 1,
+      "global_step": 128,
+      "train_loss": 0.034627643690328114,
+      "train_waveform_l1": 0.015825953021703754,
+      "train_stft_l1": 0.021213619293121155,
+      "train_sisdr_loss": 12.147036328911781,
+      "train_sisdr_db": -12.147036328911781,
+      "val_loss": 0.03330299031222239,
+      "val_waveform_l1": 0.015842324966797605,
+      "val_stft_l1": 0.019481746916426346,
+      "val_sisdr_loss": 11.543233275413513,
+      "val_sisdr_db": -11.543233275413513
+    },
+    {
+      "epoch": 2,
+      "global_step": 256,
+      "train_loss": 0.03363734362937976,
+      "train_waveform_l1": 0.015741841212729923,
+      "train_stft_l1": 0.02035622993571451,
+      "train_sisdr_loss": 11.363527439534664,
+      "train_sisdr_db": -11.363527439534664,
+      "val_loss": 0.03339372243499383,
+      "val_waveform_l1": 0.015929078712360933,
+      "val_stft_l1": 0.019467776670353487,
+      "val_sisdr_loss": 11.56795409321785,
+      "val_sisdr_db": -11.56795409321785
+    },
+    {
+      "epoch": 3,
+      "global_step": 384,
+      "train_loss": 0.03361551147827413,
+      "train_waveform_l1": 0.015781569461978506,
+      "train_stft_l1": 0.020210671405948233,
+      "train_sisdr_loss": 11.41507675498724,
+      "train_sisdr_db": -11.41507675498724,
+      "val_loss": 0.033017758920323104,
+      "val_waveform_l1": 0.015634243231033906,
+      "val_stft_l1": 0.01940242195269093,
+      "val_sisdr_loss": 11.484123647212982,
+      "val_sisdr_db": -11.484123647212982
+    },
+    {
+      "epoch": 4,
+      "global_step": 512,
+      "train_loss": 0.033571767300600186,
+      "train_waveform_l1": 0.01568726014374988,
+      "train_stft_l1": 0.020364392097690143,
+      "train_sisdr_loss": 11.331742223352194,
+      "train_sisdr_db": -11.331742223352194,
+      "val_loss": 0.03303196054184809,
+      "val_waveform_l1": 0.015499164204811677,
+      "val_stft_l1": 0.019428511906880885,
+      "val_sisdr_loss": 11.7513767182827,
+      "val_sisdr_db": -11.7513767182827
+    },
+    {
+      "epoch": 5,
+      "global_step": 640,
+      "train_loss": 0.0335458093759371,
+      "train_waveform_l1": 0.015716473833890632,
+      "train_stft_l1": 0.020253221402526833,
+      "train_sisdr_loss": 11.354804180562496,
+      "train_sisdr_db": -11.354804180562496,
+      "val_loss": 0.03286462783580646,
+      "val_waveform_l1": 0.015505791961913928,
+      "val_stft_l1": 0.019377271906705573,
+      "val_sisdr_loss": 11.464943170547485,
+      "val_sisdr_db": -11.464943170547485
+    },
+    {
+      "epoch": 6,
+      "global_step": 768,
+      "train_loss": 0.03348396076762583,
+      "train_waveform_l1": 0.015541500659310259,
+      "train_stft_l1": 0.02044280408154009,
+      "train_sisdr_loss": 11.353553790599108,
+      "train_sisdr_db": -11.353553790599108,
+      "val_loss": 0.032837086415383965,
+      "val_waveform_l1": 0.015417890070239082,
+      "val_stft_l1": 0.019408730906434357,
+      "val_sisdr_loss": 11.547914326190948,
+      "val_sisdr_db": -11.547914326190948
+    }
+  ]
+}

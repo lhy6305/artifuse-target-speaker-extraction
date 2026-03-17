@@ -1,0 +1,35 @@
+{
+  "train_manifest": "F:\\proj_dev\\tmp\\workdir-4-1\\data\\synthetic\\train_manifest.jsonl",
+  "val_manifest": "F:\\proj_dev\\tmp\\workdir-4-1\\data\\synthetic\\val_manifest.jsonl",
+  "output_dir": "experiments\\checkpoints\\baseline_stft_mask_ref_film_smoke",
+  "device": "cuda",
+  "epochs": 1,
+  "batch_size": 2,
+  "learning_rate": 0.001,
+  "model_config": {
+    "n_fft": 512,
+    "hop_length": 128,
+    "win_length": 512,
+    "hidden_dim": 256,
+    "reference_dim": 128,
+    "gru_layers": 2,
+    "conditioning_mode": "ref_film"
+  },
+  "global_steps": 6,
+  "start_time": "2026-03-16T20:55:46",
+  "end_time": "2026-03-16T20:55:52",
+  "elapsed_sec": 6.136,
+  "best_val_loss": 0.04189818295708392,
+  "history": [
+    {
+      "epoch": 1,
+      "global_step": 6,
+      "train_loss": 0.05884579258660475,
+      "train_waveform_l1": 0.027533223231633503,
+      "train_stft_l1": 0.06262513902038336,
+      "val_loss": 0.04189818295708392,
+      "val_waveform_l1": 0.019178545579052297,
+      "val_stft_l1": 0.0454392746432859
+    }
+  ]
+}

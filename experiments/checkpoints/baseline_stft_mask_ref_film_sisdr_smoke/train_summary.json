@@ -1,0 +1,43 @@
+{
+  "train_manifest": "F:\\proj_dev\\tmp\\workdir-4-1\\data\\synthetic\\train_manifest.jsonl",
+  "val_manifest": "F:\\proj_dev\\tmp\\workdir-4-1\\data\\synthetic\\val_manifest.jsonl",
+  "output_dir": "experiments\\checkpoints\\baseline_stft_mask_ref_film_sisdr_smoke",
+  "device": "cuda",
+  "epochs": 1,
+  "batch_size": 2,
+  "learning_rate": 0.001,
+  "model_config": {
+    "n_fft": 512,
+    "hop_length": 128,
+    "win_length": 512,
+    "hidden_dim": 256,
+    "reference_dim": 128,
+    "gru_layers": 2,
+    "conditioning_mode": "ref_film"
+  },
+  "loss_config": {
+    "stft_weight": 0.5,
+    "sisdr_weight": 0.001
+  },
+  "global_steps": 6,
+  "start_time": "2026-03-16T21:05:51",
+  "end_time": "2026-03-16T21:05:57",
+  "elapsed_sec": 5.648,
+  "best_val_loss": 0.07368369644973427,
+  "history": [
+    {
+      "epoch": 1,
+      "global_step": 6,
+      "train_loss": 0.08482987868289153,
+      "train_waveform_l1": 0.028996017916748922,
+      "train_stft_l1": 0.06301620664695899,
+      "train_sisdr_loss": 24.325754801432293,
+      "train_sisdr_db": -24.325754801432293,
+      "val_loss": 0.07368369644973427,
+      "val_waveform_l1": 0.025608537936932407,
+      "val_stft_l1": 0.05250252160476521,
+      "val_sisdr_loss": 21.823896877467632,
+      "val_sisdr_db": -21.823896877467632
+    }
+  ]
+}

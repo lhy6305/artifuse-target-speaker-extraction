@@ -1,0 +1,40 @@
+{
+  "sample_id": "val_000466",
+  "recipe": "target_clean_plus_music",
+  "temporal_pattern": "target_absent_tail",
+  "target_present_ratio": 0.618685,
+  "metadata_path": "data/synthetic/val/val_000466/metadata.json",
+  "comparison": {
+    "legacy_stage2": {
+      "sisdr_db": -15.572381973266602,
+      "waveform_l1": 0.007213333621621132,
+      "checkpoint": "experiments\\checkpoints\\baseline_stft_mask_stage2\\best.pt",
+      "model_config": {
+        "conditioning_mode": "legacy_bias"
+      },
+      "loss_config": {}
+    },
+    "ref_film_sisdr0005": {
+      "sisdr_db": -17.403844833374023,
+      "waveform_l1": 0.007906190119683743,
+      "checkpoint": "experiments\\checkpoints\\baseline_stft_mask_stage2_ref_film_sisdr0005\\best.pt",
+      "model_config": {
+        "n_fft": 512,
+        "hop_length": 128,
+        "win_length": 512,
+        "hidden_dim": 256,
+        "reference_dim": 128,
+        "gru_layers": 2,
+        "conditioning_mode": "ref_film"
+      },
+      "loss_config": {
+        "stft_weight": 0.5,
+        "sisdr_weight": 0.0005
+      }
+    }
+  },
+  "delta": {
+    "sisdr_db": -1.8314628601074219,
+    "waveform_l1": 0.0006928564980626106
+  }
+}
