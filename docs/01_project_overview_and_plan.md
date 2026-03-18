@@ -1415,6 +1415,31 @@
    - 未来任何 `v12+` 都必须同时说明：
      - 更接近哪一条 clip 级排序
      - 是否在另一条 clip 上付出代价
+144. 已完成 `legacy_transient_leakguard_probe_v12_v8_anchor_proxy_ft1`：
+   - 基座：
+     - `v8`
+   - focused manifest：
+     - `train_manifest_guodegang_anchor_proxy_v1.jsonl = 84`
+     - `val_manifest_guodegang_anchor_proxy_v1.jsonl = 22`
+   - 相对 `legacy_stage2`：
+     - default val：`+0.171113 dB`
+     - `near_real_guodegang_transient_probe_v1` overall：`+1.135186 dB`
+     - `guodegang_anchor_proxy_v1`：`+1.890848 dB`
+     - `guodegang_absent_proxy_v2_speechonly`：`+3.652780 dB`
+   - 相对 `v8`：
+     - default val：`-0.099178 dB`
+     - `near_real_guodegang_transient_probe_v1` overall：`+0.075219 dB`
+     - `guodegang_anchor_120s`：`+0.266803 dB`
+     - `guodegang_absent_480s`：`-0.116366 dB`
+   - `speech_followup_gate` 已通过；
+   - 但 clip 级 guardrail 相对 `v8` 仍因 `clip__guodegang_absent_480s` 单项失败而未完全放行。
+145. 因而当前默认接班口径应进一步更新为：
+   - `v8` 继续保留为 broad speech 参考基座
+   - `v12` 作为当前 anchor-focused 第二候选保留
+   - 下一步若继续自动推进，问题不再是“再训更宽的 `guodegang` focused 版本”
+   - 而是：
+     - 如何在不回吐 `v12` 的 `anchor_120s` 收益前提下
+     - 给 `guodegang_absent_480s` 增加显式 floor / guardrail
 
 ## 9. 文档入口
 
@@ -1458,5 +1483,6 @@
 - 本轮 `v10` guodegang-focused follow-up：`reports/daily/2026-03-18_v10_v8_guodegang_proxy_ft1.md`
 - 本轮 `v11` dual-anchor follow-up：`reports/daily/2026-03-18_v11_v8_dualanchor_ft1.md`
 - 本轮 `guodegang 0006` clip-split 跟进：`reports/daily/2026-03-18_guodegang_clip_split_followup.md`
+- 本轮 `v12` anchor-proxy focused follow-up：`reports/daily/2026-03-18_v12_v8_anchor_proxy_ft1.md`
 - 本轮仓库与 `.gitignore` 审计：`reports/daily/2026-03-18_repo_gitignore_audit.md`
 - 本轮全仓库评估总结：`reports/daily/2026-03-17_repo_evaluation_summary.md`

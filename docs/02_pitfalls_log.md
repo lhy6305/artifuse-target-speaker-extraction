@@ -2351,3 +2351,51 @@
 3. 若某条 `absent` proxy 没有先验证：
    - `v8 > v7 > v10 > v11`
    就不要把它当成新的 objective 入口。
+
+### 73. broad speech gate 过线，不等于 clip 级 `anchor / absent` trade-off 已过线；`v12` 证明如果不同时看两条 clip，仍会把“有代价的成功”误读成“已可替代参考版本”
+
+现象：
+
+- 本轮 `v12 = legacy_transient_leakguard_probe_v12_v8_anchor_proxy_ft1`：
+  - 相对 `v8` 的 `speech_followup_gate_summary.json` 已经 `PASS`
+  - `near_real_guodegang_transient_probe_v1` overall 也相对 `v8` 转成：
+    - `+0.075219 dB`
+- 但同一轮在 clip 级 `probe_subset_guardrail_vs_v8_with_clips.json` 里仍然：
+  - `FAIL`
+  - 唯一失败项是：
+    - `clip__guodegang_absent_480s`
+- 也就是说，`v12` 的真实形态是：
+  - `guodegang_anchor_120s` 相对 `v8`：
+    - `+0.266803 dB`
+  - `guodegang_absent_480s` 相对 `v8`：
+    - `-0.116366 dB`
+
+影响：
+
+- 如果只看：
+  - broad speech follow-up gate
+  - 或合并后的 `near_real_0006` overall
+- 很容易误判成：
+  - `v12` 已经无代价替代 `v8`
+- 实际上它只是：
+  - 成功修回了 `anchor`
+  - 但仍在 `absent` 上付出小幅代价
+
+处理：
+
+- 本轮已把该结论同步写入：
+  - `reports/daily/2026-03-18_v12_v8_anchor_proxy_ft1.md`
+  - `docs/01_project_overview_and_plan.md`
+- 当前默认口径更新为：
+  - `v8` 保留为 broad speech 参考基座
+  - `v12` 仅作为 anchor-focused 第二候选保留
+
+后续要求：
+
+1. 以后凡是 `v12+` 的 follow-up，至少同时汇报：
+   - `guodegang_anchor_120s`
+   - `guodegang_absent_480s`
+2. 只要 clip 级 `absent` 仍明显回退，就不要把 broad gate 的 `PASS` 误写成“已可切主线”。
+3. 下一步若继续推进，优先补的是：
+   - `absent` 的显式 floor / guardrail
+   而不是继续做更宽的 anchor-only 强化。

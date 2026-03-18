@@ -1,0 +1,302 @@
+{
+  "manifest": "data/probes/near_real_guodegang_absent_probe_v1_manifest.jsonl",
+  "checkpoint_a": "experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v8_friend_overlap_focus_ft1/best.pt",
+  "checkpoint_b": "experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v12_v8_anchor_proxy_ft1/best.pt",
+  "label_a": "legacy_transient_leakguard_probe_v8_friend_overlap_focus_ft1",
+  "label_b": "legacy_transient_leakguard_probe_v12_v8_anchor_proxy_ft1",
+  "focus_recipes": [],
+  "delta_threshold_db": 0.1,
+  "num_samples": 3,
+  "overall": {
+    "count": 3,
+    "avg_sisdr_db_a": -2.673590898513794,
+    "avg_sisdr_db_b": -2.789957125981649,
+    "avg_sisdr_delta_db": -0.11636622746785481,
+    "avg_waveform_l1_a": 0.00805132711927096,
+    "avg_waveform_l1_b": 0.008126435490945974,
+    "avg_waveform_l1_delta": 7.51083716750145e-05,
+    "improved_count": 0,
+    "regressed_count": 2,
+    "near_tie_count": 1
+  },
+  "recipe_groups": {
+    "near_real_guodegang_speech_probe": {
+      "count": 3,
+      "avg_sisdr_db_a": -2.673590898513794,
+      "avg_sisdr_db_b": -2.789957125981649,
+      "avg_sisdr_delta_db": -0.11636622746785481,
+      "avg_waveform_l1_a": 0.00805132711927096,
+      "avg_waveform_l1_b": 0.008126435490945974,
+      "avg_waveform_l1_delta": 7.51083716750145e-05,
+      "improved_count": 0,
+      "regressed_count": 2,
+      "near_tie_count": 1
+    }
+  },
+  "pattern_groups": {
+    "target_full": {
+      "count": 3,
+      "avg_sisdr_db_a": -2.673590898513794,
+      "avg_sisdr_db_b": -2.789957125981649,
+      "avg_sisdr_delta_db": -0.11636622746785481,
+      "avg_waveform_l1_a": 0.00805132711927096,
+      "avg_waveform_l1_b": 0.008126435490945974,
+      "avg_waveform_l1_delta": 7.51083716750145e-05,
+      "improved_count": 0,
+      "regressed_count": 2,
+      "near_tie_count": 1
+    }
+  },
+  "target_present_ratio_bucket_groups": {
+    "ratio_ge_0.95": {
+      "count": 3,
+      "avg_sisdr_db_a": -2.673590898513794,
+      "avg_sisdr_db_b": -2.789957125981649,
+      "avg_sisdr_delta_db": -0.11636622746785481,
+      "avg_waveform_l1_a": 0.00805132711927096,
+      "avg_waveform_l1_b": 0.008126435490945974,
+      "avg_waveform_l1_delta": 7.51083716750145e-05,
+      "improved_count": 0,
+      "regressed_count": 2,
+      "near_tie_count": 1
+    }
+  },
+  "top_improvements": [
+    {
+      "sample_id": "probe_0024",
+      "recipe": "near_real_guodegang_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0024/metadata.json",
+      "sisdr_a_db": -2.7438900470733643,
+      "sisdr_b_db": -2.7579102516174316,
+      "sisdr_delta_db": -0.014020204544067383,
+      "waveform_l1_a": 0.007996860891580582,
+      "waveform_l1_b": 0.008039663545787334,
+      "waveform_l1_delta": 4.280265420675278e-05
+    },
+    {
+      "sample_id": "probe_0022",
+      "recipe": "near_real_guodegang_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0022/metadata.json",
+      "sisdr_a_db": -2.5195298194885254,
+      "sisdr_b_db": -2.653229236602783,
+      "sisdr_delta_db": -0.1336994171142578,
+      "waveform_l1_a": 0.008077782578766346,
+      "waveform_l1_b": 0.00815325416624546,
+      "waveform_l1_delta": 7.547158747911453e-05
+    },
+    {
+      "sample_id": "probe_0023",
+      "recipe": "near_real_guodegang_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0023/metadata.json",
+      "sisdr_a_db": -2.757352828979492,
+      "sisdr_b_db": -2.9587318897247314,
+      "sisdr_delta_db": -0.20137906074523926,
+      "waveform_l1_a": 0.008079337887465954,
+      "waveform_l1_b": 0.00818638876080513,
+      "waveform_l1_delta": 0.00010705087333917618
+    }
+  ],
+  "top_regressions": [
+    {
+      "sample_id": "probe_0023",
+      "recipe": "near_real_guodegang_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0023/metadata.json",
+      "sisdr_a_db": -2.757352828979492,
+      "sisdr_b_db": -2.9587318897247314,
+      "sisdr_delta_db": -0.20137906074523926,
+      "waveform_l1_a": 0.008079337887465954,
+      "waveform_l1_b": 0.00818638876080513,
+      "waveform_l1_delta": 0.00010705087333917618
+    },
+    {
+      "sample_id": "probe_0022",
+      "recipe": "near_real_guodegang_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0022/metadata.json",
+      "sisdr_a_db": -2.5195298194885254,
+      "sisdr_b_db": -2.653229236602783,
+      "sisdr_delta_db": -0.1336994171142578,
+      "waveform_l1_a": 0.008077782578766346,
+      "waveform_l1_b": 0.00815325416624546,
+      "waveform_l1_delta": 7.547158747911453e-05
+    },
+    {
+      "sample_id": "probe_0024",
+      "recipe": "near_real_guodegang_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0024/metadata.json",
+      "sisdr_a_db": -2.7438900470733643,
+      "sisdr_b_db": -2.7579102516174316,
+      "sisdr_delta_db": -0.014020204544067383,
+      "waveform_l1_a": 0.007996860891580582,
+      "waveform_l1_b": 0.008039663545787334,
+      "waveform_l1_delta": 4.280265420675278e-05
+    }
+  ],
+  "top_near_ties": [
+    {
+      "sample_id": "probe_0024",
+      "recipe": "near_real_guodegang_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0024/metadata.json",
+      "sisdr_a_db": -2.7438900470733643,
+      "sisdr_b_db": -2.7579102516174316,
+      "sisdr_delta_db": -0.014020204544067383,
+      "waveform_l1_a": 0.007996860891580582,
+      "waveform_l1_b": 0.008039663545787334,
+      "waveform_l1_delta": 4.280265420675278e-05
+    },
+    {
+      "sample_id": "probe_0022",
+      "recipe": "near_real_guodegang_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0022/metadata.json",
+      "sisdr_a_db": -2.5195298194885254,
+      "sisdr_b_db": -2.653229236602783,
+      "sisdr_delta_db": -0.1336994171142578,
+      "waveform_l1_a": 0.008077782578766346,
+      "waveform_l1_b": 0.00815325416624546,
+      "waveform_l1_delta": 7.547158747911453e-05
+    },
+    {
+      "sample_id": "probe_0023",
+      "recipe": "near_real_guodegang_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0023/metadata.json",
+      "sisdr_a_db": -2.757352828979492,
+      "sisdr_b_db": -2.9587318897247314,
+      "sisdr_delta_db": -0.20137906074523926,
+      "waveform_l1_a": 0.008079337887465954,
+      "waveform_l1_b": 0.00818638876080513,
+      "waveform_l1_delta": 0.00010705087333917618
+    }
+  ],
+  "model_config_a": {
+    "n_fft": 512,
+    "hop_length": 128,
+    "win_length": 512,
+    "hidden_dim": 256,
+    "reference_dim": 128,
+    "gru_layers": 2,
+    "conditioning_mode": "legacy_bias"
+  },
+  "model_config_b": {
+    "n_fft": 512,
+    "hop_length": 128,
+    "win_length": 512,
+    "hidden_dim": 256,
+    "reference_dim": 128,
+    "gru_layers": 2,
+    "conditioning_mode": "legacy_bias"
+  },
+  "loss_config_a": {
+    "sample_rate": 16000,
+    "stft_weight": 0.5,
+    "sisdr_weight": 0.0,
+    "transient_weight": 0.002,
+    "interference_weight": 0.005,
+    "absent_weight": 2.0,
+    "transient_focus_recipes": [
+      "target_clean_speech",
+      "target_hard_speech"
+    ],
+    "transient_focus_patterns": [
+      "target_full"
+    ],
+    "transient_min_target_ratio": null,
+    "transient_max_target_ratio": null,
+    "interference_focus_recipes": [
+      "target_clean_speech",
+      "target_hard_speech"
+    ],
+    "interference_focus_patterns": [
+      "target_full"
+    ],
+    "interference_min_target_ratio": null,
+    "interference_max_target_ratio": null,
+    "absent_focus_recipes": [
+      "target_clean_speech",
+      "target_hard_speech"
+    ],
+    "absent_focus_patterns": [
+      "target_absent_head",
+      "target_absent_tail",
+      "target_intermittent"
+    ],
+    "absent_min_target_ratio": null,
+    "absent_max_target_ratio": null,
+    "transient_top_ratio": 0.12,
+    "transient_min_count": 8,
+    "transient_mid_low_hz": 800.0,
+    "transient_mid_high_hz": 3000.0,
+    "transient_presence_low_hz": 3000.0,
+    "transient_presence_high_hz": 8000.0,
+    "transient_ratio_weight": 0.5
+  },
+  "loss_config_b": {
+    "sample_rate": 16000,
+    "stft_weight": 0.5,
+    "sisdr_weight": 0.0,
+    "transient_weight": 0.002,
+    "interference_weight": 0.005,
+    "absent_weight": 2.0,
+    "transient_focus_recipes": [
+      "target_clean_speech",
+      "target_hard_speech"
+    ],
+    "transient_focus_patterns": [
+      "target_full"
+    ],
+    "transient_min_target_ratio": null,
+    "transient_max_target_ratio": null,
+    "interference_focus_recipes": [
+      "target_clean_speech",
+      "target_hard_speech"
+    ],
+    "interference_focus_patterns": [
+      "target_full"
+    ],
+    "interference_min_target_ratio": null,
+    "interference_max_target_ratio": null,
+    "absent_focus_recipes": [
+      "target_clean_speech",
+      "target_hard_speech"
+    ],
+    "absent_focus_patterns": [
+      "target_absent_head",
+      "target_absent_tail",
+      "target_intermittent"
+    ],
+    "absent_min_target_ratio": null,
+    "absent_max_target_ratio": null,
+    "transient_top_ratio": 0.12,
+    "transient_min_count": 8,
+    "transient_mid_low_hz": 800.0,
+    "transient_mid_high_hz": 3000.0,
+    "transient_presence_low_hz": 3000.0,
+    "transient_presence_high_hz": 8000.0,
+    "transient_ratio_weight": 0.5
+  }
+}
