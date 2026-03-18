@@ -1,0 +1,118 @@
+{
+  "train_manifest": "data/synthetic/train_manifest.jsonl",
+  "val_manifest": "data/synthetic/val_manifest.jsonl",
+  "output_dir": "experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v7_v3_speech_absentguard_w2_ft1",
+  "device": "cuda",
+  "epochs": 2,
+  "batch_size": 16,
+  "learning_rate": 0.0001,
+  "model_config": {
+    "n_fft": 512,
+    "hop_length": 128,
+    "win_length": 512,
+    "hidden_dim": 256,
+    "reference_dim": 128,
+    "gru_layers": 2,
+    "conditioning_mode": "legacy_bias"
+  },
+  "loss_config": {
+    "sample_rate": 16000,
+    "stft_weight": 0.5,
+    "sisdr_weight": 0.0,
+    "transient_weight": 0.002,
+    "interference_weight": 0.005,
+    "absent_weight": 2.0,
+    "transient_focus_recipes": [
+      "target_clean_speech"
+    ],
+    "transient_focus_patterns": [
+      "target_full",
+      "target_absent_head",
+      "target_absent_tail"
+    ],
+    "transient_min_target_ratio": null,
+    "transient_max_target_ratio": null,
+    "interference_focus_recipes": [
+      "target_clean_speech",
+      "target_hard_speech",
+      "target_music",
+      "target_clean_plus_music",
+      "target_hard_plus_music",
+      "target_singing_vocal"
+    ],
+    "interference_focus_patterns": [
+      "target_full",
+      "target_absent_head",
+      "target_absent_tail",
+      "target_intermittent"
+    ],
+    "interference_min_target_ratio": null,
+    "interference_max_target_ratio": null,
+    "absent_focus_recipes": [
+      "target_clean_speech",
+      "target_hard_speech"
+    ],
+    "absent_focus_patterns": [
+      "target_absent_head",
+      "target_absent_tail",
+      "target_intermittent"
+    ],
+    "absent_min_target_ratio": null,
+    "absent_max_target_ratio": 0.9,
+    "transient_top_ratio": 0.12,
+    "transient_min_count": 8,
+    "transient_mid_low_hz": 800.0,
+    "transient_mid_high_hz": 3000.0,
+    "transient_presence_low_hz": 3000.0,
+    "transient_presence_high_hz": 8000.0,
+    "transient_ratio_weight": 0.5
+  },
+  "init_checkpoint": "experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v3_w0005/best.pt",
+  "global_steps": 256,
+  "start_time": "2026-03-18T10:49:16",
+  "end_time": "2026-03-18T10:49:58",
+  "elapsed_sec": 41.868,
+  "best_val_loss": 0.02188635169295594,
+  "history": [
+    {
+      "epoch": 1,
+      "global_step": 128,
+      "train_loss": 0.022228863032069057,
+      "train_waveform_l1": 0.013268918824905995,
+      "train_stft_l1": 0.014826251528575085,
+      "train_sisdr_loss": 9.76570687815547,
+      "train_sisdr_db": -9.76570687815547,
+      "train_transient_presence_l1": 0.5164897000649944,
+      "train_interference_projection_ratio": 0.04786299816623796,
+      "train_absent_interval_l1": 0.0001372619961910182,
+      "val_loss": 0.021916746511124074,
+      "val_waveform_l1": 0.012943232810357586,
+      "val_stft_l1": 0.014232042129151523,
+      "val_sisdr_loss": 9.683916166424751,
+      "val_sisdr_db": -9.683916166424751,
+      "val_transient_presence_l1": 0.6889942735433578,
+      "val_interference_projection_ratio": 0.04810914187692106,
+      "val_absent_interval_l1": 0.00011947916951271509
+    },
+    {
+      "epoch": 2,
+      "global_step": 256,
+      "train_loss": 0.02203734112845268,
+      "train_waveform_l1": 0.013229528100055177,
+      "train_stft_l1": 0.014711454954522196,
+      "train_sisdr_loss": 9.664079289883375,
+      "train_sisdr_db": -9.664079289883375,
+      "train_transient_presence_l1": 0.505186004913412,
+      "train_interference_projection_ratio": 0.04769663073238917,
+      "train_absent_interval_l1": 0.00010161516200701826,
+      "val_loss": 0.02188635169295594,
+      "val_waveform_l1": 0.012964384775841609,
+      "val_stft_l1": 0.014187096094246954,
+      "val_sisdr_loss": 9.807205960154533,
+      "val_sisdr_db": -9.807205960154533,
+      "val_transient_presence_l1": 0.6830480033531785,
+      "val_interference_projection_ratio": 0.049303297419101,
+      "val_absent_interval_l1": 0.00010790308996888598
+    }
+  ]
+}
