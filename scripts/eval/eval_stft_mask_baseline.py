@@ -29,6 +29,7 @@ from tse_prefix.pipeline import (
     masked_sisdr,
     transient_presence_l1_loss,
 )
+from tse_prefix.pipeline.loss_selectors import build_selector_sample_weights, selector_config_keys
 
 
 def parse_args() -> argparse.Namespace:
@@ -65,6 +66,8 @@ def move_batch_to_device(batch: dict, device: torch.device) -> dict:
         "reference",
         "reference_lengths",
         "target_present_ratios",
+        "overlap_ratios",
+        "interference_gain_dbs",
     ]:
         moved[key] = batch[key].to(device)
     return moved
@@ -100,63 +103,11 @@ def target_present_ratio_bucket(ratio: float) -> str:
     return "ratio_ge_0.95"
 
 
-def build_selector_sample_weights(
-    batch: dict,
-    device: torch.device,
-    loss_config: dict,
-    prefix: str,
-) -> torch.Tensor | None:
-    recipes = set(loss_config.get(f"{prefix}_focus_recipes", []))
-    patterns = set(loss_config.get(f"{prefix}_focus_patterns", []))
-    min_ratio = loss_config.get(f"{prefix}_min_target_ratio")
-    max_ratio = loss_config.get(f"{prefix}_max_target_ratio")
-    has_selector = bool(recipes or patterns or min_ratio is not None or max_ratio is not None)
-    if not has_selector:
-        return None
-
-    weights = torch.ones(len(batch["sample_ids"]), dtype=torch.float32, device=device)
-    if recipes:
-        recipe_mask = torch.tensor(
-            [1.0 if recipe in recipes else 0.0 for recipe in batch["recipes"]],
-            dtype=torch.float32,
-            device=device,
-        )
-        weights = weights * recipe_mask
-    if patterns:
-        pattern_mask = torch.tensor(
-            [1.0 if pattern in patterns else 0.0 for pattern in batch["temporal_patterns"]],
-            dtype=torch.float32,
-            device=device,
-        )
-        weights = weights * pattern_mask
-
-    ratios = batch["target_present_ratios"].to(device=device, dtype=torch.float32)
-    if min_ratio is not None:
-        weights = weights * (ratios >= float(min_ratio)).float()
-    if max_ratio is not None:
-        weights = weights * (ratios <= float(max_ratio)).float()
-    return weights
-
-
 def build_compute_loss_kwargs(loss_config: dict) -> dict:
     return {
         key: value
         for key, value in loss_config.items()
-        if key
-        not in {
-            "transient_focus_recipes",
-            "transient_focus_patterns",
-            "transient_min_target_ratio",
-            "transient_max_target_ratio",
-            "interference_focus_recipes",
-            "interference_focus_patterns",
-            "interference_min_target_ratio",
-            "interference_max_target_ratio",
-            "absent_focus_recipes",
-            "absent_focus_patterns",
-            "absent_min_target_ratio",
-            "absent_max_target_ratio",
-        }
+        if key not in selector_config_keys()
     }
 
 

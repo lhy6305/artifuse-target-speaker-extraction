@@ -1,0 +1,3065 @@
+{
+  "compares": {
+    "v8": "reports/eval/compare_stage2_vs_legacy_transient_leakguard_probe_v8_friend_overlap_focus_ft1_on_default/per_sample_metrics.jsonl",
+    "v12": "reports/eval/compare_stage2_vs_legacy_transient_leakguard_probe_v12_v8_anchor_proxy_ft1_on_default/per_sample_metrics.jsonl",
+    "v13": "reports/eval/compare_stage2_vs_legacy_transient_leakguard_probe_v13_v12_anchor_absent_proxy_ft1_on_default/per_sample_metrics.jsonl"
+  },
+  "ordered_aliases": [
+    "v8",
+    "v12",
+    "v13"
+  ],
+  "num_shared_speech_rows": 237,
+  "thresholds": {
+    "gain_thresholds_db": {
+      "q50": -2.0179998874664307,
+      "q67": -0.8906666636466982
+    },
+    "transient_thresholds_db": {
+      "q50": -11.535072326660156,
+      "q67": -9.179057439168297
+    },
+    "min_count": 8,
+    "min_speaker_count": 8,
+    "min_order_gap_db": 0.0
+  },
+  "top_order_pass_candidates": [
+    {
+      "subset_name": "all_speech__all_patterns__ratio_ge_0_95__overlap_ge_0_90__all_pools__all_gains__all_transient__speaker_friend_hard_negative_segments",
+      "count": 18,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.24025584591759575,
+        "v12": 0.08862594763437907,
+        "v13": -0.022755477163526747
+      },
+      "pair_gaps_db": [
+        0.15162989828321666,
+        0.11138142479790582
+      ],
+      "min_pair_gap_db": 0.11138142479790582,
+      "mean_overlap_ratio": 0.9533984167746493,
+      "mean_interference_gain_db": -0.6930000000000001,
+      "mean_target_transient_presence_minus_mid_db_mean": -13.284365998374092,
+      "recipe_counts": {
+        "target_hard_speech": 18
+      },
+      "pattern_counts": {
+        "target_full": 18
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 18
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 18
+      },
+      "builder_filters": {
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__ratio_ge_0_95__overlap_ge_0_90__pool_hard__all_gains__all_transient__all_speakers",
+      "count": 18,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.24025584591759575,
+        "v12": 0.08862594763437907,
+        "v13": -0.022755477163526747
+      },
+      "pair_gaps_db": [
+        0.15162989828321666,
+        0.11138142479790582
+      ],
+      "min_pair_gap_db": 0.11138142479790582,
+      "mean_overlap_ratio": 0.9533984167746493,
+      "mean_interference_gain_db": -0.6930000000000001,
+      "mean_target_transient_presence_minus_mid_db_mean": -13.284365998374092,
+      "recipe_counts": {
+        "target_hard_speech": 18
+      },
+      "pattern_counts": {
+        "target_full": 18
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 18
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 18
+      },
+      "builder_filters": {
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ]
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__ratio_ge_0_95__overlap_ge_0_90__pool_hard__all_gains__all_transient__speaker_friend_hard_negative_segments",
+      "count": 18,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.24025584591759575,
+        "v12": 0.08862594763437907,
+        "v13": -0.022755477163526747
+      },
+      "pair_gaps_db": [
+        0.15162989828321666,
+        0.11138142479790582
+      ],
+      "min_pair_gap_db": 0.11138142479790582,
+      "mean_overlap_ratio": 0.9533984167746493,
+      "mean_interference_gain_db": -0.6930000000000001,
+      "mean_target_transient_presence_minus_mid_db_mean": -13.284365998374092,
+      "recipe_counts": {
+        "target_hard_speech": 18
+      },
+      "pattern_counts": {
+        "target_full": 18
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 18
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 18
+      },
+      "builder_filters": {
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ],
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_full__any_ratio__overlap_ge_0_90__all_pools__all_gains__all_transient__speaker_friend_hard_negative_segments",
+      "count": 18,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.24025584591759575,
+        "v12": 0.08862594763437907,
+        "v13": -0.022755477163526747
+      },
+      "pair_gaps_db": [
+        0.15162989828321666,
+        0.11138142479790582
+      ],
+      "min_pair_gap_db": 0.11138142479790582,
+      "mean_overlap_ratio": 0.9533984167746493,
+      "mean_interference_gain_db": -0.6930000000000001,
+      "mean_target_transient_presence_minus_mid_db_mean": -13.284365998374092,
+      "recipe_counts": {
+        "target_hard_speech": 18
+      },
+      "pattern_counts": {
+        "target_full": 18
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 18
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 18
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_overlap_ratio": 0.9,
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_full__any_ratio__overlap_ge_0_90__pool_hard__all_gains__all_transient__all_speakers",
+      "count": 18,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.24025584591759575,
+        "v12": 0.08862594763437907,
+        "v13": -0.022755477163526747
+      },
+      "pair_gaps_db": [
+        0.15162989828321666,
+        0.11138142479790582
+      ],
+      "min_pair_gap_db": 0.11138142479790582,
+      "mean_overlap_ratio": 0.9533984167746493,
+      "mean_interference_gain_db": -0.6930000000000001,
+      "mean_target_transient_presence_minus_mid_db_mean": -13.284365998374092,
+      "recipe_counts": {
+        "target_hard_speech": 18
+      },
+      "pattern_counts": {
+        "target_full": 18
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 18
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 18
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ]
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_full__any_ratio__overlap_ge_0_90__pool_hard__all_gains__all_transient__speaker_friend_hard_negative_segments",
+      "count": 18,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.24025584591759575,
+        "v12": 0.08862594763437907,
+        "v13": -0.022755477163526747
+      },
+      "pair_gaps_db": [
+        0.15162989828321666,
+        0.11138142479790582
+      ],
+      "min_pair_gap_db": 0.11138142479790582,
+      "mean_overlap_ratio": 0.9533984167746493,
+      "mean_interference_gain_db": -0.6930000000000001,
+      "mean_target_transient_presence_minus_mid_db_mean": -13.284365998374092,
+      "recipe_counts": {
+        "target_hard_speech": 18
+      },
+      "pattern_counts": {
+        "target_full": 18
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 18
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 18
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ],
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_full__ratio_ge_0_95__overlap_ge_0_90__all_pools__all_gains__all_transient__speaker_friend_hard_negative_segments",
+      "count": 18,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.24025584591759575,
+        "v12": 0.08862594763437907,
+        "v13": -0.022755477163526747
+      },
+      "pair_gaps_db": [
+        0.15162989828321666,
+        0.11138142479790582
+      ],
+      "min_pair_gap_db": 0.11138142479790582,
+      "mean_overlap_ratio": 0.9533984167746493,
+      "mean_interference_gain_db": -0.6930000000000001,
+      "mean_target_transient_presence_minus_mid_db_mean": -13.284365998374092,
+      "recipe_counts": {
+        "target_hard_speech": 18
+      },
+      "pattern_counts": {
+        "target_full": 18
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 18
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 18
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_full__ratio_ge_0_95__overlap_ge_0_90__pool_hard__all_gains__all_transient__all_speakers",
+      "count": 18,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.24025584591759575,
+        "v12": 0.08862594763437907,
+        "v13": -0.022755477163526747
+      },
+      "pair_gaps_db": [
+        0.15162989828321666,
+        0.11138142479790582
+      ],
+      "min_pair_gap_db": 0.11138142479790582,
+      "mean_overlap_ratio": 0.9533984167746493,
+      "mean_interference_gain_db": -0.6930000000000001,
+      "mean_target_transient_presence_minus_mid_db_mean": -13.284365998374092,
+      "recipe_counts": {
+        "target_hard_speech": 18
+      },
+      "pattern_counts": {
+        "target_full": 18
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 18
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 18
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ]
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_full__ratio_ge_0_95__overlap_ge_0_90__pool_hard__all_gains__all_transient__speaker_friend_hard_negative_segments",
+      "count": 18,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.24025584591759575,
+        "v12": 0.08862594763437907,
+        "v13": -0.022755477163526747
+      },
+      "pair_gaps_db": [
+        0.15162989828321666,
+        0.11138142479790582
+      ],
+      "min_pair_gap_db": 0.11138142479790582,
+      "mean_overlap_ratio": 0.9533984167746493,
+      "mean_interference_gain_db": -0.6930000000000001,
+      "mean_target_transient_presence_minus_mid_db_mean": -13.284365998374092,
+      "recipe_counts": {
+        "target_hard_speech": 18
+      },
+      "pattern_counts": {
+        "target_full": 18
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 18
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 18
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ],
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "recipe_hard__all_patterns__ratio_ge_0_95__overlap_ge_0_90__all_pools__all_gains__all_transient__all_speakers",
+      "count": 18,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.24025584591759575,
+        "v12": 0.08862594763437907,
+        "v13": -0.022755477163526747
+      },
+      "pair_gaps_db": [
+        0.15162989828321666,
+        0.11138142479790582
+      ],
+      "min_pair_gap_db": 0.11138142479790582,
+      "mean_overlap_ratio": 0.9533984167746493,
+      "mean_interference_gain_db": -0.6930000000000001,
+      "mean_target_transient_presence_minus_mid_db_mean": -13.284365998374092,
+      "recipe_counts": {
+        "target_hard_speech": 18
+      },
+      "pattern_counts": {
+        "target_full": 18
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 18
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 18
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_hard_speech"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9
+      }
+    },
+    {
+      "subset_name": "recipe_hard__all_patterns__ratio_ge_0_95__overlap_ge_0_90__all_pools__all_gains__all_transient__speaker_friend_hard_negative_segments",
+      "count": 18,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.24025584591759575,
+        "v12": 0.08862594763437907,
+        "v13": -0.022755477163526747
+      },
+      "pair_gaps_db": [
+        0.15162989828321666,
+        0.11138142479790582
+      ],
+      "min_pair_gap_db": 0.11138142479790582,
+      "mean_overlap_ratio": 0.9533984167746493,
+      "mean_interference_gain_db": -0.6930000000000001,
+      "mean_target_transient_presence_minus_mid_db_mean": -13.284365998374092,
+      "recipe_counts": {
+        "target_hard_speech": 18
+      },
+      "pattern_counts": {
+        "target_full": 18
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 18
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 18
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_hard_speech"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "recipe_hard__all_patterns__ratio_ge_0_95__overlap_ge_0_90__pool_hard__all_gains__all_transient__all_speakers",
+      "count": 18,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.24025584591759575,
+        "v12": 0.08862594763437907,
+        "v13": -0.022755477163526747
+      },
+      "pair_gaps_db": [
+        0.15162989828321666,
+        0.11138142479790582
+      ],
+      "min_pair_gap_db": 0.11138142479790582,
+      "mean_overlap_ratio": 0.9533984167746493,
+      "mean_interference_gain_db": -0.6930000000000001,
+      "mean_target_transient_presence_minus_mid_db_mean": -13.284365998374092,
+      "recipe_counts": {
+        "target_hard_speech": 18
+      },
+      "pattern_counts": {
+        "target_full": 18
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 18
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 18
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_hard_speech"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ]
+      }
+    },
+    {
+      "subset_name": "recipe_hard__all_patterns__ratio_ge_0_95__overlap_ge_0_90__pool_hard__all_gains__all_transient__speaker_friend_hard_negative_segments",
+      "count": 18,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.24025584591759575,
+        "v12": 0.08862594763437907,
+        "v13": -0.022755477163526747
+      },
+      "pair_gaps_db": [
+        0.15162989828321666,
+        0.11138142479790582
+      ],
+      "min_pair_gap_db": 0.11138142479790582,
+      "mean_overlap_ratio": 0.9533984167746493,
+      "mean_interference_gain_db": -0.6930000000000001,
+      "mean_target_transient_presence_minus_mid_db_mean": -13.284365998374092,
+      "recipe_counts": {
+        "target_hard_speech": 18
+      },
+      "pattern_counts": {
+        "target_full": 18
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 18
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 18
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_hard_speech"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ],
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "recipe_hard__pattern_full__any_ratio__overlap_ge_0_90__all_pools__all_gains__all_transient__all_speakers",
+      "count": 18,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.24025584591759575,
+        "v12": 0.08862594763437907,
+        "v13": -0.022755477163526747
+      },
+      "pair_gaps_db": [
+        0.15162989828321666,
+        0.11138142479790582
+      ],
+      "min_pair_gap_db": 0.11138142479790582,
+      "mean_overlap_ratio": 0.9533984167746493,
+      "mean_interference_gain_db": -0.6930000000000001,
+      "mean_target_transient_presence_minus_mid_db_mean": -13.284365998374092,
+      "recipe_counts": {
+        "target_hard_speech": 18
+      },
+      "pattern_counts": {
+        "target_full": 18
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 18
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 18
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_hard_speech"
+        ],
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_overlap_ratio": 0.9
+      }
+    },
+    {
+      "subset_name": "recipe_hard__pattern_full__any_ratio__overlap_ge_0_90__all_pools__all_gains__all_transient__speaker_friend_hard_negative_segments",
+      "count": 18,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.24025584591759575,
+        "v12": 0.08862594763437907,
+        "v13": -0.022755477163526747
+      },
+      "pair_gaps_db": [
+        0.15162989828321666,
+        0.11138142479790582
+      ],
+      "min_pair_gap_db": 0.11138142479790582,
+      "mean_overlap_ratio": 0.9533984167746493,
+      "mean_interference_gain_db": -0.6930000000000001,
+      "mean_target_transient_presence_minus_mid_db_mean": -13.284365998374092,
+      "recipe_counts": {
+        "target_hard_speech": 18
+      },
+      "pattern_counts": {
+        "target_full": 18
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 18
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 18
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_hard_speech"
+        ],
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_overlap_ratio": 0.9,
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "recipe_hard__pattern_full__any_ratio__overlap_ge_0_90__pool_hard__all_gains__all_transient__all_speakers",
+      "count": 18,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.24025584591759575,
+        "v12": 0.08862594763437907,
+        "v13": -0.022755477163526747
+      },
+      "pair_gaps_db": [
+        0.15162989828321666,
+        0.11138142479790582
+      ],
+      "min_pair_gap_db": 0.11138142479790582,
+      "mean_overlap_ratio": 0.9533984167746493,
+      "mean_interference_gain_db": -0.6930000000000001,
+      "mean_target_transient_presence_minus_mid_db_mean": -13.284365998374092,
+      "recipe_counts": {
+        "target_hard_speech": 18
+      },
+      "pattern_counts": {
+        "target_full": 18
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 18
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 18
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_hard_speech"
+        ],
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ]
+      }
+    },
+    {
+      "subset_name": "recipe_hard__pattern_full__any_ratio__overlap_ge_0_90__pool_hard__all_gains__all_transient__speaker_friend_hard_negative_segments",
+      "count": 18,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.24025584591759575,
+        "v12": 0.08862594763437907,
+        "v13": -0.022755477163526747
+      },
+      "pair_gaps_db": [
+        0.15162989828321666,
+        0.11138142479790582
+      ],
+      "min_pair_gap_db": 0.11138142479790582,
+      "mean_overlap_ratio": 0.9533984167746493,
+      "mean_interference_gain_db": -0.6930000000000001,
+      "mean_target_transient_presence_minus_mid_db_mean": -13.284365998374092,
+      "recipe_counts": {
+        "target_hard_speech": 18
+      },
+      "pattern_counts": {
+        "target_full": 18
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 18
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 18
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_hard_speech"
+        ],
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ],
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "recipe_hard__pattern_full__ratio_ge_0_95__overlap_ge_0_90__all_pools__all_gains__all_transient__all_speakers",
+      "count": 18,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.24025584591759575,
+        "v12": 0.08862594763437907,
+        "v13": -0.022755477163526747
+      },
+      "pair_gaps_db": [
+        0.15162989828321666,
+        0.11138142479790582
+      ],
+      "min_pair_gap_db": 0.11138142479790582,
+      "mean_overlap_ratio": 0.9533984167746493,
+      "mean_interference_gain_db": -0.6930000000000001,
+      "mean_target_transient_presence_minus_mid_db_mean": -13.284365998374092,
+      "recipe_counts": {
+        "target_hard_speech": 18
+      },
+      "pattern_counts": {
+        "target_full": 18
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 18
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 18
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_hard_speech"
+        ],
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9
+      }
+    },
+    {
+      "subset_name": "recipe_hard__pattern_full__ratio_ge_0_95__overlap_ge_0_90__all_pools__all_gains__all_transient__speaker_friend_hard_negative_segments",
+      "count": 18,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.24025584591759575,
+        "v12": 0.08862594763437907,
+        "v13": -0.022755477163526747
+      },
+      "pair_gaps_db": [
+        0.15162989828321666,
+        0.11138142479790582
+      ],
+      "min_pair_gap_db": 0.11138142479790582,
+      "mean_overlap_ratio": 0.9533984167746493,
+      "mean_interference_gain_db": -0.6930000000000001,
+      "mean_target_transient_presence_minus_mid_db_mean": -13.284365998374092,
+      "recipe_counts": {
+        "target_hard_speech": 18
+      },
+      "pattern_counts": {
+        "target_full": 18
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 18
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 18
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_hard_speech"
+        ],
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "recipe_hard__pattern_full__ratio_ge_0_95__overlap_ge_0_90__pool_hard__all_gains__all_transient__all_speakers",
+      "count": 18,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.24025584591759575,
+        "v12": 0.08862594763437907,
+        "v13": -0.022755477163526747
+      },
+      "pair_gaps_db": [
+        0.15162989828321666,
+        0.11138142479790582
+      ],
+      "min_pair_gap_db": 0.11138142479790582,
+      "mean_overlap_ratio": 0.9533984167746493,
+      "mean_interference_gain_db": -0.6930000000000001,
+      "mean_target_transient_presence_minus_mid_db_mean": -13.284365998374092,
+      "recipe_counts": {
+        "target_hard_speech": 18
+      },
+      "pattern_counts": {
+        "target_full": 18
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 18
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 18
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_hard_speech"
+        ],
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ]
+      }
+    },
+    {
+      "subset_name": "recipe_hard__pattern_full__ratio_ge_0_95__overlap_ge_0_90__pool_hard__all_gains__all_transient__speaker_friend_hard_negative_segments",
+      "count": 18,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.24025584591759575,
+        "v12": 0.08862594763437907,
+        "v13": -0.022755477163526747
+      },
+      "pair_gaps_db": [
+        0.15162989828321666,
+        0.11138142479790582
+      ],
+      "min_pair_gap_db": 0.11138142479790582,
+      "mean_overlap_ratio": 0.9533984167746493,
+      "mean_interference_gain_db": -0.6930000000000001,
+      "mean_target_transient_presence_minus_mid_db_mean": -13.284365998374092,
+      "recipe_counts": {
+        "target_hard_speech": 18
+      },
+      "pattern_counts": {
+        "target_full": 18
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 18
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 18
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_hard_speech"
+        ],
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ],
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__ratio_ge_0_95__overlap_ge_0_75__all_pools__all_gains__all_transient__speaker_friend_hard_negative_segments",
+      "count": 39,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.25633971049235416,
+        "v12": 0.15514794068458754,
+        "v13": 0.05050897139769334
+      },
+      "pair_gaps_db": [
+        0.10119176980776662,
+        0.1046389692868942
+      ],
+      "min_pair_gap_db": 0.10119176980776662,
+      "mean_overlap_ratio": 0.8833853805832964,
+      "mean_interference_gain_db": -1.030025641025641,
+      "mean_target_transient_presence_minus_mid_db_mean": -12.543198169806065,
+      "recipe_counts": {
+        "target_hard_speech": 39
+      },
+      "pattern_counts": {
+        "target_full": 39
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 39
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 39
+      },
+      "builder_filters": {
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.75,
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__ratio_ge_0_95__overlap_ge_0_75__pool_hard__all_gains__all_transient__all_speakers",
+      "count": 39,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.25633971049235416,
+        "v12": 0.15514794068458754,
+        "v13": 0.05050897139769334
+      },
+      "pair_gaps_db": [
+        0.10119176980776662,
+        0.1046389692868942
+      ],
+      "min_pair_gap_db": 0.10119176980776662,
+      "mean_overlap_ratio": 0.8833853805832964,
+      "mean_interference_gain_db": -1.030025641025641,
+      "mean_target_transient_presence_minus_mid_db_mean": -12.543198169806065,
+      "recipe_counts": {
+        "target_hard_speech": 39
+      },
+      "pattern_counts": {
+        "target_full": 39
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 39
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 39
+      },
+      "builder_filters": {
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.75,
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ]
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__ratio_ge_0_95__overlap_ge_0_75__pool_hard__all_gains__all_transient__speaker_friend_hard_negative_segments",
+      "count": 39,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.25633971049235416,
+        "v12": 0.15514794068458754,
+        "v13": 0.05050897139769334
+      },
+      "pair_gaps_db": [
+        0.10119176980776662,
+        0.1046389692868942
+      ],
+      "min_pair_gap_db": 0.10119176980776662,
+      "mean_overlap_ratio": 0.8833853805832964,
+      "mean_interference_gain_db": -1.030025641025641,
+      "mean_target_transient_presence_minus_mid_db_mean": -12.543198169806065,
+      "recipe_counts": {
+        "target_hard_speech": 39
+      },
+      "pattern_counts": {
+        "target_full": 39
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 39
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 39
+      },
+      "builder_filters": {
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.75,
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ],
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_full__any_ratio__overlap_ge_0_75__all_pools__all_gains__all_transient__speaker_friend_hard_negative_segments",
+      "count": 39,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.25633971049235416,
+        "v12": 0.15514794068458754,
+        "v13": 0.05050897139769334
+      },
+      "pair_gaps_db": [
+        0.10119176980776662,
+        0.1046389692868942
+      ],
+      "min_pair_gap_db": 0.10119176980776662,
+      "mean_overlap_ratio": 0.8833853805832964,
+      "mean_interference_gain_db": -1.030025641025641,
+      "mean_target_transient_presence_minus_mid_db_mean": -12.543198169806065,
+      "recipe_counts": {
+        "target_hard_speech": 39
+      },
+      "pattern_counts": {
+        "target_full": 39
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 39
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 39
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_overlap_ratio": 0.75,
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_full__any_ratio__overlap_ge_0_75__pool_hard__all_gains__all_transient__all_speakers",
+      "count": 39,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.25633971049235416,
+        "v12": 0.15514794068458754,
+        "v13": 0.05050897139769334
+      },
+      "pair_gaps_db": [
+        0.10119176980776662,
+        0.1046389692868942
+      ],
+      "min_pair_gap_db": 0.10119176980776662,
+      "mean_overlap_ratio": 0.8833853805832964,
+      "mean_interference_gain_db": -1.030025641025641,
+      "mean_target_transient_presence_minus_mid_db_mean": -12.543198169806065,
+      "recipe_counts": {
+        "target_hard_speech": 39
+      },
+      "pattern_counts": {
+        "target_full": 39
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 39
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 39
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_overlap_ratio": 0.75,
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ]
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_full__any_ratio__overlap_ge_0_75__pool_hard__all_gains__all_transient__speaker_friend_hard_negative_segments",
+      "count": 39,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.25633971049235416,
+        "v12": 0.15514794068458754,
+        "v13": 0.05050897139769334
+      },
+      "pair_gaps_db": [
+        0.10119176980776662,
+        0.1046389692868942
+      ],
+      "min_pair_gap_db": 0.10119176980776662,
+      "mean_overlap_ratio": 0.8833853805832964,
+      "mean_interference_gain_db": -1.030025641025641,
+      "mean_target_transient_presence_minus_mid_db_mean": -12.543198169806065,
+      "recipe_counts": {
+        "target_hard_speech": 39
+      },
+      "pattern_counts": {
+        "target_full": 39
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 39
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 39
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_overlap_ratio": 0.75,
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ],
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_full__ratio_ge_0_95__overlap_ge_0_75__all_pools__all_gains__all_transient__speaker_friend_hard_negative_segments",
+      "count": 39,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.25633971049235416,
+        "v12": 0.15514794068458754,
+        "v13": 0.05050897139769334
+      },
+      "pair_gaps_db": [
+        0.10119176980776662,
+        0.1046389692868942
+      ],
+      "min_pair_gap_db": 0.10119176980776662,
+      "mean_overlap_ratio": 0.8833853805832964,
+      "mean_interference_gain_db": -1.030025641025641,
+      "mean_target_transient_presence_minus_mid_db_mean": -12.543198169806065,
+      "recipe_counts": {
+        "target_hard_speech": 39
+      },
+      "pattern_counts": {
+        "target_full": 39
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 39
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 39
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.75,
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_full__ratio_ge_0_95__overlap_ge_0_75__pool_hard__all_gains__all_transient__all_speakers",
+      "count": 39,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.25633971049235416,
+        "v12": 0.15514794068458754,
+        "v13": 0.05050897139769334
+      },
+      "pair_gaps_db": [
+        0.10119176980776662,
+        0.1046389692868942
+      ],
+      "min_pair_gap_db": 0.10119176980776662,
+      "mean_overlap_ratio": 0.8833853805832964,
+      "mean_interference_gain_db": -1.030025641025641,
+      "mean_target_transient_presence_minus_mid_db_mean": -12.543198169806065,
+      "recipe_counts": {
+        "target_hard_speech": 39
+      },
+      "pattern_counts": {
+        "target_full": 39
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 39
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 39
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.75,
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ]
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_full__ratio_ge_0_95__overlap_ge_0_75__pool_hard__all_gains__all_transient__speaker_friend_hard_negative_segments",
+      "count": 39,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.25633971049235416,
+        "v12": 0.15514794068458754,
+        "v13": 0.05050897139769334
+      },
+      "pair_gaps_db": [
+        0.10119176980776662,
+        0.1046389692868942
+      ],
+      "min_pair_gap_db": 0.10119176980776662,
+      "mean_overlap_ratio": 0.8833853805832964,
+      "mean_interference_gain_db": -1.030025641025641,
+      "mean_target_transient_presence_minus_mid_db_mean": -12.543198169806065,
+      "recipe_counts": {
+        "target_hard_speech": 39
+      },
+      "pattern_counts": {
+        "target_full": 39
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 39
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 39
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.75,
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ],
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    }
+  ],
+  "top_near_miss_candidates": [
+    {
+      "subset_name": "all_speech__pattern_nonfull__any_ratio__any_overlap__all_pools__all_gains__all_transient__all_speakers",
+      "count": 118,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.3197696895922645,
+        "v12": 0.3201480305801004,
+        "v13": 0.3258886418100131
+      },
+      "pair_gaps_db": [
+        -0.0003783409878359012
+      ],
+      "min_pair_gap_db": -0.0003783409878359012,
+      "mean_overlap_ratio": 0.8121076476295962,
+      "mean_interference_gain_db": -1.9513389830508474,
+      "mean_target_transient_presence_minus_mid_db_mean": -11.875323190527448,
+      "recipe_counts": {
+        "target_clean_speech": 65,
+        "target_hard_speech": 53
+      },
+      "pattern_counts": {
+        "target_absent_head": 30,
+        "target_absent_tail": 53,
+        "target_intermittent": 35
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 65,
+        "speech_interference_hard_pool": 53
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 53,
+        "「花角玉将」": 1,
+        "七尾": 1,
+        "今谷三郎": 1,
+        "伊迪娅": 1,
+        "伯恩哈德": 1,
+        "伸夫": 1,
+        "债务处理人": 1,
+        "克罗索": 1,
+        "八重神子": 1,
+        "兰巴德": 1,
+        "其它语音 - Others": 2,
+        "刻晴": 1,
+        "博来": 1,
+        "图昂": 1,
+        "多莉": 1,
+        "天目十五": 1,
+        "奥格劳": 1,
+        "小川": 1,
+        "巴顿": 1,
+        "带变量语音 - Placeholder": 2,
+        "德田": 1,
+        "恶龙": 1,
+        "慧心": 1,
+        "战斗语音 - Battle": 3,
+        "托克": 1,
+        "拉斯蒂涅": 1,
+        "拉韦兰": 1,
+        "普里耶": 1,
+        "木南杏奈": 1,
+        "格蕾希艾": 1,
+        "歌特琳德": 1,
+        "浮游水蕈兽·元素生命": 1,
+        "渡部": 1,
+        "狗三儿": 1,
+        "玛乔丽": 1,
+        "玛塞勒": 1,
+        "琳妮特": 1,
+        "神奇的霍普金斯": 1,
+        "科林斯": 1,
+        "纪芳": 2,
+        "纳比尔": 1,
+        "绘星": 1,
+        "维格尔": 1,
+        "罗纳克": 1,
+        "美铃": 1,
+        "聪子": 1,
+        "芙卡洛斯": 1,
+        "莫里斯": 1,
+        "莱依拉": 1,
+        "莱昂": 1,
+        "葛瑞丝": 1,
+        "西敏": 1,
+        "赛诺": 1,
+        "迪娜泽黛": 1,
+        "迪希雅": 1,
+        "野方": 1,
+        "闲云": 1,
+        "阿大": 1,
+        "雷泽": 1,
+        "鹿野院平藏": 1
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ]
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__any_ratio__any_overlap__all_pools__all_gains__transient_ge_q50__speaker_friend_hard_negative_segments",
+      "count": 53,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.08736241875954394,
+        "v12": 0.0006381329500450278,
+        "v13": 0.0013718548810706947
+      },
+      "pair_gaps_db": [
+        0.08672428580949891,
+        -0.0007337219310256669
+      ],
+      "min_pair_gap_db": -0.0007337219310256669,
+      "mean_overlap_ratio": 0.8008905176383958,
+      "mean_interference_gain_db": -1.2718301886792456,
+      "mean_target_transient_presence_minus_mid_db_mean": -7.289241180105029,
+      "recipe_counts": {
+        "target_hard_speech": 53
+      },
+      "pattern_counts": {
+        "target_absent_head": 8,
+        "target_absent_tail": 10,
+        "target_full": 25,
+        "target_intermittent": 10
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 53
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 53
+      },
+      "builder_filters": {
+        "min_target_transient_presence_minus_mid_db_mean": -11.535072326660156,
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__any_ratio__any_overlap__pool_hard__all_gains__transient_ge_q50__all_speakers",
+      "count": 53,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.08736241875954394,
+        "v12": 0.0006381329500450278,
+        "v13": 0.0013718548810706947
+      },
+      "pair_gaps_db": [
+        0.08672428580949891,
+        -0.0007337219310256669
+      ],
+      "min_pair_gap_db": -0.0007337219310256669,
+      "mean_overlap_ratio": 0.8008905176383958,
+      "mean_interference_gain_db": -1.2718301886792456,
+      "mean_target_transient_presence_minus_mid_db_mean": -7.289241180105029,
+      "recipe_counts": {
+        "target_hard_speech": 53
+      },
+      "pattern_counts": {
+        "target_absent_head": 8,
+        "target_absent_tail": 10,
+        "target_full": 25,
+        "target_intermittent": 10
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 53
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 53
+      },
+      "builder_filters": {
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ],
+        "min_target_transient_presence_minus_mid_db_mean": -11.535072326660156
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__any_ratio__any_overlap__pool_hard__all_gains__transient_ge_q50__speaker_friend_hard_negative_segments",
+      "count": 53,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.08736241875954394,
+        "v12": 0.0006381329500450278,
+        "v13": 0.0013718548810706947
+      },
+      "pair_gaps_db": [
+        0.08672428580949891,
+        -0.0007337219310256669
+      ],
+      "min_pair_gap_db": -0.0007337219310256669,
+      "mean_overlap_ratio": 0.8008905176383958,
+      "mean_interference_gain_db": -1.2718301886792456,
+      "mean_target_transient_presence_minus_mid_db_mean": -7.289241180105029,
+      "recipe_counts": {
+        "target_hard_speech": 53
+      },
+      "pattern_counts": {
+        "target_absent_head": 8,
+        "target_absent_tail": 10,
+        "target_full": 25,
+        "target_intermittent": 10
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 53
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 53
+      },
+      "builder_filters": {
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ],
+        "min_target_transient_presence_minus_mid_db_mean": -11.535072326660156,
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "recipe_hard__all_patterns__any_ratio__any_overlap__all_pools__all_gains__transient_ge_q50__all_speakers",
+      "count": 53,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.08736241875954394,
+        "v12": 0.0006381329500450278,
+        "v13": 0.0013718548810706947
+      },
+      "pair_gaps_db": [
+        0.08672428580949891,
+        -0.0007337219310256669
+      ],
+      "min_pair_gap_db": -0.0007337219310256669,
+      "mean_overlap_ratio": 0.8008905176383958,
+      "mean_interference_gain_db": -1.2718301886792456,
+      "mean_target_transient_presence_minus_mid_db_mean": -7.289241180105029,
+      "recipe_counts": {
+        "target_hard_speech": 53
+      },
+      "pattern_counts": {
+        "target_absent_head": 8,
+        "target_absent_tail": 10,
+        "target_full": 25,
+        "target_intermittent": 10
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 53
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 53
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_hard_speech"
+        ],
+        "min_target_transient_presence_minus_mid_db_mean": -11.535072326660156
+      }
+    },
+    {
+      "subset_name": "recipe_hard__all_patterns__any_ratio__any_overlap__all_pools__all_gains__transient_ge_q50__speaker_friend_hard_negative_segments",
+      "count": 53,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.08736241875954394,
+        "v12": 0.0006381329500450278,
+        "v13": 0.0013718548810706947
+      },
+      "pair_gaps_db": [
+        0.08672428580949891,
+        -0.0007337219310256669
+      ],
+      "min_pair_gap_db": -0.0007337219310256669,
+      "mean_overlap_ratio": 0.8008905176383958,
+      "mean_interference_gain_db": -1.2718301886792456,
+      "mean_target_transient_presence_minus_mid_db_mean": -7.289241180105029,
+      "recipe_counts": {
+        "target_hard_speech": 53
+      },
+      "pattern_counts": {
+        "target_absent_head": 8,
+        "target_absent_tail": 10,
+        "target_full": 25,
+        "target_intermittent": 10
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 53
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 53
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_hard_speech"
+        ],
+        "min_target_transient_presence_minus_mid_db_mean": -11.535072326660156,
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "recipe_hard__all_patterns__any_ratio__any_overlap__pool_hard__all_gains__transient_ge_q50__all_speakers",
+      "count": 53,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.08736241875954394,
+        "v12": 0.0006381329500450278,
+        "v13": 0.0013718548810706947
+      },
+      "pair_gaps_db": [
+        0.08672428580949891,
+        -0.0007337219310256669
+      ],
+      "min_pair_gap_db": -0.0007337219310256669,
+      "mean_overlap_ratio": 0.8008905176383958,
+      "mean_interference_gain_db": -1.2718301886792456,
+      "mean_target_transient_presence_minus_mid_db_mean": -7.289241180105029,
+      "recipe_counts": {
+        "target_hard_speech": 53
+      },
+      "pattern_counts": {
+        "target_absent_head": 8,
+        "target_absent_tail": 10,
+        "target_full": 25,
+        "target_intermittent": 10
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 53
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 53
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_hard_speech"
+        ],
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ],
+        "min_target_transient_presence_minus_mid_db_mean": -11.535072326660156
+      }
+    },
+    {
+      "subset_name": "recipe_hard__all_patterns__any_ratio__any_overlap__pool_hard__all_gains__transient_ge_q50__speaker_friend_hard_negative_segments",
+      "count": 53,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.08736241875954394,
+        "v12": 0.0006381329500450278,
+        "v13": 0.0013718548810706947
+      },
+      "pair_gaps_db": [
+        0.08672428580949891,
+        -0.0007337219310256669
+      ],
+      "min_pair_gap_db": -0.0007337219310256669,
+      "mean_overlap_ratio": 0.8008905176383958,
+      "mean_interference_gain_db": -1.2718301886792456,
+      "mean_target_transient_presence_minus_mid_db_mean": -7.289241180105029,
+      "recipe_counts": {
+        "target_hard_speech": 53
+      },
+      "pattern_counts": {
+        "target_absent_head": 8,
+        "target_absent_tail": 10,
+        "target_full": 25,
+        "target_intermittent": 10
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 53
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 53
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_hard_speech"
+        ],
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ],
+        "min_target_transient_presence_minus_mid_db_mean": -11.535072326660156,
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_nonfull__any_ratio__any_overlap__all_pools__gain_ge_q50__all_transient__speaker_friend_hard_negative_segments",
+      "count": 31,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": -0.007206124644125661,
+        "v12": -0.09382562098964568,
+        "v13": -0.0922110003809775
+      },
+      "pair_gaps_db": [
+        0.08661949634552002,
+        -0.0016146206086681825
+      ],
+      "min_pair_gap_db": -0.0016146206086681825,
+      "mean_overlap_ratio": 0.792486151191125,
+      "mean_interference_gain_db": -0.20483870967741932,
+      "mean_target_transient_presence_minus_mid_db_mean": -10.824021329802852,
+      "recipe_counts": {
+        "target_hard_speech": 31
+      },
+      "pattern_counts": {
+        "target_absent_head": 7,
+        "target_absent_tail": 12,
+        "target_intermittent": 12
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 31
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 31
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "min_interference_gain_db": -2.0179998874664307,
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_nonfull__any_ratio__any_overlap__pool_hard__gain_ge_q50__all_transient__all_speakers",
+      "count": 31,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": -0.007206124644125661,
+        "v12": -0.09382562098964568,
+        "v13": -0.0922110003809775
+      },
+      "pair_gaps_db": [
+        0.08661949634552002,
+        -0.0016146206086681825
+      ],
+      "min_pair_gap_db": -0.0016146206086681825,
+      "mean_overlap_ratio": 0.792486151191125,
+      "mean_interference_gain_db": -0.20483870967741932,
+      "mean_target_transient_presence_minus_mid_db_mean": -10.824021329802852,
+      "recipe_counts": {
+        "target_hard_speech": 31
+      },
+      "pattern_counts": {
+        "target_absent_head": 7,
+        "target_absent_tail": 12,
+        "target_intermittent": 12
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 31
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 31
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ],
+        "min_interference_gain_db": -2.0179998874664307
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_nonfull__any_ratio__any_overlap__pool_hard__gain_ge_q50__all_transient__speaker_friend_hard_negative_segments",
+      "count": 31,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": -0.007206124644125661,
+        "v12": -0.09382562098964568,
+        "v13": -0.0922110003809775
+      },
+      "pair_gaps_db": [
+        0.08661949634552002,
+        -0.0016146206086681825
+      ],
+      "min_pair_gap_db": -0.0016146206086681825,
+      "mean_overlap_ratio": 0.792486151191125,
+      "mean_interference_gain_db": -0.20483870967741932,
+      "mean_target_transient_presence_minus_mid_db_mean": -10.824021329802852,
+      "recipe_counts": {
+        "target_hard_speech": 31
+      },
+      "pattern_counts": {
+        "target_absent_head": 7,
+        "target_absent_tail": 12,
+        "target_intermittent": 12
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 31
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 31
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ],
+        "min_interference_gain_db": -2.0179998874664307,
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "recipe_hard__pattern_nonfull__any_ratio__any_overlap__all_pools__gain_ge_q50__all_transient__all_speakers",
+      "count": 31,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": -0.007206124644125661,
+        "v12": -0.09382562098964568,
+        "v13": -0.0922110003809775
+      },
+      "pair_gaps_db": [
+        0.08661949634552002,
+        -0.0016146206086681825
+      ],
+      "min_pair_gap_db": -0.0016146206086681825,
+      "mean_overlap_ratio": 0.792486151191125,
+      "mean_interference_gain_db": -0.20483870967741932,
+      "mean_target_transient_presence_minus_mid_db_mean": -10.824021329802852,
+      "recipe_counts": {
+        "target_hard_speech": 31
+      },
+      "pattern_counts": {
+        "target_absent_head": 7,
+        "target_absent_tail": 12,
+        "target_intermittent": 12
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 31
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 31
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_hard_speech"
+        ],
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "min_interference_gain_db": -2.0179998874664307
+      }
+    },
+    {
+      "subset_name": "recipe_hard__pattern_nonfull__any_ratio__any_overlap__all_pools__gain_ge_q50__all_transient__speaker_friend_hard_negative_segments",
+      "count": 31,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": -0.007206124644125661,
+        "v12": -0.09382562098964568,
+        "v13": -0.0922110003809775
+      },
+      "pair_gaps_db": [
+        0.08661949634552002,
+        -0.0016146206086681825
+      ],
+      "min_pair_gap_db": -0.0016146206086681825,
+      "mean_overlap_ratio": 0.792486151191125,
+      "mean_interference_gain_db": -0.20483870967741932,
+      "mean_target_transient_presence_minus_mid_db_mean": -10.824021329802852,
+      "recipe_counts": {
+        "target_hard_speech": 31
+      },
+      "pattern_counts": {
+        "target_absent_head": 7,
+        "target_absent_tail": 12,
+        "target_intermittent": 12
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 31
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 31
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_hard_speech"
+        ],
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "min_interference_gain_db": -2.0179998874664307,
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "recipe_hard__pattern_nonfull__any_ratio__any_overlap__pool_hard__gain_ge_q50__all_transient__all_speakers",
+      "count": 31,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": -0.007206124644125661,
+        "v12": -0.09382562098964568,
+        "v13": -0.0922110003809775
+      },
+      "pair_gaps_db": [
+        0.08661949634552002,
+        -0.0016146206086681825
+      ],
+      "min_pair_gap_db": -0.0016146206086681825,
+      "mean_overlap_ratio": 0.792486151191125,
+      "mean_interference_gain_db": -0.20483870967741932,
+      "mean_target_transient_presence_minus_mid_db_mean": -10.824021329802852,
+      "recipe_counts": {
+        "target_hard_speech": 31
+      },
+      "pattern_counts": {
+        "target_absent_head": 7,
+        "target_absent_tail": 12,
+        "target_intermittent": 12
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 31
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 31
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_hard_speech"
+        ],
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ],
+        "min_interference_gain_db": -2.0179998874664307
+      }
+    },
+    {
+      "subset_name": "recipe_hard__pattern_nonfull__any_ratio__any_overlap__pool_hard__gain_ge_q50__all_transient__speaker_friend_hard_negative_segments",
+      "count": 31,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": -0.007206124644125661,
+        "v12": -0.09382562098964568,
+        "v13": -0.0922110003809775
+      },
+      "pair_gaps_db": [
+        0.08661949634552002,
+        -0.0016146206086681825
+      ],
+      "min_pair_gap_db": -0.0016146206086681825,
+      "mean_overlap_ratio": 0.792486151191125,
+      "mean_interference_gain_db": -0.20483870967741932,
+      "mean_target_transient_presence_minus_mid_db_mean": -10.824021329802852,
+      "recipe_counts": {
+        "target_hard_speech": 31
+      },
+      "pattern_counts": {
+        "target_absent_head": 7,
+        "target_absent_tail": 12,
+        "target_intermittent": 12
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 31
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 31
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_hard_speech"
+        ],
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ],
+        "min_interference_gain_db": -2.0179998874664307,
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_nonfull__any_ratio__any_overlap__all_pools__gain_ge_q50__all_transient__all_speakers",
+      "count": 58,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.29520780464698526,
+        "v12": 0.29700725448542625,
+        "v13": 0.29692685193028945
+      },
+      "pair_gaps_db": [
+        -0.0017994498384409918
+      ],
+      "min_pair_gap_db": -0.0017994498384409918,
+      "mean_overlap_ratio": 0.8043643967198043,
+      "mean_interference_gain_db": -0.2974827586206897,
+      "mean_target_transient_presence_minus_mid_db_mean": -11.391834873577643,
+      "recipe_counts": {
+        "target_clean_speech": 27,
+        "target_hard_speech": 31
+      },
+      "pattern_counts": {
+        "target_absent_head": 15,
+        "target_absent_tail": 24,
+        "target_intermittent": 19
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 27,
+        "speech_interference_hard_pool": 31
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 31,
+        "「花角玉将」": 1,
+        "今谷三郎": 1,
+        "伯恩哈德": 1,
+        "债务处理人": 1,
+        "其它语音 - Others": 2,
+        "图昂": 1,
+        "巴顿": 1,
+        "带变量语音 - Placeholder": 2,
+        "恶龙": 1,
+        "战斗语音 - Battle": 1,
+        "托克": 1,
+        "歌特琳德": 1,
+        "浮游水蕈兽·元素生命": 1,
+        "狗三儿": 1,
+        "玛乔丽": 1,
+        "琳妮特": 1,
+        "神奇的霍普金斯": 1,
+        "科林斯": 1,
+        "纪芳": 1,
+        "纳比尔": 1,
+        "维格尔": 1,
+        "芙卡洛斯": 1,
+        "迪娜泽黛": 1,
+        "迪希雅": 1,
+        "闲云": 1
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "min_interference_gain_db": -2.0179998874664307
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__any_ratio__overlap_ge_0_90__all_pools__gain_ge_q67__transient_ge_q67__all_speakers",
+      "count": 8,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 1.5743230134248734,
+        "v12": 1.464777633547783,
+        "v13": 1.4680027961730957
+      },
+      "pair_gaps_db": [
+        0.10954537987709045,
+        -0.003225162625312805
+      ],
+      "min_pair_gap_db": -0.003225162625312805,
+      "mean_overlap_ratio": 0.9692834964427463,
+      "mean_interference_gain_db": 0.178625,
+      "mean_target_transient_presence_minus_mid_db_mean": -4.648933082818985,
+      "recipe_counts": {
+        "target_clean_speech": 6,
+        "target_hard_speech": 2
+      },
+      "pattern_counts": {
+        "target_absent_head": 1,
+        "target_absent_tail": 1,
+        "target_full": 6
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 6,
+        "speech_interference_hard_pool": 2
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 2,
+        "其它语音 - Others": 1,
+        "巴蒂斯特": 1,
+        "慧心": 1,
+        "戈尔代": 1,
+        "纳比尔": 1,
+        "观众": 1
+      },
+      "builder_filters": {
+        "min_overlap_ratio": 0.9,
+        "min_interference_gain_db": -0.8906666636466982,
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__any_ratio__any_overlap__all_pools__all_gains__transient_ge_q67__all_speakers",
+      "count": 79,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 1.3603507165290132,
+        "v12": 1.3655895468177675,
+        "v13": 1.3864847465029246
+      },
+      "pair_gaps_db": [
+        -0.00523883028875427
+      ],
+      "min_pair_gap_db": -0.00523883028875427,
+      "mean_overlap_ratio": 0.8385199268436286,
+      "mean_interference_gain_db": -2.1139873417721513,
+      "mean_target_transient_presence_minus_mid_db_mean": -5.8337416845031935,
+      "recipe_counts": {
+        "target_clean_speech": 46,
+        "target_hard_speech": 33
+      },
+      "pattern_counts": {
+        "target_absent_head": 10,
+        "target_absent_tail": 13,
+        "target_full": 42,
+        "target_intermittent": 14
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 46,
+        "speech_interference_hard_pool": 33
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 33,
+        "丹羽": 1,
+        "伊迪娅": 1,
+        "健司": 1,
+        "其它语音 - Others": 2,
+        "凯亚": 1,
+        "刻晴": 1,
+        "削月筑阳真君": 1,
+        "北村": 1,
+        "周良": 1,
+        "多莉": 1,
+        "小川": 2,
+        "巴蒂斯特": 1,
+        "恶龙": 1,
+        "慧心": 1,
+        "戈尔代": 1,
+        "戴因斯雷布": 1,
+        "拉韦兰": 1,
+        "暮夜剧团团长": 1,
+        "木南杏奈": 1,
+        "杰克": 1,
+        "波林": 1,
+        "玛塞勒": 1,
+        "玛蕾蒂": 1,
+        "玲花": 1,
+        "琳妮特": 1,
+        "百闻": 2,
+        "石壮": 1,
+        "神奇的霍普金斯": 1,
+        "纳比尔": 1,
+        "维格尔": 1,
+        "美铃": 1,
+        "聪子": 1,
+        "舍利夫": 1,
+        "莫娜": 1,
+        "莫里斯": 1,
+        "莱欧斯利": 1,
+        "葛瑞丝": 1,
+        "观众": 1,
+        "赛诺": 1,
+        "迈蒙": 1,
+        "野方": 1,
+        "陆行岩本真蕈·元素生命": 1,
+        "黛比": 1
+      },
+      "builder_filters": {
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__any_ratio__any_overlap__all_pools__gain_ge_q50__transient_ge_q67__all_speakers",
+      "count": 35,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.7169845870562962,
+        "v12": 0.6668598243168422,
+        "v13": 0.6732887063707624
+      },
+      "pair_gaps_db": [
+        0.05012476273945399,
+        -0.006428882053920226
+      ],
+      "min_pair_gap_db": -0.006428882053920226,
+      "mean_overlap_ratio": 0.8264346430776615,
+      "mean_interference_gain_db": -0.3780571428571428,
+      "mean_target_transient_presence_minus_mid_db_mean": -5.3249225378036495,
+      "recipe_counts": {
+        "target_clean_speech": 16,
+        "target_hard_speech": 19
+      },
+      "pattern_counts": {
+        "target_absent_head": 4,
+        "target_absent_tail": 5,
+        "target_full": 17,
+        "target_intermittent": 9
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 16,
+        "speech_interference_hard_pool": 19
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 19,
+        "其它语音 - Others": 2,
+        "凯亚": 1,
+        "北村": 1,
+        "周良": 1,
+        "巴蒂斯特": 1,
+        "恶龙": 1,
+        "慧心": 1,
+        "戈尔代": 1,
+        "琳妮特": 1,
+        "神奇的霍普金斯": 1,
+        "纳比尔": 1,
+        "维格尔": 1,
+        "莫娜": 1,
+        "观众": 1,
+        "陆行岩本真蕈·元素生命": 1
+      },
+      "builder_filters": {
+        "min_interference_gain_db": -2.0179998874664307,
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__any_ratio__any_overlap__all_pools__gain_ge_q50__transient_ge_q50__speaker_friend_hard_negative_segments",
+      "count": 32,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.06622408144176006,
+        "v12": -0.0401857104152441,
+        "v13": -0.03331244923174381
+      },
+      "pair_gaps_db": [
+        0.10640979185700417,
+        -0.00687326118350029
+      ],
+      "min_pair_gap_db": -0.00687326118350029,
+      "mean_overlap_ratio": 0.782783990292505,
+      "mean_interference_gain_db": -0.1568125,
+      "mean_target_transient_presence_minus_mid_db_mean": -7.314237585291266,
+      "recipe_counts": {
+        "target_hard_speech": 32
+      },
+      "pattern_counts": {
+        "target_absent_head": 3,
+        "target_absent_tail": 6,
+        "target_full": 15,
+        "target_intermittent": 8
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 32
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 32
+      },
+      "builder_filters": {
+        "min_interference_gain_db": -2.0179998874664307,
+        "min_target_transient_presence_minus_mid_db_mean": -11.535072326660156,
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__any_ratio__any_overlap__pool_hard__gain_ge_q50__transient_ge_q50__all_speakers",
+      "count": 32,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.06622408144176006,
+        "v12": -0.0401857104152441,
+        "v13": -0.03331244923174381
+      },
+      "pair_gaps_db": [
+        0.10640979185700417,
+        -0.00687326118350029
+      ],
+      "min_pair_gap_db": -0.00687326118350029,
+      "mean_overlap_ratio": 0.782783990292505,
+      "mean_interference_gain_db": -0.1568125,
+      "mean_target_transient_presence_minus_mid_db_mean": -7.314237585291266,
+      "recipe_counts": {
+        "target_hard_speech": 32
+      },
+      "pattern_counts": {
+        "target_absent_head": 3,
+        "target_absent_tail": 6,
+        "target_full": 15,
+        "target_intermittent": 8
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 32
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 32
+      },
+      "builder_filters": {
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ],
+        "min_interference_gain_db": -2.0179998874664307,
+        "min_target_transient_presence_minus_mid_db_mean": -11.535072326660156
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__any_ratio__any_overlap__pool_hard__gain_ge_q50__transient_ge_q50__speaker_friend_hard_negative_segments",
+      "count": 32,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.06622408144176006,
+        "v12": -0.0401857104152441,
+        "v13": -0.03331244923174381
+      },
+      "pair_gaps_db": [
+        0.10640979185700417,
+        -0.00687326118350029
+      ],
+      "min_pair_gap_db": -0.00687326118350029,
+      "mean_overlap_ratio": 0.782783990292505,
+      "mean_interference_gain_db": -0.1568125,
+      "mean_target_transient_presence_minus_mid_db_mean": -7.314237585291266,
+      "recipe_counts": {
+        "target_hard_speech": 32
+      },
+      "pattern_counts": {
+        "target_absent_head": 3,
+        "target_absent_tail": 6,
+        "target_full": 15,
+        "target_intermittent": 8
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 32
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 32
+      },
+      "builder_filters": {
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ],
+        "min_interference_gain_db": -2.0179998874664307,
+        "min_target_transient_presence_minus_mid_db_mean": -11.535072326660156,
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "recipe_hard__all_patterns__any_ratio__any_overlap__all_pools__gain_ge_q50__transient_ge_q50__all_speakers",
+      "count": 32,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.06622408144176006,
+        "v12": -0.0401857104152441,
+        "v13": -0.03331244923174381
+      },
+      "pair_gaps_db": [
+        0.10640979185700417,
+        -0.00687326118350029
+      ],
+      "min_pair_gap_db": -0.00687326118350029,
+      "mean_overlap_ratio": 0.782783990292505,
+      "mean_interference_gain_db": -0.1568125,
+      "mean_target_transient_presence_minus_mid_db_mean": -7.314237585291266,
+      "recipe_counts": {
+        "target_hard_speech": 32
+      },
+      "pattern_counts": {
+        "target_absent_head": 3,
+        "target_absent_tail": 6,
+        "target_full": 15,
+        "target_intermittent": 8
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 32
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 32
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_hard_speech"
+        ],
+        "min_interference_gain_db": -2.0179998874664307,
+        "min_target_transient_presence_minus_mid_db_mean": -11.535072326660156
+      }
+    },
+    {
+      "subset_name": "recipe_hard__all_patterns__any_ratio__any_overlap__all_pools__gain_ge_q50__transient_ge_q50__speaker_friend_hard_negative_segments",
+      "count": 32,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.06622408144176006,
+        "v12": -0.0401857104152441,
+        "v13": -0.03331244923174381
+      },
+      "pair_gaps_db": [
+        0.10640979185700417,
+        -0.00687326118350029
+      ],
+      "min_pair_gap_db": -0.00687326118350029,
+      "mean_overlap_ratio": 0.782783990292505,
+      "mean_interference_gain_db": -0.1568125,
+      "mean_target_transient_presence_minus_mid_db_mean": -7.314237585291266,
+      "recipe_counts": {
+        "target_hard_speech": 32
+      },
+      "pattern_counts": {
+        "target_absent_head": 3,
+        "target_absent_tail": 6,
+        "target_full": 15,
+        "target_intermittent": 8
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 32
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 32
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_hard_speech"
+        ],
+        "min_interference_gain_db": -2.0179998874664307,
+        "min_target_transient_presence_minus_mid_db_mean": -11.535072326660156,
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "recipe_hard__all_patterns__any_ratio__any_overlap__pool_hard__gain_ge_q50__transient_ge_q50__all_speakers",
+      "count": 32,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.06622408144176006,
+        "v12": -0.0401857104152441,
+        "v13": -0.03331244923174381
+      },
+      "pair_gaps_db": [
+        0.10640979185700417,
+        -0.00687326118350029
+      ],
+      "min_pair_gap_db": -0.00687326118350029,
+      "mean_overlap_ratio": 0.782783990292505,
+      "mean_interference_gain_db": -0.1568125,
+      "mean_target_transient_presence_minus_mid_db_mean": -7.314237585291266,
+      "recipe_counts": {
+        "target_hard_speech": 32
+      },
+      "pattern_counts": {
+        "target_absent_head": 3,
+        "target_absent_tail": 6,
+        "target_full": 15,
+        "target_intermittent": 8
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 32
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 32
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_hard_speech"
+        ],
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ],
+        "min_interference_gain_db": -2.0179998874664307,
+        "min_target_transient_presence_minus_mid_db_mean": -11.535072326660156
+      }
+    },
+    {
+      "subset_name": "recipe_hard__all_patterns__any_ratio__any_overlap__pool_hard__gain_ge_q50__transient_ge_q50__speaker_friend_hard_negative_segments",
+      "count": 32,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.06622408144176006,
+        "v12": -0.0401857104152441,
+        "v13": -0.03331244923174381
+      },
+      "pair_gaps_db": [
+        0.10640979185700417,
+        -0.00687326118350029
+      ],
+      "min_pair_gap_db": -0.00687326118350029,
+      "mean_overlap_ratio": 0.782783990292505,
+      "mean_interference_gain_db": -0.1568125,
+      "mean_target_transient_presence_minus_mid_db_mean": -7.314237585291266,
+      "recipe_counts": {
+        "target_hard_speech": 32
+      },
+      "pattern_counts": {
+        "target_absent_head": 3,
+        "target_absent_tail": 6,
+        "target_full": 15,
+        "target_intermittent": 8
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 32
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 32
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_hard_speech"
+        ],
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ],
+        "min_interference_gain_db": -2.0179998874664307,
+        "min_target_transient_presence_minus_mid_db_mean": -11.535072326660156,
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__ratio_ge_0_95__overlap_ge_0_90__all_pools__gain_ge_q50__all_transient__speaker_friend_hard_negative_segments",
+      "count": 13,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.05010181206923265,
+        "v12": -0.08768204542306754,
+        "v13": -0.0805517526773306
+      },
+      "pair_gaps_db": [
+        0.13778385749230018,
+        -0.007130292745736941
+      ],
+      "min_pair_gap_db": -0.007130292745736941,
+      "mean_overlap_ratio": 0.9568095737396565,
+      "mean_interference_gain_db": 0.3750769230769231,
+      "mean_target_transient_presence_minus_mid_db_mean": -14.136477360358604,
+      "recipe_counts": {
+        "target_hard_speech": 13
+      },
+      "pattern_counts": {
+        "target_full": 13
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 13
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 13
+      },
+      "builder_filters": {
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "min_interference_gain_db": -2.0179998874664307,
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__ratio_ge_0_95__overlap_ge_0_90__pool_hard__gain_ge_q50__all_transient__all_speakers",
+      "count": 13,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.05010181206923265,
+        "v12": -0.08768204542306754,
+        "v13": -0.0805517526773306
+      },
+      "pair_gaps_db": [
+        0.13778385749230018,
+        -0.007130292745736941
+      ],
+      "min_pair_gap_db": -0.007130292745736941,
+      "mean_overlap_ratio": 0.9568095737396565,
+      "mean_interference_gain_db": 0.3750769230769231,
+      "mean_target_transient_presence_minus_mid_db_mean": -14.136477360358604,
+      "recipe_counts": {
+        "target_hard_speech": 13
+      },
+      "pattern_counts": {
+        "target_full": 13
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 13
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 13
+      },
+      "builder_filters": {
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ],
+        "min_interference_gain_db": -2.0179998874664307
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__ratio_ge_0_95__overlap_ge_0_90__pool_hard__gain_ge_q50__all_transient__speaker_friend_hard_negative_segments",
+      "count": 13,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.05010181206923265,
+        "v12": -0.08768204542306754,
+        "v13": -0.0805517526773306
+      },
+      "pair_gaps_db": [
+        0.13778385749230018,
+        -0.007130292745736941
+      ],
+      "min_pair_gap_db": -0.007130292745736941,
+      "mean_overlap_ratio": 0.9568095737396565,
+      "mean_interference_gain_db": 0.3750769230769231,
+      "mean_target_transient_presence_minus_mid_db_mean": -14.136477360358604,
+      "recipe_counts": {
+        "target_hard_speech": 13
+      },
+      "pattern_counts": {
+        "target_full": 13
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 13
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 13
+      },
+      "builder_filters": {
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ],
+        "min_interference_gain_db": -2.0179998874664307,
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_full__any_ratio__overlap_ge_0_90__all_pools__gain_ge_q50__all_transient__speaker_friend_hard_negative_segments",
+      "count": 13,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v8",
+        "v12",
+        "v13"
+      ],
+      "alias_scores": {
+        "v8": 0.05010181206923265,
+        "v12": -0.08768204542306754,
+        "v13": -0.0805517526773306
+      },
+      "pair_gaps_db": [
+        0.13778385749230018,
+        -0.007130292745736941
+      ],
+      "min_pair_gap_db": -0.007130292745736941,
+      "mean_overlap_ratio": 0.9568095737396565,
+      "mean_interference_gain_db": 0.3750769230769231,
+      "mean_target_transient_presence_minus_mid_db_mean": -14.136477360358604,
+      "recipe_counts": {
+        "target_hard_speech": 13
+      },
+      "pattern_counts": {
+        "target_full": 13
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 13
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 13
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_overlap_ratio": 0.9,
+        "min_interference_gain_db": -2.0179998874664307,
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    }
+  ],
+  "speaker_counts": {
+    "friend_hard_negative_segments": 100,
+    "「花角玉将」": 1,
+    "七尾": 1,
+    "丹羽": 1,
+    "今谷三郎": 1,
+    "伊迪娅": 1,
+    "伯恩哈德": 2,
+    "伸夫": 1,
+    "债务处理人": 1,
+    "健司": 1,
+    "傅三儿": 1,
+    "克罗索": 1,
+    "八重神子": 1,
+    "兰巴德": 1,
+    "其它语音 - Others": 3,
+    "凯亚": 1,
+    "刻晴": 1,
+    "削月筑阳真君": 2,
+    "加萨尼": 1,
+    "北村": 1,
+    "博来": 1,
+    "卡塔扬": 1,
+    "叶德": 1,
+    "君君": 2,
+    "周良": 1,
+    "商人": 1,
+    "图昂": 1,
+    "多莉": 1,
+    "天目十五": 1,
+    "奇恩": 1,
+    "奥格劳": 1,
+    "娜德瓦": 1,
+    "宁禄": 1,
+    "小川": 2,
+    "巴蒂斯特": 2,
+    "巴顿": 1,
+    "带变量语音 - Placeholder": 3,
+    "德田": 1,
+    "恒雄": 1,
+    "恶龙": 1,
+    "愚人众士官": 1,
+    "慧心": 2,
+    "戈尔代": 1,
+    "战斗语音 - Battle": 4,
+    "戴因斯雷布": 1,
+    "戴派": 1,
+    "托克": 2,
+    "拉斯蒂涅": 1,
+    "拉韦兰": 1,
+    "斑目百兵卫": 1,
+    "昆钧": 1,
+    "普里耶": 1,
+    "暮夜剧团团长": 1,
+    "木南杏奈": 1,
+    "杰克": 1,
+    "格兰维尔": 1,
+    "格蕾希艾": 1,
+    "歌特琳德": 1,
+    "波林": 1,
+    "浮游水蕈兽·元素生命": 2,
+    "渡部": 1,
+    "狗三儿": 1,
+    "玛乔丽": 1,
+    "玛塞勒": 2,
+    "玛蕾蒂": 1,
+    "玲花": 1,
+    "琳妮特": 1,
+    "琳琅": 1,
+    "琴": 1,
+    "瑶瑶": 1,
+    "百闻": 2,
+    "石壮": 1,
+    "神奇的霍普金斯": 1,
+    "科林斯": 1,
+    "纪芳": 2,
+    "纳比尔": 1,
+    "纳西妲": 1,
+    "绘星": 1,
+    "维格尔": 1,
+    "罗纳克": 1,
+    "美铃": 2,
+    "羽生田千鹤": 1,
+    "翰学": 1,
+    "老章": 1,
+    "聪子": 1,
+    "舍利夫": 1,
+    "艾文": 1,
+    "芙卡洛斯": 1,
+    "芙蓉": 1,
+    "莫娜": 1,
+    "莫里斯": 1,
+    "莱依拉": 1,
+    "莱昂": 1,
+    "莱欧斯利": 1,
+    "葛瑞丝": 1,
+    "西敏": 1,
+    "观众": 1,
+    "赛场司仪": 1,
+    "赛诺": 2,
+    "迈蒙": 1,
+    "迪娜泽黛": 1,
+    "迪尔菲": 2,
+    "迪希雅": 1,
+    "野方": 1,
+    "铜雀": 1,
+    "闲云": 1,
+    "阿二": 1,
+    "阿大": 1,
+    "阿夫辛": 1,
+    "阿尔卡米": 1,
+    "阿桂": 1,
+    "阿诺德": 1,
+    "陆行岩本真蕈·元素生命": 1,
+    "雷泽": 1,
+    "雷电将军": 1,
+    "鹿野院平藏": 1,
+    "黛比": 1
+  },
+  "num_candidates": 1030
+}

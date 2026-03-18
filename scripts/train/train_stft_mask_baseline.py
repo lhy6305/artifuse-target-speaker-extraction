@@ -21,6 +21,11 @@ if str(SRC_DIR) not in sys.path:
 from tse_prefix.data import SyntheticTSEDataset, synthetic_collate_fn
 from tse_prefix.models import STFTMaskBaseline
 from tse_prefix.pipeline import compute_losses
+from tse_prefix.pipeline.loss_selectors import (
+    build_selector_sample_weights,
+    selector_config_keys,
+    summarize_selector_weights,
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -70,43 +75,23 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--loss-transient-weight", type=float, default=0.0)
     parser.add_argument("--loss-interference-weight", type=float, default=0.0)
     parser.add_argument("--loss-absent-weight", type=float, default=0.0)
-    parser.add_argument(
-        "--loss-transient-focus-recipes",
-        nargs="*",
-        default=[],
-    )
-    parser.add_argument(
-        "--loss-transient-focus-patterns",
-        nargs="*",
-        default=[],
-    )
-    parser.add_argument("--loss-transient-min-target-ratio", type=float, default=None)
-    parser.add_argument("--loss-transient-max-target-ratio", type=float, default=None)
-    parser.add_argument(
-        "--loss-interference-focus-recipes",
-        nargs="*",
-        default=[],
-    )
-    parser.add_argument(
-        "--loss-interference-focus-patterns",
-        nargs="*",
-        default=[],
-    )
-    parser.add_argument("--loss-interference-min-target-ratio", type=float, default=None)
-    parser.add_argument("--loss-interference-max-target-ratio", type=float, default=None)
-    parser.add_argument(
-        "--loss-absent-focus-recipes",
-        nargs="*",
-        default=[],
-    )
-    parser.add_argument(
-        "--loss-absent-focus-patterns",
-        nargs="*",
-        default=[],
-    )
-    parser.add_argument("--loss-absent-min-target-ratio", type=float, default=None)
-    parser.add_argument("--loss-absent-max-target-ratio", type=float, default=None)
+    add_selector_args(parser, "transient")
+    add_selector_args(parser, "interference")
+    add_selector_args(parser, "absent")
     return parser.parse_args()
+
+
+def add_selector_args(parser: argparse.ArgumentParser, prefix: str) -> None:
+    parser.add_argument(f"--loss-{prefix}-focus-recipes", nargs="*", default=[])
+    parser.add_argument(f"--loss-{prefix}-focus-patterns", nargs="*", default=[])
+    parser.add_argument(f"--loss-{prefix}-focus-interference-pools", nargs="*", default=[])
+    parser.add_argument(f"--loss-{prefix}-focus-interference-speaker-names", nargs="*", default=[])
+    parser.add_argument(f"--loss-{prefix}-min-target-ratio", type=float, default=None)
+    parser.add_argument(f"--loss-{prefix}-max-target-ratio", type=float, default=None)
+    parser.add_argument(f"--loss-{prefix}-min-overlap-ratio", type=float, default=None)
+    parser.add_argument(f"--loss-{prefix}-max-overlap-ratio", type=float, default=None)
+    parser.add_argument(f"--loss-{prefix}-min-interference-gain-db", type=float, default=None)
+    parser.add_argument(f"--loss-{prefix}-max-interference-gain-db", type=float, default=None)
 
 
 def set_seed(seed: int) -> None:
@@ -127,6 +112,8 @@ def move_batch_to_device(batch: dict, device: torch.device) -> dict:
         "reference",
         "reference_lengths",
         "target_present_ratios",
+        "overlap_ratios",
+        "interference_gain_dbs",
     ]:
         moved[key] = batch[key].to(device)
     return moved
@@ -145,25 +132,13 @@ def build_model_config(args: argparse.Namespace) -> dict[str, int]:
 
 
 def build_loss_config(args: argparse.Namespace) -> dict[str, float]:
-    return {
+    loss_config = {
         "sample_rate": args.sample_rate,
         "stft_weight": args.loss_stft_weight,
         "sisdr_weight": args.loss_sisdr_weight,
         "transient_weight": args.loss_transient_weight,
         "interference_weight": args.loss_interference_weight,
         "absent_weight": args.loss_absent_weight,
-        "transient_focus_recipes": list(args.loss_transient_focus_recipes),
-        "transient_focus_patterns": list(args.loss_transient_focus_patterns),
-        "transient_min_target_ratio": args.loss_transient_min_target_ratio,
-        "transient_max_target_ratio": args.loss_transient_max_target_ratio,
-        "interference_focus_recipes": list(args.loss_interference_focus_recipes),
-        "interference_focus_patterns": list(args.loss_interference_focus_patterns),
-        "interference_min_target_ratio": args.loss_interference_min_target_ratio,
-        "interference_max_target_ratio": args.loss_interference_max_target_ratio,
-        "absent_focus_recipes": list(args.loss_absent_focus_recipes),
-        "absent_focus_patterns": list(args.loss_absent_focus_patterns),
-        "absent_min_target_ratio": args.loss_absent_min_target_ratio,
-        "absent_max_target_ratio": args.loss_absent_max_target_ratio,
         "transient_top_ratio": 0.12,
         "transient_min_count": 8,
         "transient_mid_low_hz": 800.0,
@@ -172,65 +147,29 @@ def build_loss_config(args: argparse.Namespace) -> dict[str, float]:
         "transient_presence_high_hz": 8000.0,
         "transient_ratio_weight": 0.5,
     }
-
-
-def build_selector_sample_weights(
-    batch: dict,
-    device: torch.device,
-    loss_config: dict,
-    prefix: str,
-) -> torch.Tensor | None:
-    recipes = set(loss_config.get(f"{prefix}_focus_recipes", []))
-    patterns = set(loss_config.get(f"{prefix}_focus_patterns", []))
-    min_ratio = loss_config.get(f"{prefix}_min_target_ratio")
-    max_ratio = loss_config.get(f"{prefix}_max_target_ratio")
-    has_selector = bool(recipes or patterns or min_ratio is not None or max_ratio is not None)
-    if not has_selector:
-        return None
-
-    weights = torch.ones(len(batch["sample_ids"]), dtype=torch.float32, device=device)
-    if recipes:
-        recipe_mask = torch.tensor(
-            [1.0 if recipe in recipes else 0.0 for recipe in batch["recipes"]],
-            dtype=torch.float32,
-            device=device,
-        )
-        weights = weights * recipe_mask
-    if patterns:
-        pattern_mask = torch.tensor(
-            [1.0 if pattern in patterns else 0.0 for pattern in batch["temporal_patterns"]],
-            dtype=torch.float32,
-            device=device,
-        )
-        weights = weights * pattern_mask
-
-    ratios = batch["target_present_ratios"].to(device=device, dtype=torch.float32)
-    if min_ratio is not None:
-        weights = weights * (ratios >= float(min_ratio)).float()
-    if max_ratio is not None:
-        weights = weights * (ratios <= float(max_ratio)).float()
-    return weights
+    for prefix in ("transient", "interference", "absent"):
+        for suffix in (
+            "focus_recipes",
+            "focus_patterns",
+            "focus_interference_pools",
+            "focus_interference_speaker_names",
+            "min_target_ratio",
+            "max_target_ratio",
+            "min_overlap_ratio",
+            "max_overlap_ratio",
+            "min_interference_gain_db",
+            "max_interference_gain_db",
+        ):
+            attr_name = f"loss_{prefix}_{suffix}"
+            loss_config[f"{prefix}_{suffix}"] = getattr(args, attr_name)
+    return loss_config
 
 
 def build_compute_loss_kwargs(loss_config: dict) -> dict:
     return {
         key: value
         for key, value in loss_config.items()
-        if key
-        not in {
-            "transient_focus_recipes",
-            "transient_focus_patterns",
-            "transient_min_target_ratio",
-            "transient_max_target_ratio",
-            "interference_focus_recipes",
-            "interference_focus_patterns",
-            "interference_min_target_ratio",
-            "interference_max_target_ratio",
-            "absent_focus_recipes",
-            "absent_focus_patterns",
-            "absent_min_target_ratio",
-            "absent_max_target_ratio",
-        }
+        if key not in selector_config_keys()
     }
 
 
@@ -253,7 +192,7 @@ def evaluate(
     dataloader: DataLoader,
     device: torch.device,
     loss_config: dict[str, float],
-) -> dict[str, float]:
+) -> tuple[dict[str, float], dict[str, dict[str, float | int | bool | None]]]:
     model.eval()
     total_loss = 0.0
     total_wave = 0.0
@@ -265,6 +204,10 @@ def evaluate(
     total_absent = 0.0
     batch_count = 0
     compute_loss_kwargs = build_compute_loss_kwargs(loss_config)
+    selector_totals = {
+        prefix: {"active": False, "selected_count": 0, "total_count": 0}
+        for prefix in ("transient", "interference", "absent")
+    }
     with torch.no_grad():
         for batch in dataloader:
             batch = move_batch_to_device(batch, device)
@@ -292,6 +235,15 @@ def evaluate(
                 loss_config=loss_config,
                 prefix="absent",
             )
+            for prefix, weights in (
+                ("transient", transient_sample_weights),
+                ("interference", interference_sample_weights),
+                ("absent", absent_sample_weights),
+            ):
+                stats = summarize_selector_weights(weights, len(batch["sample_ids"]))
+                selector_totals[prefix]["active"] = selector_totals[prefix]["active"] or bool(stats["active"])
+                selector_totals[prefix]["selected_count"] += int(stats["selected_count"])
+                selector_totals[prefix]["total_count"] += int(stats["total_count"])
             losses = compute_losses(
                 prediction=outputs["estimated_waveform"],
                 mixture=batch["mixture"],
@@ -314,7 +266,7 @@ def evaluate(
             total_absent += float(losses.absent_interval_l1.item())
             batch_count += 1
     if batch_count == 0:
-        return {
+        metrics = {
             "loss": 0.0,
             "waveform_l1": 0.0,
             "stft_l1": 0.0,
@@ -324,16 +276,28 @@ def evaluate(
             "interference_projection_ratio": 0.0,
             "absent_interval_l1": 0.0,
         }
-    return {
-        "loss": total_loss / batch_count,
-        "waveform_l1": total_wave / batch_count,
-        "stft_l1": total_stft / batch_count,
-        "sisdr_loss": total_sisdr_loss / batch_count,
-        "sisdr_db": total_sisdr_db / batch_count,
-        "transient_presence_l1": total_transient / batch_count,
-        "interference_projection_ratio": total_interference / batch_count,
-        "absent_interval_l1": total_absent / batch_count,
-    }
+    else:
+        metrics = {
+            "loss": total_loss / batch_count,
+            "waveform_l1": total_wave / batch_count,
+            "stft_l1": total_stft / batch_count,
+            "sisdr_loss": total_sisdr_loss / batch_count,
+            "sisdr_db": total_sisdr_db / batch_count,
+            "transient_presence_l1": total_transient / batch_count,
+            "interference_projection_ratio": total_interference / batch_count,
+            "absent_interval_l1": total_absent / batch_count,
+        }
+    selector_metrics = {}
+    for prefix, totals in selector_totals.items():
+        total_count = int(totals["total_count"])
+        selected_count = int(totals["selected_count"])
+        selector_metrics[prefix] = {
+            "active": bool(totals["active"]),
+            "selected_count": selected_count,
+            "total_count": total_count,
+            "selected_fraction": (float(selected_count) / float(total_count)) if total_count > 0 else None,
+        }
+    return metrics, selector_metrics
 
 
 def main() -> None:
@@ -392,6 +356,10 @@ def main() -> None:
         epoch_interference = 0.0
         epoch_absent = 0.0
         step_count = 0
+        train_selector_totals = {
+            prefix: {"active": False, "selected_count": 0, "total_count": 0}
+            for prefix in ("transient", "interference", "absent")
+        }
 
         for batch in train_loader:
             batch = move_batch_to_device(batch, device)
@@ -419,6 +387,15 @@ def main() -> None:
                 loss_config=loss_config,
                 prefix="absent",
             )
+            for prefix, weights in (
+                ("transient", transient_sample_weights),
+                ("interference", interference_sample_weights),
+                ("absent", absent_sample_weights),
+            ):
+                stats = summarize_selector_weights(weights, len(batch["sample_ids"]))
+                train_selector_totals[prefix]["active"] = train_selector_totals[prefix]["active"] or bool(stats["active"])
+                train_selector_totals[prefix]["selected_count"] += int(stats["selected_count"])
+                train_selector_totals[prefix]["total_count"] += int(stats["total_count"])
             losses = compute_losses(
                 prediction=outputs["estimated_waveform"],
                 mixture=batch["mixture"],
@@ -482,7 +459,20 @@ def main() -> None:
             "interference_projection_ratio": epoch_interference / max(1, step_count),
             "absent_interval_l1": epoch_absent / max(1, step_count),
         }
-        val_metrics = evaluate(model, val_loader, device, loss_config=loss_config)
+        train_selector_metrics = {
+            prefix: {
+                "active": bool(totals["active"]),
+                "selected_count": int(totals["selected_count"]),
+                "total_count": int(totals["total_count"]),
+                "selected_fraction": (
+                    float(totals["selected_count"]) / float(totals["total_count"])
+                    if int(totals["total_count"]) > 0
+                    else None
+                ),
+            }
+            for prefix, totals in train_selector_totals.items()
+        }
+        val_metrics, val_selector_metrics = evaluate(model, val_loader, device, loss_config=loss_config)
         history.append(
             {
                 "epoch": epoch,
@@ -495,6 +485,7 @@ def main() -> None:
                 "train_transient_presence_l1": train_metrics["transient_presence_l1"],
                 "train_interference_projection_ratio": train_metrics["interference_projection_ratio"],
                 "train_absent_interval_l1": train_metrics["absent_interval_l1"],
+                "train_selector_metrics": train_selector_metrics,
                 "val_loss": val_metrics["loss"],
                 "val_waveform_l1": val_metrics["waveform_l1"],
                 "val_stft_l1": val_metrics["stft_l1"],
@@ -503,6 +494,7 @@ def main() -> None:
                 "val_transient_presence_l1": val_metrics["transient_presence_l1"],
                 "val_interference_projection_ratio": val_metrics["interference_projection_ratio"],
                 "val_absent_interval_l1": val_metrics["absent_interval_l1"],
+                "val_selector_metrics": val_selector_metrics,
             }
         )
 
@@ -513,6 +505,8 @@ def main() -> None:
                     "global_step": global_step,
                     "train": {k: round(v, 6) for k, v in train_metrics.items()},
                     "val": {k: round(v, 6) for k, v in val_metrics.items()},
+                    "train_selector_metrics": train_selector_metrics,
+                    "val_selector_metrics": val_selector_metrics,
                 },
                 ensure_ascii=False,
             )
@@ -555,6 +549,10 @@ def main() -> None:
         "end_time": end_dt.isoformat(timespec="seconds"),
         "elapsed_sec": round(end_ts - start_ts, 3),
         "best_val_loss": best_val_loss,
+        "selector_metrics": {
+            "train": history[-1]["train_selector_metrics"] if history else {},
+            "val": history[-1]["val_selector_metrics"] if history else {},
+        },
         "history": history,
     }
     (args.output_dir / "train_summary.json").write_text(

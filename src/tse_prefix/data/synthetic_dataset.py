@@ -23,6 +23,25 @@ class SyntheticSample:
     target_present_ratio: float
 
 
+def _compute_overlap_ratio(metadata: dict[str, Any]) -> float:
+    layers = list(metadata.get("interference_layers", []))
+    if not layers:
+        return float("nan")
+    duration = float(metadata.get("target_duration_sec", 0.0))
+    if duration <= 0.0:
+        return float("nan")
+    start_offset = float(layers[0].get("start_offset_sec", 0.0))
+    overlap = max(0.0, duration - start_offset) / duration
+    return float(min(max(overlap, 0.0), 1.0))
+
+
+def _infer_interference_speaker_name(audio_path: str | None) -> str:
+    if not audio_path:
+        return ""
+    parent_name = Path(audio_path).parent.name.strip()
+    return parent_name
+
+
 def load_json(path: Path) -> dict[str, Any]:
     with path.open("r", encoding="utf-8") as fh:
         return json.load(fh)
@@ -73,6 +92,8 @@ class SyntheticTSEDataset(Dataset[dict[str, Any]]):
     def __getitem__(self, index: int) -> dict[str, Any]:
         sample = self.samples[index]
         metadata = load_json(sample.metadata_path)
+        layers = list(metadata.get("interference_layers", []))
+        first_layer = layers[0] if layers else {}
         return {
             "sample_id": sample.sample_id,
             "mixture": _load_audio_mono(sample.mixture_audio_path, self.sample_rate),
@@ -81,6 +102,12 @@ class SyntheticTSEDataset(Dataset[dict[str, Any]]):
             "recipe": sample.recipe,
             "temporal_pattern": sample.temporal_pattern,
             "target_present_ratio": sample.target_present_ratio,
+            "overlap_ratio": _compute_overlap_ratio(metadata),
+            "interference_gain_db": float(first_layer.get("gain_db", float("nan"))),
+            "interference_pool": str(first_layer.get("pool", "")),
+            "interference_speaker_name": _infer_interference_speaker_name(
+                str(first_layer.get("audio_path", ""))
+            ),
             "target_absent_intervals": list(metadata.get("target_absent_intervals", [])),
             "metadata_path": _serialize_repo_path(sample.metadata_path, self.root),
         }
@@ -119,6 +146,16 @@ def synthetic_collate_fn(batch: list[dict[str, Any]]) -> dict[str, Any]:
             [item["target_present_ratio"] for item in batch],
             dtype=torch.float32,
         ),
+        "overlap_ratios": torch.tensor(
+            [item["overlap_ratio"] for item in batch],
+            dtype=torch.float32,
+        ),
+        "interference_gain_dbs": torch.tensor(
+            [item["interference_gain_db"] for item in batch],
+            dtype=torch.float32,
+        ),
+        "interference_pools": [item["interference_pool"] for item in batch],
+        "interference_speaker_names": [item["interference_speaker_name"] for item in batch],
         "target_absent_intervals": [item["target_absent_intervals"] for item in batch],
         "metadata_paths": [item["metadata_path"] for item in batch],
     }

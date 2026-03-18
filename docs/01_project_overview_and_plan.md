@@ -1440,6 +1440,349 @@
    - 而是：
      - 如何在不回吐 `v12` 的 `anchor_120s` 收益前提下
      - 给 `guodegang_absent_480s` 增加显式 floor / guardrail
+146. 已完成 `legacy_transient_leakguard_probe_v13_v12_anchor_absent_proxy_ft1`：
+   - 基座：
+     - `v12`
+   - focused manifest：
+     - `train_manifest_v13_anchor_absent_proxy_v1.jsonl = 114`
+     - `val_manifest_v13_anchor_absent_proxy_v1.jsonl = 29`
+     - 由 `guodegang_anchor_proxy_v1 ∪ guodegang_absent_proxy_v2_speechonly` 去重并集得到
+   - 相对 `legacy_stage2`：
+     - default val：`+0.195532 dB`
+     - near-real speech probe overall：`+0.028007 dB`
+     - `near_real_0003`：`-0.805782 dB`
+     - `near_real_0004`：`+0.198835 dB`
+     - `near_real_0006`：`+1.022450 dB`
+     - `guodegang_anchor_120s`：`+0.092524 dB`
+     - `guodegang_absent_480s`：`+1.952375 dB`
+   - 相对 `v8`：
+     - default val：`-0.074758 dB`
+     - near-real speech probe overall：`+0.264425 dB`
+     - `near_real_0003`：`+0.311168 dB`
+     - `near_real_0004`：`+0.418977 dB`
+     - `near_real_0006`：`-0.037517 dB`
+     - `guodegang_anchor_120s`：`+0.107729 dB`
+     - `guodegang_absent_480s`：`-0.182764 dB`
+   - 相对 `v12`：
+     - default val：`+0.024419 dB`
+     - `near_real_guodegang_transient_probe_v1` overall：`-0.112736 dB`
+     - `guodegang_anchor_120s`：`-0.159074 dB`
+     - `guodegang_absent_480s`：`-0.066398 dB`
+   - `speech_followup_gate_vs_v12` 当前失败项为：
+     - `anchor_0006_regression_floor`
+   - `probe_subset_guardrail_vs_v8_with_clips` 当前失败项为：
+     - `overall_floor`
+     - `family__guodegang_raw`
+     - `anchor__near_real_0006`
+     - `clip__guodegang_absent_480s`
+147. 因而当前默认接班口径应再次收紧为：
+   - `v13` 不保留
+   - 不继续沿 one-shot `anchor + absent` 并集微调路线加预算
+   - `v8` 继续保留为 broad speech 参考基座
+   - `v12` 继续保留为当前 anchor-focused 第二候选
+   - 下一步若继续自动推进，应先重做 `absent` objective proxy / floor
+   - 而不是再直接把现有 `absent_proxy_v2_speechonly` 拼进 `v12` 做训练
+148. 已完成当前真实排序 `v8 > v12 > v13` 下的 `absent` objective proxy 重建：
+   - 搜索输入：
+     - `stage2 vs v8 / v12 / v13` on `default` synthetic speech rows
+   - 新搜索输出：
+     - `reports/eval/synthetic_proxy_search_guodegang_absent_v8_v12_v13_on_default/summary.json`
+   - 当前稳定 order-pass 的两条候选为：
+     - `guodegang_absent_proxy_v3_strict`
+       - `recipe = target_hard_speech`
+       - `pattern = target_full`
+       - `target_ratio >= 0.95`
+       - `overlap >= 0.9`
+       - `val = 18`
+       - `train = 51`
+       - stage2-relative：
+         - `v8 = +0.240256 dB`
+         - `v12 = +0.088626 dB`
+         - `v13 = -0.022755 dB`
+     - `guodegang_absent_proxy_v4_broad`
+       - 同上，但 `overlap >= 0.75`
+       - `val = 39`
+       - `train = 122`
+       - stage2-relative：
+         - `v8 = +0.256340 dB`
+         - `v12 = +0.155148 dB`
+         - `v13 = +0.050509 dB`
+   - 这说明当前 `absent` proxy 已不再落在旧的：
+     - `pattern_nonfull`
+     - `target_absent_head / tail / intermittent`
+     方向上；
+   - 而是更接近：
+     - `hard speech + target_full + high-overlap`
+149. 已完成 `legacy_transient_leakguard_probe_v14_v12_absent_proxy_v3_strict_ft1`：
+   - 基座：
+     - `v12`
+   - focused manifest：
+     - `train_manifest_guodegang_absent_proxy_v3_strict.jsonl = 51`
+     - `val_manifest_guodegang_absent_proxy_v3_strict.jsonl = 18`
+   - 训练摘要：
+     - `best_val_loss = 0.023063`
+     - `global_steps = 39`
+   - 一个关键事实：
+     - 当前这条新 proxy 全是 `target_full`
+     - 现有 `absent_loss` selector 仍限定在：
+       - `target_absent_head`
+       - `target_absent_tail`
+       - `target_intermittent`
+     - 因而本轮 `absent_interval_l1` 自始至终都是：
+       - `0.0`
+   - 相对 `legacy_stage2`：
+     - default val：
+       - `+0.072915 dB`
+     - near-real speech probe overall：
+       - `-0.207776 dB`
+     - `near_real_0003`：
+       - `-0.923706 dB`
+     - `near_real_0004`：
+       - `+0.113401 dB`
+     - `near_real_0006`：
+       - `+0.384354 dB`
+     - `guodegang_anchor_120s`：
+       - `-0.847514 dB`
+     - `guodegang_absent_480s`：
+       - `+1.616223 dB`
+     - `guodegang_anchor_proxy_v1`：
+       - `+1.500173 dB`
+     - `guodegang_absent_proxy_v3_strict`：
+       - `-0.196222 dB`
+   - 相对 `v8`：
+     - default val：
+       - `-0.197375 dB`
+     - near-real speech probe overall：
+       - `+0.028642 dB`
+     - `near_real_guodegang_transient_probe_v1` overall：
+       - `-0.675613 dB`
+     - `guodegang_anchor_120s`：
+       - `-0.832309 dB`
+     - `guodegang_absent_480s`：
+       - `-0.518916 dB`
+   - 相对 `v12`：
+     - default val：
+       - `-0.098198 dB`
+     - near-real speech probe overall：
+       - `-0.210393 dB`
+     - `friend_raw`：
+       - `-0.030246 dB`
+     - `near_real_0003`：
+       - `-0.077958 dB`
+     - `near_real_0004`：
+       - `+0.017465 dB`
+     - `near_real_0006`：
+       - `-0.750831 dB`
+     - `near_real_guodegang_transient_probe_v1` overall：
+       - `-0.750831 dB`
+     - `guodegang_anchor_120s`：
+       - `-1.099112 dB`
+     - `guodegang_absent_480s`：
+       - `-0.402550 dB`
+     - `guodegang_anchor_proxy_v1`：
+       - `-0.390675 dB`
+     - `guodegang_absent_proxy_v3_strict`：
+       - `-0.284848 dB`
+   - `speech_followup_gate_vs_v12` 当前失败项为：
+     - `speech_probe_overall_floor`
+     - `speech_probe_friend_raw_floor`
+     - `anchor_0003_gain_floor`
+     - `anchor_0006_regression_floor`
+   - `probe_subset_guardrail_vs_v8_with_clips` 当前失败项为：
+     - `overall_floor`
+     - `family__guodegang_raw`
+     - `anchor__near_real_0006`
+     - `clip__guodegang_anchor_120s`
+     - `clip__guodegang_absent_480s`
+150. 因而当前默认接班口径应再次更新为：
+   - `v14` 不保留
+   - 新的 `guodegang_absent_proxy_v3_strict / v4_broad` 保留为 synthetic absent-side eval / guardrail
+   - 但不要再把它们直接当作：
+     - `v12` 的 single-route warm-start fine-tune objective
+   - 因为本轮已经证明：
+     - “proxy 排序能复现真实排序”
+     - 不等于
+     - “直接用该 proxy 微调就能朝真实目标前进”
+   - `v8` 继续保留为 broad speech 参考基座
+   - `v12` 继续保留为当前 anchor-focused 第二候选
+151. 已完成 `legacy_transient_leakguard_probe_v15_v12_anchor_absent_proxy_v3_nudge_ft1`：
+   - 基座：
+     - `v12`
+   - focused manifest：
+     - `train_manifest_v15_anchor_absent_proxy_v3_nudge.jsonl = 135`
+     - `val_manifest_v15_anchor_absent_proxy_v3_nudge.jsonl = 40`
+     - 由：
+       - `guodegang_anchor_proxy_v1`
+       - `guodegang_absent_proxy_v3_strict`
+       去重并集得到
+   - 训练配置刻意压小：
+     - `epochs = 1`
+     - `lr = 1e-5`
+     - `global_steps = 34`
+     - `absent_weight = 0.0`
+   - 相对 `legacy_stage2`：
+     - default val：
+       - `+0.142876 dB`
+     - near-real speech probe overall：
+       - `-0.023170 dB`
+     - `near_real_0003`：
+       - `-0.835371 dB`
+     - `near_real_0004`：
+       - `+0.112841 dB`
+     - `near_real_0006`：
+       - `+0.991116 dB`
+     - `guodegang_anchor_120s`：
+       - `+0.033892 dB`
+     - `guodegang_absent_480s`：
+       - `+1.948341 dB`
+     - `guodegang_anchor_proxy_v1`：
+       - `+2.213110 dB`
+     - `guodegang_absent_proxy_v3_strict`：
+       - `-0.038012 dB`
+   - 相对 `v8`：
+     - default val：
+       - `-0.127415 dB`
+     - near-real speech probe overall：
+       - `+0.213248 dB`
+     - `near_real_guodegang_transient_probe_v1` overall：
+       - `-0.068851 dB`
+     - `guodegang_anchor_120s`：
+       - `+0.049097 dB`
+     - `guodegang_absent_480s`：
+       - `-0.186798 dB`
+   - 相对 `v12`：
+     - default val：
+       - `-0.028237 dB`
+     - near-real speech probe overall：
+       - `-0.025787 dB`
+     - `friend_raw`：
+       - `+0.013641 dB`
+     - `near_real_0003`：
+       - `+0.010377 dB`
+     - `near_real_0004`：
+       - `+0.016905 dB`
+     - `near_real_0006`：
+       - `-0.144069 dB`
+     - `near_real_guodegang_transient_probe_v1` overall：
+       - `-0.144069 dB`
+     - `guodegang_anchor_120s`：
+       - `-0.217707 dB`
+     - `guodegang_absent_480s`：
+       - `-0.070432 dB`
+     - `guodegang_anchor_proxy_v1`：
+       - `+0.322262 dB`
+     - `guodegang_absent_proxy_v3_strict`：
+       - `-0.126638 dB`
+   - `speech_followup_gate_vs_v12` 当前失败项已收缩为：
+     - `speech_probe_overall_floor`
+     - `anchor_0006_regression_floor`
+   - `probe_subset_guardrail_vs_v8_with_clips` 当前失败项为：
+     - `overall_floor`
+     - `family__guodegang_raw`
+     - `anchor__near_real_0006`
+     - `clip__guodegang_absent_480s`
+   - `clip__guodegang_anchor_120s` 已重新通过
+152. 因而当前默认接班口径应再次收紧为：
+   - `v15` 不保留
+   - 这条轻量双路 `nudge` 已证明：
+     - 可以把 `anchor_120s` 保回来
+     - 但仍不会自然补好 `absent_480s`
+   - 因而不要继续沿：
+     - `v12 + anchor_proxy_v1 + absent_proxy_v3_strict`
+     的 warm-start 路线做更小步长搜索
+   - `v8` 继续保留为 broad speech 参考基座
+   - `v12` 继续保留为当前 anchor-focused 第二候选
+153. 已完成 selector 可观测性补强与 smoke 验证：
+   - 当前工作树已把以下元数据接入 train / eval batch：
+     - `overlap_ratio`
+     - `interference_gain_db`
+     - `interference_pool`
+     - `interference_speaker_name`
+   - 新增：
+     - `src/tse_prefix/pipeline/loss_selectors.py`
+   - `scripts/train/train_stft_mask_baseline.py` 现已支持：
+     - 更细的 selector 条件
+     - `train_selector_metrics`
+     - `val_selector_metrics`
+     - `train_summary.json` 内的 selector 命中统计落盘
+   - 已用 `tmp/selector_metrics_smoke_v14_style` 做 1-step smoke：
+     - `transient.selected_fraction = 1.0`
+     - `interference.selected_fraction = 1.0`
+     - `absent.selected_fraction = 0.0`
+   - 这说明当前代码已经能直接暴露：
+     - `v14` 这类“absent loss 名义开启，但 selector 实际 0 命中”的情况
+   - 因而下一步若继续设计新的 `absent` objective / gate，应直接依赖这套 selector metrics，而不要再只靠最终 loss 数值反推
+154. 已完成 synthetic dual-proxy gate 脚本化：
+   - 新增：
+     - `scripts/eval/gate_synthetic_dual_proxy.py`
+   - 这条 gate 当前固定检查两类条件：
+     - `anchor_proxy_v1` 相对 `v12` 不回退
+     - `guodegang_absent_proxy_v3_strict / v4_broad` 相对 `v12` 不变差
+   - `v12 -> v12` self-check：
+     - `PASS`
+   - 对已判死路线回放结果：
+     - `v13`：
+       - `anchor_proxy_v1` 通过
+       - `absent_proxy_v3_strict / v4_broad` 双失败
+     - `v14`：
+       - `anchor_proxy_v1 / absent_proxy_v3_strict / v4_broad` 全失败
+     - `v15`：
+       - `anchor_proxy_v1` 通过
+       - `absent_proxy_v3_strict / v4_broad` 双失败
+   - 因而下一步若继续自动推进，应把这条 synthetic dual-proxy gate 当作：
+     - 新 absent objective 的 pre-screen
+   - 不再只因为：
+     - `anchor_proxy_v1` 还在增强
+     就误判候选正在修 `absent`
+155. 已完成 `v12 > v15 > v13 > v14` 反向 carve-out 搜索与 `v16 / v17` synthetic pre-screen：
+   - 新 reverse guardrail proxy：
+     - `train_manifest_v16_v12_reverse_guardrail_proxy_v1.jsonl = 39`
+     - `val_manifest_v16_v12_reverse_guardrail_proxy_v1.jsonl = 9`
+   - 其 metadata 形态集中在：
+     - `target_clean_speech`
+     - `speech_interference_clean_pool`
+     - 高 `interference_gain_db`
+     - 高 `target_transient_presence_minus_mid_db_mean`
+   - 新联集 manifest：
+     - `absent_proxy_v3_strict ∪ reverse_guardrail_proxy_v1`
+     - train = `90`
+     - val = `27`
+   - `v16 = legacy_transient_leakguard_probe_v16_v12_absent_proxy_v3_reverse_guardrail_v1_ft1`
+     - selector 命中：
+       - transient / interference = `51 / 90`
+       - absent = `24 / 90`
+     - 相对 `v12`：
+       - default = `-0.004540 dB`
+       - reverse guardrail proxy = `-0.076261 dB`
+       - `anchor_proxy_v1 = +0.298964 dB`
+       - `absent_proxy_v3_strict = -0.007883 dB`
+       - `absent_proxy_v4_broad = -0.001475 dB`
+     - synthetic dual-proxy gate：
+       - `FAIL`
+       - 仅剩：
+         - `absent_proxy_v3_strict`
+         - `absent_proxy_v4_broad`
+   - `v17 = legacy_transient_leakguard_probe_v17_v12_absent_proxy_v3_reverse_guardrail_v1_absw05_ft1`
+     - 仅把：
+       - `absent_weight = 1.0 -> 0.5`
+     - 相对 `v12`：
+       - default = `-0.038008 dB`
+       - `anchor_proxy_v1 = -0.532572 dB`
+       - `absent_proxy_v3_strict = -0.019250 dB`
+       - `absent_proxy_v4_broad = -0.009301 dB`
+     - synthetic dual-proxy gate：
+       - `FAIL`
+       - `anchor + absent` 全回退
+156. 因而当前默认接班口径应继续收紧为：
+   - `v16` 不保留，也不扩到 near-real
+   - `v17` 不保留
+   - 但 `v16` 已证明：
+     - `absent_proxy_v3_strict + reverse_guardrail_proxy_v1`
+     这条 objective 方向显著比 `v13 / v14 / v15` 更接近 synthetic pre-screen
+   - 下一步若继续自动推进，优先改的是：
+     - `v16` 这条路线里的 transient / interference 预算或 selector
+   - 而不是继续：
+     - 下调 `absent_weight`
 
 ## 9. 文档入口
 
@@ -1484,5 +1827,10 @@
 - 本轮 `v11` dual-anchor follow-up：`reports/daily/2026-03-18_v11_v8_dualanchor_ft1.md`
 - 本轮 `guodegang 0006` clip-split 跟进：`reports/daily/2026-03-18_guodegang_clip_split_followup.md`
 - 本轮 `v12` anchor-proxy focused follow-up：`reports/daily/2026-03-18_v12_v8_anchor_proxy_ft1.md`
+- 本轮 `v13` anchor+absent union follow-up：`reports/daily/2026-03-18_v13_v12_anchor_absent_proxy_ft1.md`
+- 本轮 absent proxy 重建与 `v14` follow-up：`reports/daily/2026-03-18_v14_v12_absent_proxy_v3_strict_ft1.md`
+- 本轮轻量 dual-proxy `v15` nudging：`reports/daily/2026-03-18_v15_v12_anchor_absent_proxy_v3_nudge_ft1.md`
+- 本轮 synthetic dual-proxy gate：`reports/daily/2026-03-18_synthetic_dual_proxy_gate.md`
+- 本轮 reverse guardrail carve-out 与 `v16 / v17` pre-screen：`reports/daily/2026-03-18_v16_v17_reverse_guardrail_probe.md`
 - 本轮仓库与 `.gitignore` 审计：`reports/daily/2026-03-18_repo_gitignore_audit.md`
 - 本轮全仓库评估总结：`reports/daily/2026-03-17_repo_evaluation_summary.md`
