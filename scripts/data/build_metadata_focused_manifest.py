@@ -1,0 +1,412 @@
+from __future__ import annotations
+
+import argparse
+import json
+import math
+import random
+from collections import Counter, defaultdict
+from pathlib import Path
+from typing import Any
+
+import numpy as np
+import soundfile as sf
+
+
+ROOT = Path(__file__).resolve().parents[2]
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Build a deterministic metadata-focused manifest from an existing synthetic manifest."
+    )
+    parser.add_argument(
+        "--input-manifest",
+        type=Path,
+        default=ROOT / "data" / "synthetic" / "train_manifest.jsonl",
+    )
+    parser.add_argument("--output-manifest", type=Path, required=True)
+    parser.add_argument("--recipes", nargs="*", default=[])
+    parser.add_argument("--temporal-patterns", nargs="*", default=[])
+    parser.add_argument("--min-target-ratio", type=float, default=None)
+    parser.add_argument("--max-target-ratio", type=float, default=None)
+    parser.add_argument("--min-overlap-ratio", type=float, default=None)
+    parser.add_argument("--max-overlap-ratio", type=float, default=None)
+    parser.add_argument("--min-interference-gain-db", type=float, default=None)
+    parser.add_argument("--max-interference-gain-db", type=float, default=None)
+    parser.add_argument("--interference-pools", nargs="*", default=[])
+    parser.add_argument("--interference-speaker-names", nargs="*", default=[])
+    parser.add_argument(
+        "--min-target-transient-presence-minus-mid-db-mean",
+        type=float,
+        default=None,
+    )
+    parser.add_argument(
+        "--max-target-transient-presence-minus-mid-db-mean",
+        type=float,
+        default=None,
+    )
+    parser.add_argument(
+        "--min-target-transient-presence-share-mean",
+        type=float,
+        default=None,
+    )
+    parser.add_argument(
+        "--max-target-transient-presence-share-mean",
+        type=float,
+        default=None,
+    )
+    parser.add_argument(
+        "--transient-filter-mode",
+        choices=["all", "any"],
+        default="all",
+        help="How to combine multiple transient metric filters when more than one is provided.",
+    )
+    parser.add_argument(
+        "--recipe-cap",
+        action="append",
+        default=[],
+        help="Per-recipe cap in the form recipe=count. Can be passed multiple times.",
+    )
+    parser.add_argument("--seed", type=int, default=20260318)
+    return parser.parse_args()
+
+
+def load_json(path: Path) -> dict[str, Any]:
+    with path.open("r", encoding="utf-8") as fh:
+        return json.load(fh)
+
+
+def load_jsonl(path: Path) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    with path.open("r", encoding="utf-8") as fh:
+        for line in fh:
+            line = line.strip()
+            if not line:
+                continue
+            rows.append(json.loads(line))
+    return rows
+
+
+def parse_recipe_caps(values: list[str]) -> dict[str, int]:
+    caps: dict[str, int] = {}
+    for value in values:
+        if "=" not in value:
+            raise ValueError(f"Invalid --recipe-cap value: {value!r}")
+        recipe, raw_count = value.split("=", 1)
+        recipe = recipe.strip()
+        count = int(raw_count)
+        if not recipe:
+            raise ValueError(f"Invalid empty recipe in --recipe-cap value: {value!r}")
+        if count < 0:
+            raise ValueError(f"Recipe cap must be non-negative: {value!r}")
+        caps[recipe] = count
+    return caps
+
+
+def compute_overlap_ratio(metadata: dict[str, Any]) -> float | None:
+    layers = list(metadata.get("interference_layers", []))
+    if not layers:
+        return None
+    duration = float(metadata["target_duration_sec"])
+    start_offset = float(layers[0]["start_offset_sec"])
+    overlap = max(0.0, duration - start_offset) / max(duration, 1e-9)
+    return float(min(max(overlap, 0.0), 1.0))
+
+
+def load_audio(path: Path) -> tuple[np.ndarray, int]:
+    waveform, sample_rate = sf.read(str(path), always_2d=False)
+    waveform = np.asarray(waveform, dtype=np.float32)
+    if waveform.ndim == 2:
+        waveform = waveform.mean(axis=1)
+    return waveform, sample_rate
+
+
+def stft_power(waveform: np.ndarray, n_fft: int, hop_length: int) -> np.ndarray:
+    if waveform.shape[0] < n_fft:
+        waveform = np.pad(waveform, (0, n_fft - waveform.shape[0]))
+    window = np.hanning(n_fft).astype(np.float32)
+    frames: list[np.ndarray] = []
+    last_start = waveform.shape[0] - n_fft
+    for start in range(0, max(last_start + 1, 1), hop_length):
+        frame = waveform[start : start + n_fft]
+        if frame.shape[0] < n_fft:
+            frame = np.pad(frame, (0, n_fft - frame.shape[0]))
+        frames.append(np.fft.rfft(frame * window))
+    return np.abs(np.stack(frames, axis=0)).astype(np.float32) ** 2
+
+
+def band_energy(power: np.ndarray, freqs: np.ndarray, low: float, high: float) -> np.ndarray:
+    mask = (freqs >= low) & (freqs < high)
+    return power[:, mask].sum(axis=1)
+
+
+def safe_log_ratio(numer: np.ndarray, denom: np.ndarray, eps: float = 1e-12) -> np.ndarray:
+    return 10.0 * np.log10((numer + eps) / (denom + eps))
+
+
+def detect_transient_indices(
+    power: np.ndarray,
+    freqs: np.ndarray,
+    *,
+    low_hz: float,
+    high_hz: float,
+    top_ratio: float,
+    min_count: int,
+) -> np.ndarray:
+    mask = (freqs >= low_hz) & (freqs < high_hz)
+    log_power = np.log1p(power[:, mask])
+    flux = np.maximum(log_power[1:] - log_power[:-1], 0.0).sum(axis=1)
+    if flux.size == 0:
+        return np.array([0], dtype=np.int64)
+    keep = max(min_count, int(math.ceil(flux.shape[0] * top_ratio)))
+    keep = min(max(keep, 1), flux.shape[0])
+    return np.sort(np.argsort(flux)[-keep:] + 1).astype(np.int64)
+
+
+def build_target_transient_metrics(target_audio_path: Path) -> dict[str, float]:
+    waveform, sample_rate = load_audio(target_audio_path)
+    power = stft_power(waveform, n_fft=1024, hop_length=256)
+    freqs = np.fft.rfftfreq(1024, d=1.0 / sample_rate).astype(np.float32)
+    transient_indices = detect_transient_indices(
+        power=power,
+        freqs=freqs,
+        low_hz=3000.0,
+        high_hz=min(8000.0, sample_rate / 2.0),
+        top_ratio=0.12,
+        min_count=8,
+    )
+    transient_indices = transient_indices[transient_indices < power.shape[0]]
+    if transient_indices.size == 0:
+        transient_indices = np.array([0], dtype=np.int64)
+
+    mid_energy = band_energy(power, freqs, 800.0, 3000.0)[transient_indices]
+    presence_energy = band_energy(power, freqs, 3000.0, min(8000.0, sample_rate / 2.0))[transient_indices]
+    presence_minus_mid_db = safe_log_ratio(presence_energy, mid_energy)
+    total_energy = power.sum(axis=1)[transient_indices] + 1e-12
+    presence_share = presence_energy / total_energy
+    return {
+        "target_transient_presence_minus_mid_db_mean": float(np.mean(presence_minus_mid_db)),
+        "target_transient_presence_share_mean": float(np.mean(presence_share)),
+    }
+
+
+def passes_optional_bounds(
+    *,
+    value: float,
+    min_value: float | None,
+    max_value: float | None,
+) -> bool:
+    if min_value is not None and value < min_value:
+        return False
+    if max_value is not None and value > max_value:
+        return False
+    return True
+
+
+def serialize_repo_path(path: Path) -> str:
+    resolved = path.resolve()
+    try:
+        return resolved.relative_to(ROOT.resolve()).as_posix()
+    except ValueError:
+        return resolved.as_posix()
+
+
+def infer_interference_speaker_name(audio_path: str | None) -> str | None:
+    if not audio_path:
+        return None
+    path = Path(audio_path)
+    parent_name = path.parent.name.strip()
+    return parent_name or None
+
+
+def summarize(rows: list[dict[str, Any]], enriched: list[dict[str, Any]]) -> dict[str, Any]:
+    recipe_counts = Counter(row["recipe"] for row in rows)
+    pattern_counts = Counter(row.get("temporal_pattern", "target_full") for row in rows)
+    pool_counts = Counter(row["interference_pool"] for row in enriched if row["interference_pool"] is not None)
+    speaker_counts = Counter(
+        row["interference_speaker_name"] for row in enriched if row["interference_speaker_name"] is not None
+    )
+    if enriched:
+        mean_overlap = float(sum(row["overlap_ratio"] for row in enriched if row["overlap_ratio"] is not None) / len(enriched))
+    else:
+        mean_overlap = 0.0
+    return {
+        "recipe_counts": dict(sorted(recipe_counts.items())),
+        "pattern_counts": dict(sorted(pattern_counts.items())),
+        "interference_pool_counts": dict(sorted(pool_counts.items())),
+        "interference_speaker_counts": dict(sorted(speaker_counts.items())),
+        "mean_overlap_ratio": mean_overlap,
+    }
+
+
+def main() -> None:
+    args = parse_args()
+    rng = random.Random(args.seed)
+    recipe_caps = parse_recipe_caps(args.recipe_cap)
+    recipes = set(args.recipes)
+    temporal_patterns = set(args.temporal_patterns)
+    interference_pools = set(args.interference_pools)
+    interference_speaker_names = set(args.interference_speaker_names)
+    use_transient_filters = any(
+        value is not None
+        for value in [
+            args.min_target_transient_presence_minus_mid_db_mean,
+            args.max_target_transient_presence_minus_mid_db_mean,
+            args.min_target_transient_presence_share_mean,
+            args.max_target_transient_presence_share_mean,
+        ]
+    )
+
+    rows = load_jsonl(args.input_manifest)
+    enriched_candidates: list[dict[str, Any]] = []
+    transient_cache: dict[str, dict[str, float]] = {}
+    for row in rows:
+        if recipes and str(row["recipe"]) not in recipes:
+            continue
+        if temporal_patterns and str(row.get("temporal_pattern", "target_full")) not in temporal_patterns:
+            continue
+        target_ratio = float(row.get("target_present_ratio", 1.0))
+        if args.min_target_ratio is not None and target_ratio < args.min_target_ratio:
+            continue
+        if args.max_target_ratio is not None and target_ratio > args.max_target_ratio:
+            continue
+
+        metadata = load_json(ROOT / str(row["metadata_path"]))
+        overlap_ratio = compute_overlap_ratio(metadata)
+        if args.min_overlap_ratio is not None and (overlap_ratio is None or overlap_ratio < args.min_overlap_ratio):
+            continue
+        if args.max_overlap_ratio is not None and (overlap_ratio is None or overlap_ratio > args.max_overlap_ratio):
+            continue
+
+        layers = list(metadata.get("interference_layers", []))
+        first_layer = layers[0] if layers else None
+        interference_gain_db = None if first_layer is None else float(first_layer["gain_db"])
+        interference_pool = None if first_layer is None else str(first_layer["pool"])
+        interference_speaker_name = (
+            None if first_layer is None else infer_interference_speaker_name(str(first_layer.get("audio_path", "")))
+        )
+        if args.min_interference_gain_db is not None and (
+            interference_gain_db is None or interference_gain_db < args.min_interference_gain_db
+        ):
+            continue
+        if args.max_interference_gain_db is not None and (
+            interference_gain_db is None or interference_gain_db > args.max_interference_gain_db
+        ):
+            continue
+        if interference_pools and interference_pool not in interference_pools:
+            continue
+        if interference_speaker_names and interference_speaker_name not in interference_speaker_names:
+            continue
+
+        transient_metrics: dict[str, float] = {}
+        if use_transient_filters:
+            target_audio_path = ROOT / str(metadata["output_paths"]["target_audio_path"])
+            transient_metrics = transient_cache.get(str(target_audio_path), {})
+            if not transient_metrics:
+                transient_metrics = build_target_transient_metrics(target_audio_path)
+                transient_cache[str(target_audio_path)] = transient_metrics
+
+            transient_checks = [
+                passes_optional_bounds(
+                    value=transient_metrics["target_transient_presence_minus_mid_db_mean"],
+                    min_value=args.min_target_transient_presence_minus_mid_db_mean,
+                    max_value=args.max_target_transient_presence_minus_mid_db_mean,
+                ),
+                passes_optional_bounds(
+                    value=transient_metrics["target_transient_presence_share_mean"],
+                    min_value=args.min_target_transient_presence_share_mean,
+                    max_value=args.max_target_transient_presence_share_mean,
+                ),
+            ]
+            active_checks = [
+                transient_checks[0]
+                for _ in [0]
+                if args.min_target_transient_presence_minus_mid_db_mean is not None
+                or args.max_target_transient_presence_minus_mid_db_mean is not None
+            ] + [
+                transient_checks[1]
+                for _ in [0]
+                if args.min_target_transient_presence_share_mean is not None
+                or args.max_target_transient_presence_share_mean is not None
+            ]
+            if active_checks:
+                if args.transient_filter_mode == "all" and not all(active_checks):
+                    continue
+                if args.transient_filter_mode == "any" and not any(active_checks):
+                    continue
+
+        enriched_candidates.append(
+            {
+                **row,
+                "overlap_ratio": overlap_ratio,
+                "interference_gain_db": interference_gain_db,
+                "interference_pool": interference_pool,
+                "interference_speaker_name": interference_speaker_name,
+                **transient_metrics,
+            }
+        )
+
+    by_recipe: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for row in enriched_candidates:
+        by_recipe[str(row["recipe"])].append(row)
+
+    selected_rows: list[dict[str, Any]] = []
+    if recipe_caps:
+        for recipe, cap in recipe_caps.items():
+            candidates = list(by_recipe.get(recipe, []))
+            rng.shuffle(candidates)
+            selected_rows.extend(candidates[:cap])
+    else:
+        selected_rows = list(enriched_candidates)
+
+    selected_rows.sort(key=lambda row: str(row["sample_id"]))
+    plain_rows = [
+        {
+            key: value
+            for key, value in row.items()
+            if key
+            not in {
+                "overlap_ratio",
+                "interference_gain_db",
+                "interference_pool",
+                "interference_speaker_name",
+            }
+        }
+        for row in selected_rows
+    ]
+
+    args.output_manifest.parent.mkdir(parents=True, exist_ok=True)
+    with args.output_manifest.open("w", encoding="utf-8", newline="\n") as fh:
+        for row in plain_rows:
+            fh.write(json.dumps(row, ensure_ascii=False) + "\n")
+
+    summary = {
+        "input_manifest": serialize_repo_path(args.input_manifest),
+        "output_manifest": serialize_repo_path(args.output_manifest),
+        "seed": args.seed,
+        "filters": {
+            "recipes": sorted(recipes),
+            "temporal_patterns": sorted(temporal_patterns),
+            "min_target_ratio": args.min_target_ratio,
+            "max_target_ratio": args.max_target_ratio,
+            "min_overlap_ratio": args.min_overlap_ratio,
+            "max_overlap_ratio": args.max_overlap_ratio,
+            "min_interference_gain_db": args.min_interference_gain_db,
+            "max_interference_gain_db": args.max_interference_gain_db,
+            "interference_pools": sorted(interference_pools),
+            "interference_speaker_names": sorted(interference_speaker_names),
+            "min_target_transient_presence_minus_mid_db_mean": args.min_target_transient_presence_minus_mid_db_mean,
+            "max_target_transient_presence_minus_mid_db_mean": args.max_target_transient_presence_minus_mid_db_mean,
+            "min_target_transient_presence_share_mean": args.min_target_transient_presence_share_mean,
+            "max_target_transient_presence_share_mean": args.max_target_transient_presence_share_mean,
+            "transient_filter_mode": args.transient_filter_mode,
+        },
+        "recipe_caps": recipe_caps,
+        "selected_count": len(plain_rows),
+        **summarize(plain_rows, selected_rows),
+    }
+    print(json.dumps(summary, ensure_ascii=False, indent=2))
+
+
+if __name__ == "__main__":
+    main()

@@ -968,6 +968,396 @@
    - `target_present__none`
    - `target_absent__speech`
    的 `gate_near_real_tradeoff.py` 检查，再谈是否值得继续保留
+77. 基于上述 gate 的第一条保守 follow-up 已完成：
+   - `legacy_transient_leakguard_probe_v7_v3_speech_absentguard_w2_ft1`
+   - 其训练基座为：
+     - `legacy_transient_leakguard_probe_v3_w0005`
+   - 关键增量为：
+     - `absent_weight = 2.0`
+     - `absent_focus_recipes = target_clean_speech / target_hard_speech`
+     - `absent_focus_patterns = target_absent_head / target_absent_tail / target_intermittent`
+78. `v7` 在 synthetic 默认 val 上相对：
+   - `legacy_stage2` 仍为正增益：
+     - `avg_sisdr_delta_db = +0.461595`
+   - `legacy_transient_leakguard_probe_v3_w0005` 也是小幅正增益：
+     - `avg_sisdr_delta_db = +0.077777`
+   - 因而它更像“`v3` 的保守升级版”，不是新的大步近邻分支
+79. `v7` 的 near-real hard gate 结果进一步把它的定位压实为：
+   - 相对 `legacy_stage2`：
+     - 仍 fail `target_present__speech`
+     - 但已 pass：
+       - `target_present__none`
+       - `target_absent__speech`
+   - 相对 `legacy_transient_leakguard_probe_v3_w0005`：
+     - 已通过三类关键桶 hard gate
+   - 因而它可以替换 `v3_w0005` 成为新的第二保留候选，但还不能替换 `legacy_stage2` 或 `v1`
+80. 当前 objective-only 保留顺位更新为：
+   - 第一保留：`legacy_transient_leakguard_probe_v1`
+   - 第二保留：`legacy_transient_leakguard_probe_v7_v3_speech_absentguard_w2_ft1`
+   - 第三保留：`legacy_transient_leakguard_probe_v3_w0005`
+   - 诊断参考：
+     - `legacy_transient_leakguard_probe_v4_speechfocus_ft1`
+     - `legacy_transient_leakguard_probe_v5_absentguard_ft1`
+81. 因此当前若继续 objective-only 小步推进，默认问题表述应更新为：
+   - 不是“再找一个能替代 `v3` 的版本”
+   - 而是“以 `v1` 为主基座、以 `v7` 为保守升级锚点，继续修掉 `target_present__speech`，同时不丢 `target_present__none` 与 `target_absent__speech`”
+82. 上述 `target_present__speech` 现已进一步落到样本级诊断；当前这个失败桶实际上只包含：
+   - `near_real_0003`
+   - `near_real_0004`
+   - `near_real_0006`
+   三条样本，不是一个大样本池的平均性问题
+83. 样本级诊断工具现已补齐：
+   - `scripts/eval/diagnose_near_real_bucket_failures.py`
+   - 当前默认把：
+     - tradeoff
+     - bandwidth
+     - transient
+     三路证据统一到 `baseline / candidate` 方向后再看 bucket 内 failure signature
+84. 当前 `target_present__speech` 的失败机制已明确拆成三类：
+   - `near_real_0003`：
+     - 以 over-suppression / residual-heavy + transient loss 为主
+   - `near_real_0004`：
+     - 以 speech leak trade-off 为主
+   - `near_real_0006`：
+     - 以 transient loss 为主
+85. 因此当前最有价值的无听审推进，不再是继续扫“统一的 loss / selector 小改动”，而是先把这三种失败形态映射回 synthetic / objective 训练可控项；否则单一 follow-up 很容易在：
+   - `0003`
+   - `0004`
+   - `0006`
+   之间互相打架
+86. 若只允许继续推进 1 条 objective-only follow-up，当前更合理的出发点应改为：
+   - 以 `legacy_transient_leakguard_probe_v7_v3_speech_absentguard_w2_ft1` 为基座
+   - 优先修 `near_real_0006` 这类 transient-only 回退
+   - 同时避免把 `near_real_0004` 再推回 speech leak
+   而不是继续做更泛化的 absent guard 或 speech-only selector 扫描
+87. 当前已补一套 synthetic-compatible 的 near-real 微型 probe：
+   - `scripts/data/build_near_real_speech_probe_manifest.py`
+   - manifest:
+     - `data/probes/near_real_speech_probe_v1_manifest.jsonl`
+   - 样本锚点只覆盖：
+     - `near_real_0003`
+     - `near_real_0004`
+     - `near_real_0006`
+   - 并只使用：
+     - `friend_raw`
+     - `guodegang_raw`
+     这两类真实近源语音干扰族
+88. 上述 probe 当前共 24 条样本，核心作用不是替代 near-real hard gate，而是作为未来 objective-only 小步 follow-up 的预筛：
+   - 先判断 candidate 是否更接近当前 near-real speech bucket 的真实排序
+   - 再决定是否值得消耗 near-real blind 包诊断预算
+89. 当前已新增配套汇总入口：
+   - `scripts/eval/analyze_near_real_speech_probe.py`
+   - 并已实跑：
+     - `legacy_stage2 vs legacy_transient_leakguard_probe_v1`
+     - `legacy_stage2 vs legacy_transient_leakguard_probe_v7_v3_speech_absentguard_w2_ft1`
+     - `legacy_transient_leakguard_probe_v1 vs legacy_transient_leakguard_probe_v7_v3_speech_absentguard_w2_ft1`
+90. 这个微型 probe 给出的排序与先前 broad synthetic speech proxy 不同，而且更贴近 near-real 诊断：
+   - 相对 `legacy_stage2`
+     - `v1`：`avg_sisdr_delta_db = -1.559718`
+     - `v7`：`avg_sisdr_delta_db = -0.629166`
+   - 相对 `v1`
+     - `v7`：`avg_sisdr_delta_db = +0.930552`
+     - `improved_count = 24 / 24`
+91. 当前这一结果进一步压实了 `v7` 作为 speech-only near-real follow-up 基座的定位：
+   - `v7` 虽仍未整体超过 `legacy_stage2`
+   - 但它在这套更近真实的 speech probe 上，已经比 `v1` 更稳
+   - 因而后续若继续 objective-only，小步修正应默认从 `v7` 出发，而不是重新回到 `v1` 主导
+92. 该 probe 还把下一步问题进一步收窄为：
+   - `near_real_0006` 型的 `guodegang_raw / transient_like` 子问题，`v7` 已相对 `legacy_stage2` 转正
+   - 当前剩余主缺口主要集中在：
+     - `near_real_0003` 型 `friend_raw / residual_transient_like`
+     - `near_real_0004` 型 `friend_raw / speech_leak_like`
+93. 因而当前若继续自动推进，最合理的下一个实验设计目标应更新为：
+   - 以 `v7` 为基座
+   - 只针对 `friend_raw` 的 `0003 / 0004` 型 speech overlap 回退做更保守修正
+   - 同时把 `near_real_0006` 型已拿回的 transient-like 收益当成 guardrail，不允许再回吐
+94. 上述方向现已完成第一条 very small focused fine-tune：
+   - `legacy_transient_leakguard_probe_v8_friend_overlap_focus_ft1`
+   - warm-start:
+     - `legacy_transient_leakguard_probe_v7_v3_speech_absentguard_w2_ft1`
+   - focused train manifest:
+     - `data/synthetic/train_manifest_friend_overlap_focus_v1_combo.jsonl`
+   - focused val manifest:
+     - `data/synthetic/val_manifest_friend_overlap_focus_v1_combo.jsonl`
+95. 这条 focused manifest 不是重造 synthetic 数据，而是从现有 default split 里筛出更接近 `0003 / 0004` 的样本：
+   - `target_hard_speech + target_full + overlap >= 0.9`
+   - 加上一批 `target_clean_speech + target_full + overlap >= 0.9 + gain in [-6, -3.5]`
+   - 当前规模为：
+     - train `72`
+     - val `26`
+   - 新增筛选脚本：
+     - `scripts/data/build_metadata_focused_manifest.py`
+96. `v8` 相对 `v7` 的 default synthetic val 出现可接受但不可忽略的回退：
+   - `avg_sisdr_delta_db = -0.191305`
+   - 因而它不是“无代价升级”
+97. 但 `v8` 在 near-real speech micro probe 上相对 `v7` 已形成明确正增益：
+   - overall:
+     - `avg_sisdr_delta_db = +0.392748`
+   - `friend_raw`:
+     - `avg_sisdr_delta_db = +0.556688`
+   - 锚点：
+     - `near_real_0003 = +0.421242`
+     - `near_real_0004 = +0.692135`
+   - 代价主要是：
+     - `near_real_0006 = -0.099073`
+98. `v8` 相对 `legacy_stage2` 的 direct micro-probe 表现也继续优于 `v7`：
+   - overall:
+     - `avg_sisdr_delta_db = -0.236418`
+   - 相比 `v7` 的 `-0.629166` 明显更接近放行
+   - 分锚点为：
+     - `near_real_0003 = -1.116950`
+     - `near_real_0004 = -0.220142`
+     - `near_real_0006 = +1.059967`
+99. `v8` 已进一步经过真实 near-real 自动诊断链验证：
+   - hard gate 仍然 `FAIL`
+   - 但仍然只 fail：
+     - `target_present__speech`
+   - `target_present__none`
+   - `target_absent__speech`
+   继续保持 `PASS`
+100. `v8` 当前在真实 near-real `target_present__speech` bucket 内的 failure signature 已比旧 `v7` 更收敛：
+   - 不再出现 `more_residual_heavy`
+   - 当前主要剩：
+     - `near_real_0003`: `lost_retention_minus_leak + more_transient_lossy`
+     - `near_real_0004`: `lost_retention_minus_leak + more_interference_leaky`
+     - `near_real_0006`: `more_transient_lossy`
+101. 因而当前对 `v8` 的定位应写成：
+   - 它是当前 speech-bucket-focused follow-up 线上最值得保留的新候选
+   - 已经比 `v7` 更接近修正 `friend_raw` 的 `0003 / 0004`
+   - 但仍未通过真实 near-real hard gate
+   - 也不能替代 `legacy_stage2`
+102. 若下一步继续自动推进，默认问题应再进一步收窄为：
+   - 保住 `v8` 对 `friend_raw / 0003 / 0004` 的改善
+   - 同时把 `guodegang_raw / 0006` 的 transient-like回退重新拉回至少 `v7` 水平
+   - 并避免 default synthetic val 再继续显著回吐
+103. 本轮已新增 `scripts/eval/gate_speech_probe_followup.py`，把 speech-focused follow-up 的 branch-local keep/drop 规则正式脚本化：
+   - 共用 `stage2` 基线
+   - 检查 default val 总体增益是否只在容忍范围内回吐
+   - 检查 near-real speech micro probe 的 `0003 / 0004` 是否继续改善
+   - 检查 `0006` 是否只在允许阈值内轻微回退
+   - 检查真实 near-real hard gate 的 fail bucket 不得扩张
+104. 这套 gate 的默认阈值当前固定为：
+   - `max_default_regression_db = 0.2`
+   - `min_anchor_0003_gain_db = 0.0`
+   - `min_anchor_0004_gain_db = 0.0`
+   - `max_anchor_0006_regression_db = 0.1`
+105. 用这套 gate 回放 `v7 -> v8` 的结果为 `PASS`：
+   - `v8` 相对 `v7` 的 default val 回吐为 `-0.191305 dB`
+   - 仍在 `0.2 dB` 容忍线内
+   - `0003 = +0.421242 dB`
+   - `0004 = +0.692135 dB`
+   - `0006 = -0.099073 dB`
+   - fail bucket 仍只剩 `target_present__speech`
+106. 同一套 gate 回放 `v1 -> v7` 的结果为 `FAIL`：
+   - 唯一失败项是 `default_stage2_delta_floor`
+   - 说明 `v7` 虽然是更好的 speech-bucket branch-local follow-up
+   - 但还不能把它当成相对 `v1` 的 broad objective-only 升级版
+107. 因而当前自动推进口径应再明确一层：
+   - `v8` 现在是 speech-focused 分支的默认基座
+   - 未来 `v9+` 应先过 `gate_speech_probe_followup.py`
+   - 再决定是否值得继续跑完整 near-real 自动诊断链或进入听审候选
+108. 本轮已把 `scripts/data/build_metadata_focused_manifest.py` 升级为支持 target transient 指标过滤：
+   - `target_transient_presence_minus_mid_db_mean`
+   - `target_transient_presence_share_mean`
+   - `transient_filter_mode = all | any`
+109. 基于这个入口，本轮构造了 `v9` 的 `hard transient` 双焦点数据：
+   - 新 hard 子集：
+     - `train_manifest_hard_transient_focus_v1_any.jsonl = 21`
+     - `val_manifest_hard_transient_focus_v1_any.jsonl = 5`
+   - 再把它叠加到 `v8` 的 friend-focused combo 上，形成：
+     - `train_manifest_v9_dualfocus_v1.jsonl = 93`
+     - `val_manifest_v9_dualfocus_v1.jsonl = 31`
+110. `v9 = legacy_transient_leakguard_probe_v9_v8_dualfocus_hardtransient_ft1` 已完成训练与预筛：
+   - init:
+     - `v8`
+   - budget:
+     - `72` steps
+   - default 相对 `stage2`：
+     - `+0.224121 dB`
+   - default 相对 `v8`：
+     - `-0.046169 dB`
+111. 但 `v9` 在 near-real speech micro probe 上未通过 branch-local gate：
+   - 相对 `stage2` overall:
+     - `-0.252293 dB`
+   - 相对 `v8` overall:
+     - `-0.015875 dB`
+   - fail rules:
+     - `speech_probe_overall_floor`
+     - `anchor_0006_regression_floor`
+112. `v9` 的失败形态很明确：
+   - 它对 `friend_raw` 其实略有改善：
+     - `v8 -> v9 friend_raw = +0.073949 dB`
+     - `0003 = +0.064120 dB`
+     - `0004 = +0.083778 dB`
+   - 但对真正想补的 `guodegang_raw / 0006` 是系统性回退：
+     - `v8 -> v9 0006 = -0.285347 dB`
+     - `guodegang_raw = -0.285347 dB`
+     - `6 / 6` 样本全部 regression
+113. 因而当前应把结论明确更新为：
+   - `v9` 不是保留候选
+   - 当前 synthetic `hard/full-overlap/transient` proxy 不能作为 `0006` 的可靠训练代用
+   - 下一步最有价值的工作，应从“继续开小微调”切回到“重做 `0006` 的 objective proxy / guardrail”
+114. 本轮已把 near-real speech probe v1 正式拆成两个可复用子 probe：
+   - `data/probes/near_real_friend_speech_probe_v1_manifest.jsonl = 18`
+   - `data/probes/near_real_guodegang_transient_probe_v1_manifest.jsonl = 6`
+115. 同时新增两个基础工具：
+   - `scripts/data/build_probe_subset_manifest.py`
+   - `scripts/eval/gate_probe_subset_guardrail.py`
+   它们用于从现有 probe manifest 生成 anchor/family 子集，并把 focused probe 的 keep/drop 规则脚本化。
+116. `near_real_guodegang_transient_probe_v1` 已经把 `0006` 的客观排序固定下来：
+   - `v7 = +1.159040 dB`
+   - `v8 = +1.059967 dB`
+   - `v9 = +0.774620 dB`
+   - 当前是单调 `v7 > v8 > v9`
+117. 这条子 probe 也证实了 `v9` 的失败不是噪声，而是系统性回退：
+   - `v8 -> v9 = -0.285347 dB`
+   - `guodegang_raw = -0.285347 dB`
+   - `near_real_0006 = -0.285347 dB`
+   - `6 / 6` 样本全部 regression
+118. 因而从本轮起，`near_real_guodegang_transient_probe_v1` 应被视为 `v10+` 的前置硬门槛：
+   - 任何声称“在补 `0006`”的 follow-up
+   - 都应先在这条子 probe 上至少不弱于当前参考版本
+   - 否则不值得继续投入更重的训练或 near-real 自动链
+119. 本轮已把“重做 `0006` objective proxy”进一步落到可执行搜索：
+   - 新启用：
+     - `scripts/eval/search_synthetic_proxy_candidates.py`
+   - 输出：
+     - `reports/eval/synthetic_proxy_search_v7_v8_v9_on_default/summary.json`
+   - 搜索目标是：
+     - 在 default synthetic speech rows 上找能复现
+       - `v7 > v8 > v9`
+       排序的 metadata-defined 子集
+120. 这次搜索给出的 top order-pass 结果非常一致，当前最接近 `guodegang / 0006` 排序的 synthetic proxy 不是：
+   - `target_hard_speech + target_full + high-overlap + transient-rich`
+   而是更偏：
+   - `target_clean_speech`
+   - `target_full`
+   - `target_present_ratio >= 0.95`
+   - `overlap >= 0.75`
+   - `speech_interference_clean_pool`
+   - `target_transient_presence_minus_mid_db_mean >= -11.5350723`
+121. 基于上述搜索结果，本轮已正式物化：
+   - `data/synthetic/train_manifest_guodegang_proxy_v1.jsonl = 85`
+   - `data/synthetic/val_manifest_guodegang_proxy_v1.jsonl = 31`
+   它们现在可以作为：
+   - `v10+` 的 synthetic 预筛 / focused fine-tune 入口
+   - 以及 future branch-local compare 的固定锚点
+122. 本轮已在 `val_manifest_guodegang_proxy_v1.jsonl` 上重跑 checkpoint compare，并确认它能独立复现 near-real `0006` guardrail 的正确排序：
+   - 相对 `legacy_stage2`：
+     - `v7 = +1.916698 dB`
+     - `v8 = +1.032723 dB`
+     - `v9 = +0.866308 dB`
+   - branch-local：
+     - `v7 -> v8 = -0.883974 dB`
+     - `v8 -> v9 = -0.166415 dB`
+123. 因而当前对下一步的默认口径应更新为：
+   - 若继续自动推进，不再从 `hard_transient_focus_v1_any` 出发
+   - 而是把 `guodegang_proxy_v1` 当作新的 synthetic 预筛入口
+   - 同时继续保留：
+     - `near_real_guodegang_transient_probe_v1`
+     作为不可跳过的真实侧 guardrail
+124. 基于上述入口，本轮已实际执行一条 very small focused fine-tune：
+   - `legacy_transient_leakguard_probe_v10_v8_guodegang_proxy_ft1`
+   - warm-start:
+     - `v8`
+   - focused train/val:
+     - `train_manifest_guodegang_proxy_v1.jsonl`
+     - `val_manifest_guodegang_proxy_v1.jsonl`
+125. `v10` 在 synthetic 侧并不是空转：
+   - 相对 `v8`
+     - default: `-0.031839 dB`
+     - `guodegang_proxy_v1`: `+0.480623 dB`
+   - 相对 `v8` 的 broad near-real speech probe：
+     - overall: `+0.080006 dB`
+     - `0003 = +0.280721 dB`
+     - `0004 = +0.211316 dB`
+126. 但 `v10` 仍然明确失败在真正关键的 `guodegang / 0006` 上：
+   - 相对 `v8` 的 `near_real_guodegang_transient_probe_v1`：
+     - overall: `-0.418033 dB`
+     - `6 / 6` 样本全部 regression
+   - 对应 gate 结果：
+     - `gate_speech_probe_followup.py`: `FAIL`
+       - failed:
+         - `anchor_0006_regression_floor`
+     - `gate_probe_subset_guardrail.py`: `FAIL`
+       - failed:
+         - `overall_floor`
+         - `family__guodegang_raw`
+         - `anchor__near_real_0006`
+127. 这说明当前判断还要再收窄一步：
+   - `guodegang_proxy_v1` 比旧 proxy 更像，但还不够像
+   - 单边 `guodegang` focused 微调会继续把分支推向：
+     - 更强 `friend_raw / 0003 / 0004`
+     - 更弱 `guodegang_raw / 0006`
+128. 本轮进一步补的失败面搜索：
+   - `reports/eval/synthetic_proxy_search_v8_v10_on_default/summary.json`
+   显示当前最稳定支持 `v8 > v10` 的 synthetic 子集集中在：
+   - `target_hard_speech`
+   - `target_full`
+   - `overlap >= 0.9`
+   - `speech_interference_hard_pool`
+   - `friend_hard_negative_segments`
+129. 因而当前下一步若继续自动推进，最合理的问题表述应更新为：
+   - 不是再做“单边 `guodegang_proxy_v1` 微调”
+   - 而是做一条双锚点平衡 follow-up：
+     - 用 `guodegang_proxy_v1` 做正向 focused 信号
+     - 用 `friend_hard_negative_segments / hard full-overlap` 做反向 guardrail
+   - 同时继续要求通过：
+     - `near_real_guodegang_transient_probe_v1`
+130. 上述双锚点入口现已实际执行为：
+   - `legacy_transient_leakguard_probe_v11_v8_dualanchor_ft1`
+   - `train_manifest_v11_dualanchor_v1.jsonl = 136`
+   - `val_manifest_v11_dualanchor_v1.jsonl = 49`
+   - 其中保留：
+     - `guodegang_proxy_v1` train/val `85 / 31`
+   - 新增：
+     - `target_hard_speech + target_full + speech_interference_hard_pool(friend_hard_negative_segments)` train/val `51 / 18`
+131. `v11` 在 synthetic 侧继续放大了 dual-anchor 的“看起来像成功”信号：
+   - 相对 `legacy_stage2`
+     - default: `+0.190317 dB`
+     - `guodegang_proxy_v1`: `+1.828146 dB`
+   - 相对 `v8`
+     - default: `-0.079973 dB`
+     - `guodegang_proxy_v1`: `+0.795423 dB`
+132. 但 `v11` 的 broad near-real speech micro probe 相对 `v8` 仍然是典型的“一边继续变强、一边继续被推坏”：
+   - overall: `+0.025061 dB`
+   - `near_real_0003 = +0.260091 dB`
+   - `near_real_0004 = +0.241347 dB`
+   - `near_real_0006 = -0.651915 dB`
+   - `friend_raw = +0.250719 dB`
+   - `guodegang_raw = -0.651915 dB`
+133. `v11` 在 focused `near_real_guodegang_transient_probe_v1` 上也未通过保留线：
+   - 相对 `legacy_stage2`: `+0.408052 dB`
+   - 相对 `v8`: `-0.651915 dB`
+   - `6 / 6` 样本全部 regression
+   - clip 级别拆开后：
+     - `guodegang_absent_480s = +1.228311 dB`
+     - `guodegang_anchor_120s = -0.412207 dB`
+134. 两套 gate 对 `v11` 的结论已统一：
+   - `gate_speech_probe_followup.py`: `FAIL`
+     - failed:
+       - `anchor_0006_regression_floor`
+   - `gate_probe_subset_guardrail.py`: `FAIL`
+     - failed:
+       - `overall_floor`
+       - `family__guodegang_raw`
+       - `anchor__near_real_0006`
+135. 因而当前结论应继续收紧为：
+   - `v11` 不是保留候选
+   - “`guodegang_proxy_v1` 正向 focused 信号 + friend hard/full-overlap 反向 guardrail”的 one-shot 双锚点拼法仍然不够
+   - 相对同一参考 `v8`，它对真实 `0006` 的回退还比 `v10` 更重：
+     - `v10 = -0.418033 dB`
+     - `v11 = -0.651915 dB`
+136. 当前下一步若继续自动推进，问题表述应再收窄为：
+   - 暂不继续沿 `v11` 同配方扩大训练
+   - 优先拆开：
+     - `guodegang_anchor_120s`
+     - `guodegang_absent_480s`
+   - 先确认究竟是哪类 `0006` 子问题在被 friend-side guardrail 挤压
+   - 在真实 `0006` guardrail 没过之前，不把：
+     - `guodegang_proxy_v1` 更强
+     - `0003 / 0004` 更强
+     当成继续放行理由
 
 ## 9. 文档入口
 
@@ -1000,5 +1390,15 @@
 - 本轮 target-absent guardrail follow-up：`reports/daily/2026-03-18_absent_guardrail_probe.md`
 - 本轮 near-real trade-off 分桶复盘：`reports/daily/2026-03-18_near_real_tradeoff_bucketization.md`
 - 本轮 near-real hard gate 复盘：`reports/daily/2026-03-18_near_real_hard_gate.md`
+- 本轮 `v7` 保守 absent-guard follow-up：`reports/daily/2026-03-18_v7_v3_speech_absentguard_w2_ft1.md`
+- 本轮 `target_present__speech` 样本级诊断：`reports/daily/2026-03-18_target_present_speech_bucket_diagnosis.md`
+- 本轮 near-real speech 微型 probe：`reports/daily/2026-03-18_near_real_speech_probe_v1.md`
+- 本轮 `v8` friend-overlap focused follow-up：`reports/daily/2026-03-18_v8_friend_overlap_focus_ft1.md`
+- 本轮 speech-focused follow-up gate：`reports/daily/2026-03-18_speech_followup_gate.md`
+- 本轮 `v9` dual-focus hard-transient follow-up：`reports/daily/2026-03-18_v9_v8_dualfocus_hardtransient_ft1.md`
+- 本轮 `guodegang/0006` 子 probe guardrail：`reports/daily/2026-03-18_guodegang_probe_guardrail.md`
+- 本轮 `guodegang/0006` synthetic proxy 搜索：`reports/daily/2026-03-18_guodegang_proxy_search_v1.md`
+- 本轮 `v10` guodegang-focused follow-up：`reports/daily/2026-03-18_v10_v8_guodegang_proxy_ft1.md`
+- 本轮 `v11` dual-anchor follow-up：`reports/daily/2026-03-18_v11_v8_dualanchor_ft1.md`
 - 本轮仓库与 `.gitignore` 审计：`reports/daily/2026-03-18_repo_gitignore_audit.md`
 - 本轮全仓库评估总结：`reports/daily/2026-03-17_repo_evaluation_summary.md`

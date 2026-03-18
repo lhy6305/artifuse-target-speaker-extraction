@@ -1,0 +1,97 @@
+{
+  "pack_dir": "reports/eval/ab_listening_pack_real_eval_near_real_guodegang_family_v1_stage2_vs_legacy_transient_leakguard_probe_v8_friend_overlap_focus_ft1_blind",
+  "num_samples": 2,
+  "n_fft": 1024,
+  "hop_length": 256,
+  "top_transient_ratio": 0.12,
+  "transient_min_count": 8,
+  "presence_low_hz": 3000.0,
+  "presence_high_hz": 8000.0,
+  "mid_low_hz": 800.0,
+  "mid_high_hz": 3000.0,
+  "loss_threshold_db": 1.0,
+  "loss_frame_ratio_threshold": 0.2,
+  "more_transient_lossy_candidate_counts": {
+    "file_b": 2
+  },
+  "top_abs_presence_minus_mid_mean_deltas": [
+    {
+      "sample_id": "near_real_0006",
+      "file_a_label": "legacy_stage2",
+      "file_b_label": "legacy_transient_leakguard_probe_v8_friend_overlap_focus_ft1",
+      "delta_presence_minus_mid_retention_db_mean_b_minus_a": -7.188675165176392,
+      "delta_presence_minus_mid_retention_db_p10_b_minus_a": -7.264736938476563,
+      "delta_strong_presence_loss_frame_ratio_b_minus_a": 0.8823529411764706,
+      "more_transient_lossy_candidate": "file_b",
+      "transient_loss_score_file_a": 0,
+      "transient_loss_score_file_b": 3,
+      "transient_loss_evidence_file_a": [],
+      "transient_loss_evidence_file_b": [
+        "lower_presence_minus_mid_mean",
+        "lower_presence_minus_mid_p10",
+        "higher_strong_presence_loss_ratio"
+      ],
+      "better_output": "",
+      "note": "raw target clip mixed with external speech from the Guodegang source"
+    },
+    {
+      "sample_id": "near_real_0009",
+      "file_a_label": "legacy_stage2",
+      "file_b_label": "legacy_transient_leakguard_probe_v8_friend_overlap_focus_ft1",
+      "delta_presence_minus_mid_retention_db_mean_b_minus_a": -5.201586484909058,
+      "delta_presence_minus_mid_retention_db_p10_b_minus_a": -5.048095989227296,
+      "delta_strong_presence_loss_frame_ratio_b_minus_a": 0.3333333333333333,
+      "more_transient_lossy_candidate": "file_b",
+      "transient_loss_score_file_a": 0,
+      "transient_loss_score_file_b": 3,
+      "transient_loss_evidence_file_a": [],
+      "transient_loss_evidence_file_b": [
+        "lower_presence_minus_mid_mean",
+        "lower_presence_minus_mid_p10",
+        "higher_strong_presence_loss_ratio"
+      ],
+      "better_output": "",
+      "note": "target absent; only external speech is present"
+    }
+  ],
+  "top_abs_strong_loss_ratio_deltas": [
+    {
+      "sample_id": "near_real_0006",
+      "file_a_label": "legacy_stage2",
+      "file_b_label": "legacy_transient_leakguard_probe_v8_friend_overlap_focus_ft1",
+      "delta_presence_minus_mid_retention_db_mean_b_minus_a": -7.188675165176392,
+      "delta_presence_minus_mid_retention_db_p10_b_minus_a": -7.264736938476563,
+      "delta_strong_presence_loss_frame_ratio_b_minus_a": 0.8823529411764706,
+      "more_transient_lossy_candidate": "file_b",
+      "transient_loss_score_file_a": 0,
+      "transient_loss_score_file_b": 3,
+      "transient_loss_evidence_file_a": [],
+      "transient_loss_evidence_file_b": [
+        "lower_presence_minus_mid_mean",
+        "lower_presence_minus_mid_p10",
+        "higher_strong_presence_loss_ratio"
+      ],
+      "better_output": "",
+      "note": "raw target clip mixed with external speech from the Guodegang source"
+    },
+    {
+      "sample_id": "near_real_0009",
+      "file_a_label": "legacy_stage2",
+      "file_b_label": "legacy_transient_leakguard_probe_v8_friend_overlap_focus_ft1",
+      "delta_presence_minus_mid_retention_db_mean_b_minus_a": -5.201586484909058,
+      "delta_presence_minus_mid_retention_db_p10_b_minus_a": -5.048095989227296,
+      "delta_strong_presence_loss_frame_ratio_b_minus_a": 0.3333333333333333,
+      "more_transient_lossy_candidate": "file_b",
+      "transient_loss_score_file_a": 0,
+      "transient_loss_score_file_b": 3,
+      "transient_loss_evidence_file_a": [],
+      "transient_loss_evidence_file_b": [
+        "lower_presence_minus_mid_mean",
+        "lower_presence_minus_mid_p10",
+        "higher_strong_presence_loss_ratio"
+      ],
+      "better_output": "",
+      "note": "target absent; only external speech is present"
+    }
+  ]
+}

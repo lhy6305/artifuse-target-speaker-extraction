@@ -1,0 +1,478 @@
+{
+  "pack_dir": "reports/eval/ab_listening_pack_real_eval_near_real_v1_stage2_vs_legacy_transient_leakguard_probe_v3_w0005_blind",
+  "bucket_name": "target_present__speech",
+  "baseline_label": "legacy_stage2",
+  "candidate_label": "legacy_transient_leakguard_probe_v3_w0005",
+  "num_samples": 3,
+  "sample_ids": [
+    "near_real_0003",
+    "near_real_0004",
+    "near_real_0006"
+  ],
+  "active_failure_flag_counts": {
+    "lost_target_capture": 1,
+    "lost_retention_minus_leak": 3,
+    "more_interference_leaky": 3,
+    "more_residual_heavy": 1,
+    "more_transient_lossy": 2
+  },
+  "failure_signature_counts": {
+    "lost_target_capture + lost_retention_minus_leak + more_interference_leaky + more_residual_heavy + more_transient_lossy": 1,
+    "lost_retention_minus_leak + more_interference_leaky": 1,
+    "lost_retention_minus_leak + more_interference_leaky + more_transient_lossy": 1
+  },
+  "primary_hypothesis_counts": {
+    "over_suppression_or_residual_tradeoff": 1,
+    "speech_leak_tradeoff": 3,
+    "transient_loss": 2
+  },
+  "mean_candidate_minus_baseline": {
+    "target_capture_db": -0.4022620970741147,
+    "interference_capture_db": 3.1368627181347484,
+    "retention_minus_leak_db": -3.5391248152088632,
+    "residual_output_share": 0.07573946306675916,
+    "rolloff_95_hz": 93.75,
+    "upper_vs_mid_db": 0.5798850877706929,
+    "frame_upper_share_p90": -0.11586622943480805,
+    "transient_presence_minus_mid_retention_db_mean": -4.361591657002767,
+    "strong_presence_loss_frame_ratio": 0.19852941176470587
+  },
+  "per_sample": [
+    {
+      "sample_id": "near_real_0003",
+      "note": "raw target clip mixed with domain-matched friend speech",
+      "scenario": "target_plus_friend_speech",
+      "component_kinds": [
+        "target_raw",
+        "friend_raw"
+      ],
+      "bucket_name": "target_present__speech",
+      "baseline_label": "legacy_stage2",
+      "candidate_label": "legacy_transient_leakguard_probe_v3_w0005",
+      "decoded_labels": {
+        "better_source_retention_label": "legacy_stage2",
+        "more_interference_leaky_label": "legacy_transient_leakguard_probe_v3_w0005",
+        "more_residual_heavy_label": "legacy_transient_leakguard_probe_v3_w0005",
+        "better_retention_minus_leak_label": "legacy_stage2",
+        "narrower_label": "tie",
+        "more_transient_lossy_label": "legacy_transient_leakguard_probe_v3_w0005"
+      },
+      "tradeoff": {
+        "baseline_metrics": {
+          "rms_dbfs": -29.58856274008225,
+          "target_capture_db": -10.81394940697255,
+          "target_projection_scale": 0.2879403509511484,
+          "interference_capture_db": -25.488761808298335,
+          "interference_projection_scale": 0.05315717706774827,
+          "retention_minus_leak_db": 14.674812401325784,
+          "joint_fit_r2": 0.43317593467592586,
+          "residual_output_share": 0.5668240653240741,
+          "projection_coefficients": [
+            0.2876846492290497,
+            0.051030341535806656
+          ]
+        },
+        "candidate_metrics": {
+          "rms_dbfs": -29.341291136732135,
+          "target_capture_db": -11.75754600775714,
+          "target_projection_scale": 0.2582989850096092,
+          "interference_capture_db": -23.75346038443827,
+          "interference_projection_scale": 0.06491229749158406,
+          "retention_minus_leak_db": 11.99591437668113,
+          "joint_fit_r2": 0.3354283419459958,
+          "residual_output_share": 0.6645716580540042,
+          "projection_coefficients": [
+            0.2579832375049591,
+            0.06300502270460129
+          ]
+        },
+        "candidate_minus_baseline": {
+          "target_capture_db": -0.9435966007845895,
+          "interference_capture_db": 1.735301423860065,
+          "retention_minus_leak_db": -2.6788980246446545,
+          "residual_output_share": 0.09774759272993006,
+          "joint_fit_r2": -0.09774759272993006
+        }
+      },
+      "bandwidth": {
+        "baseline_metrics": {
+          "path": "reports/eval/ab_listening_pack_real_eval_near_real_v1_stage2_vs_legacy_transient_leakguard_probe_v3_w0005_blind/near_real_0003/candidate_a.wav",
+          "sample_rate": 16000,
+          "duration_sec": 2.14,
+          "rms_dbfs": -29.58856274008225,
+          "peak_dbfs": -7.5565468239315585,
+          "spectral_centroid_hz": 467.9691389219646,
+          "rolloff_95_hz": 921.875,
+          "band_share_0_1k": 0.9535133274422907,
+          "band_share_1k_3k": 0.04501140216201173,
+          "band_share_3k_6k": 0.0013975505522577745,
+          "band_share_6k_8k": 7.762485301189571e-05,
+          "band_share_3k_8k": 0.0014751754052696703,
+          "upper_vs_mid_db": -14.844788789367717,
+          "upper_vs_low_db": -28.104831046094596,
+          "frame_upper_share_p10": 0.0016315692220814527,
+          "frame_upper_share_p50": 0.5293634533882141,
+          "frame_upper_share_p90": 0.9980695903301239,
+          "frame_presence_share_p90": 0.9509523510932922
+        },
+        "candidate_metrics": {
+          "path": "reports/eval/ab_listening_pack_real_eval_near_real_v1_stage2_vs_legacy_transient_leakguard_probe_v3_w0005_blind/near_real_0003/candidate_b.wav",
+          "sample_rate": 16000,
+          "duration_sec": 2.14,
+          "rms_dbfs": -29.341291136732135,
+          "peak_dbfs": -7.178147581214432,
+          "spectral_centroid_hz": 497.5487583938317,
+          "rolloff_95_hz": 1140.625,
+          "band_share_0_1k": 0.9416975170471872,
+          "band_share_1k_3k": 0.05582977305019756,
+          "band_share_3k_6k": 0.0023859447280235643,
+          "band_share_6k_8k": 8.670088078992059e-05,
+          "band_share_3k_8k": 0.0024726456088134847,
+          "upper_vs_mid_db": -13.537039867373409,
+          "upper_vs_low_db": -25.807495496308523,
+          "frame_upper_share_p10": 0.0017645450076088308,
+          "frame_upper_share_p50": 0.24813097715377808,
+          "frame_upper_share_p90": 0.9202374637126923,
+          "frame_presence_share_p90": 0.8894455432891846
+        },
+        "candidate_minus_baseline": {
+          "rolloff_95_hz": 218.75,
+          "spectral_centroid_hz": 29.57961947186709,
+          "upper_vs_mid_db": 1.3077489219943086,
+          "band_share_3k_8k": 0.0009974702035438145,
+          "frame_upper_share_p90": -0.07783212661743155
+        },
+        "narrower_label": "tie"
+      },
+      "transient": {
+        "baseline_metrics": {
+          "transient_frame_count": 16,
+          "transient_mid_retention_db_mean": -58.424686431884766,
+          "transient_presence_retention_db_mean": -47.25568389892578,
+          "transient_presence_minus_mid_retention_db_mean": 11.169002532958984,
+          "transient_presence_minus_mid_retention_db_p10": 6.134159088134766,
+          "transient_presence_minus_mid_retention_db_p50": 10.326835632324219,
+          "transient_presence_minus_mid_retention_db_p90": 16.050809860229492,
+          "strong_presence_loss_frame_ratio": 0.0
+        },
+        "candidate_metrics": {
+          "transient_frame_count": 16,
+          "transient_mid_retention_db_mean": -52.718902587890625,
+          "transient_presence_retention_db_mean": -47.632537841796875,
+          "transient_presence_minus_mid_retention_db_mean": 5.086368560791016,
+          "transient_presence_minus_mid_retention_db_p10": -3.545879364013672,
+          "transient_presence_minus_mid_retention_db_p50": 5.529382705688477,
+          "transient_presence_minus_mid_retention_db_p90": 14.896599769592285,
+          "strong_presence_loss_frame_ratio": 0.125
+        },
+        "candidate_minus_baseline": {
+          "transient_presence_minus_mid_retention_db_mean": -6.082633972167969,
+          "transient_presence_minus_mid_retention_db_p10": -9.680038452148438,
+          "strong_presence_loss_frame_ratio": 0.125
+        },
+        "more_transient_lossy_label": "legacy_transient_leakguard_probe_v3_w0005"
+      },
+      "active_failure_flags": [
+        "lost_target_capture",
+        "lost_retention_minus_leak",
+        "more_interference_leaky",
+        "more_residual_heavy",
+        "more_transient_lossy"
+      ],
+      "failure_signature": "lost_target_capture + lost_retention_minus_leak + more_interference_leaky + more_residual_heavy + more_transient_lossy",
+      "primary_hypotheses": [
+        "over_suppression_or_residual_tradeoff",
+        "speech_leak_tradeoff",
+        "transient_loss"
+      ]
+    },
+    {
+      "sample_id": "near_real_0004",
+      "note": "raw target clip mixed with another friend speech slice",
+      "scenario": "target_plus_friend_speech",
+      "component_kinds": [
+        "target_raw",
+        "friend_raw"
+      ],
+      "bucket_name": "target_present__speech",
+      "baseline_label": "legacy_stage2",
+      "candidate_label": "legacy_transient_leakguard_probe_v3_w0005",
+      "decoded_labels": {
+        "better_source_retention_label": "tie",
+        "more_interference_leaky_label": "legacy_transient_leakguard_probe_v3_w0005",
+        "more_residual_heavy_label": "tie",
+        "better_retention_minus_leak_label": "legacy_stage2",
+        "narrower_label": "tie",
+        "more_transient_lossy_label": "tie"
+      },
+      "tradeoff": {
+        "baseline_metrics": {
+          "rms_dbfs": -26.36452742016363,
+          "target_capture_db": -9.276548773224015,
+          "target_projection_scale": 0.3436944833634252,
+          "interference_capture_db": -47.96901900398528,
+          "interference_projection_scale": 0.003995296696631872,
+          "retention_minus_leak_db": 38.692470230761266,
+          "joint_fit_r2": 0.5271636557647045,
+          "residual_output_share": 0.4728363442352955,
+          "projection_coefficients": [
+            0.3436940610408783,
+            0.0011257851729169488
+          ]
+        },
+        "candidate_metrics": {
+          "rms_dbfs": -25.932963024444888,
+          "target_capture_db": -9.304382898847798,
+          "target_projection_scale": 0.3425948695924763,
+          "interference_capture_db": -43.86000376197339,
+          "interference_projection_scale": 0.006412092910711291,
+          "retention_minus_leak_db": 34.55562086312559,
+          "joint_fit_r2": 0.4742499411187462,
+          "residual_output_share": 0.5257500588812538,
+          "projection_coefficients": [
+            0.3425936996936798,
+            0.0035517681390047073
+          ]
+        },
+        "candidate_minus_baseline": {
+          "target_capture_db": -0.027834125623783734,
+          "interference_capture_db": 4.109015242011893,
+          "retention_minus_leak_db": -4.136849367635676,
+          "residual_output_share": 0.05291371464595829,
+          "joint_fit_r2": -0.05291371464595829
+        }
+      },
+      "bandwidth": {
+        "baseline_metrics": {
+          "path": "reports/eval/ab_listening_pack_real_eval_near_real_v1_stage2_vs_legacy_transient_leakguard_probe_v3_w0005_blind/near_real_0004/candidate_a.wav",
+          "sample_rate": 16000,
+          "duration_sec": 2.35,
+          "rms_dbfs": -26.36452742016363,
+          "peak_dbfs": -7.5488603107513805,
+          "spectral_centroid_hz": 509.6970266902886,
+          "rolloff_95_hz": 1156.25,
+          "band_share_0_1k": 0.9390603450833589,
+          "band_share_1k_3k": 0.05940534853728389,
+          "band_share_3k_6k": 0.0014030749032282065,
+          "band_share_6k_8k": 0.00013112607669948944,
+          "band_share_3k_8k": 0.001534200979927696,
+          "upper_vs_mid_db": -15.879432924716461,
+          "upper_vs_low_db": -27.868112456156283,
+          "frame_upper_share_p10": 0.0008218635804951192,
+          "frame_upper_share_p50": 0.09966553002595901,
+          "frame_upper_share_p90": 0.9628623127937317,
+          "frame_presence_share_p90": 0.7268787264823914
+        },
+        "candidate_metrics": {
+          "path": "reports/eval/ab_listening_pack_real_eval_near_real_v1_stage2_vs_legacy_transient_leakguard_probe_v3_w0005_blind/near_real_0004/candidate_b.wav",
+          "sample_rate": 16000,
+          "duration_sec": 2.35,
+          "rms_dbfs": -25.932963024444888,
+          "peak_dbfs": -6.638019198074787,
+          "spectral_centroid_hz": 529.117644024044,
+          "rolloff_95_hz": 1203.125,
+          "band_share_0_1k": 0.9370178369278191,
+          "band_share_1k_3k": 0.061332922530721985,
+          "band_share_3k_6k": 0.0015240519990342952,
+          "band_share_6k_8k": 0.00012506901532052093,
+          "band_share_3k_8k": 0.001649121014354816,
+          "upper_vs_mid_db": -15.70441133601326,
+          "upper_vs_low_db": -27.544953322982032,
+          "frame_upper_share_p10": 0.0008833373547531665,
+          "frame_upper_share_p50": 0.06998144090175629,
+          "frame_upper_share_p90": 0.7217844367027283,
+          "frame_presence_share_p90": 0.5255338311195373
+        },
+        "candidate_minus_baseline": {
+          "rolloff_95_hz": 46.875,
+          "spectral_centroid_hz": 19.420617333755388,
+          "upper_vs_mid_db": 0.17502158870320095,
+          "band_share_3k_8k": 0.00011492003442712014,
+          "frame_upper_share_p90": -0.2410778760910034
+        },
+        "narrower_label": "tie"
+      },
+      "transient": {
+        "baseline_metrics": {
+          "transient_frame_count": 18,
+          "transient_mid_retention_db_mean": -26.636886596679688,
+          "transient_presence_retention_db_mean": -21.10224151611328,
+          "transient_presence_minus_mid_retention_db_mean": 5.534645080566406,
+          "transient_presence_minus_mid_retention_db_p10": 0.7617859721183777,
+          "transient_presence_minus_mid_retention_db_p50": 1.4176301956176758,
+          "transient_presence_minus_mid_retention_db_p90": 16.028583908081057,
+          "strong_presence_loss_frame_ratio": 0.0
+        },
+        "candidate_metrics": {
+          "transient_frame_count": 18,
+          "transient_mid_retention_db_mean": -23.035423278808594,
+          "transient_presence_retention_db_mean": -19.636940002441406,
+          "transient_presence_minus_mid_retention_db_mean": 3.3984835147857666,
+          "transient_presence_minus_mid_retention_db_p10": 0.37127724885940555,
+          "transient_presence_minus_mid_retention_db_p50": 1.1080272793769836,
+          "transient_presence_minus_mid_retention_db_p90": 8.886520385742188,
+          "strong_presence_loss_frame_ratio": 0.0
+        },
+        "candidate_minus_baseline": {
+          "transient_presence_minus_mid_retention_db_mean": -2.1361615657806396,
+          "transient_presence_minus_mid_retention_db_p10": -0.3905087232589722,
+          "strong_presence_loss_frame_ratio": 0.0
+        },
+        "more_transient_lossy_label": "tie"
+      },
+      "active_failure_flags": [
+        "lost_retention_minus_leak",
+        "more_interference_leaky"
+      ],
+      "failure_signature": "lost_retention_minus_leak + more_interference_leaky",
+      "primary_hypotheses": [
+        "speech_leak_tradeoff"
+      ]
+    },
+    {
+      "sample_id": "near_real_0006",
+      "note": "raw target clip mixed with external speech from the Guodegang source",
+      "scenario": "target_plus_guodegang_speech",
+      "component_kinds": [
+        "target_raw",
+        "guodegang_raw"
+      ],
+      "bucket_name": "target_present__speech",
+      "baseline_label": "legacy_stage2",
+      "candidate_label": "legacy_transient_leakguard_probe_v3_w0005",
+      "decoded_labels": {
+        "better_source_retention_label": "tie",
+        "more_interference_leaky_label": "legacy_transient_leakguard_probe_v3_w0005",
+        "more_residual_heavy_label": "tie",
+        "better_retention_minus_leak_label": "legacy_stage2",
+        "narrower_label": "tie",
+        "more_transient_lossy_label": "legacy_transient_leakguard_probe_v3_w0005"
+      },
+      "tradeoff": {
+        "baseline_metrics": {
+          "rms_dbfs": -31.07435844064529,
+          "target_capture_db": -4.865963879725493,
+          "target_projection_scale": 0.5710863843870926,
+          "interference_capture_db": -25.669348499040062,
+          "interference_projection_scale": 0.052063405834606516,
+          "retention_minus_leak_db": 20.80338461931457,
+          "joint_fit_r2": 0.5762230020478757,
+          "residual_output_share": 0.4237769979521243,
+          "projection_coefficients": [
+            0.5708258748054504,
+            0.05178511515259743
+          ]
+        },
+        "candidate_metrics": {
+          "rms_dbfs": -30.236860354354707,
+          "target_capture_db": -5.101319444539464,
+          "target_projection_scale": 0.5558198181205528,
+          "interference_capture_db": -22.103077010507775,
+          "interference_projection_scale": 0.07849575110058218,
+          "retention_minus_leak_db": 17.001757565968312,
+          "joint_fit_r2": 0.49966592022348655,
+          "residual_output_share": 0.5003340797765135,
+          "projection_coefficients": [
+            0.5554264187812805,
+            0.07822496443986893
+          ]
+        },
+        "candidate_minus_baseline": {
+          "target_capture_db": -0.2353555648139709,
+          "interference_capture_db": 3.566271488532287,
+          "retention_minus_leak_db": -3.801627053346259,
+          "residual_output_share": 0.07655708182438914,
+          "joint_fit_r2": -0.07655708182438914
+        }
+      },
+      "bandwidth": {
+        "baseline_metrics": {
+          "path": "reports/eval/ab_listening_pack_real_eval_near_real_v1_stage2_vs_legacy_transient_leakguard_probe_v3_w0005_blind/near_real_0006/candidate_b.wav",
+          "sample_rate": 16000,
+          "duration_sec": 2.29,
+          "rms_dbfs": -31.07435844064529,
+          "peak_dbfs": -14.166440085590244,
+          "spectral_centroid_hz": 368.0716220242274,
+          "rolloff_95_hz": 593.75,
+          "band_share_0_1k": 0.9824803665682459,
+          "band_share_1k_3k": 0.01598602883862893,
+          "band_share_3k_6k": 0.0015196847361897614,
+          "band_share_6k_8k": 1.396994103139272e-05,
+          "band_share_3k_8k": 0.0015336546772211541,
+          "upper_vs_mid_db": -10.180130086643171,
+          "upper_vs_low_db": -28.06596296961821,
+          "frame_upper_share_p10": 0.0004276541207218543,
+          "frame_upper_share_p50": 0.00512665044516325,
+          "frame_upper_share_p90": 0.16007745563983924,
+          "frame_presence_share_p90": 0.15997510850429542
+        },
+        "candidate_metrics": {
+          "path": "reports/eval/ab_listening_pack_real_eval_near_real_v1_stage2_vs_legacy_transient_leakguard_probe_v3_w0005_blind/near_real_0006/candidate_a.wav",
+          "sample_rate": 16000,
+          "duration_sec": 2.29,
+          "rms_dbfs": -30.236860354354707,
+          "peak_dbfs": -11.117155492763132,
+          "spectral_centroid_hz": 378.9840606760409,
+          "rolloff_95_hz": 609.375,
+          "band_share_0_1k": 0.9800528143660729,
+          "band_share_1k_3k": 0.018104489686950512,
+          "band_share_3k_6k": 0.0018309454585632755,
+          "band_share_6k_8k": 1.1784745621592357e-05,
+          "band_share_3k_8k": 0.001842730204184868,
+          "upper_vs_mid_db": -9.923245334028602,
+          "upper_vs_low_db": -27.257877257303985,
+          "frame_upper_share_p10": 0.0003293300367658958,
+          "frame_upper_share_p50": 0.004515025299042463,
+          "frame_upper_share_p90": 0.13138877004385005,
+          "frame_presence_share_p90": 0.13125190287828456
+        },
+        "candidate_minus_baseline": {
+          "rolloff_95_hz": 15.625,
+          "spectral_centroid_hz": 10.912438651813488,
+          "upper_vs_mid_db": 0.2568847526145692,
+          "band_share_3k_8k": 0.0003090755269637138,
+          "frame_upper_share_p90": -0.028688685595989194
+        },
+        "narrower_label": "tie"
+      },
+      "transient": {
+        "baseline_metrics": {
+          "transient_frame_count": 17,
+          "transient_mid_retention_db_mean": -34.93681716918945,
+          "transient_presence_retention_db_mean": -33.82948684692383,
+          "transient_presence_minus_mid_retention_db_mean": 1.1073296070098877,
+          "transient_presence_minus_mid_retention_db_p10": -1.3401832580566406,
+          "transient_presence_minus_mid_retention_db_p50": -0.0216217041015625,
+          "transient_presence_minus_mid_retention_db_p90": 5.4975944519042965,
+          "strong_presence_loss_frame_ratio": 0.058823529411764705
+        },
+        "candidate_metrics": {
+          "transient_frame_count": 17,
+          "transient_mid_retention_db_mean": -28.905887603759766,
+          "transient_presence_retention_db_mean": -32.66453552246094,
+          "transient_presence_minus_mid_retention_db_mean": -3.7586498260498047,
+          "transient_presence_minus_mid_retention_db_p10": -8.704264068603516,
+          "transient_presence_minus_mid_retention_db_p50": -3.5377254486083984,
+          "transient_presence_minus_mid_retention_db_p90": -1.6521736145019532,
+          "strong_presence_loss_frame_ratio": 0.5294117647058824
+        },
+        "candidate_minus_baseline": {
+          "transient_presence_minus_mid_retention_db_mean": -4.865979433059692,
+          "transient_presence_minus_mid_retention_db_p10": -7.364080810546875,
+          "strong_presence_loss_frame_ratio": 0.47058823529411764
+        },
+        "more_transient_lossy_label": "legacy_transient_leakguard_probe_v3_w0005"
+      },
+      "active_failure_flags": [
+        "lost_retention_minus_leak",
+        "more_interference_leaky",
+        "more_transient_lossy"
+      ],
+      "failure_signature": "lost_retention_minus_leak + more_interference_leaky + more_transient_lossy",
+      "primary_hypotheses": [
+        "speech_leak_tradeoff",
+        "transient_loss"
+      ]
+    }
+  ]
+}

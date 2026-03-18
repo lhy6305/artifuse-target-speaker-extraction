@@ -1,0 +1,90 @@
+{
+  "pack_dir": "reports/eval/ab_listening_pack_real_eval_near_real_guodegang_family_v1_stage2_vs_legacy_transient_leakguard_probe_v8_friend_overlap_focus_ft1_blind",
+  "num_samples": 2,
+  "n_fft": 1024,
+  "hop_length": 256,
+  "rolloff_percent": 0.95,
+  "narrow_rolloff_threshold_hz": 250.0,
+  "narrow_upper_vs_mid_threshold_db": 1.0,
+  "narrow_frame_upper_p90_threshold": 0.15,
+  "narrow_score_threshold": 2,
+  "narrower_candidate_counts": {
+    "tie": 2
+  },
+  "top_abs_rolloff_deltas": [
+    {
+      "sample_id": "near_real_0009",
+      "file_a_label": "legacy_stage2",
+      "file_b_label": "legacy_transient_leakguard_probe_v8_friend_overlap_focus_ft1",
+      "delta_rolloff_hz_b_minus_a": -31.25,
+      "delta_upper_vs_mid_db_b_minus_a": 1.018264121191181,
+      "delta_frame_upper_share_p90_b_minus_a": -0.3646013826131821,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 1,
+      "narrowing_score_file_b": 1,
+      "narrowing_evidence_file_a": [
+        "lower_upper_vs_mid"
+      ],
+      "narrowing_evidence_file_b": [
+        "lower_frame_upper_p90"
+      ],
+      "better_output": "",
+      "note": "target absent; only external speech is present"
+    },
+    {
+      "sample_id": "near_real_0006",
+      "file_a_label": "legacy_stage2",
+      "file_b_label": "legacy_transient_leakguard_probe_v8_friend_overlap_focus_ft1",
+      "delta_rolloff_hz_b_minus_a": 0.0,
+      "delta_upper_vs_mid_db_b_minus_a": -2.1506589683332162,
+      "delta_frame_upper_share_p90_b_minus_a": -0.031616480648517575,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 0,
+      "narrowing_score_file_b": 1,
+      "narrowing_evidence_file_a": [],
+      "narrowing_evidence_file_b": [
+        "lower_upper_vs_mid"
+      ],
+      "better_output": "",
+      "note": "raw target clip mixed with external speech from the Guodegang source"
+    }
+  ],
+  "top_abs_upper_vs_mid_deltas": [
+    {
+      "sample_id": "near_real_0006",
+      "file_a_label": "legacy_stage2",
+      "file_b_label": "legacy_transient_leakguard_probe_v8_friend_overlap_focus_ft1",
+      "delta_rolloff_hz_b_minus_a": 0.0,
+      "delta_upper_vs_mid_db_b_minus_a": -2.1506589683332162,
+      "delta_frame_upper_share_p90_b_minus_a": -0.031616480648517575,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 0,
+      "narrowing_score_file_b": 1,
+      "narrowing_evidence_file_a": [],
+      "narrowing_evidence_file_b": [
+        "lower_upper_vs_mid"
+      ],
+      "better_output": "",
+      "note": "raw target clip mixed with external speech from the Guodegang source"
+    },
+    {
+      "sample_id": "near_real_0009",
+      "file_a_label": "legacy_stage2",
+      "file_b_label": "legacy_transient_leakguard_probe_v8_friend_overlap_focus_ft1",
+      "delta_rolloff_hz_b_minus_a": -31.25,
+      "delta_upper_vs_mid_db_b_minus_a": 1.018264121191181,
+      "delta_frame_upper_share_p90_b_minus_a": -0.3646013826131821,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 1,
+      "narrowing_score_file_b": 1,
+      "narrowing_evidence_file_a": [
+        "lower_upper_vs_mid"
+      ],
+      "narrowing_evidence_file_b": [
+        "lower_frame_upper_p90"
+      ],
+      "better_output": "",
+      "note": "target absent; only external speech is present"
+    }
+  ]
+}

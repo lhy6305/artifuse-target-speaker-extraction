@@ -1,0 +1,53 @@
+{
+  "sample_id": "probe_0007",
+  "probe_version": "near_real_speech_probe_v1",
+  "recipe_profile": "near_real_speech_probe_v1",
+  "recipe": "near_real_friend_speech_probe",
+  "temporal_pattern": "target_full",
+  "target_present_ratio": 1.0,
+  "target_duration_sec": 2.14,
+  "target_present_duration_sec": 2.14,
+  "reference_duration_sec": 2.49,
+  "near_real_anchor_sample_id": "near_real_0003",
+  "anchor_hypothesis": "residual_transient_like",
+  "speech_family": "friend_raw",
+  "speech_clip_tag": "friend_absent_820s",
+  "speech_clip_start_sec": 820.0,
+  "speech_interference_gain_db": -6.0,
+  "target_source": {
+    "segment_id": "segment_0009_0000053200_0000054340",
+    "audio_path": "data_in/source_segments/segments/segment_0009_0000053200_0000054340.wav",
+    "pool": "target_speech_pool",
+    "clip_start_sec": 52.85,
+    "clip_duration_sec": 2.14
+  },
+  "reference_source": {
+    "segment_id": "segment_0024_0000101020_0000103510",
+    "audio_path": "data_in/source_segments/segments/segment_0024_0000101020_0000103510.wav",
+    "pool": "target_reference_pool"
+  },
+  "interference_layers": [
+    {
+      "pool": "friend_raw",
+      "audio_path": "data_in/friend_dataset_fuhuo_raw_concat.wav",
+      "gain_db": -6.0,
+      "start_offset_sec": 0.0,
+      "clip_start_sec": 820.0,
+      "clip_tag": "friend_absent_820s"
+    }
+  ],
+  "target_segments": [
+    {
+      "output_start_sec": 0.0,
+      "source_start_sec": 52.85,
+      "duration_sec": 2.14
+    }
+  ],
+  "target_absent_intervals": [],
+  "output_paths": {
+    "mixture_audio_path": "data/probes/near_real_speech_probe_v1/probe_0007/mixture.wav",
+    "target_audio_path": "data/probes/near_real_speech_probe_v1/probe_0007/target.wav",
+    "reference_audio_path": "data/probes/near_real_speech_probe_v1/probe_0007/reference.wav",
+    "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0007/metadata.json"
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "train_manifest": "data/synthetic/train_manifest_v11_dualanchor_v1.jsonl",
+  "val_manifest": "data/synthetic/val_manifest_v11_dualanchor_v1.jsonl",
+  "output_dir": "experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v11_v8_dualanchor_ft1",
+  "device": "cuda",
+  "epochs": 3,
+  "batch_size": 4,
+  "learning_rate": 8e-05,
+  "model_config": {
+    "n_fft": 512,
+    "hop_length": 128,
+    "win_length": 512,
+    "hidden_dim": 256,
+    "reference_dim": 128,
+    "gru_layers": 2,
+    "conditioning_mode": "legacy_bias"
+  },
+  "loss_config": {
+    "sample_rate": 16000,
+    "stft_weight": 0.5,
+    "sisdr_weight": 0.0,
+    "transient_weight": 0.002,
+    "interference_weight": 0.005,
+    "absent_weight": 2.0,
+    "transient_focus_recipes": [
+      "target_clean_speech",
+      "target_hard_speech"
+    ],
+    "transient_focus_patterns": [
+      "target_full"
+    ],
+    "transient_min_target_ratio": null,
+    "transient_max_target_ratio": null,
+    "interference_focus_recipes": [
+      "target_clean_speech",
+      "target_hard_speech"
+    ],
+    "interference_focus_patterns": [
+      "target_full"
+    ],
+    "interference_min_target_ratio": null,
+    "interference_max_target_ratio": null,
+    "absent_focus_recipes": [
+      "target_clean_speech",
+      "target_hard_speech"
+    ],
+    "absent_focus_patterns": [
+      "target_absent_head",
+      "target_absent_tail",
+      "target_intermittent"
+    ],
+    "absent_min_target_ratio": null,
+    "absent_max_target_ratio": null,
+    "transient_top_ratio": 0.12,
+    "transient_min_count": 8,
+    "transient_mid_low_hz": 800.0,
+    "transient_mid_high_hz": 3000.0,
+    "transient_presence_low_hz": 3000.0,
+    "transient_presence_high_hz": 8000.0,
+    "transient_ratio_weight": 0.5
+  },
+  "init_checkpoint": "experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v8_friend_overlap_focus_ft1/best.pt",
+  "global_steps": 102,
+  "start_time": "2026-03-18T14:49:03",
+  "end_time": "2026-03-18T14:49:11",
+  "elapsed_sec": 7.746,
+  "best_val_loss": 0.024402230261610106,
+  "history": [
+    {
+      "epoch": 1,
+      "global_step": 34,
+      "train_loss": 0.025451868772506714,
+      "train_waveform_l1": 0.013554461902993567,
+      "train_stft_l1": 0.02101019871256807,
+      "train_sisdr_loss": 10.685280869988834,
+      "train_sisdr_db": -10.685280869988834,
+      "train_transient_presence_l1": 0.5625809948233997,
+      "train_interference_projection_ratio": 0.053429090390529704,
+      "train_absent_interval_l1": 0.0,
+      "val_loss": 0.024429139752800647,
+      "val_waveform_l1": 0.01214407986173263,
+      "val_stft_l1": 0.021148340848202888,
+      "val_sisdr_loss": 11.400409881885235,
+      "val_sisdr_db": -11.400409881885235,
+      "val_transient_presence_l1": 0.7028895020484924,
+      "val_interference_projection_ratio": 0.06102213120231262,
+      "val_absent_interval_l1": 0.0
+    },
+    {
+      "epoch": 2,
+      "global_step": 68,
+      "train_loss": 0.025033970966058618,
+      "train_waveform_l1": 0.013508213519611779,
+      "train_stft_l1": 0.02034474802477395,
+      "train_sisdr_loss": 10.685057303484749,
+      "train_sisdr_db": -10.685057303484749,
+      "train_transient_presence_l1": 0.5428998969933566,
+      "train_interference_projection_ratio": 0.0535167543874944,
+      "train_absent_interval_l1": 0.0,
+      "val_loss": 0.02444069001537103,
+      "val_waveform_l1": 0.01212107533445725,
+      "val_stft_l1": 0.021281834405202132,
+      "val_sisdr_loss": 11.094854978414682,
+      "val_sisdr_db": -11.094854978414682,
+      "val_transient_presence_l1": 0.696988956286357,
+      "val_interference_projection_ratio": 0.056943874519604906,
+      "val_absent_interval_l1": 0.0
+    },
+    {
+      "epoch": 3,
+      "global_step": 102,
+      "train_loss": 0.02491677284021588,
+      "train_waveform_l1": 0.013504537096356644,
+      "train_stft_l1": 0.02018049718154704,
+      "train_sisdr_loss": 10.447697695563821,
+      "train_sisdr_db": -10.447697695563821,
+      "train_transient_presence_l1": 0.523031976293115,
+      "train_interference_projection_ratio": 0.05518465754849946,
+      "train_absent_interval_l1": 0.0,
+      "val_loss": 0.024402230261610106,
+      "val_waveform_l1": 0.012141646602405952,
+      "val_stft_l1": 0.02112028246315626,
+      "val_sisdr_loss": 11.378907277033878,
+      "val_sisdr_db": -11.378907277033878,
+      "val_transient_presence_l1": 0.6975791889887589,
+      "val_interference_projection_ratio": 0.06105677812145306,
+      "val_absent_interval_l1": 0.0
+    }
+  ]
+}
