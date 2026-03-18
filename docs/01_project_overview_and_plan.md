@@ -1783,6 +1783,152 @@
      - `v16` 这条路线里的 transient / interference 预算或 selector
    - 而不是继续：
      - 下调 `absent_weight`
+157. 已完成 `v18 / v19` reverse-guardrail follow-up：
+   - 二者都固定沿用：
+     - `absent_proxy_v3_strict ∪ reverse_guardrail_proxy_v1`
+     - 与 `v16` 相同的 selector 命中
+   - `v18 = legacy_transient_leakguard_probe_v18_v12_absent_proxy_v3_reverse_guardrail_v1_ti_half_ft1`
+     - 仅把：
+       - `transient_weight = 0.002 -> 0.001`
+       - `interference_weight = 0.005 -> 0.0025`
+     - 相对 `v12`：
+       - default = `-0.016253 dB`
+       - reverse guardrail proxy = `-0.069016 dB`
+       - `anchor_proxy_v1 = +0.233116 dB`
+       - `absent_proxy_v3_strict = -0.065609 dB`
+       - `absent_proxy_v4_broad = -0.042189 dB`
+     - synthetic dual-proxy gate：
+       - `FAIL`
+       - failed：
+         - `absent_proxy_v3_strict`
+         - `absent_proxy_v4_broad`
+   - `v19 = legacy_transient_leakguard_probe_v19_v12_absent_proxy_v3_reverse_guardrail_v1_int_up_ft1`
+     - 仅把：
+       - `interference_weight = 0.005 -> 0.0075`
+     - 相对 `v12`：
+       - default = `+0.044902 dB`
+       - reverse guardrail proxy = `-0.076964 dB`
+       - `anchor_proxy_v1 = +0.346704 dB`
+       - `absent_proxy_v3_strict = +0.053602 dB`
+       - `absent_proxy_v4_broad = +0.040802 dB`
+     - synthetic dual-proxy gate：
+       - `PASS`
+158. 已补 `v19` near-real 分析与 gate：
+   - broad near-real speech probe 相对 `legacy_stage2`：
+     - overall = `-0.009309 dB`
+     - `friend_raw = -0.414640 dB`
+     - `near_real_0003 = -0.913926 dB`
+     - `near_real_0004 = +0.084646 dB`
+     - `near_real_0006 = +1.206683 dB`
+   - broad near-real speech probe 相对 `v12`：
+     - overall = `-0.011926 dB`
+     - `friend_raw = -0.039734 dB`
+     - `near_real_0003 = -0.068178 dB`
+     - `near_real_0004 = -0.011290 dB`
+     - `near_real_0006 = +0.071497 dB`
+   - `speech_followup_gate_vs_v12`：
+     - `FAIL`
+     - failed：
+       - `speech_probe_overall_floor`
+       - `speech_probe_friend_raw_floor`
+       - `anchor_0003_gain_floor`
+       - `anchor_0004_gain_floor`
+   - `guodegang` probe 相对 `v8`：
+     - overall = `+0.146716 dB`
+     - `guodegang_anchor_120s = +0.370681 dB`
+     - `guodegang_absent_480s = -0.077249 dB`
+   - `probe_subset_guardrail_vs_v8_with_clips`：
+     - `FAIL`
+     - 仅剩：
+       - `clip__guodegang_absent_480s`
+159. 因而当前默认接班口径应再次更新为：
+   - `v18` 不保留
+   - `v19` 是当前第一条通过 synthetic dual-proxy gate 的 absent follow-up
+   - 但 `v19` 仍不直接晋升主候选
+   - 因为它目前的真实形态是：
+     - `0006` 与 `guodegang_anchor_120s` 已继续改善
+     - `guodegang` 总体也重新超过 `v8`
+     - 但 `guodegang_absent_480s` 仍略低于 `v8`
+     - broad `friend_raw / 0003 / 0004` 又相对 `v12` 回退
+   - 下一步若继续自动推进，不再回到：
+     - `v16 / v17 / v18`
+   - 而应把问题改写成：
+     - 如何以 `v19` 为基座补 friend-side reverse guardrail / branch-local proxy
+     - 而不是继续只围绕 `0006 absent` 单边加力
+160. 已完成 `v20 = legacy_transient_leakguard_probe_v20_v19_friend_reverse_guardrail_v1_ft1` 与 friend-side selector plumbing 补线：
+   - 当前工作树已把以下元数据正式接入：
+     - `target_transient_presence_minus_mid_db_mean`
+     - `target_transient_presence_share_mean`
+   - 并已补到：
+     - `src/tse_prefix/data/synthetic_dataset.py`
+     - `scripts/train/train_stft_mask_baseline.py`
+     - `scripts/eval/eval_stft_mask_baseline.py`
+     - `src/tse_prefix/pipeline/loss_selectors.py`
+   - `v20` 基座：
+     - `v19`
+   - train / val manifest：
+     - `train_manifest_v20_v19_plus_friend_reverse_guardrail_v1.jsonl = 111`
+     - `val_manifest_v20_v19_friend_reverse_guardrail_proxy_v1.jsonl = 35`
+   - 相对 `v19`，本轮只新增：
+     - train `21`
+     - val `8`
+   - 这些新增样本全部都是：
+     - `target_clean_speech`
+     - `target_full`
+   - 一个关键事实：
+     - `v20` 的 selector 命中数与 `v19` 完全相同：
+       - train transient / interference / absent：`51 / 51 / 24`
+       - val transient / interference / absent：`18 / 18 / 4`
+     - 只是 total count 变成了：
+       - train `90 -> 111`
+       - val `27 -> 35`
+     - 这说明新增的 friend-side reverse guardrail 样本：
+       - 没有进入任何专项 selector
+       - 只是在现有 objective 外额外吃了 base reconstruction loss
+   - 相对 `v19`：
+     - default val：
+       - `-0.020962 dB`
+     - `target_clean_speech`：
+       - `-0.104638 dB`
+     - `v20_v19_friend_reverse_guardrail_proxy_v1`：
+       - `-0.131127 dB`
+     - broad near-real speech probe overall：
+       - `-0.051919 dB`
+     - `near_real_friend_speech_probe` overall：
+       - `-0.021704 dB`
+     - `near_real_guodegang_speech_probe` overall：
+       - `-0.142566 dB`
+   - `speech_followup_gate_vs_v12`：
+     - `FAIL`
+     - failed：
+       - `speech_probe_overall_floor`
+       - `speech_probe_friend_raw_floor`
+       - `anchor_0003_gain_floor`
+       - `anchor_0004_gain_floor`
+   - `probe_subset_guardrail_vs_v8_with_clips`：
+     - `FAIL`
+     - 仍仅剩：
+       - `clip__guodegang_absent_480s`
+     - 但 clip 值进一步从：
+       - `v19 = +2.135139 dB`
+       - 回退到
+       - `v20 = +1.991658 dB`
+161. 因而当前默认接班口径应再次收紧为：
+   - `v20` 不保留
+   - 不继续沿：
+     - `v19 + friend_reverse_guardrail_proxy_v1`
+     - 这种“无 selector 命中增量的并集 warm-start”路线继续加预算
+   - 当前更准确的解释应改写为：
+     - `v20` 不是一次真正的 friend-side branch-local guardrail 训练
+     - 而是一次只通过 base loss 拉扯 `v19` 的无选择器 nudging
+   - 下一步若继续自动推进，应优先做的是：
+     - 让 friend-side proxy 进入显式 selector
+     - 或先重做能复现 `v12 > v19` friend-side 排序的 synthetic proxy
+   - 而不是继续：
+     - 复制 `v20` 这类直接并集微调
+   - 当前主线应继续保持：
+     - `v19` 作为 absent-side objective 基座
+     - friend-side 仍待 branch-local proxy / selector 闭环
 
 ## 9. 文档入口
 
@@ -1832,5 +1978,7 @@
 - 本轮轻量 dual-proxy `v15` nudging：`reports/daily/2026-03-18_v15_v12_anchor_absent_proxy_v3_nudge_ft1.md`
 - 本轮 synthetic dual-proxy gate：`reports/daily/2026-03-18_synthetic_dual_proxy_gate.md`
 - 本轮 reverse guardrail carve-out 与 `v16 / v17` pre-screen：`reports/daily/2026-03-18_v16_v17_reverse_guardrail_probe.md`
+- 本轮 `v18 / v19` reverse-guardrail follow-up：`reports/daily/2026-03-18_v18_v19_reverse_guardrail_followup.md`
+- 本轮 `v20` friend reverse guardrail follow-up：`reports/daily/2026-03-18_v20_friend_reverse_guardrail_followup.md`
 - 本轮仓库与 `.gitignore` 审计：`reports/daily/2026-03-18_repo_gitignore_audit.md`
 - 本轮全仓库评估总结：`reports/daily/2026-03-17_repo_evaluation_summary.md`

@@ -14,6 +14,10 @@ SELECTOR_SUFFIXES = (
     "max_overlap_ratio",
     "min_interference_gain_db",
     "max_interference_gain_db",
+    "min_target_transient_presence_minus_mid_db_mean",
+    "max_target_transient_presence_minus_mid_db_mean",
+    "min_target_transient_presence_share_mean",
+    "max_target_transient_presence_share_mean",
 )
 
 
@@ -37,6 +41,10 @@ def build_selector_sample_weights(
     max_overlap = loss_config.get(f"{prefix}_max_overlap_ratio")
     min_gain = loss_config.get(f"{prefix}_min_interference_gain_db")
     max_gain = loss_config.get(f"{prefix}_max_interference_gain_db")
+    min_transient_minus_mid = loss_config.get(f"{prefix}_min_target_transient_presence_minus_mid_db_mean")
+    max_transient_minus_mid = loss_config.get(f"{prefix}_max_target_transient_presence_minus_mid_db_mean")
+    min_transient_share = loss_config.get(f"{prefix}_min_target_transient_presence_share_mean")
+    max_transient_share = loss_config.get(f"{prefix}_max_target_transient_presence_share_mean")
     has_selector = bool(
         recipes
         or patterns
@@ -48,6 +56,10 @@ def build_selector_sample_weights(
         or max_overlap is not None
         or min_gain is not None
         or max_gain is not None
+        or min_transient_minus_mid is not None
+        or max_transient_minus_mid is not None
+        or min_transient_share is not None
+        or max_transient_share is not None
     )
     if not has_selector:
         return None
@@ -79,6 +91,8 @@ def build_selector_sample_weights(
         )
 
     ratios = batch["target_present_ratios"].to(device=device, dtype=torch.float32)
+    transient_minus_mid = batch["target_transient_presence_minus_mid_db_means"].to(device=device, dtype=torch.float32)
+    transient_share = batch["target_transient_presence_share_means"].to(device=device, dtype=torch.float32)
     overlaps = batch["overlap_ratios"].to(device=device, dtype=torch.float32)
     gains = batch["interference_gain_dbs"].to(device=device, dtype=torch.float32)
     if min_ratio is not None:
@@ -93,6 +107,18 @@ def build_selector_sample_weights(
         weights = weights * ((~torch.isnan(gains)) & (gains >= float(min_gain))).float()
     if max_gain is not None:
         weights = weights * ((~torch.isnan(gains)) & (gains <= float(max_gain))).float()
+    if min_transient_minus_mid is not None:
+        weights = weights * (
+            (~torch.isnan(transient_minus_mid)) & (transient_minus_mid >= float(min_transient_minus_mid))
+        ).float()
+    if max_transient_minus_mid is not None:
+        weights = weights * (
+            (~torch.isnan(transient_minus_mid)) & (transient_minus_mid <= float(max_transient_minus_mid))
+        ).float()
+    if min_transient_share is not None:
+        weights = weights * ((~torch.isnan(transient_share)) & (transient_share >= float(min_transient_share))).float()
+    if max_transient_share is not None:
+        weights = weights * ((~torch.isnan(transient_share)) & (transient_share <= float(max_transient_share))).float()
     return weights
 
 

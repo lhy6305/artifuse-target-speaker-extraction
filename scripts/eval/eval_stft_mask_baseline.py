@@ -66,6 +66,8 @@ def move_batch_to_device(batch: dict, device: torch.device) -> dict:
         "reference",
         "reference_lengths",
         "target_present_ratios",
+        "target_transient_presence_minus_mid_db_means",
+        "target_transient_presence_share_means",
         "overlap_ratios",
         "interference_gain_dbs",
     ]:

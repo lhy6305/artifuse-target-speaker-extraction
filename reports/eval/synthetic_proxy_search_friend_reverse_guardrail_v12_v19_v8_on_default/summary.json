@@ -1,0 +1,3600 @@
+{
+  "compares": {
+    "v8": "reports/eval/compare_stage2_vs_legacy_transient_leakguard_probe_v8_friend_overlap_focus_ft1_on_default/per_sample_metrics.jsonl",
+    "v12": "reports/eval/compare_stage2_vs_legacy_transient_leakguard_probe_v12_v8_anchor_proxy_ft1_on_default/per_sample_metrics.jsonl",
+    "v19": "reports/eval/compare_stage2_vs_legacy_transient_leakguard_probe_v19_v12_absent_proxy_v3_reverse_guardrail_v1_int_up_ft1_on_default/per_sample_metrics.jsonl"
+  },
+  "ordered_aliases": [
+    "v12",
+    "v19",
+    "v8"
+  ],
+  "num_shared_speech_rows": 237,
+  "thresholds": {
+    "gain_thresholds_db": {
+      "q50": -2.0179998874664307,
+      "q67": -0.8906666636466982
+    },
+    "transient_thresholds_db": {
+      "q50": -11.535072326660156,
+      "q67": -9.179057439168297
+    },
+    "min_count": 8,
+    "min_speaker_count": 1,
+    "min_order_gap_db": 0.0
+  },
+  "top_order_pass_candidates": [
+    {
+      "subset_name": "all_speech__all_patterns__ratio_ge_0_95__overlap_ge_0_90__pool_clean__all_gains__transient_ge_q67__all_speakers",
+      "count": 12,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 5.551424473524094,
+        "v19": 5.4323243995507555,
+        "v8": 5.210442076126735
+      },
+      "pair_gaps_db": [
+        0.1191000739733381,
+        0.2218823234240208
+      ],
+      "min_pair_gap_db": 0.1191000739733381,
+      "mean_overlap_ratio": 0.9676964924107782,
+      "mean_interference_gain_db": -2.345666666666667,
+      "mean_target_transient_presence_minus_mid_db_mean": -5.873547812302907,
+      "recipe_counts": {
+        "target_clean_speech": 12
+      },
+      "pattern_counts": {
+        "target_full": 12
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 12
+      },
+      "speaker_counts": {
+        "削月筑阳真君": 1,
+        "巴蒂斯特": 1,
+        "慧心": 1,
+        "戈尔代": 1,
+        "戴因斯雷布": 1,
+        "暮夜剧团团长": 1,
+        "杰克": 1,
+        "百闻": 1,
+        "石壮": 1,
+        "舍利夫": 1,
+        "观众": 1,
+        "迈蒙": 1
+      },
+      "builder_filters": {
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_full__any_ratio__overlap_ge_0_90__pool_clean__all_gains__transient_ge_q67__all_speakers",
+      "count": 12,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 5.551424473524094,
+        "v19": 5.4323243995507555,
+        "v8": 5.210442076126735
+      },
+      "pair_gaps_db": [
+        0.1191000739733381,
+        0.2218823234240208
+      ],
+      "min_pair_gap_db": 0.1191000739733381,
+      "mean_overlap_ratio": 0.9676964924107782,
+      "mean_interference_gain_db": -2.345666666666667,
+      "mean_target_transient_presence_minus_mid_db_mean": -5.873547812302907,
+      "recipe_counts": {
+        "target_clean_speech": 12
+      },
+      "pattern_counts": {
+        "target_full": 12
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 12
+      },
+      "speaker_counts": {
+        "削月筑阳真君": 1,
+        "巴蒂斯特": 1,
+        "慧心": 1,
+        "戈尔代": 1,
+        "戴因斯雷布": 1,
+        "暮夜剧团团长": 1,
+        "杰克": 1,
+        "百闻": 1,
+        "石壮": 1,
+        "舍利夫": 1,
+        "观众": 1,
+        "迈蒙": 1
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_full__ratio_ge_0_95__overlap_ge_0_90__pool_clean__all_gains__transient_ge_q67__all_speakers",
+      "count": 12,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 5.551424473524094,
+        "v19": 5.4323243995507555,
+        "v8": 5.210442076126735
+      },
+      "pair_gaps_db": [
+        0.1191000739733381,
+        0.2218823234240208
+      ],
+      "min_pair_gap_db": 0.1191000739733381,
+      "mean_overlap_ratio": 0.9676964924107782,
+      "mean_interference_gain_db": -2.345666666666667,
+      "mean_target_transient_presence_minus_mid_db_mean": -5.873547812302907,
+      "recipe_counts": {
+        "target_clean_speech": 12
+      },
+      "pattern_counts": {
+        "target_full": 12
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 12
+      },
+      "speaker_counts": {
+        "削月筑阳真君": 1,
+        "巴蒂斯特": 1,
+        "慧心": 1,
+        "戈尔代": 1,
+        "戴因斯雷布": 1,
+        "暮夜剧团团长": 1,
+        "杰克": 1,
+        "百闻": 1,
+        "石壮": 1,
+        "舍利夫": 1,
+        "观众": 1,
+        "迈蒙": 1
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297
+      }
+    },
+    {
+      "subset_name": "recipe_clean__all_patterns__ratio_ge_0_95__overlap_ge_0_90__all_pools__all_gains__transient_ge_q67__all_speakers",
+      "count": 12,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 5.551424473524094,
+        "v19": 5.4323243995507555,
+        "v8": 5.210442076126735
+      },
+      "pair_gaps_db": [
+        0.1191000739733381,
+        0.2218823234240208
+      ],
+      "min_pair_gap_db": 0.1191000739733381,
+      "mean_overlap_ratio": 0.9676964924107782,
+      "mean_interference_gain_db": -2.345666666666667,
+      "mean_target_transient_presence_minus_mid_db_mean": -5.873547812302907,
+      "recipe_counts": {
+        "target_clean_speech": 12
+      },
+      "pattern_counts": {
+        "target_full": 12
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 12
+      },
+      "speaker_counts": {
+        "削月筑阳真君": 1,
+        "巴蒂斯特": 1,
+        "慧心": 1,
+        "戈尔代": 1,
+        "戴因斯雷布": 1,
+        "暮夜剧团团长": 1,
+        "杰克": 1,
+        "百闻": 1,
+        "石壮": 1,
+        "舍利夫": 1,
+        "观众": 1,
+        "迈蒙": 1
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297
+      }
+    },
+    {
+      "subset_name": "recipe_clean__all_patterns__ratio_ge_0_95__overlap_ge_0_90__pool_clean__all_gains__transient_ge_q67__all_speakers",
+      "count": 12,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 5.551424473524094,
+        "v19": 5.4323243995507555,
+        "v8": 5.210442076126735
+      },
+      "pair_gaps_db": [
+        0.1191000739733381,
+        0.2218823234240208
+      ],
+      "min_pair_gap_db": 0.1191000739733381,
+      "mean_overlap_ratio": 0.9676964924107782,
+      "mean_interference_gain_db": -2.345666666666667,
+      "mean_target_transient_presence_minus_mid_db_mean": -5.873547812302907,
+      "recipe_counts": {
+        "target_clean_speech": 12
+      },
+      "pattern_counts": {
+        "target_full": 12
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 12
+      },
+      "speaker_counts": {
+        "削月筑阳真君": 1,
+        "巴蒂斯特": 1,
+        "慧心": 1,
+        "戈尔代": 1,
+        "戴因斯雷布": 1,
+        "暮夜剧团团长": 1,
+        "杰克": 1,
+        "百闻": 1,
+        "石壮": 1,
+        "舍利夫": 1,
+        "观众": 1,
+        "迈蒙": 1
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297
+      }
+    },
+    {
+      "subset_name": "recipe_clean__pattern_full__any_ratio__overlap_ge_0_90__all_pools__all_gains__transient_ge_q67__all_speakers",
+      "count": 12,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 5.551424473524094,
+        "v19": 5.4323243995507555,
+        "v8": 5.210442076126735
+      },
+      "pair_gaps_db": [
+        0.1191000739733381,
+        0.2218823234240208
+      ],
+      "min_pair_gap_db": 0.1191000739733381,
+      "mean_overlap_ratio": 0.9676964924107782,
+      "mean_interference_gain_db": -2.345666666666667,
+      "mean_target_transient_presence_minus_mid_db_mean": -5.873547812302907,
+      "recipe_counts": {
+        "target_clean_speech": 12
+      },
+      "pattern_counts": {
+        "target_full": 12
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 12
+      },
+      "speaker_counts": {
+        "削月筑阳真君": 1,
+        "巴蒂斯特": 1,
+        "慧心": 1,
+        "戈尔代": 1,
+        "戴因斯雷布": 1,
+        "暮夜剧团团长": 1,
+        "杰克": 1,
+        "百闻": 1,
+        "石壮": 1,
+        "舍利夫": 1,
+        "观众": 1,
+        "迈蒙": 1
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_overlap_ratio": 0.9,
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297
+      }
+    },
+    {
+      "subset_name": "recipe_clean__pattern_full__any_ratio__overlap_ge_0_90__pool_clean__all_gains__transient_ge_q67__all_speakers",
+      "count": 12,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 5.551424473524094,
+        "v19": 5.4323243995507555,
+        "v8": 5.210442076126735
+      },
+      "pair_gaps_db": [
+        0.1191000739733381,
+        0.2218823234240208
+      ],
+      "min_pair_gap_db": 0.1191000739733381,
+      "mean_overlap_ratio": 0.9676964924107782,
+      "mean_interference_gain_db": -2.345666666666667,
+      "mean_target_transient_presence_minus_mid_db_mean": -5.873547812302907,
+      "recipe_counts": {
+        "target_clean_speech": 12
+      },
+      "pattern_counts": {
+        "target_full": 12
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 12
+      },
+      "speaker_counts": {
+        "削月筑阳真君": 1,
+        "巴蒂斯特": 1,
+        "慧心": 1,
+        "戈尔代": 1,
+        "戴因斯雷布": 1,
+        "暮夜剧团团长": 1,
+        "杰克": 1,
+        "百闻": 1,
+        "石壮": 1,
+        "舍利夫": 1,
+        "观众": 1,
+        "迈蒙": 1
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297
+      }
+    },
+    {
+      "subset_name": "recipe_clean__pattern_full__ratio_ge_0_95__overlap_ge_0_90__all_pools__all_gains__transient_ge_q67__all_speakers",
+      "count": 12,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 5.551424473524094,
+        "v19": 5.4323243995507555,
+        "v8": 5.210442076126735
+      },
+      "pair_gaps_db": [
+        0.1191000739733381,
+        0.2218823234240208
+      ],
+      "min_pair_gap_db": 0.1191000739733381,
+      "mean_overlap_ratio": 0.9676964924107782,
+      "mean_interference_gain_db": -2.345666666666667,
+      "mean_target_transient_presence_minus_mid_db_mean": -5.873547812302907,
+      "recipe_counts": {
+        "target_clean_speech": 12
+      },
+      "pattern_counts": {
+        "target_full": 12
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 12
+      },
+      "speaker_counts": {
+        "削月筑阳真君": 1,
+        "巴蒂斯特": 1,
+        "慧心": 1,
+        "戈尔代": 1,
+        "戴因斯雷布": 1,
+        "暮夜剧团团长": 1,
+        "杰克": 1,
+        "百闻": 1,
+        "石壮": 1,
+        "舍利夫": 1,
+        "观众": 1,
+        "迈蒙": 1
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297
+      }
+    },
+    {
+      "subset_name": "recipe_clean__pattern_full__ratio_ge_0_95__overlap_ge_0_90__pool_clean__all_gains__transient_ge_q67__all_speakers",
+      "count": 12,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 5.551424473524094,
+        "v19": 5.4323243995507555,
+        "v8": 5.210442076126735
+      },
+      "pair_gaps_db": [
+        0.1191000739733381,
+        0.2218823234240208
+      ],
+      "min_pair_gap_db": 0.1191000739733381,
+      "mean_overlap_ratio": 0.9676964924107782,
+      "mean_interference_gain_db": -2.345666666666667,
+      "mean_target_transient_presence_minus_mid_db_mean": -5.873547812302907,
+      "recipe_counts": {
+        "target_clean_speech": 12
+      },
+      "pattern_counts": {
+        "target_full": 12
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 12
+      },
+      "speaker_counts": {
+        "削月筑阳真君": 1,
+        "巴蒂斯特": 1,
+        "慧心": 1,
+        "戈尔代": 1,
+        "戴因斯雷布": 1,
+        "暮夜剧团团长": 1,
+        "杰克": 1,
+        "百闻": 1,
+        "石壮": 1,
+        "舍利夫": 1,
+        "观众": 1,
+        "迈蒙": 1
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_nonfull__any_ratio__overlap_ge_0_75__all_pools__gain_ge_q67__transient_ge_q67__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.335186630487442,
+        "v19": 1.2284166514873505,
+        "v8": 1.0028727650642395
+      },
+      "pair_gaps_db": [
+        0.10676997900009155,
+        0.22554388642311096
+      ],
+      "min_pair_gap_db": 0.10676997900009155,
+      "mean_overlap_ratio": 0.8605073822361798,
+      "mean_interference_gain_db": 0.381625,
+      "mean_target_transient_presence_minus_mid_db_mean": -5.800705105066299,
+      "recipe_counts": {
+        "target_clean_speech": 4,
+        "target_hard_speech": 4
+      },
+      "pattern_counts": {
+        "target_absent_head": 3,
+        "target_absent_tail": 1,
+        "target_intermittent": 4
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 4,
+        "speech_interference_hard_pool": 4
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 4,
+        "其它语音 - Others": 1,
+        "恶龙": 1,
+        "琳妮特": 1,
+        "纳比尔": 1
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "min_overlap_ratio": 0.75,
+        "min_interference_gain_db": -0.8906666636466982,
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__ratio_ge_0_95__overlap_ge_0_90__pool_clean__all_gains__transient_ge_q50__all_speakers",
+      "count": 13,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 5.412363318296579,
+        "v19": 5.318408810175383,
+        "v8": 5.2121661351277275
+      },
+      "pair_gaps_db": [
+        0.09395450812119677,
+        0.10624267504765506
+      ],
+      "min_pair_gap_db": 0.09395450812119677,
+      "mean_overlap_ratio": 0.9662677473805293,
+      "mean_interference_gain_db": -2.6248461538461543,
+      "mean_target_transient_presence_minus_mid_db_mean": -6.247752574773935,
+      "recipe_counts": {
+        "target_clean_speech": 13
+      },
+      "pattern_counts": {
+        "target_full": 13
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 13
+      },
+      "speaker_counts": {
+        "削月筑阳真君": 1,
+        "巴蒂斯特": 1,
+        "恒雄": 1,
+        "慧心": 1,
+        "戈尔代": 1,
+        "戴因斯雷布": 1,
+        "暮夜剧团团长": 1,
+        "杰克": 1,
+        "百闻": 1,
+        "石壮": 1,
+        "舍利夫": 1,
+        "观众": 1,
+        "迈蒙": 1
+      },
+      "builder_filters": {
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_target_transient_presence_minus_mid_db_mean": -11.535072326660156
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_full__any_ratio__overlap_ge_0_90__pool_clean__all_gains__transient_ge_q50__all_speakers",
+      "count": 13,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 5.412363318296579,
+        "v19": 5.318408810175383,
+        "v8": 5.2121661351277275
+      },
+      "pair_gaps_db": [
+        0.09395450812119677,
+        0.10624267504765506
+      ],
+      "min_pair_gap_db": 0.09395450812119677,
+      "mean_overlap_ratio": 0.9662677473805293,
+      "mean_interference_gain_db": -2.6248461538461543,
+      "mean_target_transient_presence_minus_mid_db_mean": -6.247752574773935,
+      "recipe_counts": {
+        "target_clean_speech": 13
+      },
+      "pattern_counts": {
+        "target_full": 13
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 13
+      },
+      "speaker_counts": {
+        "削月筑阳真君": 1,
+        "巴蒂斯特": 1,
+        "恒雄": 1,
+        "慧心": 1,
+        "戈尔代": 1,
+        "戴因斯雷布": 1,
+        "暮夜剧团团长": 1,
+        "杰克": 1,
+        "百闻": 1,
+        "石壮": 1,
+        "舍利夫": 1,
+        "观众": 1,
+        "迈蒙": 1
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_target_transient_presence_minus_mid_db_mean": -11.535072326660156
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_full__ratio_ge_0_95__overlap_ge_0_90__pool_clean__all_gains__transient_ge_q50__all_speakers",
+      "count": 13,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 5.412363318296579,
+        "v19": 5.318408810175383,
+        "v8": 5.2121661351277275
+      },
+      "pair_gaps_db": [
+        0.09395450812119677,
+        0.10624267504765506
+      ],
+      "min_pair_gap_db": 0.09395450812119677,
+      "mean_overlap_ratio": 0.9662677473805293,
+      "mean_interference_gain_db": -2.6248461538461543,
+      "mean_target_transient_presence_minus_mid_db_mean": -6.247752574773935,
+      "recipe_counts": {
+        "target_clean_speech": 13
+      },
+      "pattern_counts": {
+        "target_full": 13
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 13
+      },
+      "speaker_counts": {
+        "削月筑阳真君": 1,
+        "巴蒂斯特": 1,
+        "恒雄": 1,
+        "慧心": 1,
+        "戈尔代": 1,
+        "戴因斯雷布": 1,
+        "暮夜剧团团长": 1,
+        "杰克": 1,
+        "百闻": 1,
+        "石壮": 1,
+        "舍利夫": 1,
+        "观众": 1,
+        "迈蒙": 1
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_target_transient_presence_minus_mid_db_mean": -11.535072326660156
+      }
+    },
+    {
+      "subset_name": "recipe_clean__all_patterns__ratio_ge_0_95__overlap_ge_0_90__all_pools__all_gains__transient_ge_q50__all_speakers",
+      "count": 13,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 5.412363318296579,
+        "v19": 5.318408810175383,
+        "v8": 5.2121661351277275
+      },
+      "pair_gaps_db": [
+        0.09395450812119677,
+        0.10624267504765506
+      ],
+      "min_pair_gap_db": 0.09395450812119677,
+      "mean_overlap_ratio": 0.9662677473805293,
+      "mean_interference_gain_db": -2.6248461538461543,
+      "mean_target_transient_presence_minus_mid_db_mean": -6.247752574773935,
+      "recipe_counts": {
+        "target_clean_speech": 13
+      },
+      "pattern_counts": {
+        "target_full": 13
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 13
+      },
+      "speaker_counts": {
+        "削月筑阳真君": 1,
+        "巴蒂斯特": 1,
+        "恒雄": 1,
+        "慧心": 1,
+        "戈尔代": 1,
+        "戴因斯雷布": 1,
+        "暮夜剧团团长": 1,
+        "杰克": 1,
+        "百闻": 1,
+        "石壮": 1,
+        "舍利夫": 1,
+        "观众": 1,
+        "迈蒙": 1
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "min_target_transient_presence_minus_mid_db_mean": -11.535072326660156
+      }
+    },
+    {
+      "subset_name": "recipe_clean__all_patterns__ratio_ge_0_95__overlap_ge_0_90__pool_clean__all_gains__transient_ge_q50__all_speakers",
+      "count": 13,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 5.412363318296579,
+        "v19": 5.318408810175383,
+        "v8": 5.2121661351277275
+      },
+      "pair_gaps_db": [
+        0.09395450812119677,
+        0.10624267504765506
+      ],
+      "min_pair_gap_db": 0.09395450812119677,
+      "mean_overlap_ratio": 0.9662677473805293,
+      "mean_interference_gain_db": -2.6248461538461543,
+      "mean_target_transient_presence_minus_mid_db_mean": -6.247752574773935,
+      "recipe_counts": {
+        "target_clean_speech": 13
+      },
+      "pattern_counts": {
+        "target_full": 13
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 13
+      },
+      "speaker_counts": {
+        "削月筑阳真君": 1,
+        "巴蒂斯特": 1,
+        "恒雄": 1,
+        "慧心": 1,
+        "戈尔代": 1,
+        "戴因斯雷布": 1,
+        "暮夜剧团团长": 1,
+        "杰克": 1,
+        "百闻": 1,
+        "石壮": 1,
+        "舍利夫": 1,
+        "观众": 1,
+        "迈蒙": 1
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_target_transient_presence_minus_mid_db_mean": -11.535072326660156
+      }
+    },
+    {
+      "subset_name": "recipe_clean__pattern_full__any_ratio__overlap_ge_0_90__all_pools__all_gains__transient_ge_q50__all_speakers",
+      "count": 13,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 5.412363318296579,
+        "v19": 5.318408810175383,
+        "v8": 5.2121661351277275
+      },
+      "pair_gaps_db": [
+        0.09395450812119677,
+        0.10624267504765506
+      ],
+      "min_pair_gap_db": 0.09395450812119677,
+      "mean_overlap_ratio": 0.9662677473805293,
+      "mean_interference_gain_db": -2.6248461538461543,
+      "mean_target_transient_presence_minus_mid_db_mean": -6.247752574773935,
+      "recipe_counts": {
+        "target_clean_speech": 13
+      },
+      "pattern_counts": {
+        "target_full": 13
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 13
+      },
+      "speaker_counts": {
+        "削月筑阳真君": 1,
+        "巴蒂斯特": 1,
+        "恒雄": 1,
+        "慧心": 1,
+        "戈尔代": 1,
+        "戴因斯雷布": 1,
+        "暮夜剧团团长": 1,
+        "杰克": 1,
+        "百闻": 1,
+        "石壮": 1,
+        "舍利夫": 1,
+        "观众": 1,
+        "迈蒙": 1
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_overlap_ratio": 0.9,
+        "min_target_transient_presence_minus_mid_db_mean": -11.535072326660156
+      }
+    },
+    {
+      "subset_name": "recipe_clean__pattern_full__any_ratio__overlap_ge_0_90__pool_clean__all_gains__transient_ge_q50__all_speakers",
+      "count": 13,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 5.412363318296579,
+        "v19": 5.318408810175383,
+        "v8": 5.2121661351277275
+      },
+      "pair_gaps_db": [
+        0.09395450812119677,
+        0.10624267504765506
+      ],
+      "min_pair_gap_db": 0.09395450812119677,
+      "mean_overlap_ratio": 0.9662677473805293,
+      "mean_interference_gain_db": -2.6248461538461543,
+      "mean_target_transient_presence_minus_mid_db_mean": -6.247752574773935,
+      "recipe_counts": {
+        "target_clean_speech": 13
+      },
+      "pattern_counts": {
+        "target_full": 13
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 13
+      },
+      "speaker_counts": {
+        "削月筑阳真君": 1,
+        "巴蒂斯特": 1,
+        "恒雄": 1,
+        "慧心": 1,
+        "戈尔代": 1,
+        "戴因斯雷布": 1,
+        "暮夜剧团团长": 1,
+        "杰克": 1,
+        "百闻": 1,
+        "石壮": 1,
+        "舍利夫": 1,
+        "观众": 1,
+        "迈蒙": 1
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_target_transient_presence_minus_mid_db_mean": -11.535072326660156
+      }
+    },
+    {
+      "subset_name": "recipe_clean__pattern_full__ratio_ge_0_95__overlap_ge_0_90__all_pools__all_gains__transient_ge_q50__all_speakers",
+      "count": 13,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 5.412363318296579,
+        "v19": 5.318408810175383,
+        "v8": 5.2121661351277275
+      },
+      "pair_gaps_db": [
+        0.09395450812119677,
+        0.10624267504765506
+      ],
+      "min_pair_gap_db": 0.09395450812119677,
+      "mean_overlap_ratio": 0.9662677473805293,
+      "mean_interference_gain_db": -2.6248461538461543,
+      "mean_target_transient_presence_minus_mid_db_mean": -6.247752574773935,
+      "recipe_counts": {
+        "target_clean_speech": 13
+      },
+      "pattern_counts": {
+        "target_full": 13
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 13
+      },
+      "speaker_counts": {
+        "削月筑阳真君": 1,
+        "巴蒂斯特": 1,
+        "恒雄": 1,
+        "慧心": 1,
+        "戈尔代": 1,
+        "戴因斯雷布": 1,
+        "暮夜剧团团长": 1,
+        "杰克": 1,
+        "百闻": 1,
+        "石壮": 1,
+        "舍利夫": 1,
+        "观众": 1,
+        "迈蒙": 1
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "min_target_transient_presence_minus_mid_db_mean": -11.535072326660156
+      }
+    },
+    {
+      "subset_name": "recipe_clean__pattern_full__ratio_ge_0_95__overlap_ge_0_90__pool_clean__all_gains__transient_ge_q50__all_speakers",
+      "count": 13,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 5.412363318296579,
+        "v19": 5.318408810175383,
+        "v8": 5.2121661351277275
+      },
+      "pair_gaps_db": [
+        0.09395450812119677,
+        0.10624267504765506
+      ],
+      "min_pair_gap_db": 0.09395450812119677,
+      "mean_overlap_ratio": 0.9662677473805293,
+      "mean_interference_gain_db": -2.6248461538461543,
+      "mean_target_transient_presence_minus_mid_db_mean": -6.247752574773935,
+      "recipe_counts": {
+        "target_clean_speech": 13
+      },
+      "pattern_counts": {
+        "target_full": 13
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 13
+      },
+      "speaker_counts": {
+        "削月筑阳真君": 1,
+        "巴蒂斯特": 1,
+        "恒雄": 1,
+        "慧心": 1,
+        "戈尔代": 1,
+        "戴因斯雷布": 1,
+        "暮夜剧团团长": 1,
+        "杰克": 1,
+        "百闻": 1,
+        "石壮": 1,
+        "舍利夫": 1,
+        "观众": 1,
+        "迈蒙": 1
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_target_transient_presence_minus_mid_db_mean": -11.535072326660156
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__any_ratio__any_overlap__pool_clean__gain_ge_q67__transient_ge_q67__all_speakers",
+      "count": 9,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.9192391898896959,
+        "v19": 1.8422754738065932,
+        "v8": 1.7398349576526217
+      },
+      "pair_gaps_db": [
+        0.0769637160831027,
+        0.10244051615397143
+      ],
+      "min_pair_gap_db": 0.0769637160831027,
+      "mean_overlap_ratio": 0.9321739235078245,
+      "mean_interference_gain_db": 0.3613333333333333,
+      "mean_target_transient_presence_minus_mid_db_mean": -5.23803088400099,
+      "recipe_counts": {
+        "target_clean_speech": 9
+      },
+      "pattern_counts": {
+        "target_absent_head": 3,
+        "target_absent_tail": 1,
+        "target_full": 5
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 9
+      },
+      "speaker_counts": {
+        "其它语音 - Others": 1,
+        "凯亚": 1,
+        "巴蒂斯特": 1,
+        "恶龙": 1,
+        "慧心": 1,
+        "戈尔代": 1,
+        "琳妮特": 1,
+        "纳比尔": 1,
+        "观众": 1
+      },
+      "builder_filters": {
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_interference_gain_db": -0.8906666636466982,
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__any_ratio__overlap_ge_0_75__pool_clean__gain_ge_q67__transient_ge_q67__all_speakers",
+      "count": 9,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.9192391898896959,
+        "v19": 1.8422754738065932,
+        "v8": 1.7398349576526217
+      },
+      "pair_gaps_db": [
+        0.0769637160831027,
+        0.10244051615397143
+      ],
+      "min_pair_gap_db": 0.0769637160831027,
+      "mean_overlap_ratio": 0.9321739235078245,
+      "mean_interference_gain_db": 0.3613333333333333,
+      "mean_target_transient_presence_minus_mid_db_mean": -5.23803088400099,
+      "recipe_counts": {
+        "target_clean_speech": 9
+      },
+      "pattern_counts": {
+        "target_absent_head": 3,
+        "target_absent_tail": 1,
+        "target_full": 5
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 9
+      },
+      "speaker_counts": {
+        "其它语音 - Others": 1,
+        "凯亚": 1,
+        "巴蒂斯特": 1,
+        "恶龙": 1,
+        "慧心": 1,
+        "戈尔代": 1,
+        "琳妮特": 1,
+        "纳比尔": 1,
+        "观众": 1
+      },
+      "builder_filters": {
+        "min_overlap_ratio": 0.75,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_interference_gain_db": -0.8906666636466982,
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297
+      }
+    },
+    {
+      "subset_name": "recipe_clean__all_patterns__any_ratio__any_overlap__all_pools__gain_ge_q67__transient_ge_q67__all_speakers",
+      "count": 9,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.9192391898896959,
+        "v19": 1.8422754738065932,
+        "v8": 1.7398349576526217
+      },
+      "pair_gaps_db": [
+        0.0769637160831027,
+        0.10244051615397143
+      ],
+      "min_pair_gap_db": 0.0769637160831027,
+      "mean_overlap_ratio": 0.9321739235078245,
+      "mean_interference_gain_db": 0.3613333333333333,
+      "mean_target_transient_presence_minus_mid_db_mean": -5.23803088400099,
+      "recipe_counts": {
+        "target_clean_speech": 9
+      },
+      "pattern_counts": {
+        "target_absent_head": 3,
+        "target_absent_tail": 1,
+        "target_full": 5
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 9
+      },
+      "speaker_counts": {
+        "其它语音 - Others": 1,
+        "凯亚": 1,
+        "巴蒂斯特": 1,
+        "恶龙": 1,
+        "慧心": 1,
+        "戈尔代": 1,
+        "琳妮特": 1,
+        "纳比尔": 1,
+        "观众": 1
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "min_interference_gain_db": -0.8906666636466982,
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297
+      }
+    },
+    {
+      "subset_name": "recipe_clean__all_patterns__any_ratio__any_overlap__pool_clean__gain_ge_q67__transient_ge_q67__all_speakers",
+      "count": 9,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.9192391898896959,
+        "v19": 1.8422754738065932,
+        "v8": 1.7398349576526217
+      },
+      "pair_gaps_db": [
+        0.0769637160831027,
+        0.10244051615397143
+      ],
+      "min_pair_gap_db": 0.0769637160831027,
+      "mean_overlap_ratio": 0.9321739235078245,
+      "mean_interference_gain_db": 0.3613333333333333,
+      "mean_target_transient_presence_minus_mid_db_mean": -5.23803088400099,
+      "recipe_counts": {
+        "target_clean_speech": 9
+      },
+      "pattern_counts": {
+        "target_absent_head": 3,
+        "target_absent_tail": 1,
+        "target_full": 5
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 9
+      },
+      "speaker_counts": {
+        "其它语音 - Others": 1,
+        "凯亚": 1,
+        "巴蒂斯特": 1,
+        "恶龙": 1,
+        "慧心": 1,
+        "戈尔代": 1,
+        "琳妮特": 1,
+        "纳比尔": 1,
+        "观众": 1
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_interference_gain_db": -0.8906666636466982,
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297
+      }
+    },
+    {
+      "subset_name": "recipe_clean__all_patterns__any_ratio__overlap_ge_0_75__all_pools__gain_ge_q67__transient_ge_q67__all_speakers",
+      "count": 9,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.9192391898896959,
+        "v19": 1.8422754738065932,
+        "v8": 1.7398349576526217
+      },
+      "pair_gaps_db": [
+        0.0769637160831027,
+        0.10244051615397143
+      ],
+      "min_pair_gap_db": 0.0769637160831027,
+      "mean_overlap_ratio": 0.9321739235078245,
+      "mean_interference_gain_db": 0.3613333333333333,
+      "mean_target_transient_presence_minus_mid_db_mean": -5.23803088400099,
+      "recipe_counts": {
+        "target_clean_speech": 9
+      },
+      "pattern_counts": {
+        "target_absent_head": 3,
+        "target_absent_tail": 1,
+        "target_full": 5
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 9
+      },
+      "speaker_counts": {
+        "其它语音 - Others": 1,
+        "凯亚": 1,
+        "巴蒂斯特": 1,
+        "恶龙": 1,
+        "慧心": 1,
+        "戈尔代": 1,
+        "琳妮特": 1,
+        "纳比尔": 1,
+        "观众": 1
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "min_overlap_ratio": 0.75,
+        "min_interference_gain_db": -0.8906666636466982,
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297
+      }
+    },
+    {
+      "subset_name": "recipe_clean__all_patterns__any_ratio__overlap_ge_0_75__pool_clean__gain_ge_q67__transient_ge_q67__all_speakers",
+      "count": 9,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.9192391898896959,
+        "v19": 1.8422754738065932,
+        "v8": 1.7398349576526217
+      },
+      "pair_gaps_db": [
+        0.0769637160831027,
+        0.10244051615397143
+      ],
+      "min_pair_gap_db": 0.0769637160831027,
+      "mean_overlap_ratio": 0.9321739235078245,
+      "mean_interference_gain_db": 0.3613333333333333,
+      "mean_target_transient_presence_minus_mid_db_mean": -5.23803088400099,
+      "recipe_counts": {
+        "target_clean_speech": 9
+      },
+      "pattern_counts": {
+        "target_absent_head": 3,
+        "target_absent_tail": 1,
+        "target_full": 5
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 9
+      },
+      "speaker_counts": {
+        "其它语音 - Others": 1,
+        "凯亚": 1,
+        "巴蒂斯特": 1,
+        "恶龙": 1,
+        "慧心": 1,
+        "戈尔代": 1,
+        "琳妮特": 1,
+        "纳比尔": 1,
+        "观众": 1
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "min_overlap_ratio": 0.75,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_interference_gain_db": -0.8906666636466982,
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_nonfull__any_ratio__overlap_ge_0_75__pool_clean__all_gains__transient_ge_q67__all_speakers",
+      "count": 16,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 2.6396511048078537,
+        "v19": 2.566897913813591,
+        "v8": 2.4832011312246323
+      },
+      "pair_gaps_db": [
+        0.0727531909942627,
+        0.08369678258895874
+      ],
+      "min_pair_gap_db": 0.0727531909942627,
+      "mean_overlap_ratio": 0.9036877590938336,
+      "mean_interference_gain_db": -2.1191875,
+      "mean_target_transient_presence_minus_mid_db_mean": -6.257603283971548,
+      "recipe_counts": {
+        "target_clean_speech": 16
+      },
+      "pattern_counts": {
+        "target_absent_head": 7,
+        "target_absent_tail": 6,
+        "target_intermittent": 3
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 16
+      },
+      "speaker_counts": {
+        "伊迪娅": 1,
+        "其它语音 - Others": 1,
+        "多莉": 1,
+        "小川": 1,
+        "恶龙": 1,
+        "拉韦兰": 1,
+        "木南杏奈": 1,
+        "琳妮特": 1,
+        "神奇的霍普金斯": 1,
+        "纳比尔": 1,
+        "维格尔": 1,
+        "聪子": 1,
+        "莫里斯": 1,
+        "葛瑞丝": 1,
+        "赛诺": 1,
+        "野方": 1
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "min_overlap_ratio": 0.75,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297
+      }
+    },
+    {
+      "subset_name": "recipe_clean__pattern_nonfull__any_ratio__overlap_ge_0_75__all_pools__all_gains__transient_ge_q67__all_speakers",
+      "count": 16,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 2.6396511048078537,
+        "v19": 2.566897913813591,
+        "v8": 2.4832011312246323
+      },
+      "pair_gaps_db": [
+        0.0727531909942627,
+        0.08369678258895874
+      ],
+      "min_pair_gap_db": 0.0727531909942627,
+      "mean_overlap_ratio": 0.9036877590938336,
+      "mean_interference_gain_db": -2.1191875,
+      "mean_target_transient_presence_minus_mid_db_mean": -6.257603283971548,
+      "recipe_counts": {
+        "target_clean_speech": 16
+      },
+      "pattern_counts": {
+        "target_absent_head": 7,
+        "target_absent_tail": 6,
+        "target_intermittent": 3
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 16
+      },
+      "speaker_counts": {
+        "伊迪娅": 1,
+        "其它语音 - Others": 1,
+        "多莉": 1,
+        "小川": 1,
+        "恶龙": 1,
+        "拉韦兰": 1,
+        "木南杏奈": 1,
+        "琳妮特": 1,
+        "神奇的霍普金斯": 1,
+        "纳比尔": 1,
+        "维格尔": 1,
+        "聪子": 1,
+        "莫里斯": 1,
+        "葛瑞丝": 1,
+        "赛诺": 1,
+        "野方": 1
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "min_overlap_ratio": 0.75,
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297
+      }
+    },
+    {
+      "subset_name": "recipe_clean__pattern_nonfull__any_ratio__overlap_ge_0_75__pool_clean__all_gains__transient_ge_q67__all_speakers",
+      "count": 16,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 2.6396511048078537,
+        "v19": 2.566897913813591,
+        "v8": 2.4832011312246323
+      },
+      "pair_gaps_db": [
+        0.0727531909942627,
+        0.08369678258895874
+      ],
+      "min_pair_gap_db": 0.0727531909942627,
+      "mean_overlap_ratio": 0.9036877590938336,
+      "mean_interference_gain_db": -2.1191875,
+      "mean_target_transient_presence_minus_mid_db_mean": -6.257603283971548,
+      "recipe_counts": {
+        "target_clean_speech": 16
+      },
+      "pattern_counts": {
+        "target_absent_head": 7,
+        "target_absent_tail": 6,
+        "target_intermittent": 3
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 16
+      },
+      "speaker_counts": {
+        "伊迪娅": 1,
+        "其它语音 - Others": 1,
+        "多莉": 1,
+        "小川": 1,
+        "恶龙": 1,
+        "拉韦兰": 1,
+        "木南杏奈": 1,
+        "琳妮特": 1,
+        "神奇的霍普金斯": 1,
+        "纳比尔": 1,
+        "维格尔": 1,
+        "聪子": 1,
+        "莫里斯": 1,
+        "葛瑞丝": 1,
+        "赛诺": 1,
+        "野方": 1
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "min_overlap_ratio": 0.75,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_nonfull__any_ratio__any_overlap__pool_clean__all_gains__transient_ge_q67__all_speakers",
+      "count": 17,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 2.508096176035264,
+        "v19": 2.4454385953791,
+        "v8": 2.3789979570052204
+      },
+      "pair_gaps_db": [
+        0.06265758065616378,
+        0.06644063837387959
+      ],
+      "min_pair_gap_db": 0.06265758065616378,
+      "mean_overlap_ratio": 0.8929938054567659,
+      "mean_interference_gain_db": -2.1470588235294117,
+      "mean_target_transient_presence_minus_mid_db_mean": -6.396075806196998,
+      "recipe_counts": {
+        "target_clean_speech": 17
+      },
+      "pattern_counts": {
+        "target_absent_head": 7,
+        "target_absent_tail": 6,
+        "target_intermittent": 4
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 17
+      },
+      "speaker_counts": {
+        "伊迪娅": 1,
+        "其它语音 - Others": 1,
+        "刻晴": 1,
+        "多莉": 1,
+        "小川": 1,
+        "恶龙": 1,
+        "拉韦兰": 1,
+        "木南杏奈": 1,
+        "琳妮特": 1,
+        "神奇的霍普金斯": 1,
+        "纳比尔": 1,
+        "维格尔": 1,
+        "聪子": 1,
+        "莫里斯": 1,
+        "葛瑞丝": 1,
+        "赛诺": 1,
+        "野方": 1
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297
+      }
+    },
+    {
+      "subset_name": "recipe_clean__pattern_nonfull__any_ratio__any_overlap__all_pools__all_gains__transient_ge_q67__all_speakers",
+      "count": 17,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 2.508096176035264,
+        "v19": 2.4454385953791,
+        "v8": 2.3789979570052204
+      },
+      "pair_gaps_db": [
+        0.06265758065616378,
+        0.06644063837387959
+      ],
+      "min_pair_gap_db": 0.06265758065616378,
+      "mean_overlap_ratio": 0.8929938054567659,
+      "mean_interference_gain_db": -2.1470588235294117,
+      "mean_target_transient_presence_minus_mid_db_mean": -6.396075806196998,
+      "recipe_counts": {
+        "target_clean_speech": 17
+      },
+      "pattern_counts": {
+        "target_absent_head": 7,
+        "target_absent_tail": 6,
+        "target_intermittent": 4
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 17
+      },
+      "speaker_counts": {
+        "伊迪娅": 1,
+        "其它语音 - Others": 1,
+        "刻晴": 1,
+        "多莉": 1,
+        "小川": 1,
+        "恶龙": 1,
+        "拉韦兰": 1,
+        "木南杏奈": 1,
+        "琳妮特": 1,
+        "神奇的霍普金斯": 1,
+        "纳比尔": 1,
+        "维格尔": 1,
+        "聪子": 1,
+        "莫里斯": 1,
+        "葛瑞丝": 1,
+        "赛诺": 1,
+        "野方": 1
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297
+      }
+    }
+  ],
+  "top_near_miss_candidates": [
+    {
+      "subset_name": "all_speech__all_patterns__any_ratio__overlap_ge_0_75__all_pools__gain_ge_q50__transient_ge_q67__all_speakers",
+      "count": 25,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 0.9696315145492553,
+        "v19": 0.9701902985572814,
+        "v8": 1.017437813282013
+      },
+      "pair_gaps_db": [
+        -0.0005587840080261142
+      ],
+      "min_pair_gap_db": -0.0005587840080261142,
+      "mean_overlap_ratio": 0.8742131948468712,
+      "mean_interference_gain_db": -0.31496,
+      "mean_target_transient_presence_minus_mid_db_mean": -5.6700236392021175,
+      "recipe_counts": {
+        "target_clean_speech": 14,
+        "target_hard_speech": 11
+      },
+      "pattern_counts": {
+        "target_absent_head": 4,
+        "target_absent_tail": 2,
+        "target_full": 14,
+        "target_intermittent": 5
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 14,
+        "speech_interference_hard_pool": 11
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 11,
+        "其它语音 - Others": 2,
+        "凯亚": 1,
+        "周良": 1,
+        "巴蒂斯特": 1,
+        "恶龙": 1,
+        "慧心": 1,
+        "戈尔代": 1,
+        "琳妮特": 1,
+        "神奇的霍普金斯": 1,
+        "纳比尔": 1,
+        "维格尔": 1,
+        "莫娜": 1,
+        "观众": 1
+      },
+      "builder_filters": {
+        "min_overlap_ratio": 0.75,
+        "min_interference_gain_db": -2.0179998874664307,
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_nonfull__any_ratio__any_overlap__all_pools__gain_ge_q50__transient_ge_q67__speaker_friend_hard_negative_segments",
+      "count": 12,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": -0.21986270944277445,
+        "v19": -0.21827431519826254,
+        "v8": -0.1807901660601298
+      },
+      "pair_gaps_db": [
+        -0.0015883942445119037
+      ],
+      "min_pair_gap_db": -0.0015883942445119037,
+      "mean_overlap_ratio": 0.751993363714409,
+      "mean_interference_gain_db": -0.4784999999999999,
+      "mean_target_transient_presence_minus_mid_db_mean": -5.061161254843076,
+      "recipe_counts": {
+        "target_hard_speech": 12
+      },
+      "pattern_counts": {
+        "target_absent_tail": 4,
+        "target_intermittent": 8
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 12
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 12
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "min_interference_gain_db": -2.0179998874664307,
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297,
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_nonfull__any_ratio__any_overlap__pool_hard__gain_ge_q50__transient_ge_q67__all_speakers",
+      "count": 12,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": -0.21986270944277445,
+        "v19": -0.21827431519826254,
+        "v8": -0.1807901660601298
+      },
+      "pair_gaps_db": [
+        -0.0015883942445119037
+      ],
+      "min_pair_gap_db": -0.0015883942445119037,
+      "mean_overlap_ratio": 0.751993363714409,
+      "mean_interference_gain_db": -0.4784999999999999,
+      "mean_target_transient_presence_minus_mid_db_mean": -5.061161254843076,
+      "recipe_counts": {
+        "target_hard_speech": 12
+      },
+      "pattern_counts": {
+        "target_absent_tail": 4,
+        "target_intermittent": 8
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 12
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 12
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ],
+        "min_interference_gain_db": -2.0179998874664307,
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_nonfull__any_ratio__any_overlap__pool_hard__gain_ge_q50__transient_ge_q67__speaker_friend_hard_negative_segments",
+      "count": 12,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": -0.21986270944277445,
+        "v19": -0.21827431519826254,
+        "v8": -0.1807901660601298
+      },
+      "pair_gaps_db": [
+        -0.0015883942445119037
+      ],
+      "min_pair_gap_db": -0.0015883942445119037,
+      "mean_overlap_ratio": 0.751993363714409,
+      "mean_interference_gain_db": -0.4784999999999999,
+      "mean_target_transient_presence_minus_mid_db_mean": -5.061161254843076,
+      "recipe_counts": {
+        "target_hard_speech": 12
+      },
+      "pattern_counts": {
+        "target_absent_tail": 4,
+        "target_intermittent": 8
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 12
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 12
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ],
+        "min_interference_gain_db": -2.0179998874664307,
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297,
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "recipe_hard__pattern_nonfull__any_ratio__any_overlap__all_pools__gain_ge_q50__transient_ge_q67__all_speakers",
+      "count": 12,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": -0.21986270944277445,
+        "v19": -0.21827431519826254,
+        "v8": -0.1807901660601298
+      },
+      "pair_gaps_db": [
+        -0.0015883942445119037
+      ],
+      "min_pair_gap_db": -0.0015883942445119037,
+      "mean_overlap_ratio": 0.751993363714409,
+      "mean_interference_gain_db": -0.4784999999999999,
+      "mean_target_transient_presence_minus_mid_db_mean": -5.061161254843076,
+      "recipe_counts": {
+        "target_hard_speech": 12
+      },
+      "pattern_counts": {
+        "target_absent_tail": 4,
+        "target_intermittent": 8
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 12
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 12
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_hard_speech"
+        ],
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "min_interference_gain_db": -2.0179998874664307,
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297
+      }
+    },
+    {
+      "subset_name": "recipe_hard__pattern_nonfull__any_ratio__any_overlap__all_pools__gain_ge_q50__transient_ge_q67__speaker_friend_hard_negative_segments",
+      "count": 12,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": -0.21986270944277445,
+        "v19": -0.21827431519826254,
+        "v8": -0.1807901660601298
+      },
+      "pair_gaps_db": [
+        -0.0015883942445119037
+      ],
+      "min_pair_gap_db": -0.0015883942445119037,
+      "mean_overlap_ratio": 0.751993363714409,
+      "mean_interference_gain_db": -0.4784999999999999,
+      "mean_target_transient_presence_minus_mid_db_mean": -5.061161254843076,
+      "recipe_counts": {
+        "target_hard_speech": 12
+      },
+      "pattern_counts": {
+        "target_absent_tail": 4,
+        "target_intermittent": 8
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 12
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 12
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_hard_speech"
+        ],
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "min_interference_gain_db": -2.0179998874664307,
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297,
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "recipe_hard__pattern_nonfull__any_ratio__any_overlap__pool_hard__gain_ge_q50__transient_ge_q67__all_speakers",
+      "count": 12,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": -0.21986270944277445,
+        "v19": -0.21827431519826254,
+        "v8": -0.1807901660601298
+      },
+      "pair_gaps_db": [
+        -0.0015883942445119037
+      ],
+      "min_pair_gap_db": -0.0015883942445119037,
+      "mean_overlap_ratio": 0.751993363714409,
+      "mean_interference_gain_db": -0.4784999999999999,
+      "mean_target_transient_presence_minus_mid_db_mean": -5.061161254843076,
+      "recipe_counts": {
+        "target_hard_speech": 12
+      },
+      "pattern_counts": {
+        "target_absent_tail": 4,
+        "target_intermittent": 8
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 12
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 12
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_hard_speech"
+        ],
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ],
+        "min_interference_gain_db": -2.0179998874664307,
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297
+      }
+    },
+    {
+      "subset_name": "recipe_hard__pattern_nonfull__any_ratio__any_overlap__pool_hard__gain_ge_q50__transient_ge_q67__speaker_friend_hard_negative_segments",
+      "count": 12,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": -0.21986270944277445,
+        "v19": -0.21827431519826254,
+        "v8": -0.1807901660601298
+      },
+      "pair_gaps_db": [
+        -0.0015883942445119037
+      ],
+      "min_pair_gap_db": -0.0015883942445119037,
+      "mean_overlap_ratio": 0.751993363714409,
+      "mean_interference_gain_db": -0.4784999999999999,
+      "mean_target_transient_presence_minus_mid_db_mean": -5.061161254843076,
+      "recipe_counts": {
+        "target_hard_speech": 12
+      },
+      "pattern_counts": {
+        "target_absent_tail": 4,
+        "target_intermittent": 8
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 12
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 12
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_hard_speech"
+        ],
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ],
+        "min_interference_gain_db": -2.0179998874664307,
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297,
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__any_ratio__any_overlap__all_pools__gain_ge_q50__transient_ge_q67__all_speakers",
+      "count": 35,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 0.6668598243168422,
+        "v19": 0.6687666773796082,
+        "v8": 0.7169845870562962
+      },
+      "pair_gaps_db": [
+        -0.0019068530627659452
+      ],
+      "min_pair_gap_db": -0.0019068530627659452,
+      "mean_overlap_ratio": 0.8264346430776615,
+      "mean_interference_gain_db": -0.3780571428571428,
+      "mean_target_transient_presence_minus_mid_db_mean": -5.3249225378036495,
+      "recipe_counts": {
+        "target_clean_speech": 16,
+        "target_hard_speech": 19
+      },
+      "pattern_counts": {
+        "target_absent_head": 4,
+        "target_absent_tail": 5,
+        "target_full": 17,
+        "target_intermittent": 9
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 16,
+        "speech_interference_hard_pool": 19
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 19,
+        "其它语音 - Others": 2,
+        "凯亚": 1,
+        "北村": 1,
+        "周良": 1,
+        "巴蒂斯特": 1,
+        "恶龙": 1,
+        "慧心": 1,
+        "戈尔代": 1,
+        "琳妮特": 1,
+        "神奇的霍普金斯": 1,
+        "纳比尔": 1,
+        "维格尔": 1,
+        "莫娜": 1,
+        "观众": 1,
+        "陆行岩本真蕈·元素生命": 1
+      },
+      "builder_filters": {
+        "min_interference_gain_db": -2.0179998874664307,
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_nonfull__any_ratio__overlap_ge_0_90__all_pools__all_gains__transient_ge_q50__all_speakers",
+      "count": 16,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.2425155341625214,
+        "v19": 1.2445196509361267,
+        "v8": 1.3005487471818924
+      },
+      "pair_gaps_db": [
+        -0.0020041167736053467
+      ],
+      "min_pair_gap_db": -0.0020041167736053467,
+      "mean_overlap_ratio": 0.9488261262367297,
+      "mean_interference_gain_db": -2.4769375,
+      "mean_target_transient_presence_minus_mid_db_mean": -7.397124238312244,
+      "recipe_counts": {
+        "target_clean_speech": 12,
+        "target_hard_speech": 4
+      },
+      "pattern_counts": {
+        "target_absent_head": 7,
+        "target_absent_tail": 6,
+        "target_intermittent": 3
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 12,
+        "speech_interference_hard_pool": 4
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 4,
+        "伊迪娅": 1,
+        "克罗索": 1,
+        "其它语音 - Others": 1,
+        "多莉": 1,
+        "小川": 1,
+        "木南杏奈": 1,
+        "神奇的霍普金斯": 1,
+        "纳比尔": 1,
+        "莫里斯": 1,
+        "赛诺": 1,
+        "迪娜泽黛": 1,
+        "阿大": 1
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "min_overlap_ratio": 0.9,
+        "min_target_transient_presence_minus_mid_db_mean": -11.535072326660156
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_nonfull__any_ratio__any_overlap__all_pools__all_gains__all_transient__all_speakers",
+      "count": 118,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 0.3201480305801004,
+        "v19": 0.32257595102665787,
+        "v8": 0.3197696895922645
+      },
+      "pair_gaps_db": [
+        -0.0024279204465574855
+      ],
+      "min_pair_gap_db": -0.0024279204465574855,
+      "mean_overlap_ratio": 0.8121076476295962,
+      "mean_interference_gain_db": -1.9513389830508474,
+      "mean_target_transient_presence_minus_mid_db_mean": -11.875323190527448,
+      "recipe_counts": {
+        "target_clean_speech": 65,
+        "target_hard_speech": 53
+      },
+      "pattern_counts": {
+        "target_absent_head": 30,
+        "target_absent_tail": 53,
+        "target_intermittent": 35
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 65,
+        "speech_interference_hard_pool": 53
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 53,
+        "「花角玉将」": 1,
+        "七尾": 1,
+        "今谷三郎": 1,
+        "伊迪娅": 1,
+        "伯恩哈德": 1,
+        "伸夫": 1,
+        "债务处理人": 1,
+        "克罗索": 1,
+        "八重神子": 1,
+        "兰巴德": 1,
+        "其它语音 - Others": 2,
+        "刻晴": 1,
+        "博来": 1,
+        "图昂": 1,
+        "多莉": 1,
+        "天目十五": 1,
+        "奥格劳": 1,
+        "小川": 1,
+        "巴顿": 1,
+        "带变量语音 - Placeholder": 2,
+        "德田": 1,
+        "恶龙": 1,
+        "慧心": 1,
+        "战斗语音 - Battle": 3,
+        "托克": 1,
+        "拉斯蒂涅": 1,
+        "拉韦兰": 1,
+        "普里耶": 1,
+        "木南杏奈": 1,
+        "格蕾希艾": 1,
+        "歌特琳德": 1,
+        "浮游水蕈兽·元素生命": 1,
+        "渡部": 1,
+        "狗三儿": 1,
+        "玛乔丽": 1,
+        "玛塞勒": 1,
+        "琳妮特": 1,
+        "神奇的霍普金斯": 1,
+        "科林斯": 1,
+        "纪芳": 2,
+        "纳比尔": 1,
+        "绘星": 1,
+        "维格尔": 1,
+        "罗纳克": 1,
+        "美铃": 1,
+        "聪子": 1,
+        "芙卡洛斯": 1,
+        "莫里斯": 1,
+        "莱依拉": 1,
+        "莱昂": 1,
+        "葛瑞丝": 1,
+        "西敏": 1,
+        "赛诺": 1,
+        "迪娜泽黛": 1,
+        "迪希雅": 1,
+        "野方": 1,
+        "闲云": 1,
+        "阿大": 1,
+        "雷泽": 1,
+        "鹿野院平藏": 1
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ]
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__any_ratio__any_overlap__pool_clean__all_gains__transient_ge_q67__all_speakers",
+      "count": 46,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 2.366471277306909,
+        "v19": 2.316878195366134,
+        "v8": 2.319526278130386
+      },
+      "pair_gaps_db": [
+        0.049593081940775274,
+        -0.002648082764252102
+      ],
+      "min_pair_gap_db": -0.002648082764252102,
+      "mean_overlap_ratio": 0.8756899090357502,
+      "mean_interference_gain_db": -2.579456521739131,
+      "mean_target_transient_presence_minus_mid_db_mean": -6.106943276913269,
+      "recipe_counts": {
+        "target_clean_speech": 46
+      },
+      "pattern_counts": {
+        "target_absent_head": 7,
+        "target_absent_tail": 6,
+        "target_full": 29,
+        "target_intermittent": 4
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 46
+      },
+      "speaker_counts": {
+        "丹羽": 1,
+        "伊迪娅": 1,
+        "健司": 1,
+        "其它语音 - Others": 2,
+        "凯亚": 1,
+        "刻晴": 1,
+        "削月筑阳真君": 1,
+        "北村": 1,
+        "周良": 1,
+        "多莉": 1,
+        "小川": 2,
+        "巴蒂斯特": 1,
+        "恶龙": 1,
+        "慧心": 1,
+        "戈尔代": 1,
+        "戴因斯雷布": 1,
+        "拉韦兰": 1,
+        "暮夜剧团团长": 1,
+        "木南杏奈": 1,
+        "杰克": 1,
+        "波林": 1,
+        "玛塞勒": 1,
+        "玛蕾蒂": 1,
+        "玲花": 1,
+        "琳妮特": 1,
+        "百闻": 2,
+        "石壮": 1,
+        "神奇的霍普金斯": 1,
+        "纳比尔": 1,
+        "维格尔": 1,
+        "美铃": 1,
+        "聪子": 1,
+        "舍利夫": 1,
+        "莫娜": 1,
+        "莫里斯": 1,
+        "莱欧斯利": 1,
+        "葛瑞丝": 1,
+        "观众": 1,
+        "赛诺": 1,
+        "迈蒙": 1,
+        "野方": 1,
+        "陆行岩本真蕈·元素生命": 1,
+        "黛比": 1
+      },
+      "builder_filters": {
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297
+      }
+    },
+    {
+      "subset_name": "recipe_clean__all_patterns__any_ratio__any_overlap__all_pools__all_gains__transient_ge_q67__all_speakers",
+      "count": 46,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 2.366471277306909,
+        "v19": 2.316878195366134,
+        "v8": 2.319526278130386
+      },
+      "pair_gaps_db": [
+        0.049593081940775274,
+        -0.002648082764252102
+      ],
+      "min_pair_gap_db": -0.002648082764252102,
+      "mean_overlap_ratio": 0.8756899090357502,
+      "mean_interference_gain_db": -2.579456521739131,
+      "mean_target_transient_presence_minus_mid_db_mean": -6.106943276913269,
+      "recipe_counts": {
+        "target_clean_speech": 46
+      },
+      "pattern_counts": {
+        "target_absent_head": 7,
+        "target_absent_tail": 6,
+        "target_full": 29,
+        "target_intermittent": 4
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 46
+      },
+      "speaker_counts": {
+        "丹羽": 1,
+        "伊迪娅": 1,
+        "健司": 1,
+        "其它语音 - Others": 2,
+        "凯亚": 1,
+        "刻晴": 1,
+        "削月筑阳真君": 1,
+        "北村": 1,
+        "周良": 1,
+        "多莉": 1,
+        "小川": 2,
+        "巴蒂斯特": 1,
+        "恶龙": 1,
+        "慧心": 1,
+        "戈尔代": 1,
+        "戴因斯雷布": 1,
+        "拉韦兰": 1,
+        "暮夜剧团团长": 1,
+        "木南杏奈": 1,
+        "杰克": 1,
+        "波林": 1,
+        "玛塞勒": 1,
+        "玛蕾蒂": 1,
+        "玲花": 1,
+        "琳妮特": 1,
+        "百闻": 2,
+        "石壮": 1,
+        "神奇的霍普金斯": 1,
+        "纳比尔": 1,
+        "维格尔": 1,
+        "美铃": 1,
+        "聪子": 1,
+        "舍利夫": 1,
+        "莫娜": 1,
+        "莫里斯": 1,
+        "莱欧斯利": 1,
+        "葛瑞丝": 1,
+        "观众": 1,
+        "赛诺": 1,
+        "迈蒙": 1,
+        "野方": 1,
+        "陆行岩本真蕈·元素生命": 1,
+        "黛比": 1
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297
+      }
+    },
+    {
+      "subset_name": "recipe_clean__all_patterns__any_ratio__any_overlap__pool_clean__all_gains__transient_ge_q67__all_speakers",
+      "count": 46,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 2.366471277306909,
+        "v19": 2.316878195366134,
+        "v8": 2.319526278130386
+      },
+      "pair_gaps_db": [
+        0.049593081940775274,
+        -0.002648082764252102
+      ],
+      "min_pair_gap_db": -0.002648082764252102,
+      "mean_overlap_ratio": 0.8756899090357502,
+      "mean_interference_gain_db": -2.579456521739131,
+      "mean_target_transient_presence_minus_mid_db_mean": -6.106943276913269,
+      "recipe_counts": {
+        "target_clean_speech": 46
+      },
+      "pattern_counts": {
+        "target_absent_head": 7,
+        "target_absent_tail": 6,
+        "target_full": 29,
+        "target_intermittent": 4
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 46
+      },
+      "speaker_counts": {
+        "丹羽": 1,
+        "伊迪娅": 1,
+        "健司": 1,
+        "其它语音 - Others": 2,
+        "凯亚": 1,
+        "刻晴": 1,
+        "削月筑阳真君": 1,
+        "北村": 1,
+        "周良": 1,
+        "多莉": 1,
+        "小川": 2,
+        "巴蒂斯特": 1,
+        "恶龙": 1,
+        "慧心": 1,
+        "戈尔代": 1,
+        "戴因斯雷布": 1,
+        "拉韦兰": 1,
+        "暮夜剧团团长": 1,
+        "木南杏奈": 1,
+        "杰克": 1,
+        "波林": 1,
+        "玛塞勒": 1,
+        "玛蕾蒂": 1,
+        "玲花": 1,
+        "琳妮特": 1,
+        "百闻": 2,
+        "石壮": 1,
+        "神奇的霍普金斯": 1,
+        "纳比尔": 1,
+        "维格尔": 1,
+        "美铃": 1,
+        "聪子": 1,
+        "舍利夫": 1,
+        "莫娜": 1,
+        "莫里斯": 1,
+        "莱欧斯利": 1,
+        "葛瑞丝": 1,
+        "观众": 1,
+        "赛诺": 1,
+        "迈蒙": 1,
+        "野方": 1,
+        "陆行岩本真蕈·元素生命": 1,
+        "黛比": 1
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_nonfull__any_ratio__any_overlap__all_pools__gain_ge_q50__transient_ge_q50__all_speakers",
+      "count": 30,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 0.503602397441864,
+        "v19": 0.5063577731450398,
+        "v8": 0.48663551807403566
+      },
+      "pair_gaps_db": [
+        -0.0027553757031758552
+      ],
+      "min_pair_gap_db": -0.0027553757031758552,
+      "mean_overlap_ratio": 0.8004106439686358,
+      "mean_interference_gain_db": -0.3711,
+      "mean_target_transient_presence_minus_mid_db_mean": -7.234819869200389,
+      "recipe_counts": {
+        "target_clean_speech": 13,
+        "target_hard_speech": 17
+      },
+      "pattern_counts": {
+        "target_absent_head": 9,
+        "target_absent_tail": 11,
+        "target_intermittent": 10
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 13,
+        "speech_interference_hard_pool": 17
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 17,
+        "今谷三郎": 1,
+        "其它语音 - Others": 2,
+        "巴顿": 1,
+        "恶龙": 1,
+        "战斗语音 - Battle": 1,
+        "托克": 1,
+        "琳妮特": 1,
+        "神奇的霍普金斯": 1,
+        "纳比尔": 1,
+        "维格尔": 1,
+        "迪娜泽黛": 1,
+        "迪希雅": 1
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "min_interference_gain_db": -2.0179998874664307,
+        "min_target_transient_presence_minus_mid_db_mean": -11.535072326660156
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_nonfull__any_ratio__any_overlap__all_pools__gain_ge_q67__transient_ge_q67__speaker_friend_hard_negative_segments",
+      "count": 8,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": -0.25361138582229614,
+        "v19": -0.2503543496131897,
+        "v8": -0.19614136219024658
+      },
+      "pair_gaps_db": [
+        -0.0032570362091064453
+      ],
+      "min_pair_gap_db": -0.0032570362091064453,
+      "mean_overlap_ratio": 0.7504806023206291,
+      "mean_interference_gain_db": 0.07100000000000001,
+      "mean_target_transient_presence_minus_mid_db_mean": -6.068105250597,
+      "recipe_counts": {
+        "target_hard_speech": 8
+      },
+      "pattern_counts": {
+        "target_absent_tail": 3,
+        "target_intermittent": 5
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 8
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 8
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "min_interference_gain_db": -0.8906666636466982,
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297,
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_nonfull__any_ratio__any_overlap__pool_hard__gain_ge_q67__transient_ge_q67__all_speakers",
+      "count": 8,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": -0.25361138582229614,
+        "v19": -0.2503543496131897,
+        "v8": -0.19614136219024658
+      },
+      "pair_gaps_db": [
+        -0.0032570362091064453
+      ],
+      "min_pair_gap_db": -0.0032570362091064453,
+      "mean_overlap_ratio": 0.7504806023206291,
+      "mean_interference_gain_db": 0.07100000000000001,
+      "mean_target_transient_presence_minus_mid_db_mean": -6.068105250597,
+      "recipe_counts": {
+        "target_hard_speech": 8
+      },
+      "pattern_counts": {
+        "target_absent_tail": 3,
+        "target_intermittent": 5
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 8
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 8
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ],
+        "min_interference_gain_db": -0.8906666636466982,
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_nonfull__any_ratio__any_overlap__pool_hard__gain_ge_q67__transient_ge_q67__speaker_friend_hard_negative_segments",
+      "count": 8,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": -0.25361138582229614,
+        "v19": -0.2503543496131897,
+        "v8": -0.19614136219024658
+      },
+      "pair_gaps_db": [
+        -0.0032570362091064453
+      ],
+      "min_pair_gap_db": -0.0032570362091064453,
+      "mean_overlap_ratio": 0.7504806023206291,
+      "mean_interference_gain_db": 0.07100000000000001,
+      "mean_target_transient_presence_minus_mid_db_mean": -6.068105250597,
+      "recipe_counts": {
+        "target_hard_speech": 8
+      },
+      "pattern_counts": {
+        "target_absent_tail": 3,
+        "target_intermittent": 5
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 8
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 8
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ],
+        "min_interference_gain_db": -0.8906666636466982,
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297,
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "recipe_hard__pattern_nonfull__any_ratio__any_overlap__all_pools__gain_ge_q67__transient_ge_q67__all_speakers",
+      "count": 8,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": -0.25361138582229614,
+        "v19": -0.2503543496131897,
+        "v8": -0.19614136219024658
+      },
+      "pair_gaps_db": [
+        -0.0032570362091064453
+      ],
+      "min_pair_gap_db": -0.0032570362091064453,
+      "mean_overlap_ratio": 0.7504806023206291,
+      "mean_interference_gain_db": 0.07100000000000001,
+      "mean_target_transient_presence_minus_mid_db_mean": -6.068105250597,
+      "recipe_counts": {
+        "target_hard_speech": 8
+      },
+      "pattern_counts": {
+        "target_absent_tail": 3,
+        "target_intermittent": 5
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 8
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 8
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_hard_speech"
+        ],
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "min_interference_gain_db": -0.8906666636466982,
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297
+      }
+    },
+    {
+      "subset_name": "recipe_hard__pattern_nonfull__any_ratio__any_overlap__all_pools__gain_ge_q67__transient_ge_q67__speaker_friend_hard_negative_segments",
+      "count": 8,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": -0.25361138582229614,
+        "v19": -0.2503543496131897,
+        "v8": -0.19614136219024658
+      },
+      "pair_gaps_db": [
+        -0.0032570362091064453
+      ],
+      "min_pair_gap_db": -0.0032570362091064453,
+      "mean_overlap_ratio": 0.7504806023206291,
+      "mean_interference_gain_db": 0.07100000000000001,
+      "mean_target_transient_presence_minus_mid_db_mean": -6.068105250597,
+      "recipe_counts": {
+        "target_hard_speech": 8
+      },
+      "pattern_counts": {
+        "target_absent_tail": 3,
+        "target_intermittent": 5
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 8
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 8
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_hard_speech"
+        ],
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "min_interference_gain_db": -0.8906666636466982,
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297,
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "recipe_hard__pattern_nonfull__any_ratio__any_overlap__pool_hard__gain_ge_q67__transient_ge_q67__all_speakers",
+      "count": 8,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": -0.25361138582229614,
+        "v19": -0.2503543496131897,
+        "v8": -0.19614136219024658
+      },
+      "pair_gaps_db": [
+        -0.0032570362091064453
+      ],
+      "min_pair_gap_db": -0.0032570362091064453,
+      "mean_overlap_ratio": 0.7504806023206291,
+      "mean_interference_gain_db": 0.07100000000000001,
+      "mean_target_transient_presence_minus_mid_db_mean": -6.068105250597,
+      "recipe_counts": {
+        "target_hard_speech": 8
+      },
+      "pattern_counts": {
+        "target_absent_tail": 3,
+        "target_intermittent": 5
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 8
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 8
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_hard_speech"
+        ],
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ],
+        "min_interference_gain_db": -0.8906666636466982,
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297
+      }
+    },
+    {
+      "subset_name": "recipe_hard__pattern_nonfull__any_ratio__any_overlap__pool_hard__gain_ge_q67__transient_ge_q67__speaker_friend_hard_negative_segments",
+      "count": 8,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": -0.25361138582229614,
+        "v19": -0.2503543496131897,
+        "v8": -0.19614136219024658
+      },
+      "pair_gaps_db": [
+        -0.0032570362091064453
+      ],
+      "min_pair_gap_db": -0.0032570362091064453,
+      "mean_overlap_ratio": 0.7504806023206291,
+      "mean_interference_gain_db": 0.07100000000000001,
+      "mean_target_transient_presence_minus_mid_db_mean": -6.068105250597,
+      "recipe_counts": {
+        "target_hard_speech": 8
+      },
+      "pattern_counts": {
+        "target_absent_tail": 3,
+        "target_intermittent": 5
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 8
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 8
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_hard_speech"
+        ],
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ],
+        "min_interference_gain_db": -0.8906666636466982,
+        "min_target_transient_presence_minus_mid_db_mean": -9.179057439168297,
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_nonfull__any_ratio__overlap_ge_0_75__all_pools__all_gains__all_transient__all_speakers",
+      "count": 76,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 0.49634603136464167,
+        "v19": 0.5010287228383516,
+        "v8": 0.47881490462704707
+      },
+      "pair_gaps_db": [
+        -0.004682691473709977
+      ],
+      "min_pair_gap_db": -0.004682691473709977,
+      "mean_overlap_ratio": 0.877417663547662,
+      "mean_interference_gain_db": -1.8950657894736835,
+      "mean_target_transient_presence_minus_mid_db_mean": -11.6986043523801,
+      "recipe_counts": {
+        "target_clean_speech": 44,
+        "target_hard_speech": 32
+      },
+      "pattern_counts": {
+        "target_absent_head": 22,
+        "target_absent_tail": 34,
+        "target_intermittent": 20
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 44,
+        "speech_interference_hard_pool": 32
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 32,
+        "「花角玉将」": 1,
+        "伊迪娅": 1,
+        "债务处理人": 1,
+        "克罗索": 1,
+        "八重神子": 1,
+        "其它语音 - Others": 1,
+        "多莉": 1,
+        "天目十五": 1,
+        "奥格劳": 1,
+        "小川": 1,
+        "巴顿": 1,
+        "带变量语音 - Placeholder": 1,
+        "德田": 1,
+        "恶龙": 1,
+        "慧心": 1,
+        "战斗语音 - Battle": 3,
+        "托克": 1,
+        "拉斯蒂涅": 1,
+        "拉韦兰": 1,
+        "木南杏奈": 1,
+        "歌特琳德": 1,
+        "玛乔丽": 1,
+        "琳妮特": 1,
+        "神奇的霍普金斯": 1,
+        "科林斯": 1,
+        "纪芳": 1,
+        "纳比尔": 1,
+        "绘星": 1,
+        "维格尔": 1,
+        "罗纳克": 1,
+        "聪子": 1,
+        "莫里斯": 1,
+        "莱依拉": 1,
+        "莱昂": 1,
+        "葛瑞丝": 1,
+        "西敏": 1,
+        "赛诺": 1,
+        "迪娜泽黛": 1,
+        "野方": 1,
+        "闲云": 1,
+        "阿大": 1,
+        "雷泽": 1
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "min_overlap_ratio": 0.75
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_nonfull__any_ratio__overlap_ge_0_75__all_pools__gain_ge_q67__all_transient__all_speakers",
+      "count": 25,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 0.5295917415618896,
+        "v19": 0.5343152332305908,
+        "v8": 0.4655729866027832
+      },
+      "pair_gaps_db": [
+        -0.00472349166870123
+      ],
+      "min_pair_gap_db": -0.00472349166870123,
+      "mean_overlap_ratio": 0.8649602204954087,
+      "mean_interference_gain_db": 0.23788000000000004,
+      "mean_target_transient_presence_minus_mid_db_mean": -12.013961992263795,
+      "recipe_counts": {
+        "target_clean_speech": 11,
+        "target_hard_speech": 14
+      },
+      "pattern_counts": {
+        "target_absent_head": 7,
+        "target_absent_tail": 11,
+        "target_intermittent": 7
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 11,
+        "speech_interference_hard_pool": 14
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 14,
+        "「花角玉将」": 1,
+        "其它语音 - Others": 1,
+        "带变量语音 - Placeholder": 1,
+        "恶龙": 1,
+        "战斗语音 - Battle": 1,
+        "托克": 1,
+        "歌特琳德": 1,
+        "玛乔丽": 1,
+        "琳妮特": 1,
+        "纪芳": 1,
+        "纳比尔": 1
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "min_overlap_ratio": 0.75,
+        "min_interference_gain_db": -0.8906666636466982
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_nonfull__any_ratio__any_overlap__all_pools__all_gains__transient_ge_q50__speaker_friend_hard_negative_segments",
+      "count": 28,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": -0.0274665824004582,
+        "v19": -0.020304773535047258,
+        "v8": 0.005056973014559064
+      },
+      "pair_gaps_db": [
+        -0.007161808865410943
+      ],
+      "min_pair_gap_db": -0.007161808865410943,
+      "mean_overlap_ratio": 0.7755698954794529,
+      "mean_interference_gain_db": -1.3425357142857144,
+      "mean_target_transient_presence_minus_mid_db_mean": -6.788334473967552,
+      "recipe_counts": {
+        "target_hard_speech": 28
+      },
+      "pattern_counts": {
+        "target_absent_head": 8,
+        "target_absent_tail": 10,
+        "target_intermittent": 10
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 28
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 28
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "min_target_transient_presence_minus_mid_db_mean": -11.535072326660156,
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_nonfull__any_ratio__any_overlap__pool_hard__all_gains__transient_ge_q50__all_speakers",
+      "count": 28,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": -0.0274665824004582,
+        "v19": -0.020304773535047258,
+        "v8": 0.005056973014559064
+      },
+      "pair_gaps_db": [
+        -0.007161808865410943
+      ],
+      "min_pair_gap_db": -0.007161808865410943,
+      "mean_overlap_ratio": 0.7755698954794529,
+      "mean_interference_gain_db": -1.3425357142857144,
+      "mean_target_transient_presence_minus_mid_db_mean": -6.788334473967552,
+      "recipe_counts": {
+        "target_hard_speech": 28
+      },
+      "pattern_counts": {
+        "target_absent_head": 8,
+        "target_absent_tail": 10,
+        "target_intermittent": 10
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 28
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 28
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ],
+        "min_target_transient_presence_minus_mid_db_mean": -11.535072326660156
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_nonfull__any_ratio__any_overlap__pool_hard__all_gains__transient_ge_q50__speaker_friend_hard_negative_segments",
+      "count": 28,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": -0.0274665824004582,
+        "v19": -0.020304773535047258,
+        "v8": 0.005056973014559064
+      },
+      "pair_gaps_db": [
+        -0.007161808865410943
+      ],
+      "min_pair_gap_db": -0.007161808865410943,
+      "mean_overlap_ratio": 0.7755698954794529,
+      "mean_interference_gain_db": -1.3425357142857144,
+      "mean_target_transient_presence_minus_mid_db_mean": -6.788334473967552,
+      "recipe_counts": {
+        "target_hard_speech": 28
+      },
+      "pattern_counts": {
+        "target_absent_head": 8,
+        "target_absent_tail": 10,
+        "target_intermittent": 10
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 28
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 28
+      },
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ],
+        "min_target_transient_presence_minus_mid_db_mean": -11.535072326660156,
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "recipe_hard__pattern_nonfull__any_ratio__any_overlap__all_pools__all_gains__transient_ge_q50__all_speakers",
+      "count": 28,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": -0.0274665824004582,
+        "v19": -0.020304773535047258,
+        "v8": 0.005056973014559064
+      },
+      "pair_gaps_db": [
+        -0.007161808865410943
+      ],
+      "min_pair_gap_db": -0.007161808865410943,
+      "mean_overlap_ratio": 0.7755698954794529,
+      "mean_interference_gain_db": -1.3425357142857144,
+      "mean_target_transient_presence_minus_mid_db_mean": -6.788334473967552,
+      "recipe_counts": {
+        "target_hard_speech": 28
+      },
+      "pattern_counts": {
+        "target_absent_head": 8,
+        "target_absent_tail": 10,
+        "target_intermittent": 10
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 28
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 28
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_hard_speech"
+        ],
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "min_target_transient_presence_minus_mid_db_mean": -11.535072326660156
+      }
+    },
+    {
+      "subset_name": "recipe_hard__pattern_nonfull__any_ratio__any_overlap__all_pools__all_gains__transient_ge_q50__speaker_friend_hard_negative_segments",
+      "count": 28,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": -0.0274665824004582,
+        "v19": -0.020304773535047258,
+        "v8": 0.005056973014559064
+      },
+      "pair_gaps_db": [
+        -0.007161808865410943
+      ],
+      "min_pair_gap_db": -0.007161808865410943,
+      "mean_overlap_ratio": 0.7755698954794529,
+      "mean_interference_gain_db": -1.3425357142857144,
+      "mean_target_transient_presence_minus_mid_db_mean": -6.788334473967552,
+      "recipe_counts": {
+        "target_hard_speech": 28
+      },
+      "pattern_counts": {
+        "target_absent_head": 8,
+        "target_absent_tail": 10,
+        "target_intermittent": 10
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 28
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 28
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_hard_speech"
+        ],
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "min_target_transient_presence_minus_mid_db_mean": -11.535072326660156,
+        "interference_speaker_names": [
+          "friend_hard_negative_segments"
+        ]
+      }
+    },
+    {
+      "subset_name": "recipe_hard__pattern_nonfull__any_ratio__any_overlap__pool_hard__all_gains__transient_ge_q50__all_speakers",
+      "count": 28,
+      "order_pass": false,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": -0.0274665824004582,
+        "v19": -0.020304773535047258,
+        "v8": 0.005056973014559064
+      },
+      "pair_gaps_db": [
+        -0.007161808865410943
+      ],
+      "min_pair_gap_db": -0.007161808865410943,
+      "mean_overlap_ratio": 0.7755698954794529,
+      "mean_interference_gain_db": -1.3425357142857144,
+      "mean_target_transient_presence_minus_mid_db_mean": -6.788334473967552,
+      "recipe_counts": {
+        "target_hard_speech": 28
+      },
+      "pattern_counts": {
+        "target_absent_head": 8,
+        "target_absent_tail": 10,
+        "target_intermittent": 10
+      },
+      "pool_counts": {
+        "speech_interference_hard_pool": 28
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 28
+      },
+      "builder_filters": {
+        "recipes": [
+          "target_hard_speech"
+        ],
+        "temporal_patterns": [
+          "target_absent_head",
+          "target_absent_tail",
+          "target_intermittent"
+        ],
+        "interference_pools": [
+          "speech_interference_hard_pool"
+        ],
+        "min_target_transient_presence_minus_mid_db_mean": -11.535072326660156
+      }
+    }
+  ],
+  "speaker_counts": {
+    "friend_hard_negative_segments": 100,
+    "「花角玉将」": 1,
+    "七尾": 1,
+    "丹羽": 1,
+    "今谷三郎": 1,
+    "伊迪娅": 1,
+    "伯恩哈德": 2,
+    "伸夫": 1,
+    "债务处理人": 1,
+    "健司": 1,
+    "傅三儿": 1,
+    "克罗索": 1,
+    "八重神子": 1,
+    "兰巴德": 1,
+    "其它语音 - Others": 3,
+    "凯亚": 1,
+    "刻晴": 1,
+    "削月筑阳真君": 2,
+    "加萨尼": 1,
+    "北村": 1,
+    "博来": 1,
+    "卡塔扬": 1,
+    "叶德": 1,
+    "君君": 2,
+    "周良": 1,
+    "商人": 1,
+    "图昂": 1,
+    "多莉": 1,
+    "天目十五": 1,
+    "奇恩": 1,
+    "奥格劳": 1,
+    "娜德瓦": 1,
+    "宁禄": 1,
+    "小川": 2,
+    "巴蒂斯特": 2,
+    "巴顿": 1,
+    "带变量语音 - Placeholder": 3,
+    "德田": 1,
+    "恒雄": 1,
+    "恶龙": 1,
+    "愚人众士官": 1,
+    "慧心": 2,
+    "戈尔代": 1,
+    "战斗语音 - Battle": 4,
+    "戴因斯雷布": 1,
+    "戴派": 1,
+    "托克": 2,
+    "拉斯蒂涅": 1,
+    "拉韦兰": 1,
+    "斑目百兵卫": 1,
+    "昆钧": 1,
+    "普里耶": 1,
+    "暮夜剧团团长": 1,
+    "木南杏奈": 1,
+    "杰克": 1,
+    "格兰维尔": 1,
+    "格蕾希艾": 1,
+    "歌特琳德": 1,
+    "波林": 1,
+    "浮游水蕈兽·元素生命": 2,
+    "渡部": 1,
+    "狗三儿": 1,
+    "玛乔丽": 1,
+    "玛塞勒": 2,
+    "玛蕾蒂": 1,
+    "玲花": 1,
+    "琳妮特": 1,
+    "琳琅": 1,
+    "琴": 1,
+    "瑶瑶": 1,
+    "百闻": 2,
+    "石壮": 1,
+    "神奇的霍普金斯": 1,
+    "科林斯": 1,
+    "纪芳": 2,
+    "纳比尔": 1,
+    "纳西妲": 1,
+    "绘星": 1,
+    "维格尔": 1,
+    "罗纳克": 1,
+    "美铃": 2,
+    "羽生田千鹤": 1,
+    "翰学": 1,
+    "老章": 1,
+    "聪子": 1,
+    "舍利夫": 1,
+    "艾文": 1,
+    "芙卡洛斯": 1,
+    "芙蓉": 1,
+    "莫娜": 1,
+    "莫里斯": 1,
+    "莱依拉": 1,
+    "莱昂": 1,
+    "莱欧斯利": 1,
+    "葛瑞丝": 1,
+    "西敏": 1,
+    "观众": 1,
+    "赛场司仪": 1,
+    "赛诺": 2,
+    "迈蒙": 1,
+    "迪娜泽黛": 1,
+    "迪尔菲": 2,
+    "迪希雅": 1,
+    "野方": 1,
+    "铜雀": 1,
+    "闲云": 1,
+    "阿二": 1,
+    "阿大": 1,
+    "阿夫辛": 1,
+    "阿尔卡米": 1,
+    "阿桂": 1,
+    "阿诺德": 1,
+    "陆行岩本真蕈·元素生命": 1,
+    "雷泽": 1,
+    "雷电将军": 1,
+    "鹿野院平藏": 1,
+    "黛比": 1
+  },
+  "num_candidates": 1030
+}

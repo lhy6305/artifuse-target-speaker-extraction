@@ -92,6 +92,26 @@ def add_selector_args(parser: argparse.ArgumentParser, prefix: str) -> None:
     parser.add_argument(f"--loss-{prefix}-max-overlap-ratio", type=float, default=None)
     parser.add_argument(f"--loss-{prefix}-min-interference-gain-db", type=float, default=None)
     parser.add_argument(f"--loss-{prefix}-max-interference-gain-db", type=float, default=None)
+    parser.add_argument(
+        f"--loss-{prefix}-min-target-transient-presence-minus-mid-db-mean",
+        type=float,
+        default=None,
+    )
+    parser.add_argument(
+        f"--loss-{prefix}-max-target-transient-presence-minus-mid-db-mean",
+        type=float,
+        default=None,
+    )
+    parser.add_argument(
+        f"--loss-{prefix}-min-target-transient-presence-share-mean",
+        type=float,
+        default=None,
+    )
+    parser.add_argument(
+        f"--loss-{prefix}-max-target-transient-presence-share-mean",
+        type=float,
+        default=None,
+    )
 
 
 def set_seed(seed: int) -> None:
@@ -112,6 +132,8 @@ def move_batch_to_device(batch: dict, device: torch.device) -> dict:
         "reference",
         "reference_lengths",
         "target_present_ratios",
+        "target_transient_presence_minus_mid_db_means",
+        "target_transient_presence_share_means",
         "overlap_ratios",
         "interference_gain_dbs",
     ]:
@@ -159,6 +181,10 @@ def build_loss_config(args: argparse.Namespace) -> dict[str, float]:
             "max_overlap_ratio",
             "min_interference_gain_db",
             "max_interference_gain_db",
+            "min_target_transient_presence_minus_mid_db_mean",
+            "max_target_transient_presence_minus_mid_db_mean",
+            "min_target_transient_presence_share_mean",
+            "max_target_transient_presence_share_mean",
         ):
             attr_name = f"loss_{prefix}_{suffix}"
             loss_config[f"{prefix}_{suffix}"] = getattr(args, attr_name)

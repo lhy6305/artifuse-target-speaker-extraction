@@ -1,0 +1,742 @@
+{
+  "manifest": "data/probes/near_real_speech_probe_v1_manifest.jsonl",
+  "checkpoint_a": "experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v19_v12_absent_proxy_v3_reverse_guardrail_v1_int_up_ft1/best.pt",
+  "checkpoint_b": "experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v20_v19_friend_reverse_guardrail_v1_ft1/best.pt",
+  "label_a": "v19",
+  "label_b": "v20",
+  "focus_recipes": [],
+  "delta_threshold_db": 0.1,
+  "num_samples": 24,
+  "overall": {
+    "count": 24,
+    "avg_sisdr_db_a": -1.6033880033840735,
+    "avg_sisdr_db_b": -1.655307190415139,
+    "avg_sisdr_delta_db": -0.05191918703106543,
+    "avg_waveform_l1_a": 0.005868187348823994,
+    "avg_waveform_l1_b": 0.005893488123547286,
+    "avg_waveform_l1_delta": 2.5300774723291397e-05,
+    "improved_count": 0,
+    "regressed_count": 4,
+    "near_tie_count": 20
+  },
+  "recipe_groups": {
+    "near_real_friend_speech_probe": {
+      "count": 18,
+      "avg_sisdr_db_a": -1.8252738374802802,
+      "avg_sisdr_db_b": -1.8469774391916063,
+      "avg_sisdr_delta_db": -0.021703601711326174,
+      "avg_waveform_l1_a": 0.005402662015209596,
+      "avg_waveform_l1_b": 0.005404873466533091,
+      "avg_waveform_l1_delta": 2.211451323495971e-06,
+      "improved_count": 0,
+      "regressed_count": 0,
+      "near_tie_count": 18
+    },
+    "near_real_guodegang_speech_probe": {
+      "count": 6,
+      "avg_sisdr_db_a": -0.9377305010954539,
+      "avg_sisdr_db_b": -1.080296444085737,
+      "avg_sisdr_delta_db": -0.14256594299028316,
+      "avg_waveform_l1_a": 0.0072647633496671915,
+      "avg_waveform_l1_b": 0.0073593320945898695,
+      "avg_waveform_l1_delta": 9.456874492267768e-05,
+      "improved_count": 0,
+      "regressed_count": 4,
+      "near_tie_count": 2
+    }
+  },
+  "pattern_groups": {
+    "target_full": {
+      "count": 24,
+      "avg_sisdr_db_a": -1.6033880033840735,
+      "avg_sisdr_db_b": -1.655307190415139,
+      "avg_sisdr_delta_db": -0.05191918703106543,
+      "avg_waveform_l1_a": 0.005868187348823994,
+      "avg_waveform_l1_b": 0.005893488123547286,
+      "avg_waveform_l1_delta": 2.5300774723291397e-05,
+      "improved_count": 0,
+      "regressed_count": 4,
+      "near_tie_count": 20
+    }
+  },
+  "target_present_ratio_bucket_groups": {
+    "ratio_ge_0.95": {
+      "count": 24,
+      "avg_sisdr_db_a": -1.6033880033840735,
+      "avg_sisdr_db_b": -1.655307190415139,
+      "avg_sisdr_delta_db": -0.05191918703106543,
+      "avg_waveform_l1_a": 0.005868187348823994,
+      "avg_waveform_l1_b": 0.005893488123547286,
+      "avg_waveform_l1_delta": 2.5300774723291397e-05,
+      "improved_count": 0,
+      "regressed_count": 4,
+      "near_tie_count": 20
+    }
+  },
+  "top_improvements": [
+    {
+      "sample_id": "probe_0013",
+      "recipe": "near_real_friend_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0013/metadata.json",
+      "sisdr_a_db": 0.1959993541240692,
+      "sisdr_b_db": 0.19536733627319336,
+      "sisdr_delta_db": -0.0006320178508758545,
+      "waveform_l1_a": 0.006233141757547855,
+      "waveform_l1_b": 0.006230643019080162,
+      "waveform_l1_delta": -2.498738467693329e-06
+    },
+    {
+      "sample_id": "probe_0015",
+      "recipe": "near_real_friend_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0015/metadata.json",
+      "sisdr_a_db": 0.19701124727725983,
+      "sisdr_b_db": 0.1963571310043335,
+      "sisdr_delta_db": -0.0006541162729263306,
+      "waveform_l1_a": 0.006237896159291267,
+      "waveform_l1_b": 0.006235363893210888,
+      "waveform_l1_delta": -2.532266080379486e-06
+    },
+    {
+      "sample_id": "probe_0014",
+      "recipe": "near_real_friend_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0014/metadata.json",
+      "sisdr_a_db": 0.19649073481559753,
+      "sisdr_b_db": 0.1957944631576538,
+      "sisdr_delta_db": -0.0006962716579437256,
+      "waveform_l1_a": 0.006235442124307156,
+      "waveform_l1_b": 0.006232911720871925,
+      "waveform_l1_delta": -2.530403435230255e-06
+    },
+    {
+      "sample_id": "probe_0004",
+      "recipe": "near_real_friend_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0004/metadata.json",
+      "sisdr_a_db": -1.293389916419983,
+      "sisdr_b_db": -1.2990237474441528,
+      "sisdr_delta_db": -0.005633831024169922,
+      "waveform_l1_a": 0.004113283008337021,
+      "waveform_l1_b": 0.004112991504371166,
+      "waveform_l1_delta": -2.915039658546448e-07
+    },
+    {
+      "sample_id": "probe_0005",
+      "recipe": "near_real_friend_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0005/metadata.json",
+      "sisdr_a_db": -1.2904562950134277,
+      "sisdr_b_db": -1.2961047887802124,
+      "sisdr_delta_db": -0.005648493766784668,
+      "waveform_l1_a": 0.004113292787224054,
+      "waveform_l1_b": 0.004112991504371166,
+      "waveform_l1_delta": -3.012828528881073e-07
+    },
+    {
+      "sample_id": "probe_0006",
+      "recipe": "near_real_friend_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0006/metadata.json",
+      "sisdr_a_db": -1.2871826887130737,
+      "sisdr_b_db": -1.2928355932235718,
+      "sisdr_delta_db": -0.005652904510498047,
+      "waveform_l1_a": 0.004113260190933943,
+      "waveform_l1_b": 0.00411294074729085,
+      "waveform_l1_delta": -3.1944364309310913e-07
+    },
+    {
+      "sample_id": "probe_0016",
+      "recipe": "near_real_friend_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0016/metadata.json",
+      "sisdr_a_db": -0.7988183498382568,
+      "sisdr_b_db": -0.8066369295120239,
+      "sisdr_delta_db": -0.00781857967376709,
+      "waveform_l1_a": 0.006680615246295929,
+      "waveform_l1_b": 0.006681982893496752,
+      "waveform_l1_delta": 1.3676472008228302e-06
+    },
+    {
+      "sample_id": "probe_0017",
+      "recipe": "near_real_friend_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0017/metadata.json",
+      "sisdr_a_db": -1.0879817008972168,
+      "sisdr_b_db": -1.0985745191574097,
+      "sisdr_delta_db": -0.010592818260192871,
+      "waveform_l1_a": 0.006756333634257317,
+      "waveform_l1_b": 0.006758520845323801,
+      "waveform_l1_delta": 2.1872110664844513e-06
+    },
+    {
+      "sample_id": "probe_0018",
+      "recipe": "near_real_friend_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0018/metadata.json",
+      "sisdr_a_db": -1.4528907537460327,
+      "sisdr_b_db": -1.4682066440582275,
+      "sisdr_delta_db": -0.015315890312194824,
+      "waveform_l1_a": 0.006848440505564213,
+      "waveform_l1_b": 0.006851768586784601,
+      "waveform_l1_delta": 3.3280812203884125e-06
+    },
+    {
+      "sample_id": "probe_0001",
+      "recipe": "near_real_friend_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0001/metadata.json",
+      "sisdr_a_db": -2.40168833732605,
+      "sisdr_b_db": -2.4255924224853516,
+      "sisdr_delta_db": -0.023904085159301758,
+      "waveform_l1_a": 0.004330625757575035,
+      "waveform_l1_b": 0.004333156161010265,
+      "waveform_l1_delta": 2.530403435230255e-06
+    },
+    {
+      "sample_id": "probe_0010",
+      "recipe": "near_real_friend_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0010/metadata.json",
+      "sisdr_a_db": -0.9336214661598206,
+      "sisdr_b_db": -0.9605134725570679,
+      "sisdr_delta_db": -0.026892006397247314,
+      "waveform_l1_a": 0.006440057884901762,
+      "waveform_l1_b": 0.006444581784307957,
+      "waveform_l1_delta": 4.523899406194687e-06
+    },
+    {
+      "sample_id": "probe_0002",
+      "recipe": "near_real_friend_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0002/metadata.json",
+      "sisdr_a_db": -2.5818581581115723,
+      "sisdr_b_db": -2.609147548675537,
+      "sisdr_delta_db": -0.027289390563964844,
+      "waveform_l1_a": 0.004357336089015007,
+      "waveform_l1_b": 0.004360141232609749,
+      "waveform_l1_delta": 2.8051435947418213e-06
+    }
+  ],
+  "top_regressions": [
+    {
+      "sample_id": "probe_0020",
+      "recipe": "near_real_guodegang_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0020/metadata.json",
+      "sisdr_a_db": 0.8583866953849792,
+      "sisdr_b_db": 0.6281611323356628,
+      "sisdr_delta_db": -0.2302255630493164,
+      "waveform_l1_a": 0.006477957591414452,
+      "waveform_l1_b": 0.006615839432924986,
+      "waveform_l1_delta": 0.0001378818415105343
+    },
+    {
+      "sample_id": "probe_0021",
+      "recipe": "near_real_guodegang_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0021/metadata.json",
+      "sisdr_a_db": 1.5404539108276367,
+      "sisdr_b_db": 1.325911045074463,
+      "sisdr_delta_db": -0.21454286575317383,
+      "waveform_l1_a": 0.006069956347346306,
+      "waveform_l1_b": 0.006203282158821821,
+      "waveform_l1_delta": 0.00013332581147551537
+    },
+    {
+      "sample_id": "probe_0019",
+      "recipe": "near_real_guodegang_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0019/metadata.json",
+      "sisdr_a_db": 0.22729694843292236,
+      "sisdr_b_db": 0.015365617349743843,
+      "sisdr_delta_db": -0.21193133108317852,
+      "waveform_l1_a": 0.0068855066783726215,
+      "waveform_l1_b": 0.007016681134700775,
+      "waveform_l1_delta": 0.0001311744563281536
+    },
+    {
+      "sample_id": "probe_0024",
+      "recipe": "near_real_guodegang_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0024/metadata.json",
+      "sisdr_a_db": -2.7331676483154297,
+      "sisdr_b_db": -2.834984064102173,
+      "sisdr_delta_db": -0.10181641578674316,
+      "waveform_l1_a": 0.007959420792758465,
+      "waveform_l1_b": 0.008041360415518284,
+      "waveform_l1_delta": 8.193962275981903e-05
+    },
+    {
+      "sample_id": "probe_0009",
+      "recipe": "near_real_friend_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0009/metadata.json",
+      "sisdr_a_db": -5.983199119567871,
+      "sisdr_b_db": -6.059348106384277,
+      "sisdr_delta_db": -0.07614898681640625,
+      "waveform_l1_a": 0.004535066429525614,
+      "waveform_l1_b": 0.004543140530586243,
+      "waveform_l1_delta": 8.074101060628891e-06
+    },
+    {
+      "sample_id": "probe_0023",
+      "recipe": "near_real_guodegang_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0023/metadata.json",
+      "sisdr_a_db": -2.9081532955169678,
+      "sisdr_b_db": -2.976698398590088,
+      "sisdr_delta_db": -0.06854510307312012,
+      "waveform_l1_a": 0.0081151919439435,
+      "waveform_l1_b": 0.008166700601577759,
+      "waveform_l1_delta": 5.150865763425827e-05
+    },
+    {
+      "sample_id": "probe_0008",
+      "recipe": "near_real_friend_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0008/metadata.json",
+      "sisdr_a_db": -5.118156433105469,
+      "sisdr_b_db": -5.167192459106445,
+      "sisdr_delta_db": -0.04903602600097656,
+      "waveform_l1_a": 0.004472705535590649,
+      "waveform_l1_b": 0.004477876238524914,
+      "waveform_l1_delta": 5.170702934265137e-06
+    },
+    {
+      "sample_id": "probe_0007",
+      "recipe": "near_real_friend_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0007/metadata.json",
+      "sisdr_a_db": -4.25594425201416,
+      "sisdr_b_db": -4.293878555297852,
+      "sisdr_delta_db": -0.037934303283691406,
+      "waveform_l1_a": 0.004409404471516609,
+      "waveform_l1_b": 0.004412900190800428,
+      "waveform_l1_delta": 3.4957192838191986e-06
+    },
+    {
+      "sample_id": "probe_0012",
+      "recipe": "near_real_friend_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0012/metadata.json",
+      "sisdr_a_db": -1.1553022861480713,
+      "sisdr_b_db": -1.1900991201400757,
+      "sisdr_delta_db": -0.034796833992004395,
+      "waveform_l1_a": 0.006513088010251522,
+      "waveform_l1_b": 0.00651924591511488,
+      "waveform_l1_delta": 6.157904863357544e-06
+    },
+    {
+      "sample_id": "probe_0011",
+      "recipe": "near_real_friend_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0011/metadata.json",
+      "sisdr_a_db": -1.0741935968399048,
+      "sisdr_b_db": -1.1066584587097168,
+      "sisdr_delta_db": -0.03246486186981201,
+      "waveform_l1_a": 0.006481427699327469,
+      "waveform_l1_b": 0.0064871241338551044,
+      "waveform_l1_delta": 5.696434527635574e-06
+    },
+    {
+      "sample_id": "probe_0003",
+      "recipe": "near_real_friend_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0003/metadata.json",
+      "sisdr_a_db": -2.7297470569610596,
+      "sisdr_b_db": -2.759300470352173,
+      "sisdr_delta_db": -0.02955341339111328,
+      "waveform_l1_a": 0.004376498982310295,
+      "waveform_l1_b": 0.004379441495984793,
+      "waveform_l1_delta": 2.9425136744976044e-06
+    },
+    {
+      "sample_id": "probe_0022",
+      "recipe": "near_real_guodegang_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0022/metadata.json",
+      "sisdr_a_db": -2.6111996173858643,
+      "sisdr_b_db": -2.6395339965820312,
+      "sisdr_delta_db": -0.028334379196166992,
+      "waveform_l1_a": 0.008080546744167805,
+      "waveform_l1_b": 0.00811212882399559,
+      "waveform_l1_delta": 3.158207982778549e-05
+    }
+  ],
+  "top_near_ties": [
+    {
+      "sample_id": "probe_0013",
+      "recipe": "near_real_friend_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0013/metadata.json",
+      "sisdr_a_db": 0.1959993541240692,
+      "sisdr_b_db": 0.19536733627319336,
+      "sisdr_delta_db": -0.0006320178508758545,
+      "waveform_l1_a": 0.006233141757547855,
+      "waveform_l1_b": 0.006230643019080162,
+      "waveform_l1_delta": -2.498738467693329e-06
+    },
+    {
+      "sample_id": "probe_0015",
+      "recipe": "near_real_friend_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0015/metadata.json",
+      "sisdr_a_db": 0.19701124727725983,
+      "sisdr_b_db": 0.1963571310043335,
+      "sisdr_delta_db": -0.0006541162729263306,
+      "waveform_l1_a": 0.006237896159291267,
+      "waveform_l1_b": 0.006235363893210888,
+      "waveform_l1_delta": -2.532266080379486e-06
+    },
+    {
+      "sample_id": "probe_0014",
+      "recipe": "near_real_friend_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0014/metadata.json",
+      "sisdr_a_db": 0.19649073481559753,
+      "sisdr_b_db": 0.1957944631576538,
+      "sisdr_delta_db": -0.0006962716579437256,
+      "waveform_l1_a": 0.006235442124307156,
+      "waveform_l1_b": 0.006232911720871925,
+      "waveform_l1_delta": -2.530403435230255e-06
+    },
+    {
+      "sample_id": "probe_0004",
+      "recipe": "near_real_friend_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0004/metadata.json",
+      "sisdr_a_db": -1.293389916419983,
+      "sisdr_b_db": -1.2990237474441528,
+      "sisdr_delta_db": -0.005633831024169922,
+      "waveform_l1_a": 0.004113283008337021,
+      "waveform_l1_b": 0.004112991504371166,
+      "waveform_l1_delta": -2.915039658546448e-07
+    },
+    {
+      "sample_id": "probe_0005",
+      "recipe": "near_real_friend_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0005/metadata.json",
+      "sisdr_a_db": -1.2904562950134277,
+      "sisdr_b_db": -1.2961047887802124,
+      "sisdr_delta_db": -0.005648493766784668,
+      "waveform_l1_a": 0.004113292787224054,
+      "waveform_l1_b": 0.004112991504371166,
+      "waveform_l1_delta": -3.012828528881073e-07
+    },
+    {
+      "sample_id": "probe_0006",
+      "recipe": "near_real_friend_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0006/metadata.json",
+      "sisdr_a_db": -1.2871826887130737,
+      "sisdr_b_db": -1.2928355932235718,
+      "sisdr_delta_db": -0.005652904510498047,
+      "waveform_l1_a": 0.004113260190933943,
+      "waveform_l1_b": 0.00411294074729085,
+      "waveform_l1_delta": -3.1944364309310913e-07
+    },
+    {
+      "sample_id": "probe_0016",
+      "recipe": "near_real_friend_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0016/metadata.json",
+      "sisdr_a_db": -0.7988183498382568,
+      "sisdr_b_db": -0.8066369295120239,
+      "sisdr_delta_db": -0.00781857967376709,
+      "waveform_l1_a": 0.006680615246295929,
+      "waveform_l1_b": 0.006681982893496752,
+      "waveform_l1_delta": 1.3676472008228302e-06
+    },
+    {
+      "sample_id": "probe_0017",
+      "recipe": "near_real_friend_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0017/metadata.json",
+      "sisdr_a_db": -1.0879817008972168,
+      "sisdr_b_db": -1.0985745191574097,
+      "sisdr_delta_db": -0.010592818260192871,
+      "waveform_l1_a": 0.006756333634257317,
+      "waveform_l1_b": 0.006758520845323801,
+      "waveform_l1_delta": 2.1872110664844513e-06
+    },
+    {
+      "sample_id": "probe_0018",
+      "recipe": "near_real_friend_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0018/metadata.json",
+      "sisdr_a_db": -1.4528907537460327,
+      "sisdr_b_db": -1.4682066440582275,
+      "sisdr_delta_db": -0.015315890312194824,
+      "waveform_l1_a": 0.006848440505564213,
+      "waveform_l1_b": 0.006851768586784601,
+      "waveform_l1_delta": 3.3280812203884125e-06
+    },
+    {
+      "sample_id": "probe_0001",
+      "recipe": "near_real_friend_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0001/metadata.json",
+      "sisdr_a_db": -2.40168833732605,
+      "sisdr_b_db": -2.4255924224853516,
+      "sisdr_delta_db": -0.023904085159301758,
+      "waveform_l1_a": 0.004330625757575035,
+      "waveform_l1_b": 0.004333156161010265,
+      "waveform_l1_delta": 2.530403435230255e-06
+    },
+    {
+      "sample_id": "probe_0010",
+      "recipe": "near_real_friend_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0010/metadata.json",
+      "sisdr_a_db": -0.9336214661598206,
+      "sisdr_b_db": -0.9605134725570679,
+      "sisdr_delta_db": -0.026892006397247314,
+      "waveform_l1_a": 0.006440057884901762,
+      "waveform_l1_b": 0.006444581784307957,
+      "waveform_l1_delta": 4.523899406194687e-06
+    },
+    {
+      "sample_id": "probe_0002",
+      "recipe": "near_real_friend_speech_probe",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0002/metadata.json",
+      "sisdr_a_db": -2.5818581581115723,
+      "sisdr_b_db": -2.609147548675537,
+      "sisdr_delta_db": -0.027289390563964844,
+      "waveform_l1_a": 0.004357336089015007,
+      "waveform_l1_b": 0.004360141232609749,
+      "waveform_l1_delta": 2.8051435947418213e-06
+    }
+  ],
+  "model_config_a": {
+    "n_fft": 512,
+    "hop_length": 128,
+    "win_length": 512,
+    "hidden_dim": 256,
+    "reference_dim": 128,
+    "gru_layers": 2,
+    "conditioning_mode": "legacy_bias"
+  },
+  "model_config_b": {
+    "n_fft": 512,
+    "hop_length": 128,
+    "win_length": 512,
+    "hidden_dim": 256,
+    "reference_dim": 128,
+    "gru_layers": 2,
+    "conditioning_mode": "legacy_bias"
+  },
+  "loss_config_a": {
+    "sample_rate": 16000,
+    "stft_weight": 0.5,
+    "sisdr_weight": 0.0,
+    "transient_weight": 0.002,
+    "interference_weight": 0.0075,
+    "absent_weight": 1.0,
+    "transient_top_ratio": 0.12,
+    "transient_min_count": 8,
+    "transient_mid_low_hz": 800.0,
+    "transient_mid_high_hz": 3000.0,
+    "transient_presence_low_hz": 3000.0,
+    "transient_presence_high_hz": 8000.0,
+    "transient_ratio_weight": 0.5,
+    "transient_focus_recipes": [
+      "target_hard_speech"
+    ],
+    "transient_focus_patterns": [
+      "target_full"
+    ],
+    "transient_focus_interference_pools": [
+      "speech_interference_hard_pool"
+    ],
+    "transient_focus_interference_speaker_names": [
+      "friend_hard_negative_segments"
+    ],
+    "transient_min_target_ratio": 0.95,
+    "transient_max_target_ratio": null,
+    "transient_min_overlap_ratio": 0.9,
+    "transient_max_overlap_ratio": null,
+    "transient_min_interference_gain_db": null,
+    "transient_max_interference_gain_db": null,
+    "interference_focus_recipes": [
+      "target_hard_speech"
+    ],
+    "interference_focus_patterns": [
+      "target_full"
+    ],
+    "interference_focus_interference_pools": [
+      "speech_interference_hard_pool"
+    ],
+    "interference_focus_interference_speaker_names": [
+      "friend_hard_negative_segments"
+    ],
+    "interference_min_target_ratio": 0.95,
+    "interference_max_target_ratio": null,
+    "interference_min_overlap_ratio": 0.9,
+    "interference_max_overlap_ratio": null,
+    "interference_min_interference_gain_db": null,
+    "interference_max_interference_gain_db": null,
+    "absent_focus_recipes": [
+      "target_clean_speech"
+    ],
+    "absent_focus_patterns": [
+      "target_absent_head",
+      "target_absent_tail",
+      "target_intermittent"
+    ],
+    "absent_focus_interference_pools": [
+      "speech_interference_clean_pool"
+    ],
+    "absent_focus_interference_speaker_names": [],
+    "absent_min_target_ratio": null,
+    "absent_max_target_ratio": null,
+    "absent_min_overlap_ratio": null,
+    "absent_max_overlap_ratio": null,
+    "absent_min_interference_gain_db": -0.8906666636466982,
+    "absent_max_interference_gain_db": null
+  },
+  "loss_config_b": {
+    "sample_rate": 16000,
+    "stft_weight": 0.5,
+    "sisdr_weight": 0.0,
+    "transient_weight": 0.002,
+    "interference_weight": 0.0075,
+    "absent_weight": 1.0,
+    "transient_top_ratio": 0.12,
+    "transient_min_count": 8,
+    "transient_mid_low_hz": 800.0,
+    "transient_mid_high_hz": 3000.0,
+    "transient_presence_low_hz": 3000.0,
+    "transient_presence_high_hz": 8000.0,
+    "transient_ratio_weight": 0.5,
+    "transient_focus_recipes": [
+      "target_hard_speech"
+    ],
+    "transient_focus_patterns": [
+      "target_full"
+    ],
+    "transient_focus_interference_pools": [
+      "speech_interference_hard_pool"
+    ],
+    "transient_focus_interference_speaker_names": [
+      "friend_hard_negative_segments"
+    ],
+    "transient_min_target_ratio": 0.95,
+    "transient_max_target_ratio": null,
+    "transient_min_overlap_ratio": 0.9,
+    "transient_max_overlap_ratio": null,
+    "transient_min_interference_gain_db": null,
+    "transient_max_interference_gain_db": null,
+    "interference_focus_recipes": [
+      "target_hard_speech"
+    ],
+    "interference_focus_patterns": [
+      "target_full"
+    ],
+    "interference_focus_interference_pools": [
+      "speech_interference_hard_pool"
+    ],
+    "interference_focus_interference_speaker_names": [
+      "friend_hard_negative_segments"
+    ],
+    "interference_min_target_ratio": 0.95,
+    "interference_max_target_ratio": null,
+    "interference_min_overlap_ratio": 0.9,
+    "interference_max_overlap_ratio": null,
+    "interference_min_interference_gain_db": null,
+    "interference_max_interference_gain_db": null,
+    "absent_focus_recipes": [
+      "target_clean_speech"
+    ],
+    "absent_focus_patterns": [
+      "target_absent_head",
+      "target_absent_tail",
+      "target_intermittent"
+    ],
+    "absent_focus_interference_pools": [
+      "speech_interference_clean_pool"
+    ],
+    "absent_focus_interference_speaker_names": [],
+    "absent_min_target_ratio": null,
+    "absent_max_target_ratio": null,
+    "absent_min_overlap_ratio": null,
+    "absent_max_overlap_ratio": null,
+    "absent_min_interference_gain_db": -0.8906666636466982,
+    "absent_max_interference_gain_db": null
+  }
+}

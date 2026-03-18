@@ -21,6 +21,8 @@ class SyntheticSample:
     recipe: str
     temporal_pattern: str
     target_present_ratio: float
+    target_transient_presence_minus_mid_db_mean: float | None
+    target_transient_presence_share_mean: float | None
 
 
 def _compute_overlap_ratio(metadata: dict[str, Any]) -> float:
@@ -82,6 +84,16 @@ class SyntheticTSEDataset(Dataset[dict[str, Any]]):
                 recipe=row["recipe"],
                 temporal_pattern=row.get("temporal_pattern", "target_full"),
                 target_present_ratio=float(row.get("target_present_ratio", 1.0)),
+                target_transient_presence_minus_mid_db_mean=(
+                    float(row["target_transient_presence_minus_mid_db_mean"])
+                    if row.get("target_transient_presence_minus_mid_db_mean") is not None
+                    else None
+                ),
+                target_transient_presence_share_mean=(
+                    float(row["target_transient_presence_share_mean"])
+                    if row.get("target_transient_presence_share_mean") is not None
+                    else None
+                ),
             )
             for row in load_jsonl(manifest_path)
         ]
@@ -102,6 +114,16 @@ class SyntheticTSEDataset(Dataset[dict[str, Any]]):
             "recipe": sample.recipe,
             "temporal_pattern": sample.temporal_pattern,
             "target_present_ratio": sample.target_present_ratio,
+            "target_transient_presence_minus_mid_db_mean": (
+                float(sample.target_transient_presence_minus_mid_db_mean)
+                if sample.target_transient_presence_minus_mid_db_mean is not None
+                else float("nan")
+            ),
+            "target_transient_presence_share_mean": (
+                float(sample.target_transient_presence_share_mean)
+                if sample.target_transient_presence_share_mean is not None
+                else float("nan")
+            ),
             "overlap_ratio": _compute_overlap_ratio(metadata),
             "interference_gain_db": float(first_layer.get("gain_db", float("nan"))),
             "interference_pool": str(first_layer.get("pool", "")),
@@ -144,6 +166,14 @@ def synthetic_collate_fn(batch: list[dict[str, Any]]) -> dict[str, Any]:
         "temporal_patterns": [item["temporal_pattern"] for item in batch],
         "target_present_ratios": torch.tensor(
             [item["target_present_ratio"] for item in batch],
+            dtype=torch.float32,
+        ),
+        "target_transient_presence_minus_mid_db_means": torch.tensor(
+            [item["target_transient_presence_minus_mid_db_mean"] for item in batch],
+            dtype=torch.float32,
+        ),
+        "target_transient_presence_share_means": torch.tensor(
+            [item["target_transient_presence_share_mean"] for item in batch],
             dtype=torch.float32,
         ),
         "overlap_ratios": torch.tensor(

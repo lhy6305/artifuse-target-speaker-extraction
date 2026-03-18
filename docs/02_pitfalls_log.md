@@ -2801,3 +2801,178 @@
    - anchor floor 也丢
    - default 也回吐
    就应停止把“继续降 absent weight”当成默认搜索方向。
+
+### 82. 对 `v16` 这条 reverse-guardrail 路线，把 transient / interference 一起减半并不会把 absent-side synthetic 缺口自动补回来；`v18` 说明“整体一起降预算”会先把 absent proxy 拉弱，而不是帮这条路线过线
+
+现象：
+
+- 本轮 `v18 = legacy_transient_leakguard_probe_v18_v12_absent_proxy_v3_reverse_guardrail_v1_ti_half_ft1`
+  在 `v16` 同 manifest / 同 selector 下，仅把：
+  - `transient_weight = 0.002 -> 0.001`
+  - `interference_weight = 0.005 -> 0.0025`
+- 结果相对 `v12`：
+  - `anchor_proxy_v1 = +0.233116 dB`
+  - 但：
+    - `absent_proxy_v3_strict = -0.065609 dB`
+    - `absent_proxy_v4_broad = -0.042189 dB`
+- synthetic dual-proxy gate 仍然：
+  - `FAIL`
+  - failed：
+    - `absent_proxy_v3_strict`
+    - `absent_proxy_v4_broad`
+
+影响：
+
+- 这说明 `v16` 路线当前卡住的点，不是“transient / interference 总预算略高，降一点就自然过线”；
+- 更准确地说：
+  - 这两条 loss 在当前路线里仍提供了必要支撑；
+  - 如果一起往下砍，先掉下去的反而是 absent-side synthetic 支配关系。
+
+处理：
+
+- 本轮已将 `v18` 记录为：
+  - 不保留
+
+后续要求：
+
+1. 以后若某条 synthetic near-miss 路线还差 absent-side 最后一点，不要默认第一反应就是“把 transient / interference 一起减半”。
+2. 优先改：
+   - selector 形状
+   - branch-local carve-out
+   - 或单路预算
+   而不是无差别整体减半。
+3. 如果某条 follow-up 仍然表现为：
+   - `anchor` 继续通过
+   - absent 双失败
+   就应明确写成：
+   - 这版没有修掉真正的 absent 缺口。
+
+### 83. 即使某个 absent follow-up 已经首次通过 synthetic dual-proxy gate，也不代表它可以直接晋升；`v19` 证明 synthetic 过线之后，broad near-real 仍可能卡在完全不同的 friend-side 锚点
+
+现象：
+
+- 本轮 `v19 = legacy_transient_leakguard_probe_v19_v12_absent_proxy_v3_reverse_guardrail_v1_int_up_ft1`
+  首次同时通过：
+  - `anchor_proxy_v1`
+  - `absent_proxy_v3_strict`
+  - `absent_proxy_v4_broad`
+- 但补跑 near-real 后，相对 `v12` 仍然是：
+  - speech probe overall = `-0.011926 dB`
+  - `friend_raw = -0.039734 dB`
+  - `near_real_0003 = -0.068178 dB`
+  - `near_real_0004 = -0.011290 dB`
+  - `near_real_0006 = +0.071497 dB`
+- `speech_followup_gate_vs_v12`：
+  - `FAIL`
+  - failed：
+    - `speech_probe_overall_floor`
+    - `speech_probe_friend_raw_floor`
+    - `anchor_0003_gain_floor`
+    - `anchor_0004_gain_floor`
+- 同时 `guodegang` 子 probe 虽已相对 `v8` 通过：
+  - overall
+  - `guodegang_anchor_120s`
+  - `near_real_0006`
+  但仍卡在：
+  - `clip__guodegang_absent_480s`
+
+影响：
+
+- 这说明：
+  - synthetic dual-proxy gate
+  只负责证明 absent objective 方向终于可训练；
+- 它不负责保证：
+  - broad near-real `friend_raw / 0003 / 0004`
+  不回退；
+- 也不负责保证：
+  - `guodegang_absent_480s`
+  一定已经超过 `v8`。
+
+处理：
+
+- 本轮没有把 `v19` 直接升级成主候选；
+- 当前口径改为：
+  - `v19` 是新的 objective 基座
+  - 但还需要 friend-side reverse guardrail / branch-local proxy
+
+后续要求：
+
+1. 以后任何 synthetic dual-proxy `PASS` 的 absent follow-up，都必须继续补：
+   - `speech_followup_gate_vs_v12`
+   - `probe_subset_guardrail_vs_v8_with_clips`
+   再谈是否值得晋升。
+2. 若结果表现为：
+   - `0006` 继续变强
+   - 但 `friend_raw / 0003 / 0004` 回退
+   结论应改写成：
+   - “objective 方向对了，但 broad real trade-off 还没闭环”
+   而不是写成：
+   - “这条线已经基本完成”。
+3. 下一步若继续推进，优先补的是：
+   - `v19 vs v12` 的 friend-side reverse guardrail
+   - 或新的 branch-local synthetic proxy
+   而不是继续只围绕 `absent_480s` 单边加力。
+
+### 84. 如果把新加的 friend-side reverse guardrail 样本直接并进 `v19` warm-start，但它们没有命中任何专项 selector，那这轮训练本质上就不是“friend-side branch-local guardrail”，而只是一次 base-loss nudging；`v20` 证明这种做法会同时拖坏 broad real 和新增 proxy 本身
+
+现象：
+
+- 本轮 `v20 = legacy_transient_leakguard_probe_v20_v19_friend_reverse_guardrail_v1_ft1`
+  相对 `v19` 只新增了：
+  - train `21`
+  - val `8`
+  条样本；
+- 且这些新增样本全部都是：
+  - `target_clean_speech`
+  - `target_full`
+- 但 `v20` 的 selector 命中计数与 `v19` 完全相同：
+  - train transient / interference / absent：
+    - `51 / 51 / 24`
+  - val transient / interference / absent：
+    - `18 / 18 / 4`
+- 唯一变化只是 total count：
+  - train：
+    - `90 -> 111`
+  - val：
+    - `27 -> 35`
+
+影响：
+
+- 这说明新增的 friend reverse guardrail 样本：
+  - 没有进入 transient selector
+  - 没有进入 interference selector
+  - 也没有进入 absent selector
+- 因而 `v20` 的真实形态不是：
+  - “把 friend-side 风险正式接入 branch-local objective”
+- 而更接近：
+  - “在 `v19` 现有 objective 外，再额外并入一批只吃 base reconstruction loss 的 `target_clean_speech + target_full` 样本”
+- 结果就是：
+  - default val 相对 `v19 = -0.020962 dB`
+  - `v20_v19_friend_reverse_guardrail_proxy_v1` 相对 `v19 = -0.131127 dB`
+  - broad near-real speech probe overall 相对 `v19 = -0.051919 dB`
+  - `near_real_guodegang_speech_probe` overall 相对 `v19 = -0.142566 dB`
+
+处理：
+
+- 本轮已把 `v20` 记录为：
+  - 不保留
+- 同时已把下一步要用的 selector plumbing 补到当前工作树：
+  - `target_transient_presence_minus_mid_db_mean`
+  - `target_transient_presence_share_mean`
+
+后续要求：
+
+1. 以后凡是新增 branch-local proxy 样本并入 warm-start 训练，必须同时核对：
+   - total count 有没有变
+   - `selected_count` 有没有同步增加
+2. 如果只是：
+   - total count 变多
+   - `selected_count` 完全不变
+   就不要把这轮训练写成：
+   - “某个新 guardrail 已接入 objective”
+   更准确的写法应是：
+   - “只是一次无 selector 命中增量的 base-loss 并集 nudging”
+3. 下一步若继续补 friend-side，不要再直接复制 `v20`；
+   优先做的是：
+   - 让 friend-side样本进入显式 selector
+   - 或先重做能复现 friend-side 排序差异的 synthetic proxy
