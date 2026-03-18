@@ -22,6 +22,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--check-overall", action="store_true")
     parser.add_argument("--family-names", nargs="*", default=[])
     parser.add_argument("--anchor-names", nargs="*", default=[])
+    parser.add_argument("--clip-tags", nargs="*", default=[])
     parser.add_argument("--required-margin-db", type=float, default=0.0)
     return parser.parse_args()
 
@@ -98,6 +99,17 @@ def main() -> None:
                 description=f"candidate should not underperform the reference on anchor {anchor_name}",
                 reference_value=get_group_delta(reference_summary, anchor_name, "anchor_groups"),
                 candidate_value=get_group_delta(candidate_summary, anchor_name, "anchor_groups"),
+                required_margin_db=args.required_margin_db,
+            )
+        )
+
+    for clip_tag in args.clip_tags:
+        rules.append(
+            build_rule(
+                name=f"clip__{clip_tag}",
+                description=f"candidate should not underperform the reference on clip tag {clip_tag}",
+                reference_value=get_group_delta(reference_summary, clip_tag, "speech_clip_groups"),
+                candidate_value=get_group_delta(candidate_summary, clip_tag, "speech_clip_groups"),
                 required_margin_db=args.required_margin_db,
             )
         )

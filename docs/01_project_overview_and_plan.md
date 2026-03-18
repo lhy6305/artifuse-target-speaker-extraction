@@ -1358,6 +1358,63 @@
      - `guodegang_proxy_v1` 更强
      - `0003 / 0004` 更强
      当成继续放行理由
+137. 上述拆分现已实际落到两条 clip 级子 probe：
+   - `data/probes/near_real_guodegang_anchor_probe_v1_manifest.jsonl = 3`
+   - `data/probes/near_real_guodegang_absent_probe_v1_manifest.jsonl = 3`
+138. `guodegang_anchor_120s` 与 `guodegang_absent_480s` 的真实排序现已确认冲突：
+   - `anchor`:
+     - `v7 = +0.386009 dB`
+     - `v8 = -0.015205 dB`
+     - `v10 = -0.292184 dB`
+     - `v11 = -0.412207 dB`
+     - 排序：`v7 > v8 > v10 > v11`
+   - `absent`:
+     - `v8 = +2.135139 dB`
+     - `v7 = +1.932071 dB`
+     - `v10 = +1.576052 dB`
+     - `v11 = +1.228311 dB`
+     - 排序：`v8 > v7 > v10 > v11`
+139. 这说明当前 `near_real_0006` 不能再被视为单一 objective target，而应拆成：
+   - `anchor_120s` 子问题，当前更像 `v7`
+   - `absent_480s` 子问题，当前更像 `v8`
+140. `gate_probe_subset_guardrail.py` 现已支持 `--clip-tags`，因此 clip 级保留线也已正式脚本化：
+   - `v7` 相对 `v8` 只 fail：
+     - `clip__guodegang_absent_480s`
+   - `v10 / v11` 相对 `v8` 则两个 clip 都 fail
+141. synthetic proxy 侧也已跟着拆成两条：
+   - `guodegang_anchor_proxy_v1`
+     - `train = 84`
+     - `val = 22`
+     - 过滤口径：
+       - `target_clean_speech`
+       - `target_full`
+       - `target_present_ratio >= 0.95`
+       - `overlap >= 0.9`
+     - 已复现：
+       - `v7 > v8 > v10 > v11`
+   - `guodegang_absent_proxy_v2_speechonly`
+     - `train = 76`
+     - `val = 20`
+     - 过滤口径：
+       - `target_clean_speech / target_hard_speech`
+       - `target_full`
+       - `target_present_ratio >= 0.95`
+       - `overlap >= 0.9`
+       - `target_transient_presence_minus_mid_db_mean >= q50`
+     - 已复现：
+       - `v8 > v7 > v10 > v11`
+142. 同时已确认一个新的 proxy 边界：
+   - `absent` proxy 若把 `music / singing` 混进来，排序会漂回 `v7 > v8 > v10 > v11`
+   - 因而这条 proxy 必须保持 speech-only 边界
+143. 因而当前下一步若继续自动推进，默认口径应再更新为：
+   - 不再寻找“统一的 `0006` 总 proxy”
+   - 而是把：
+     - `anchor_120s`
+     - `absent_480s`
+     当成两条独立 guardrail / proxy 目标
+   - 未来任何 `v12+` 都必须同时说明：
+     - 更接近哪一条 clip 级排序
+     - 是否在另一条 clip 上付出代价
 
 ## 9. 文档入口
 
@@ -1400,5 +1457,6 @@
 - 本轮 `guodegang/0006` synthetic proxy 搜索：`reports/daily/2026-03-18_guodegang_proxy_search_v1.md`
 - 本轮 `v10` guodegang-focused follow-up：`reports/daily/2026-03-18_v10_v8_guodegang_proxy_ft1.md`
 - 本轮 `v11` dual-anchor follow-up：`reports/daily/2026-03-18_v11_v8_dualanchor_ft1.md`
+- 本轮 `guodegang 0006` clip-split 跟进：`reports/daily/2026-03-18_guodegang_clip_split_followup.md`
 - 本轮仓库与 `.gitignore` 审计：`reports/daily/2026-03-18_repo_gitignore_audit.md`
 - 本轮全仓库评估总结：`reports/daily/2026-03-17_repo_evaluation_summary.md`

@@ -2265,3 +2265,89 @@
    - `0003 / 0004` 更强
    - broad speech probe overall 仍为正
    就把 dual-anchor 分支继续往下推进。
+
+### 71. `near_real_0006` 现在已经不是单一子问题；如果还把 `guodegang_anchor_120s` 和 `guodegang_absent_480s` 混成同一条 proxy 或同一条 gate，只会继续把训练信号互相抵消
+
+现象：
+
+- 本轮把 `near_real_guodegang_transient_probe_v1` 再拆成：
+  - `near_real_guodegang_anchor_probe_v1`
+  - `near_real_guodegang_absent_probe_v1`
+- 结果发现两条 clip 的真实排序已经冲突：
+  - `anchor`:
+    - `v7 > v8 > v10 > v11`
+  - `absent`:
+    - `v8 > v7 > v10 > v11`
+
+影响：
+
+- 如果继续把两条 clip 混在同一条 `0006` guardrail 里看 overall：
+  - 会看见一个折中的均值
+  - 但看不出 candidate 到底是在修：
+    - `anchor`
+    - 还是 `absent`
+- 这会导致：
+  - 误把某个“只修好其中一条”的版本理解成“`0006` 已整体转正”
+  - 或继续错误寻找一条“统一总 proxy”
+
+处理：
+
+- 本轮已把 clip 级 guardrail 正式脚本化：
+  - `scripts/eval/gate_probe_subset_guardrail.py --clip-tags ...`
+- 同时把 synthetic proxy 也拆成两条：
+  - `guodegang_anchor_proxy_v1`
+  - `guodegang_absent_proxy_v2_speechonly`
+
+后续要求：
+
+1. 今后凡是声称“补 `0006`”的版本，至少同时汇报：
+   - `guodegang_anchor_120s`
+   - `guodegang_absent_480s`
+2. 若只看合并后的 `near_real_guodegang_transient_probe_v1` overall，不再视为足够。
+3. 下一步默认不再寻找“统一 `0006` 总 proxy”，而是分别维护：
+   - `anchor` proxy
+   - `absent` proxy
+
+### 72. `absent` proxy 一旦把 `music / singing` 一起混进来，排序会立刻漂掉；这条 proxy 必须保持 speech-only 边界
+
+现象：
+
+- 本轮先按较宽口径物化了：
+  - `guodegang_absent_proxy_v1`
+- 它包含：
+  - `speech`
+  - `music`
+  - `singing`
+  的 full-overlap 高 transient rows
+- 结果在 synthetic compare 上，排序变成：
+  - `v7 > v8 > v10 > v11`
+  而不是 near-real `absent_480s` 想要的：
+  - `v8 > v7 > v10 > v11`
+
+影响：
+
+- 这说明 `absent_480s` 的 proxy 不是“只要高 transient 就行”
+- 一旦把 non-speech rows 混进来，就会把排序重新带偏
+- 也就是：
+  - `absent` proxy 的关键边界之一就是 speech-only
+
+处理：
+
+- 本轮已收回并改成：
+  - `guodegang_absent_proxy_v2_speechonly`
+- 过滤条件为：
+  - `target_clean_speech / target_hard_speech`
+  - `target_full`
+  - `target_present_ratio >= 0.95`
+  - `overlap >= 0.9`
+  - `target_transient_presence_minus_mid_db_mean >= q50`
+- 新 manifest 已确认复现：
+  - `v8 > v7 > v10 > v11`
+
+后续要求：
+
+1. 以后若继续构造 `absent_480s` proxy，默认保持 speech-only。
+2. 不要因为某个 broad transient-rich manifest 看起来更“大更全”，就把 `music / singing` 一起混进来。
+3. 若某条 `absent` proxy 没有先验证：
+   - `v8 > v7 > v10 > v11`
+   就不要把它当成新的 objective 入口。
