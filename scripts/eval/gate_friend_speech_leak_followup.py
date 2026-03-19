@@ -33,6 +33,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--min-speech-leak-gain-db", type=float, default=0.0)
     parser.add_argument("--max-guodegang-anchor-regression-db", type=float, default=0.0)
     parser.add_argument("--max-guodegang-absent-regression-db", type=float, default=0.0)
+    parser.add_argument(
+        "--near-tie-margin-db",
+        type=float,
+        default=0.03,
+        help=(
+            "Extra margin below a rule floor that still counts as near-tie rather than clear fail. "
+            "Used only for judgement labeling; overall_pass remains strict."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -56,7 +65,15 @@ def build_floor_rule(
     reference_value: float,
     candidate_value: float,
     floor_value: float,
+    near_tie_margin_db: float,
 ) -> dict[str, Any]:
+    margin_to_floor = candidate_value - floor_value
+    if candidate_value >= floor_value:
+        judgement = "pass"
+    elif margin_to_floor >= -near_tie_margin_db:
+        judgement = "near_tie"
+    else:
+        judgement = "clear_fail"
     return {
         "name": name,
         "description": description,
@@ -64,8 +81,21 @@ def build_floor_rule(
         "candidate_value": candidate_value,
         "required_floor": floor_value,
         "candidate_minus_reference": candidate_value - reference_value,
+        "candidate_minus_floor": margin_to_floor,
+        "near_tie_margin_db": near_tie_margin_db,
+        "judgement": judgement,
         "pass": candidate_value >= floor_value,
     }
+
+
+def summarize_overall_judgement(rules: list[dict[str, Any]]) -> tuple[str, list[str], list[str]]:
+    near_tie_rules = [str(rule["name"]) for rule in rules if rule.get("judgement") == "near_tie"]
+    clear_fail_rules = [str(rule["name"]) for rule in rules if rule.get("judgement") == "clear_fail"]
+    if clear_fail_rules:
+        return "fail", near_tie_rules, clear_fail_rules
+    if near_tie_rules:
+        return "near_tie", near_tie_rules, clear_fail_rules
+    return "pass", near_tie_rules, clear_fail_rules
 
 
 def get_default_delta(summary: dict[str, Any]) -> float:
@@ -132,6 +162,7 @@ def main() -> None:
             reference_value=reference_default_delta,
             candidate_value=candidate_default_delta,
             floor_value=reference_default_delta - args.max_default_regression_db,
+            near_tie_margin_db=args.near_tie_margin_db,
         ),
         build_floor_rule(
             name="speech_probe_overall_floor",
@@ -139,6 +170,7 @@ def main() -> None:
             reference_value=reference_probe_overall,
             candidate_value=candidate_probe_overall,
             floor_value=reference_probe_overall - args.max_speech_probe_overall_regression_db,
+            near_tie_margin_db=args.near_tie_margin_db,
         ),
         build_floor_rule(
             name="exact_target_full_gain_floor",
@@ -146,6 +178,7 @@ def main() -> None:
             reference_value=reference_exact_full,
             candidate_value=candidate_exact_full,
             floor_value=reference_exact_full + args.min_exact_full_gain_db,
+            near_tie_margin_db=args.near_tie_margin_db,
         ),
         build_floor_rule(
             name="speech_leak_like_gain_floor",
@@ -153,6 +186,7 @@ def main() -> None:
             reference_value=reference_speech_leak,
             candidate_value=candidate_speech_leak,
             floor_value=reference_speech_leak + args.min_speech_leak_gain_db,
+            near_tie_margin_db=args.near_tie_margin_db,
         ),
         build_floor_rule(
             name="guodegang_anchor_floor",
@@ -160,6 +194,7 @@ def main() -> None:
             reference_value=reference_guodegang_anchor_delta,
             candidate_value=candidate_guodegang_anchor_delta,
             floor_value=reference_guodegang_anchor_delta - args.max_guodegang_anchor_regression_db,
+            near_tie_margin_db=args.near_tie_margin_db,
         ),
     ]
 
@@ -173,8 +208,11 @@ def main() -> None:
                 reference_value=reference_guodegang_absent_delta,
                 candidate_value=candidate_guodegang_absent_delta,
                 floor_value=reference_guodegang_absent_delta - args.max_guodegang_absent_regression_db,
+                near_tie_margin_db=args.near_tie_margin_db,
             )
         )
+
+    overall_judgement, near_tie_rules, clear_fail_rules = summarize_overall_judgement(rules)
 
     output_json = args.output_json or args.candidate_speech_probe_summary.with_name(
         "friend_speech_leak_followup_gate_summary.json"
@@ -210,6 +248,7 @@ def main() -> None:
             "min_speech_leak_gain_db": args.min_speech_leak_gain_db,
             "max_guodegang_anchor_regression_db": args.max_guodegang_anchor_regression_db,
             "max_guodegang_absent_regression_db": args.max_guodegang_absent_regression_db,
+            "near_tie_margin_db": args.near_tie_margin_db,
         },
         "summary": {
             "reference_default_stage2_delta_db": reference_default_delta,
@@ -224,6 +263,9 @@ def main() -> None:
             "candidate_guodegang_anchor_delta_db": candidate_guodegang_anchor_delta,
         },
         "rules": rules,
+        "overall_judgement": overall_judgement,
+        "near_tie_rules": near_tie_rules,
+        "clear_fail_rules": clear_fail_rules,
         "overall_pass": all(bool(rule["pass"]) for rule in rules),
         "failed_rules": [str(rule["name"]) for rule in rules if not rule["pass"]],
     }
@@ -238,6 +280,7 @@ def main() -> None:
             {
                 "reference_label": reference_label,
                 "candidate_label": candidate_label,
+                "overall_judgement": output["overall_judgement"],
                 "overall_pass": output["overall_pass"],
                 "failed_rules": output["failed_rules"],
                 "output_json": serialize_repo_path(output_json),

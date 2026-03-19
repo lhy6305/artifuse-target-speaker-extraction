@@ -4126,3 +4126,461 @@
    必须先说明它与当前 `proxy_v6 currentsignal cleanonly`
    的语义差异；
    否则默认视为同类失败重试。
+
+### 105. 不要把“新 absent proxy candidate 仍没过 friend gate”自动等价成“proxy 本体也失败了”；`v42` 证明新的 `proxy_v7` 已能把 `guodegang_anchor / absent` 两条 real floor 拉回正向，真正失败的是当前 `reconstruction_extra` routing 仍会伤到 friend-side `exact target_full / speech_leak_like`
+
+现象：
+
+- 本轮把 `B3` 的新 absent proxy 正式落成：
+  - `guodegang_absent_proxy_v7_highoverlap_lowtargettransient_lowinttrans`
+  - train `33`
+  - val `8`
+- 它与 friend-side exact family 的 overlap 已明显更干净：
+  - train `1`
+    - `train_001225`
+  - val `0`
+- 且它不是旧 rows 重路由：
+  - 相对 `v32` base manifest
+    新增 coverage：
+    - train `32`
+    - val `8`
+- 在这条 `proxy_v7` 上，
+  旧 checkpoint relative to `v19` 已经是：
+  - `v32 = -0.788730 dB`
+  - `v40 = +0.537238 dB`
+  - `v41 = +1.267294 dB`
+- 进一步训练得到：
+  - `v42 = v32 + reconstruction_extra(proxy_v7)`
+- `v42` relative to `v19`：
+  - default `+0.077955 dB`
+  - exact `target_full = -0.664459 dB`
+  - `speech_leak_like (0004) = -0.113430 dB`
+  - `guodegang_anchor_120s = +0.126568 dB`
+  - `guodegang_absent_480s = +0.031863 dB`
+  - `proxy_v7 = +0.444459 dB`
+- relative to `v32` 的 gate，
+  `v42` 只 failed：
+  - `exact_target_full_gain_floor`
+  - `speech_leak_like_gain_floor`
+
+处理：
+
+- 已把这轮 `proxy_v7` 定义、coverage、训练与裁决结果集中落盘到：
+  - `reports/daily/2026-03-19_v42_absent_proxy_v7_followup.md`
+- 并同步回写：
+  - `docs/01_project_overview_and_plan.md`
+  - `docs/05_task_branch_map.md`
+
+结果：
+
+- 现在可以明确拆开两层结论：
+  - `proxy_v7` 本体是有效的：
+    - 本体 summary 为正；
+    - `guodegang_anchor / absent`
+      两条 real floor
+      也第一次同时转正；
+  - 失败的是当前
+    `reconstruction_extra(proxy_v7)`
+    这条 routing：
+    - 它仍会把 friend-side
+      `exact target_full`
+      与 `speech_leak_like`
+      一起拖坏
+- 所以：
+  - `v42` 不能 keep；
+  - 但不能因此退回写成：
+    - “`proxy_v7` 也像 `proxy_v6` 一样无效”
+
+影响：
+
+1. 以后若新 absent proxy candidate 已满足：
+   - 本体为正
+   - real `guodegang_anchor / absent`
+     同时转正
+   但仍 failed 于 friend gate，
+   默认先怀疑：
+   - objective routing / decoupling
+   而不是立刻把 proxy 本体判死。
+2. `proxy_v6` 与 `proxy_v7`
+   必须分开记：
+   - `proxy_v6` 是本体反向；
+   - `proxy_v7` 是本体成立、routing 失败。
+3. 下一条 absent-side follow-up，
+   默认不再重搜 proxy；
+   而是围绕：
+   - exact `target_full`
+   - `speech_leak_like (0004)`
+   的保护与解耦继续做。
+
+### 106. 不能把所有 gate failed rule 都按同一级别解释；当前 absent / friend-side 裁决至少要区分 `near_tie` 和 `clear_fail`，否则会把“局部接近但总体仍失败”和“方向明显错误”混成同一种失败记忆
+
+现象：
+
+- 用户提醒后回看当前主 gate，
+  发现它之前虽然已有：
+  - default `0.1 dB` 容差
+  - speech overall `0.05 dB` 容差
+- 但输出层面仍只有：
+  - `pass / fail`
+- 这会把两类情况混写成同一种失败：
+  - 只低于 floor `0.01 ~ 0.02 dB`
+  - 明显低于 floor `0.1 ~ 0.3 dB`
+- 用新口径回看后，
+  `v41` 就是典型例子：
+  - `speech_probe_overall_floor = near_tie`
+    - `-0.009327 dB` below floor
+  - `exact_target_full_gain_floor = near_tie`
+    - `-0.021816 dB`
+  - `speech_leak_like_gain_floor = near_tie`
+    - `-0.020855 dB`
+  - 但：
+    - `guodegang_anchor_floor = clear_fail`
+      - `-0.192590 dB`
+    - `guodegang_absent_floor = clear_fail`
+      - `-0.099666 dB`
+
+处理：
+
+- 已更新：
+  - `scripts/eval/gate_friend_speech_leak_followup.py`
+- 当前默认解释规范变成：
+  - `pass`
+  - `near_tie`
+    - 低于 floor 不超过 `0.03 dB`
+    - 只改变解释，不放宽 `overall_pass`
+  - `clear_fail`
+    - 低于 floor 超过 `0.03 dB`
+- 输出里新增：
+  - `candidate_minus_floor`
+  - `judgement`
+  - `overall_judgement`
+  - `near_tie_rules`
+  - `clear_fail_rules`
+
+结果：
+
+- `v39` / `v40`
+  仍是 clear fail；
+- `v41`
+  更准确应写成：
+  - 局部 near-tie
+  - 但 real floor clear fail；
+- `v42`
+  仍是 clear fail，
+  且 clear fail 已只剩：
+  - exact `target_full`
+  - `speech_leak_like (0004)`
+
+影响：
+
+1. 以后不能再把：
+   - “局部 near-tie 但总体 failed”
+   误写成：
+   - “整条分支方向都错”
+2. 也不能反过来把：
+   - 某几条 near-tie
+   误写成：
+   - 这条分支可能其实应当 keep
+3. 当前规范下，
+   `near_tie`
+   的作用是：
+   - 防止失真记忆；
+   - 不是放宽 keep gate。
+
+### 107. 如果一条 follow-up 从 `v42` 到 `v43` 只做微幅 waveform weight rescale，而 default / exact / near-real / `guodegang` / proxy 本体几乎完全不动，就不该继续扫同类小数点级权重；这类缩放在当前 `proxy_v7` 路线上基本是 no-op
+
+现象：
+
+- `v43 = v42`
+  只把：
+  - `reconstruction_extra_waveform_weight`
+    从 `0.005`
+    改到 `0.0025`
+- 其余：
+  - `proxy_v7`
+  - merged manifest
+  - friend-side exact branch
+  - base transient / interference / absent
+  全都不变
+- 结果 relative to `v19` 几乎和 `v42` 完全重合：
+  - default：
+    - `+0.077955 -> +0.077610`
+  - exact `target_full`：
+    - `-0.664459 -> -0.663965`
+  - `speech_leak_like (0004)`：
+    - `-0.113430 -> -0.113233`
+  - `guodegang_anchor_120s`：
+    - `+0.126568 -> +0.125676`
+  - `guodegang_absent_480s`：
+    - `+0.031863 -> +0.031660`
+  - `proxy_v7`：
+    - `+0.444459 -> +0.440865`
+
+处理：
+
+- 已把这轮验证集中落盘到：
+  - `reports/daily/2026-03-19_gate_margin_reassessment_and_v43_followup.md`
+
+结果：
+
+- 现在可以明确写死：
+  - 当前 `proxy_v7`
+    路线上的微幅 waveform weight rescale
+    基本是 no-op；
+  - `v43`
+    仍 failed 于：
+    - exact `target_full`
+    - `speech_leak_like (0004)`
+  - 但并没有带来新的可解释 trade-off。
+
+影响：
+
+1. 不继续扫：
+   - `0.005 -> 0.0025 -> 0.001`
+   这类小数点级 waveform-only rescale。
+2. 下一条若继续沿 `proxy_v7`，
+   默认应改：
+   - routing mode
+   - 或 branch-level decoupling
+   而不是继续扫同类微幅权重。
+
+### 108. 当 `proxy_v7` 已证明本体成立时，单纯把 `reconstruction_extra` 从 `waveform_only` 切成 `stft_only` 只会带来很小的 friend-side 回收，同时削弱 default / proxy 本体 / `guodegang` 收益；这说明问题不只是损失域选错，而是需要更本质的 branch-level decoupling
+
+现象：
+
+- 在 `v42 / v43` 之后，
+  本轮继续做了第一条真正的 routing mode 变化：
+  - `v44 = reconstruction_extra_stft_only(proxy_v7)`
+  - `reconstruction_extra_waveform_weight = 0.0`
+  - `reconstruction_extra_stft_weight = 0.01`
+- `v44` relative to `v19`：
+  - default `+0.072833 dB`
+  - exact `target_full = -0.647221 dB`
+  - `speech_leak_like (0004) = -0.110539 dB`
+  - `guodegang_anchor_120s = +0.113703 dB`
+  - `guodegang_absent_480s = +0.029381 dB`
+  - `proxy_v7 = +0.359405 dB`
+- 相比 `v42`：
+  - friend-side 两条是有小幅回收：
+    - exact `target_full`
+      `-0.664459 -> -0.647221`
+    - `speech_leak_like (0004)`
+      `-0.113430 -> -0.110539`
+  - 但代价也同时出现：
+    - default：
+      `+0.077955 -> +0.072833`
+    - `proxy_v7`：
+      `+0.444459 -> +0.359405`
+    - `guodegang_anchor_120s`：
+      `+0.126568 -> +0.113703`
+    - `guodegang_absent_480s`：
+      `+0.031863 -> +0.029381`
+- relative to `v32` gate，
+  仍 clear fail 于：
+  - `exact_target_full_gain_floor`
+  - `speech_leak_like_gain_floor`
+
+处理：
+
+- 已把这轮结果集中落盘到：
+  - `reports/daily/2026-03-19_v44_proxy_v7_stft_followup.md`
+
+结果：
+
+- 现在可以明确写死：
+  - `stft_only`
+    比微幅 wave weight 缩放更有信号；
+  - 但它不是这条线的解法；
+  - 当前问题不只是：
+    - “选 waveform 还是 STFT”
+    而更像是：
+    - 这条 absent-side routing
+      还没有和 friend-side speech-leak
+      真正解耦
+
+影响：
+
+1. 不继续把
+   `waveform_only <-> stft_only`
+   当成默认主推进方向。
+2. 下一条若继续沿 `proxy_v7`，
+   优先考虑：
+   - 更本质的 branch-level decoupling
+   - 或更细的 routing 重写
+3. 文档里以后应把 `v44`
+   记成：
+   - “mode 有信号”
+   - 但“signal 还不足以形成 keep 候选”。
+
+### 109. 当 `proxy_v7` 已经被证明本体有效时，把它内部的 `full` 与 `nonfull` 行拆开做不同 reconstruction routing，会比单一路由更平衡，但若 friend-side 两条仍 clear fail，就应把它记成“更好的 decoupling primitive”，而不是误记成已经接近 keep
+
+现象：
+
+- 本轮继续把 `proxy_v7` 内部拆成：
+  - full：
+    - train `17`
+    - val `5`
+  - nonfull：
+    - train `16`
+    - val `3`
+- 训练了：
+  - `v45 = nonfull waveform + full stft`
+- `v45` relative to `v19`：
+  - default `+0.075720 dB`
+  - exact `target_full = -0.653286 dB`
+  - `speech_leak_like (0004) = -0.111924 dB`
+  - `guodegang_anchor_120s = +0.119305 dB`
+  - `guodegang_absent_480s = +0.029907 dB`
+  - `proxy_v7 = +0.396169 dB`
+- 相比 `v44`：
+  - default 更强
+  - `proxy_v7` 更强
+  - `guodegang_anchor / absent`
+    也更强
+- 但 relative to `v32` gate，
+  仍 clear fail：
+  - `exact_target_full_gain_floor`
+  - `speech_leak_like_gain_floor`
+
+处理：
+
+- 已把这轮 split-routing 结果集中落盘到：
+  - `reports/daily/2026-03-19_v45_proxy_v7_splitrouting_followup.md`
+
+结果：
+
+- 现在可以明确写死：
+  - `proxy_v7 full`
+    与
+    `proxy_v7 nonfull`
+    不应继续共用同一种 reconstruction routing；
+  - 这类 split routing
+    的确比单一路由更平衡；
+  - 但当前这一级 split
+    还没有把 friend-side 两条 clear fail
+    拉回 near-tie，
+    所以不能误记成：
+    - “这条线已经接近 keep”
+
+影响：
+
+1. 以后若继续沿 `proxy_v7`，
+   默认优先继续做：
+   - 更细的内部语义拆分
+   - 或更本质的 branch-level decoupling
+2. 不再把：
+   - 单一路由
+   当成默认基线思路；
+   当前更合理的默认 primitive
+   已经是：
+   - `full / nonfull` split routing
+3. 但也不把当前 `v45`
+   误写成：
+   - 已接近通过 gate 的准 keep 分支。
+
+### 110. 如果把 absent-side follow-up 的可训练范围压到纯 reference-conditioning，friend-side 两条确实可能被拉回到 `near_tie / pass`，但 absent proxy 本体会直接塌掉；这说明当前缺的不是“更少更新”本身，而是“给 absent-side 一点专属 output plasticity，同时别改写共享主干”
+
+现象：
+
+- 本轮新增了：
+  - `scripts/train/train_stft_mask_baseline.py`
+    的 `--trainable-module-prefixes`
+- 并跑了：
+  - `v47 = proxy_v7 all ids + ref_encoder + condition_proj only`
+- `v47`
+  trainable parameter count：
+  - `131,968 / 2,367,617`
+  - `5.57%`
+- relative to `v32` gate：
+  - `overall_judgement = near_tie`
+  - `exact_target_full_gain_floor = pass`
+  - `speech_leak_like_gain_floor = near_tie`
+- 但 relative to `v19`：
+  - `proxy_v7 = -0.858876 dB`
+  - `guodegang_anchor_120s = -0.059132 dB`
+  - `guodegang_absent_480s = -0.007238 dB`
+
+处理：
+
+- 已把这轮 prefix-freeze 工程补充与 `v47`
+  结果集中落盘到：
+  - `reports/daily/2026-03-20_v47_v48_prefix_freeze_decoupling_followup.md`
+
+结果：
+
+- 现在可以明确写死：
+  - 纯 ref-conditioning freeze
+    的确能保护 friend-side；
+  - 但它对 absent-side
+    过于保守，
+    连 `proxy_v7`
+    本体都带不起来；
+  - 所以不能把：
+    - `v47` 的 gate 近似通过
+    误写成：
+    - “这条线已经接近 keep”
+
+影响：
+
+1. 以后若继续沿 branch-level decoupling，
+   不要把：
+   - “继续减少 trainable 参数”
+   当成默认方向
+2. 当前更合理的默认目标应改写成：
+   - 给 absent-side
+     一点专属 output-side 可塑性；
+   - 但不要再改写共享时序主干
+3. 因此下一条默认不再扫：
+   - 纯 prefix freeze 的更窄组合。
+
+### 111. 单纯在 pure ref-conditioning freeze 上额外放开一个 shared `mask_head`，虽然会把 default 与 absent proxy 拉回一点，但仍不足以同时保住 friend-side 两条与 absent proxy 本体；这说明真正需要的是更强的 branch-local output isolation，而不是继续试 shared head 的解冻组合
+
+现象：
+
+- 本轮继续跑了：
+  - `v48 = ref_encoder + condition_proj + mask_head`
+- `v48`
+  trainable parameter count：
+  - `329,345 / 2,367,617`
+  - `13.91%`
+- relative to `v47`：
+  - default：
+    - `+0.018882 -> +0.061926 dB`
+  - `proxy_v7`：
+    - `-0.858876 -> -0.274633 dB`
+- 但 relative to `v32` gate：
+  - `exact_target_full_gain_floor = clear_fail`
+  - `speech_leak_like_gain_floor = clear_fail`
+  - `guodegang_absent_floor = near_tie`
+
+处理：
+
+- 已把 `v48`
+  的训练、compare、gate 与裁决集中落盘到：
+  - `reports/daily/2026-03-20_v47_v48_prefix_freeze_decoupling_followup.md`
+
+结果：
+
+- 现在可以明确写死：
+  - `mask_head`
+    这一级 shared output plasticity
+    是有信号的；
+  - 但它还不够独立，
+    会在 `proxy_v7`
+    还没回到正向之前，
+    先把 friend-side 两条重新拖坏
+
+影响：
+
+1. 下一条若继续自动推进，
+   默认不再扫：
+   - `ref-conditioning + shared mask_head`
+   这类 prefix-freeze 组合
+2. 当前更合理的默认延伸应升级成：
+   - absent-only residual adapter
+   - 或独立 output branch / dual-head
+3. 以后回看 `v47 / v48`
+   时，要把它们记成：
+   - “确定了需要 branch-local output plasticity”
+   而不是：
+   - “prefix freeze 方向已经足够接近 keep”。

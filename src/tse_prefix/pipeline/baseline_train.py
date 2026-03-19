@@ -370,6 +370,7 @@ def compute_losses(
     lengths: torch.Tensor,
     absent_intervals: list[list[dict[str, float]]],
     model,
+    reconstruction_extra_prediction: torch.Tensor | None = None,
     reconstruction_sample_weights: torch.Tensor | None = None,
     reconstruction_extra_sample_weights: torch.Tensor | None = None,
     transient_sample_weights: torch.Tensor | None = None,
@@ -402,6 +403,7 @@ def compute_losses(
     transient_presence_high_hz: float = 8000.0,
     transient_ratio_weight: float = 0.5,
 ) -> LossBreakdown:
+    reconstruction_extra_prediction = prediction if reconstruction_extra_prediction is None else reconstruction_extra_prediction
     waveform_term = waveform_l1_loss(prediction, target, lengths)
     stft_term = stft_l1_loss(prediction, target, model)
     if reconstruction_sample_weights is None:
@@ -426,13 +428,13 @@ def compute_losses(
         reconstruction_extra_stft_term = prediction.new_tensor(0.0)
     else:
         reconstruction_extra_waveform_term = weighted_waveform_l1_loss(
-            prediction=prediction,
+            prediction=reconstruction_extra_prediction,
             target=target,
             lengths=lengths,
             sample_weights=reconstruction_extra_sample_weights,
         )
         reconstruction_extra_stft_term = weighted_stft_l1_loss(
-            prediction=prediction,
+            prediction=reconstruction_extra_prediction,
             target=target,
             lengths=lengths,
             model=model,

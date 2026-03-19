@@ -16,6 +16,8 @@ class STFTMaskBaseline(nn.Module):
         reference_dim: int = 128,
         gru_layers: int = 2,
         conditioning_mode: str = "ref_film",
+        enable_adapter_mask_head: bool = False,
+        adapter_mask_max_delta: float = 0.25,
     ) -> None:
         super().__init__()
         self.n_fft = n_fft
@@ -23,6 +25,8 @@ class STFTMaskBaseline(nn.Module):
         self.win_length = win_length
         self.freq_bins = (n_fft // 2) + 1
         self.conditioning_mode = conditioning_mode
+        self.enable_adapter_mask_head = enable_adapter_mask_head
+        self.adapter_mask_max_delta = adapter_mask_max_delta
 
         if conditioning_mode == "legacy_bias":
             self.mix_proj = nn.Linear(self.freq_bins, hidden_dim)
@@ -74,6 +78,17 @@ class STFTMaskBaseline(nn.Module):
             nn.Linear(hidden_dim, self.freq_bins),
             nn.Sigmoid(),
         )
+        if enable_adapter_mask_head:
+            self.adapter_mask_head = nn.Sequential(
+                nn.Linear(hidden_dim * 2, hidden_dim),
+                nn.ReLU(),
+                nn.Linear(hidden_dim, self.freq_bins),
+            )
+            final_layer = self.adapter_mask_head[-1]
+            nn.init.zeros_(final_layer.weight)
+            nn.init.zeros_(final_layer.bias)
+        else:
+            self.adapter_mask_head = None
 
         self.register_buffer("window", torch.hann_window(win_length), persistent=False)
 
@@ -186,14 +201,27 @@ class STFTMaskBaseline(nn.Module):
             temporal_input = torch.cat([conditioned, similarity], dim=-1)
 
         encoded, _ = self.temporal_model(temporal_input)
-        mask = self.mask_head(encoded).transpose(1, 2)
+        base_mask = self.mask_head(encoded).transpose(1, 2)
+        adapter_mask_delta = None
+        mask = base_mask
+        if self.adapter_mask_head is not None:
+            adapter_mask_delta = (
+                torch.tanh(self.adapter_mask_head(encoded)).transpose(1, 2) * self.adapter_mask_max_delta
+            )
+            mask = torch.clamp(base_mask + adapter_mask_delta, min=0.0, max=1.0)
 
+        estimated_stft_base = mix_stft * base_mask
+        estimated_waveform_base = self.istft(estimated_stft_base, mixture_lengths)
         estimated_stft = mix_stft * mask
         estimated_waveform = self.istft(estimated_stft, mixture_lengths)
 
         return {
             "estimated_waveform": estimated_waveform,
+            "estimated_waveform_base": estimated_waveform_base,
             "mask": mask,
+            "base_mask": base_mask,
+            "adapter_mask_delta": adapter_mask_delta,
             "mixture_stft": mix_stft,
             "estimated_stft": estimated_stft,
+            "estimated_stft_base": estimated_stft_base,
         }

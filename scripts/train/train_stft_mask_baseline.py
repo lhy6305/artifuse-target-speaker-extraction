@@ -10,6 +10,7 @@ from pathlib import Path
 
 import numpy as np
 import torch
+from torch import nn
 from torch.utils.data import DataLoader
 
 
@@ -61,6 +62,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--log-every", type=int, default=5)
     parser.add_argument("--max-steps", type=int, default=0)
     parser.add_argument("--seed", type=int, default=20260316)
+    parser.add_argument(
+        "--trainable-module-prefixes",
+        nargs="*",
+        default=[],
+        help=(
+            "Optional module-name prefixes to keep trainable. "
+            "When set, all other parameters are frozen."
+        ),
+    )
     parser.add_argument("--sample-rate", type=int, default=16000)
     parser.add_argument("--model-n-fft", type=int, default=512)
     parser.add_argument("--model-hop-length", type=int, default=128)
@@ -73,6 +83,12 @@ def parse_args() -> argparse.Namespace:
         choices=["legacy_bias", "ref_film"],
         default="ref_film",
     )
+    parser.add_argument(
+        "--model-enable-adapter-mask-head",
+        action="store_true",
+        help="Enable a zero-init residual mask adapter head on top of the shared encoder output.",
+    )
+    parser.add_argument("--model-adapter-mask-max-delta", type=float, default=0.25)
     parser.add_argument("--loss-stft-weight", type=float, default=0.5)
     parser.add_argument("--loss-sisdr-weight", type=float, default=0.0)
     parser.add_argument("--loss-interference-extra-guard-sisdr-weight", type=float, default=0.0)
@@ -224,6 +240,8 @@ def build_model_config(args: argparse.Namespace) -> dict[str, int]:
         "reference_dim": args.model_reference_dim,
         "gru_layers": args.model_gru_layers,
         "conditioning_mode": args.model_conditioning_mode,
+        "enable_adapter_mask_head": args.model_enable_adapter_mask_head,
+        "adapter_mask_max_delta": args.model_adapter_mask_max_delta,
     }
 
 
@@ -358,6 +376,82 @@ def serialize_repo_path(path: Path | None) -> str | None:
         return resolved.as_posix()
 
 
+def load_model_state_dict_for_init(model: nn.Module, checkpoint_state_dict: dict[str, torch.Tensor]) -> None:
+    missing_keys, unexpected_keys = model.load_state_dict(checkpoint_state_dict, strict=False)
+    allowed_missing_prefixes = ("adapter_mask_head.",)
+    disallowed_missing = [
+        key for key in missing_keys if not any(key.startswith(prefix) for prefix in allowed_missing_prefixes)
+    ]
+    if disallowed_missing or unexpected_keys:
+        raise RuntimeError(
+            "Unexpected state-dict mismatch when loading init checkpoint: "
+            f"missing={disallowed_missing}, unexpected={unexpected_keys}"
+        )
+
+
+def _matches_module_prefix(parameter_name: str, module_prefix: str) -> bool:
+    return parameter_name == module_prefix or parameter_name.startswith(f"{module_prefix}.")
+
+
+def configure_trainable_parameters(
+    model: nn.Module,
+    module_prefixes: list[str],
+) -> tuple[list[nn.Parameter], dict[str, object]]:
+    normalized_prefixes = [prefix.strip() for prefix in module_prefixes if prefix and prefix.strip()]
+    named_parameters = list(model.named_parameters())
+    total_param_count = int(sum(parameter.numel() for _, parameter in named_parameters))
+
+    if not normalized_prefixes:
+        for _, parameter in named_parameters:
+            parameter.requires_grad = True
+        return list(model.parameters()), {
+            "mode": "all",
+            "trainable_module_prefixes": [],
+            "matched_module_prefixes": [],
+            "frozen_module_prefixes": [],
+            "trainable_parameter_count": total_param_count,
+            "total_parameter_count": total_param_count,
+            "trainable_parameter_fraction": 1.0,
+            "trainable_parameter_names": [name for name, _ in named_parameters],
+        }
+
+    matched_prefixes: list[str] = []
+    trainable_parameter_names: list[str] = []
+    trainable_parameters: list[nn.Parameter] = []
+    trainable_param_count = 0
+
+    for name, parameter in named_parameters:
+        is_trainable = any(_matches_module_prefix(name, prefix) for prefix in normalized_prefixes)
+        parameter.requires_grad = is_trainable
+        if is_trainable:
+            trainable_parameter_names.append(name)
+            trainable_parameters.append(parameter)
+            trainable_param_count += int(parameter.numel())
+
+    for prefix in normalized_prefixes:
+        if any(_matches_module_prefix(name, prefix) for name, _ in named_parameters):
+            matched_prefixes.append(prefix)
+
+    unmatched_prefixes = [prefix for prefix in normalized_prefixes if prefix not in matched_prefixes]
+    if unmatched_prefixes:
+        raise ValueError(f"Unknown trainable module prefixes: {unmatched_prefixes}")
+    if not trainable_parameters:
+        raise ValueError("No trainable parameters remain after applying trainable module prefixes.")
+
+    return trainable_parameters, {
+        "mode": "module_prefix_subset",
+        "trainable_module_prefixes": normalized_prefixes,
+        "matched_module_prefixes": matched_prefixes,
+        "frozen_module_prefixes": [
+            name for name, _ in named_parameters if not any(_matches_module_prefix(name, prefix) for prefix in normalized_prefixes)
+        ],
+        "trainable_parameter_count": trainable_param_count,
+        "total_parameter_count": total_param_count,
+        "trainable_parameter_fraction": float(trainable_param_count) / float(total_param_count),
+        "trainable_parameter_names": trainable_parameter_names,
+    }
+
+
 def evaluate(
     model: STFTMaskBaseline,
     dataloader: DataLoader,
@@ -456,7 +550,8 @@ def evaluate(
                 selector_totals[prefix]["selected_count"] += int(stats["selected_count"])
                 selector_totals[prefix]["total_count"] += int(stats["total_count"])
             losses = compute_losses(
-                prediction=outputs["estimated_waveform"],
+                prediction=outputs.get("estimated_waveform_base", outputs["estimated_waveform"]),
+                reconstruction_extra_prediction=outputs["estimated_waveform"],
                 mixture=batch["mixture"],
                 target=batch["target"],
                 lengths=batch["target_lengths"],
@@ -577,9 +672,25 @@ def main() -> None:
     init_checkpoint_path: str | None = None
     if args.init_checkpoint is not None:
         init_checkpoint = load_checkpoint(args.init_checkpoint, device)
-        model.load_state_dict(init_checkpoint["model_state_dict"], strict=True)
+        load_model_state_dict_for_init(model, init_checkpoint["model_state_dict"])
         init_checkpoint_path = str(args.init_checkpoint)
-    optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
+    trainable_parameters, trainable_config = configure_trainable_parameters(
+        model=model,
+        module_prefixes=args.trainable_module_prefixes,
+    )
+    print(
+        json.dumps(
+            {
+                "trainable_mode": trainable_config["mode"],
+                "trainable_module_prefixes": trainable_config["trainable_module_prefixes"],
+                "trainable_parameter_count": trainable_config["trainable_parameter_count"],
+                "total_parameter_count": trainable_config["total_parameter_count"],
+                "trainable_parameter_fraction": round(float(trainable_config["trainable_parameter_fraction"]), 6),
+            },
+            ensure_ascii=False,
+        )
+    )
+    optimizer = torch.optim.Adam(trainable_parameters, lr=args.lr)
 
     history: list[dict[str, float | int]] = []
     global_step = 0
@@ -677,7 +788,8 @@ def main() -> None:
                 train_selector_totals[prefix]["selected_count"] += int(stats["selected_count"])
                 train_selector_totals[prefix]["total_count"] += int(stats["total_count"])
             losses = compute_losses(
-                prediction=outputs["estimated_waveform"],
+                prediction=outputs.get("estimated_waveform_base", outputs["estimated_waveform"]),
+                reconstruction_extra_prediction=outputs["estimated_waveform"],
                 mixture=batch["mixture"],
                 target=batch["target"],
                 lengths=batch["target_lengths"],
@@ -695,9 +807,10 @@ def main() -> None:
             )
 
             optimizer.zero_grad(set_to_none=True)
-            losses.total.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=5.0)
-            optimizer.step()
+            if losses.total.requires_grad:
+                losses.total.backward()
+                torch.nn.utils.clip_grad_norm_(trainable_parameters, max_norm=5.0)
+                optimizer.step()
 
             global_step += 1
             step_count += 1
@@ -856,6 +969,7 @@ def main() -> None:
             "global_step": global_step,
             "model_config": model_config,
             "loss_config": loss_config,
+            "trainable_config": trainable_config,
             "init_checkpoint": init_checkpoint_path,
             "model_state_dict": model.state_dict(),
             "optimizer_state_dict": optimizer.state_dict(),
@@ -882,6 +996,7 @@ def main() -> None:
         "learning_rate": args.lr,
         "model_config": model_config,
         "loss_config": loss_config,
+        "trainable_config": trainable_config,
         "init_checkpoint": serialize_repo_path(Path(init_checkpoint_path)) if init_checkpoint_path else None,
         "global_steps": global_step,
         "start_time": start_dt.isoformat(timespec="seconds"),
