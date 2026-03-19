@@ -1,0 +1,2626 @@
+{
+  "compares": {
+    "v32": "reports/eval/compare_v19_vs_v32_on_default/per_sample_metrics.jsonl",
+    "v38": "reports/eval/compare_v19_vs_v38_on_default/per_sample_metrics.jsonl",
+    "v37": "reports/eval/compare_v19_vs_v37_on_default/per_sample_metrics.jsonl"
+  },
+  "ordered_aliases": [
+    "v32",
+    "v38",
+    "v37"
+  ],
+  "num_shared_speech_rows": 73,
+  "num_samplewise_order_pass_rows_before_optional_filter": 73,
+  "require_samplewise_order_pass": true,
+  "thresholds": {
+    "gain_thresholds_db": {
+      "q50": -2.3610000610351562,
+      "q67": -1.3609999418258667
+    },
+    "transient_thresholds_db": {
+      "q50": -11.92581844329834,
+      "q67": -9.231693267822266
+    },
+    "interference_transient_thresholds_db": {
+      "q50": 2.7667629718780518,
+      "q67": 5.840137958526611
+    },
+    "target_interference_similarity_thresholds": {
+      "q50": 0.5547900199890137,
+      "q67": 0.598041296005249
+    },
+    "min_count": 8,
+    "min_speaker_count": 8,
+    "min_order_gap_db": 0.0
+  },
+  "top_order_pass_candidates": [
+    {
+      "subset_name": "all_speech__all_patterns__any_ratio__overlap_ge_0_90__all_pools__gain_le_q50__all_transient__interference_transient_lt_q67__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -1.168020784854889,
+        "v38": -2.5015604496002197,
+        "v37": -3.056355893611908
+      },
+      "pair_gaps_db": [
+        1.3335396647453308,
+        0.5547954440116882
+      ],
+      "min_pair_gap_db": 0.5547954440116882,
+      "mean_overlap_ratio": 0.9521051895945472,
+      "mean_interference_gain_db": -4.1255,
+      "mean_target_transient_presence_minus_mid_db_mean": -13.493682861328125,
+      "mean_interference_transient_presence_minus_mid_db_mean": 1.8062791228294373,
+      "mean_target_interference_logspec_cosine": 0.5742719358747344,
+      "recipe_counts": {
+        "target_clean_speech": 7,
+        "target_hard_speech": 1
+      },
+      "pattern_counts": {
+        "target_absent_tail": 1,
+        "target_full": 6,
+        "target_intermittent": 1
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 7,
+        "speech_interference_hard_pool": 1
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 1,
+        "克罗索": 1,
+        "加萨尼": 1,
+        "多莉": 1,
+        "浮游水蕈兽·元素生命": 1,
+        "琴": 1,
+        "石壮": 1,
+        "阿夫辛": 1
+      },
+      "sample_ids": [
+        "val_000145",
+        "val_000182",
+        "val_000330",
+        "val_000338",
+        "val_000358",
+        "val_000376",
+        "val_000396",
+        "val_000409"
+      ],
+      "builder_filters": {
+        "min_overlap_ratio": 0.9,
+        "max_interference_gain_db": -2.3610000610351562,
+        "max_interference_transient_presence_minus_mid_db_mean": 5.840137958526611
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__any_ratio__overlap_ge_0_90__all_pools__gain_le_q50__transient_lt_q67__all_interference_transient__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -0.9820130467414856,
+        "v38": -2.1674245595932007,
+        "v37": -2.7218428254127502
+      },
+      "pair_gaps_db": [
+        1.185411512851715,
+        0.5544182658195496
+      ],
+      "min_pair_gap_db": 0.5544182658195496,
+      "mean_overlap_ratio": 0.9455702685891512,
+      "mean_interference_gain_db": -4.45975,
+      "mean_target_transient_presence_minus_mid_db_mean": -14.406623721122742,
+      "mean_interference_transient_presence_minus_mid_db_mean": 4.3755984008312225,
+      "mean_target_interference_logspec_cosine": 0.5286064464618407,
+      "recipe_counts": {
+        "target_clean_speech": 7,
+        "target_hard_speech": 1
+      },
+      "pattern_counts": {
+        "target_full": 7,
+        "target_intermittent": 1
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 7,
+        "speech_interference_hard_pool": 1
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 1,
+        "克罗索": 1,
+        "加萨尼": 1,
+        "君君": 1,
+        "恒雄": 1,
+        "浮游水蕈兽·元素生命": 1,
+        "琴": 1,
+        "阿夫辛": 1
+      },
+      "sample_ids": [
+        "val_000139",
+        "val_000145",
+        "val_000182",
+        "val_000330",
+        "val_000376",
+        "val_000396",
+        "val_000403",
+        "val_000409"
+      ],
+      "builder_filters": {
+        "min_overlap_ratio": 0.9,
+        "max_interference_gain_db": -2.3610000610351562,
+        "max_target_transient_presence_minus_mid_db_mean": -9.231693267822266
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__ratio_ge_0_95__overlap_ge_0_90__all_pools__all_gains__all_transient__interference_transient_le_q50__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -1.1614079475402832,
+        "v38": -2.4879913330078125,
+        "v37": -3.0405343770980835
+      },
+      "pair_gaps_db": [
+        1.3265833854675293,
+        0.552543044090271
+      ],
+      "min_pair_gap_db": 0.552543044090271,
+      "mean_overlap_ratio": 0.9502150244375753,
+      "mean_interference_gain_db": -1.8471250000000001,
+      "mean_target_transient_presence_minus_mid_db_mean": -9.53419378399849,
+      "mean_interference_transient_presence_minus_mid_db_mean": -0.14183582365512848,
+      "mean_target_interference_logspec_cosine": 0.5264378740035927,
+      "recipe_counts": {
+        "target_clean_speech": 5,
+        "target_hard_speech": 3
+      },
+      "pattern_counts": {
+        "target_full": 8
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 5,
+        "speech_interference_hard_pool": 3
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 3,
+        "巴蒂斯特": 1,
+        "琴": 1,
+        "石壮": 1,
+        "观众": 1,
+        "阿夫辛": 1
+      },
+      "sample_ids": [
+        "val_000145",
+        "val_000182",
+        "val_000197",
+        "val_000239",
+        "val_000245",
+        "val_000338",
+        "val_000376",
+        "val_000478"
+      ],
+      "builder_filters": {
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "max_interference_transient_presence_minus_mid_db_mean": 2.7667629718780518
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_full__any_ratio__overlap_ge_0_90__all_pools__all_gains__all_transient__interference_transient_le_q50__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -1.1614079475402832,
+        "v38": -2.4879913330078125,
+        "v37": -3.0405343770980835
+      },
+      "pair_gaps_db": [
+        1.3265833854675293,
+        0.552543044090271
+      ],
+      "min_pair_gap_db": 0.552543044090271,
+      "mean_overlap_ratio": 0.9502150244375753,
+      "mean_interference_gain_db": -1.8471250000000001,
+      "mean_target_transient_presence_minus_mid_db_mean": -9.53419378399849,
+      "mean_interference_transient_presence_minus_mid_db_mean": -0.14183582365512848,
+      "mean_target_interference_logspec_cosine": 0.5264378740035927,
+      "recipe_counts": {
+        "target_clean_speech": 5,
+        "target_hard_speech": 3
+      },
+      "pattern_counts": {
+        "target_full": 8
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 5,
+        "speech_interference_hard_pool": 3
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 3,
+        "巴蒂斯特": 1,
+        "琴": 1,
+        "石壮": 1,
+        "观众": 1,
+        "阿夫辛": 1
+      },
+      "sample_ids": [
+        "val_000145",
+        "val_000182",
+        "val_000197",
+        "val_000239",
+        "val_000245",
+        "val_000338",
+        "val_000376",
+        "val_000478"
+      ],
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_overlap_ratio": 0.9,
+        "max_interference_transient_presence_minus_mid_db_mean": 2.7667629718780518
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_full__ratio_ge_0_95__overlap_ge_0_90__all_pools__all_gains__all_transient__interference_transient_le_q50__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -1.1614079475402832,
+        "v38": -2.4879913330078125,
+        "v37": -3.0405343770980835
+      },
+      "pair_gaps_db": [
+        1.3265833854675293,
+        0.552543044090271
+      ],
+      "min_pair_gap_db": 0.552543044090271,
+      "mean_overlap_ratio": 0.9502150244375753,
+      "mean_interference_gain_db": -1.8471250000000001,
+      "mean_target_transient_presence_minus_mid_db_mean": -9.53419378399849,
+      "mean_interference_transient_presence_minus_mid_db_mean": -0.14183582365512848,
+      "mean_target_interference_logspec_cosine": 0.5264378740035927,
+      "recipe_counts": {
+        "target_clean_speech": 5,
+        "target_hard_speech": 3
+      },
+      "pattern_counts": {
+        "target_full": 8
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 5,
+        "speech_interference_hard_pool": 3
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 3,
+        "巴蒂斯特": 1,
+        "琴": 1,
+        "石壮": 1,
+        "观众": 1,
+        "阿夫辛": 1
+      },
+      "sample_ids": [
+        "val_000145",
+        "val_000182",
+        "val_000197",
+        "val_000239",
+        "val_000245",
+        "val_000338",
+        "val_000376",
+        "val_000478"
+      ],
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "max_interference_transient_presence_minus_mid_db_mean": 2.7667629718780518
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__ratio_ge_0_95__overlap_ge_0_75__all_pools__all_gains__transient_le_q50__interference_transient_lt_q67__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -0.951713427901268,
+        "v38": -2.114197701215744,
+        "v37": -2.663903944194317
+      },
+      "pair_gaps_db": [
+        1.162484273314476,
+        0.5497062429785728
+      ],
+      "min_pair_gap_db": 0.5497062429785728,
+      "mean_overlap_ratio": 0.8981956269349846,
+      "mean_interference_gain_db": -2.524375,
+      "mean_target_transient_presence_minus_mid_db_mean": -17.389482498168945,
+      "mean_interference_transient_presence_minus_mid_db_mean": 1.278973400592804,
+      "mean_target_interference_logspec_cosine": 0.4714660371356177,
+      "recipe_counts": {
+        "target_clean_speech": 4,
+        "target_hard_speech": 4
+      },
+      "pattern_counts": {
+        "target_full": 8
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 4,
+        "speech_interference_hard_pool": 4
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 4,
+        "加萨尼": 1,
+        "浮游水蕈兽·元素生命": 1,
+        "琴": 1,
+        "翰学": 1
+      },
+      "sample_ids": [
+        "val_000145",
+        "val_000182",
+        "val_000197",
+        "val_000251",
+        "val_000329",
+        "val_000330",
+        "val_000396",
+        "val_000471"
+      ],
+      "builder_filters": {
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.75,
+        "max_target_transient_presence_minus_mid_db_mean": -11.92581844329834,
+        "max_interference_transient_presence_minus_mid_db_mean": 5.840137958526611
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_full__any_ratio__overlap_ge_0_75__all_pools__all_gains__transient_le_q50__interference_transient_lt_q67__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -0.951713427901268,
+        "v38": -2.114197701215744,
+        "v37": -2.663903944194317
+      },
+      "pair_gaps_db": [
+        1.162484273314476,
+        0.5497062429785728
+      ],
+      "min_pair_gap_db": 0.5497062429785728,
+      "mean_overlap_ratio": 0.8981956269349846,
+      "mean_interference_gain_db": -2.524375,
+      "mean_target_transient_presence_minus_mid_db_mean": -17.389482498168945,
+      "mean_interference_transient_presence_minus_mid_db_mean": 1.278973400592804,
+      "mean_target_interference_logspec_cosine": 0.4714660371356177,
+      "recipe_counts": {
+        "target_clean_speech": 4,
+        "target_hard_speech": 4
+      },
+      "pattern_counts": {
+        "target_full": 8
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 4,
+        "speech_interference_hard_pool": 4
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 4,
+        "加萨尼": 1,
+        "浮游水蕈兽·元素生命": 1,
+        "琴": 1,
+        "翰学": 1
+      },
+      "sample_ids": [
+        "val_000145",
+        "val_000182",
+        "val_000197",
+        "val_000251",
+        "val_000329",
+        "val_000330",
+        "val_000396",
+        "val_000471"
+      ],
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_overlap_ratio": 0.75,
+        "max_target_transient_presence_minus_mid_db_mean": -11.92581844329834,
+        "max_interference_transient_presence_minus_mid_db_mean": 5.840137958526611
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_full__ratio_ge_0_95__overlap_ge_0_75__all_pools__all_gains__transient_le_q50__interference_transient_lt_q67__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -0.951713427901268,
+        "v38": -2.114197701215744,
+        "v37": -2.663903944194317
+      },
+      "pair_gaps_db": [
+        1.162484273314476,
+        0.5497062429785728
+      ],
+      "min_pair_gap_db": 0.5497062429785728,
+      "mean_overlap_ratio": 0.8981956269349846,
+      "mean_interference_gain_db": -2.524375,
+      "mean_target_transient_presence_minus_mid_db_mean": -17.389482498168945,
+      "mean_interference_transient_presence_minus_mid_db_mean": 1.278973400592804,
+      "mean_target_interference_logspec_cosine": 0.4714660371356177,
+      "recipe_counts": {
+        "target_clean_speech": 4,
+        "target_hard_speech": 4
+      },
+      "pattern_counts": {
+        "target_full": 8
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 4,
+        "speech_interference_hard_pool": 4
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 4,
+        "加萨尼": 1,
+        "浮游水蕈兽·元素生命": 1,
+        "琴": 1,
+        "翰学": 1
+      },
+      "sample_ids": [
+        "val_000145",
+        "val_000182",
+        "val_000197",
+        "val_000251",
+        "val_000329",
+        "val_000330",
+        "val_000396",
+        "val_000471"
+      ],
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.75,
+        "max_target_transient_presence_minus_mid_db_mean": -11.92581844329834,
+        "max_interference_transient_presence_minus_mid_db_mean": 5.840137958526611
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__any_ratio__overlap_ge_0_90__pool_clean__all_gains__transient_lt_q67__all_interference_transient__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -0.8812304139137268,
+        "v38": -2.008565068244934,
+        "v37": -2.5396388173103333
+      },
+      "pair_gaps_db": [
+        1.1273346543312073,
+        0.5310737490653992
+      ],
+      "min_pair_gap_db": 0.5310737490653992,
+      "mean_overlap_ratio": 0.9575037481213149,
+      "mean_interference_gain_db": -4.2681249999999995,
+      "mean_target_transient_presence_minus_mid_db_mean": -15.494941115379333,
+      "mean_interference_transient_presence_minus_mid_db_mean": 6.215020060539246,
+      "mean_target_interference_logspec_cosine": 0.5401160204127058,
+      "recipe_counts": {
+        "target_clean_speech": 8
+      },
+      "pattern_counts": {
+        "target_full": 7,
+        "target_intermittent": 1
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 8
+      },
+      "speaker_counts": {
+        "克罗索": 1,
+        "加萨尼": 1,
+        "君君": 1,
+        "恒雄": 1,
+        "战斗语音 - Battle": 1,
+        "浮游水蕈兽·元素生命": 1,
+        "琴": 1,
+        "阿夫辛": 1
+      },
+      "sample_ids": [
+        "val_000057",
+        "val_000139",
+        "val_000182",
+        "val_000330",
+        "val_000376",
+        "val_000396",
+        "val_000403",
+        "val_000409"
+      ],
+      "builder_filters": {
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "max_target_transient_presence_minus_mid_db_mean": -9.231693267822266
+      }
+    },
+    {
+      "subset_name": "recipe_clean__all_patterns__any_ratio__overlap_ge_0_90__all_pools__all_gains__transient_lt_q67__all_interference_transient__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -0.8812304139137268,
+        "v38": -2.008565068244934,
+        "v37": -2.5396388173103333
+      },
+      "pair_gaps_db": [
+        1.1273346543312073,
+        0.5310737490653992
+      ],
+      "min_pair_gap_db": 0.5310737490653992,
+      "mean_overlap_ratio": 0.9575037481213149,
+      "mean_interference_gain_db": -4.2681249999999995,
+      "mean_target_transient_presence_minus_mid_db_mean": -15.494941115379333,
+      "mean_interference_transient_presence_minus_mid_db_mean": 6.215020060539246,
+      "mean_target_interference_logspec_cosine": 0.5401160204127058,
+      "recipe_counts": {
+        "target_clean_speech": 8
+      },
+      "pattern_counts": {
+        "target_full": 7,
+        "target_intermittent": 1
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 8
+      },
+      "speaker_counts": {
+        "克罗索": 1,
+        "加萨尼": 1,
+        "君君": 1,
+        "恒雄": 1,
+        "战斗语音 - Battle": 1,
+        "浮游水蕈兽·元素生命": 1,
+        "琴": 1,
+        "阿夫辛": 1
+      },
+      "sample_ids": [
+        "val_000057",
+        "val_000139",
+        "val_000182",
+        "val_000330",
+        "val_000376",
+        "val_000396",
+        "val_000403",
+        "val_000409"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "min_overlap_ratio": 0.9,
+        "max_target_transient_presence_minus_mid_db_mean": -9.231693267822266
+      }
+    },
+    {
+      "subset_name": "recipe_clean__all_patterns__any_ratio__overlap_ge_0_90__pool_clean__all_gains__transient_lt_q67__all_interference_transient__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -0.8812304139137268,
+        "v38": -2.008565068244934,
+        "v37": -2.5396388173103333
+      },
+      "pair_gaps_db": [
+        1.1273346543312073,
+        0.5310737490653992
+      ],
+      "min_pair_gap_db": 0.5310737490653992,
+      "mean_overlap_ratio": 0.9575037481213149,
+      "mean_interference_gain_db": -4.2681249999999995,
+      "mean_target_transient_presence_minus_mid_db_mean": -15.494941115379333,
+      "mean_interference_transient_presence_minus_mid_db_mean": 6.215020060539246,
+      "mean_target_interference_logspec_cosine": 0.5401160204127058,
+      "recipe_counts": {
+        "target_clean_speech": 8
+      },
+      "pattern_counts": {
+        "target_full": 7,
+        "target_intermittent": 1
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 8
+      },
+      "speaker_counts": {
+        "克罗索": 1,
+        "加萨尼": 1,
+        "君君": 1,
+        "恒雄": 1,
+        "战斗语音 - Battle": 1,
+        "浮游水蕈兽·元素生命": 1,
+        "琴": 1,
+        "阿夫辛": 1
+      },
+      "sample_ids": [
+        "val_000057",
+        "val_000139",
+        "val_000182",
+        "val_000330",
+        "val_000376",
+        "val_000396",
+        "val_000403",
+        "val_000409"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "max_target_transient_presence_minus_mid_db_mean": -9.231693267822266
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__ratio_ge_0_95__overlap_ge_0_90__pool_clean__gain_le_q50__all_transient__all_interference_transient__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -1.0803144574165344,
+        "v38": -2.363683819770813,
+        "v37": -2.8943024277687073
+      },
+      "pair_gaps_db": [
+        1.2833693623542786,
+        0.5306186079978943
+      ],
+      "min_pair_gap_db": 0.5306186079978943,
+      "mean_overlap_ratio": 0.959504740184807,
+      "mean_interference_gain_db": -4.475499999999999,
+      "mean_target_transient_presence_minus_mid_db_mean": -13.133528351783752,
+      "mean_interference_transient_presence_minus_mid_db_mean": 4.652636855840683,
+      "mean_target_interference_logspec_cosine": 0.559855279615211,
+      "recipe_counts": {
+        "target_clean_speech": 8
+      },
+      "pattern_counts": {
+        "target_full": 8
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 8
+      },
+      "speaker_counts": {
+        "加萨尼": 1,
+        "君君": 1,
+        "恒雄": 1,
+        "浮游水蕈兽·元素生命": 1,
+        "琴": 1,
+        "石壮": 1,
+        "舍利夫": 1,
+        "阿夫辛": 1
+      },
+      "sample_ids": [
+        "val_000041",
+        "val_000139",
+        "val_000182",
+        "val_000330",
+        "val_000338",
+        "val_000376",
+        "val_000396",
+        "val_000403"
+      ],
+      "builder_filters": {
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "max_interference_gain_db": -2.3610000610351562
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_full__any_ratio__overlap_ge_0_90__pool_clean__gain_le_q50__all_transient__all_interference_transient__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -1.0803144574165344,
+        "v38": -2.363683819770813,
+        "v37": -2.8943024277687073
+      },
+      "pair_gaps_db": [
+        1.2833693623542786,
+        0.5306186079978943
+      ],
+      "min_pair_gap_db": 0.5306186079978943,
+      "mean_overlap_ratio": 0.959504740184807,
+      "mean_interference_gain_db": -4.475499999999999,
+      "mean_target_transient_presence_minus_mid_db_mean": -13.133528351783752,
+      "mean_interference_transient_presence_minus_mid_db_mean": 4.652636855840683,
+      "mean_target_interference_logspec_cosine": 0.559855279615211,
+      "recipe_counts": {
+        "target_clean_speech": 8
+      },
+      "pattern_counts": {
+        "target_full": 8
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 8
+      },
+      "speaker_counts": {
+        "加萨尼": 1,
+        "君君": 1,
+        "恒雄": 1,
+        "浮游水蕈兽·元素生命": 1,
+        "琴": 1,
+        "石壮": 1,
+        "舍利夫": 1,
+        "阿夫辛": 1
+      },
+      "sample_ids": [
+        "val_000041",
+        "val_000139",
+        "val_000182",
+        "val_000330",
+        "val_000338",
+        "val_000376",
+        "val_000396",
+        "val_000403"
+      ],
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "max_interference_gain_db": -2.3610000610351562
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_full__ratio_ge_0_95__overlap_ge_0_90__pool_clean__gain_le_q50__all_transient__all_interference_transient__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -1.0803144574165344,
+        "v38": -2.363683819770813,
+        "v37": -2.8943024277687073
+      },
+      "pair_gaps_db": [
+        1.2833693623542786,
+        0.5306186079978943
+      ],
+      "min_pair_gap_db": 0.5306186079978943,
+      "mean_overlap_ratio": 0.959504740184807,
+      "mean_interference_gain_db": -4.475499999999999,
+      "mean_target_transient_presence_minus_mid_db_mean": -13.133528351783752,
+      "mean_interference_transient_presence_minus_mid_db_mean": 4.652636855840683,
+      "mean_target_interference_logspec_cosine": 0.559855279615211,
+      "recipe_counts": {
+        "target_clean_speech": 8
+      },
+      "pattern_counts": {
+        "target_full": 8
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 8
+      },
+      "speaker_counts": {
+        "加萨尼": 1,
+        "君君": 1,
+        "恒雄": 1,
+        "浮游水蕈兽·元素生命": 1,
+        "琴": 1,
+        "石壮": 1,
+        "舍利夫": 1,
+        "阿夫辛": 1
+      },
+      "sample_ids": [
+        "val_000041",
+        "val_000139",
+        "val_000182",
+        "val_000330",
+        "val_000338",
+        "val_000376",
+        "val_000396",
+        "val_000403"
+      ],
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "max_interference_gain_db": -2.3610000610351562
+      }
+    },
+    {
+      "subset_name": "recipe_clean__all_patterns__ratio_ge_0_95__overlap_ge_0_90__all_pools__gain_le_q50__all_transient__all_interference_transient__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -1.0803144574165344,
+        "v38": -2.363683819770813,
+        "v37": -2.8943024277687073
+      },
+      "pair_gaps_db": [
+        1.2833693623542786,
+        0.5306186079978943
+      ],
+      "min_pair_gap_db": 0.5306186079978943,
+      "mean_overlap_ratio": 0.959504740184807,
+      "mean_interference_gain_db": -4.475499999999999,
+      "mean_target_transient_presence_minus_mid_db_mean": -13.133528351783752,
+      "mean_interference_transient_presence_minus_mid_db_mean": 4.652636855840683,
+      "mean_target_interference_logspec_cosine": 0.559855279615211,
+      "recipe_counts": {
+        "target_clean_speech": 8
+      },
+      "pattern_counts": {
+        "target_full": 8
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 8
+      },
+      "speaker_counts": {
+        "加萨尼": 1,
+        "君君": 1,
+        "恒雄": 1,
+        "浮游水蕈兽·元素生命": 1,
+        "琴": 1,
+        "石壮": 1,
+        "舍利夫": 1,
+        "阿夫辛": 1
+      },
+      "sample_ids": [
+        "val_000041",
+        "val_000139",
+        "val_000182",
+        "val_000330",
+        "val_000338",
+        "val_000376",
+        "val_000396",
+        "val_000403"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "max_interference_gain_db": -2.3610000610351562
+      }
+    },
+    {
+      "subset_name": "recipe_clean__all_patterns__ratio_ge_0_95__overlap_ge_0_90__pool_clean__gain_le_q50__all_transient__all_interference_transient__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -1.0803144574165344,
+        "v38": -2.363683819770813,
+        "v37": -2.8943024277687073
+      },
+      "pair_gaps_db": [
+        1.2833693623542786,
+        0.5306186079978943
+      ],
+      "min_pair_gap_db": 0.5306186079978943,
+      "mean_overlap_ratio": 0.959504740184807,
+      "mean_interference_gain_db": -4.475499999999999,
+      "mean_target_transient_presence_minus_mid_db_mean": -13.133528351783752,
+      "mean_interference_transient_presence_minus_mid_db_mean": 4.652636855840683,
+      "mean_target_interference_logspec_cosine": 0.559855279615211,
+      "recipe_counts": {
+        "target_clean_speech": 8
+      },
+      "pattern_counts": {
+        "target_full": 8
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 8
+      },
+      "speaker_counts": {
+        "加萨尼": 1,
+        "君君": 1,
+        "恒雄": 1,
+        "浮游水蕈兽·元素生命": 1,
+        "琴": 1,
+        "石壮": 1,
+        "舍利夫": 1,
+        "阿夫辛": 1
+      },
+      "sample_ids": [
+        "val_000041",
+        "val_000139",
+        "val_000182",
+        "val_000330",
+        "val_000338",
+        "val_000376",
+        "val_000396",
+        "val_000403"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "max_interference_gain_db": -2.3610000610351562
+      }
+    },
+    {
+      "subset_name": "recipe_clean__pattern_full__any_ratio__overlap_ge_0_90__all_pools__gain_le_q50__all_transient__all_interference_transient__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -1.0803144574165344,
+        "v38": -2.363683819770813,
+        "v37": -2.8943024277687073
+      },
+      "pair_gaps_db": [
+        1.2833693623542786,
+        0.5306186079978943
+      ],
+      "min_pair_gap_db": 0.5306186079978943,
+      "mean_overlap_ratio": 0.959504740184807,
+      "mean_interference_gain_db": -4.475499999999999,
+      "mean_target_transient_presence_minus_mid_db_mean": -13.133528351783752,
+      "mean_interference_transient_presence_minus_mid_db_mean": 4.652636855840683,
+      "mean_target_interference_logspec_cosine": 0.559855279615211,
+      "recipe_counts": {
+        "target_clean_speech": 8
+      },
+      "pattern_counts": {
+        "target_full": 8
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 8
+      },
+      "speaker_counts": {
+        "加萨尼": 1,
+        "君君": 1,
+        "恒雄": 1,
+        "浮游水蕈兽·元素生命": 1,
+        "琴": 1,
+        "石壮": 1,
+        "舍利夫": 1,
+        "阿夫辛": 1
+      },
+      "sample_ids": [
+        "val_000041",
+        "val_000139",
+        "val_000182",
+        "val_000330",
+        "val_000338",
+        "val_000376",
+        "val_000396",
+        "val_000403"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_overlap_ratio": 0.9,
+        "max_interference_gain_db": -2.3610000610351562
+      }
+    },
+    {
+      "subset_name": "recipe_clean__pattern_full__any_ratio__overlap_ge_0_90__pool_clean__gain_le_q50__all_transient__all_interference_transient__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -1.0803144574165344,
+        "v38": -2.363683819770813,
+        "v37": -2.8943024277687073
+      },
+      "pair_gaps_db": [
+        1.2833693623542786,
+        0.5306186079978943
+      ],
+      "min_pair_gap_db": 0.5306186079978943,
+      "mean_overlap_ratio": 0.959504740184807,
+      "mean_interference_gain_db": -4.475499999999999,
+      "mean_target_transient_presence_minus_mid_db_mean": -13.133528351783752,
+      "mean_interference_transient_presence_minus_mid_db_mean": 4.652636855840683,
+      "mean_target_interference_logspec_cosine": 0.559855279615211,
+      "recipe_counts": {
+        "target_clean_speech": 8
+      },
+      "pattern_counts": {
+        "target_full": 8
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 8
+      },
+      "speaker_counts": {
+        "加萨尼": 1,
+        "君君": 1,
+        "恒雄": 1,
+        "浮游水蕈兽·元素生命": 1,
+        "琴": 1,
+        "石壮": 1,
+        "舍利夫": 1,
+        "阿夫辛": 1
+      },
+      "sample_ids": [
+        "val_000041",
+        "val_000139",
+        "val_000182",
+        "val_000330",
+        "val_000338",
+        "val_000376",
+        "val_000396",
+        "val_000403"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "max_interference_gain_db": -2.3610000610351562
+      }
+    },
+    {
+      "subset_name": "recipe_clean__pattern_full__ratio_ge_0_95__overlap_ge_0_90__all_pools__gain_le_q50__all_transient__all_interference_transient__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -1.0803144574165344,
+        "v38": -2.363683819770813,
+        "v37": -2.8943024277687073
+      },
+      "pair_gaps_db": [
+        1.2833693623542786,
+        0.5306186079978943
+      ],
+      "min_pair_gap_db": 0.5306186079978943,
+      "mean_overlap_ratio": 0.959504740184807,
+      "mean_interference_gain_db": -4.475499999999999,
+      "mean_target_transient_presence_minus_mid_db_mean": -13.133528351783752,
+      "mean_interference_transient_presence_minus_mid_db_mean": 4.652636855840683,
+      "mean_target_interference_logspec_cosine": 0.559855279615211,
+      "recipe_counts": {
+        "target_clean_speech": 8
+      },
+      "pattern_counts": {
+        "target_full": 8
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 8
+      },
+      "speaker_counts": {
+        "加萨尼": 1,
+        "君君": 1,
+        "恒雄": 1,
+        "浮游水蕈兽·元素生命": 1,
+        "琴": 1,
+        "石壮": 1,
+        "舍利夫": 1,
+        "阿夫辛": 1
+      },
+      "sample_ids": [
+        "val_000041",
+        "val_000139",
+        "val_000182",
+        "val_000330",
+        "val_000338",
+        "val_000376",
+        "val_000396",
+        "val_000403"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "max_interference_gain_db": -2.3610000610351562
+      }
+    },
+    {
+      "subset_name": "recipe_clean__pattern_full__ratio_ge_0_95__overlap_ge_0_90__pool_clean__gain_le_q50__all_transient__all_interference_transient__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -1.0803144574165344,
+        "v38": -2.363683819770813,
+        "v37": -2.8943024277687073
+      },
+      "pair_gaps_db": [
+        1.2833693623542786,
+        0.5306186079978943
+      ],
+      "min_pair_gap_db": 0.5306186079978943,
+      "mean_overlap_ratio": 0.959504740184807,
+      "mean_interference_gain_db": -4.475499999999999,
+      "mean_target_transient_presence_minus_mid_db_mean": -13.133528351783752,
+      "mean_interference_transient_presence_minus_mid_db_mean": 4.652636855840683,
+      "mean_target_interference_logspec_cosine": 0.559855279615211,
+      "recipe_counts": {
+        "target_clean_speech": 8
+      },
+      "pattern_counts": {
+        "target_full": 8
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 8
+      },
+      "speaker_counts": {
+        "加萨尼": 1,
+        "君君": 1,
+        "恒雄": 1,
+        "浮游水蕈兽·元素生命": 1,
+        "琴": 1,
+        "石壮": 1,
+        "舍利夫": 1,
+        "阿夫辛": 1
+      },
+      "sample_ids": [
+        "val_000041",
+        "val_000139",
+        "val_000182",
+        "val_000330",
+        "val_000338",
+        "val_000376",
+        "val_000396",
+        "val_000403"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "max_interference_gain_db": -2.3610000610351562
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__any_ratio__overlap_ge_0_75__pool_clean__all_gains__transient_le_q50__interference_transient_lt_q67__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -0.8407229781150818,
+        "v38": -1.9349735975265503,
+        "v37": -2.4623274505138397
+      },
+      "pair_gaps_db": [
+        1.0942506194114685,
+        0.5273538529872894
+      ],
+      "min_pair_gap_db": 0.5273538529872894,
+      "mean_overlap_ratio": 0.8740012810238771,
+      "mean_interference_gain_db": -2.3938750000000004,
+      "mean_target_transient_presence_minus_mid_db_mean": -17.497183680534363,
+      "mean_interference_transient_presence_minus_mid_db_mean": 1.4565851353108883,
+      "mean_target_interference_logspec_cosine": 0.5560289028244392,
+      "recipe_counts": {
+        "target_clean_speech": 8
+      },
+      "pattern_counts": {
+        "target_absent_tail": 2,
+        "target_full": 4,
+        "target_intermittent": 2
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 8
+      },
+      "speaker_counts": {
+        "加萨尼": 1,
+        "天目十五": 1,
+        "歌特琳德": 1,
+        "浮游水蕈兽·元素生命": 1,
+        "玛乔丽": 1,
+        "琴": 1,
+        "罗纳克": 1,
+        "翰学": 1
+      },
+      "sample_ids": [
+        "val_000117",
+        "val_000182",
+        "val_000190",
+        "val_000231",
+        "val_000329",
+        "val_000330",
+        "val_000386",
+        "val_000396"
+      ],
+      "builder_filters": {
+        "min_overlap_ratio": 0.75,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "max_target_transient_presence_minus_mid_db_mean": -11.92581844329834,
+        "max_interference_transient_presence_minus_mid_db_mean": 5.840137958526611
+      }
+    },
+    {
+      "subset_name": "recipe_clean__all_patterns__any_ratio__overlap_ge_0_75__all_pools__all_gains__transient_le_q50__interference_transient_lt_q67__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -0.8407229781150818,
+        "v38": -1.9349735975265503,
+        "v37": -2.4623274505138397
+      },
+      "pair_gaps_db": [
+        1.0942506194114685,
+        0.5273538529872894
+      ],
+      "min_pair_gap_db": 0.5273538529872894,
+      "mean_overlap_ratio": 0.8740012810238771,
+      "mean_interference_gain_db": -2.3938750000000004,
+      "mean_target_transient_presence_minus_mid_db_mean": -17.497183680534363,
+      "mean_interference_transient_presence_minus_mid_db_mean": 1.4565851353108883,
+      "mean_target_interference_logspec_cosine": 0.5560289028244392,
+      "recipe_counts": {
+        "target_clean_speech": 8
+      },
+      "pattern_counts": {
+        "target_absent_tail": 2,
+        "target_full": 4,
+        "target_intermittent": 2
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 8
+      },
+      "speaker_counts": {
+        "加萨尼": 1,
+        "天目十五": 1,
+        "歌特琳德": 1,
+        "浮游水蕈兽·元素生命": 1,
+        "玛乔丽": 1,
+        "琴": 1,
+        "罗纳克": 1,
+        "翰学": 1
+      },
+      "sample_ids": [
+        "val_000117",
+        "val_000182",
+        "val_000190",
+        "val_000231",
+        "val_000329",
+        "val_000330",
+        "val_000386",
+        "val_000396"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "min_overlap_ratio": 0.75,
+        "max_target_transient_presence_minus_mid_db_mean": -11.92581844329834,
+        "max_interference_transient_presence_minus_mid_db_mean": 5.840137958526611
+      }
+    },
+    {
+      "subset_name": "recipe_clean__all_patterns__any_ratio__overlap_ge_0_75__pool_clean__all_gains__transient_le_q50__interference_transient_lt_q67__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -0.8407229781150818,
+        "v38": -1.9349735975265503,
+        "v37": -2.4623274505138397
+      },
+      "pair_gaps_db": [
+        1.0942506194114685,
+        0.5273538529872894
+      ],
+      "min_pair_gap_db": 0.5273538529872894,
+      "mean_overlap_ratio": 0.8740012810238771,
+      "mean_interference_gain_db": -2.3938750000000004,
+      "mean_target_transient_presence_minus_mid_db_mean": -17.497183680534363,
+      "mean_interference_transient_presence_minus_mid_db_mean": 1.4565851353108883,
+      "mean_target_interference_logspec_cosine": 0.5560289028244392,
+      "recipe_counts": {
+        "target_clean_speech": 8
+      },
+      "pattern_counts": {
+        "target_absent_tail": 2,
+        "target_full": 4,
+        "target_intermittent": 2
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 8
+      },
+      "speaker_counts": {
+        "加萨尼": 1,
+        "天目十五": 1,
+        "歌特琳德": 1,
+        "浮游水蕈兽·元素生命": 1,
+        "玛乔丽": 1,
+        "琴": 1,
+        "罗纳克": 1,
+        "翰学": 1
+      },
+      "sample_ids": [
+        "val_000117",
+        "val_000182",
+        "val_000190",
+        "val_000231",
+        "val_000329",
+        "val_000330",
+        "val_000386",
+        "val_000396"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "min_overlap_ratio": 0.75,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "max_target_transient_presence_minus_mid_db_mean": -11.92581844329834,
+        "max_interference_transient_presence_minus_mid_db_mean": 5.840137958526611
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__ratio_ge_0_95__any_overlap__pool_clean__gain_le_q50__transient_le_q50__all_interference_transient__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -0.8843251466751099,
+        "v38": -2.000068485736847,
+        "v37": -2.527347505092621
+      },
+      "pair_gaps_db": [
+        1.115743339061737,
+        0.5272790193557739
+      ],
+      "min_pair_gap_db": 0.5272790193557739,
+      "mean_overlap_ratio": 0.8560457166749169,
+      "mean_interference_gain_db": -4.564875,
+      "mean_target_transient_presence_minus_mid_db_mean": -15.780638933181763,
+      "mean_interference_transient_presence_minus_mid_db_mean": 7.716675877571106,
+      "mean_target_interference_logspec_cosine": 0.5437604564808397,
+      "recipe_counts": {
+        "target_clean_speech": 8
+      },
+      "pattern_counts": {
+        "target_full": 8
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 8
+      },
+      "speaker_counts": {
+        "加萨尼": 1,
+        "君君": 2,
+        "浮游水蕈兽·元素生命": 1,
+        "琴": 1,
+        "纳西妲": 1,
+        "阿尔卡米": 1,
+        "雷电将军": 1
+      },
+      "sample_ids": [
+        "val_000139",
+        "val_000182",
+        "val_000274",
+        "val_000317",
+        "val_000318",
+        "val_000330",
+        "val_000396",
+        "val_000459"
+      ],
+      "builder_filters": {
+        "min_target_ratio": 0.95,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "max_interference_gain_db": -2.3610000610351562,
+        "max_target_transient_presence_minus_mid_db_mean": -11.92581844329834
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_full__any_ratio__any_overlap__pool_clean__gain_le_q50__transient_le_q50__all_interference_transient__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -0.8843251466751099,
+        "v38": -2.000068485736847,
+        "v37": -2.527347505092621
+      },
+      "pair_gaps_db": [
+        1.115743339061737,
+        0.5272790193557739
+      ],
+      "min_pair_gap_db": 0.5272790193557739,
+      "mean_overlap_ratio": 0.8560457166749169,
+      "mean_interference_gain_db": -4.564875,
+      "mean_target_transient_presence_minus_mid_db_mean": -15.780638933181763,
+      "mean_interference_transient_presence_minus_mid_db_mean": 7.716675877571106,
+      "mean_target_interference_logspec_cosine": 0.5437604564808397,
+      "recipe_counts": {
+        "target_clean_speech": 8
+      },
+      "pattern_counts": {
+        "target_full": 8
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 8
+      },
+      "speaker_counts": {
+        "加萨尼": 1,
+        "君君": 2,
+        "浮游水蕈兽·元素生命": 1,
+        "琴": 1,
+        "纳西妲": 1,
+        "阿尔卡米": 1,
+        "雷电将军": 1
+      },
+      "sample_ids": [
+        "val_000139",
+        "val_000182",
+        "val_000274",
+        "val_000317",
+        "val_000318",
+        "val_000330",
+        "val_000396",
+        "val_000459"
+      ],
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "max_interference_gain_db": -2.3610000610351562,
+        "max_target_transient_presence_minus_mid_db_mean": -11.92581844329834
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_full__ratio_ge_0_95__any_overlap__pool_clean__gain_le_q50__transient_le_q50__all_interference_transient__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -0.8843251466751099,
+        "v38": -2.000068485736847,
+        "v37": -2.527347505092621
+      },
+      "pair_gaps_db": [
+        1.115743339061737,
+        0.5272790193557739
+      ],
+      "min_pair_gap_db": 0.5272790193557739,
+      "mean_overlap_ratio": 0.8560457166749169,
+      "mean_interference_gain_db": -4.564875,
+      "mean_target_transient_presence_minus_mid_db_mean": -15.780638933181763,
+      "mean_interference_transient_presence_minus_mid_db_mean": 7.716675877571106,
+      "mean_target_interference_logspec_cosine": 0.5437604564808397,
+      "recipe_counts": {
+        "target_clean_speech": 8
+      },
+      "pattern_counts": {
+        "target_full": 8
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 8
+      },
+      "speaker_counts": {
+        "加萨尼": 1,
+        "君君": 2,
+        "浮游水蕈兽·元素生命": 1,
+        "琴": 1,
+        "纳西妲": 1,
+        "阿尔卡米": 1,
+        "雷电将军": 1
+      },
+      "sample_ids": [
+        "val_000139",
+        "val_000182",
+        "val_000274",
+        "val_000317",
+        "val_000318",
+        "val_000330",
+        "val_000396",
+        "val_000459"
+      ],
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_target_ratio": 0.95,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "max_interference_gain_db": -2.3610000610351562,
+        "max_target_transient_presence_minus_mid_db_mean": -11.92581844329834
+      }
+    },
+    {
+      "subset_name": "recipe_clean__all_patterns__ratio_ge_0_95__any_overlap__all_pools__gain_le_q50__transient_le_q50__all_interference_transient__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -0.8843251466751099,
+        "v38": -2.000068485736847,
+        "v37": -2.527347505092621
+      },
+      "pair_gaps_db": [
+        1.115743339061737,
+        0.5272790193557739
+      ],
+      "min_pair_gap_db": 0.5272790193557739,
+      "mean_overlap_ratio": 0.8560457166749169,
+      "mean_interference_gain_db": -4.564875,
+      "mean_target_transient_presence_minus_mid_db_mean": -15.780638933181763,
+      "mean_interference_transient_presence_minus_mid_db_mean": 7.716675877571106,
+      "mean_target_interference_logspec_cosine": 0.5437604564808397,
+      "recipe_counts": {
+        "target_clean_speech": 8
+      },
+      "pattern_counts": {
+        "target_full": 8
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 8
+      },
+      "speaker_counts": {
+        "加萨尼": 1,
+        "君君": 2,
+        "浮游水蕈兽·元素生命": 1,
+        "琴": 1,
+        "纳西妲": 1,
+        "阿尔卡米": 1,
+        "雷电将军": 1
+      },
+      "sample_ids": [
+        "val_000139",
+        "val_000182",
+        "val_000274",
+        "val_000317",
+        "val_000318",
+        "val_000330",
+        "val_000396",
+        "val_000459"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "min_target_ratio": 0.95,
+        "max_interference_gain_db": -2.3610000610351562,
+        "max_target_transient_presence_minus_mid_db_mean": -11.92581844329834
+      }
+    },
+    {
+      "subset_name": "recipe_clean__all_patterns__ratio_ge_0_95__any_overlap__pool_clean__gain_le_q50__transient_le_q50__all_interference_transient__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -0.8843251466751099,
+        "v38": -2.000068485736847,
+        "v37": -2.527347505092621
+      },
+      "pair_gaps_db": [
+        1.115743339061737,
+        0.5272790193557739
+      ],
+      "min_pair_gap_db": 0.5272790193557739,
+      "mean_overlap_ratio": 0.8560457166749169,
+      "mean_interference_gain_db": -4.564875,
+      "mean_target_transient_presence_minus_mid_db_mean": -15.780638933181763,
+      "mean_interference_transient_presence_minus_mid_db_mean": 7.716675877571106,
+      "mean_target_interference_logspec_cosine": 0.5437604564808397,
+      "recipe_counts": {
+        "target_clean_speech": 8
+      },
+      "pattern_counts": {
+        "target_full": 8
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 8
+      },
+      "speaker_counts": {
+        "加萨尼": 1,
+        "君君": 2,
+        "浮游水蕈兽·元素生命": 1,
+        "琴": 1,
+        "纳西妲": 1,
+        "阿尔卡米": 1,
+        "雷电将军": 1
+      },
+      "sample_ids": [
+        "val_000139",
+        "val_000182",
+        "val_000274",
+        "val_000317",
+        "val_000318",
+        "val_000330",
+        "val_000396",
+        "val_000459"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "min_target_ratio": 0.95,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "max_interference_gain_db": -2.3610000610351562,
+        "max_target_transient_presence_minus_mid_db_mean": -11.92581844329834
+      }
+    },
+    {
+      "subset_name": "recipe_clean__pattern_full__any_ratio__any_overlap__all_pools__gain_le_q50__transient_le_q50__all_interference_transient__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -0.8843251466751099,
+        "v38": -2.000068485736847,
+        "v37": -2.527347505092621
+      },
+      "pair_gaps_db": [
+        1.115743339061737,
+        0.5272790193557739
+      ],
+      "min_pair_gap_db": 0.5272790193557739,
+      "mean_overlap_ratio": 0.8560457166749169,
+      "mean_interference_gain_db": -4.564875,
+      "mean_target_transient_presence_minus_mid_db_mean": -15.780638933181763,
+      "mean_interference_transient_presence_minus_mid_db_mean": 7.716675877571106,
+      "mean_target_interference_logspec_cosine": 0.5437604564808397,
+      "recipe_counts": {
+        "target_clean_speech": 8
+      },
+      "pattern_counts": {
+        "target_full": 8
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 8
+      },
+      "speaker_counts": {
+        "加萨尼": 1,
+        "君君": 2,
+        "浮游水蕈兽·元素生命": 1,
+        "琴": 1,
+        "纳西妲": 1,
+        "阿尔卡米": 1,
+        "雷电将军": 1
+      },
+      "sample_ids": [
+        "val_000139",
+        "val_000182",
+        "val_000274",
+        "val_000317",
+        "val_000318",
+        "val_000330",
+        "val_000396",
+        "val_000459"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "max_interference_gain_db": -2.3610000610351562,
+        "max_target_transient_presence_minus_mid_db_mean": -11.92581844329834
+      }
+    },
+    {
+      "subset_name": "recipe_clean__pattern_full__any_ratio__any_overlap__pool_clean__gain_le_q50__transient_le_q50__all_interference_transient__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -0.8843251466751099,
+        "v38": -2.000068485736847,
+        "v37": -2.527347505092621
+      },
+      "pair_gaps_db": [
+        1.115743339061737,
+        0.5272790193557739
+      ],
+      "min_pair_gap_db": 0.5272790193557739,
+      "mean_overlap_ratio": 0.8560457166749169,
+      "mean_interference_gain_db": -4.564875,
+      "mean_target_transient_presence_minus_mid_db_mean": -15.780638933181763,
+      "mean_interference_transient_presence_minus_mid_db_mean": 7.716675877571106,
+      "mean_target_interference_logspec_cosine": 0.5437604564808397,
+      "recipe_counts": {
+        "target_clean_speech": 8
+      },
+      "pattern_counts": {
+        "target_full": 8
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 8
+      },
+      "speaker_counts": {
+        "加萨尼": 1,
+        "君君": 2,
+        "浮游水蕈兽·元素生命": 1,
+        "琴": 1,
+        "纳西妲": 1,
+        "阿尔卡米": 1,
+        "雷电将军": 1
+      },
+      "sample_ids": [
+        "val_000139",
+        "val_000182",
+        "val_000274",
+        "val_000317",
+        "val_000318",
+        "val_000330",
+        "val_000396",
+        "val_000459"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "max_interference_gain_db": -2.3610000610351562,
+        "max_target_transient_presence_minus_mid_db_mean": -11.92581844329834
+      }
+    },
+    {
+      "subset_name": "recipe_clean__pattern_full__ratio_ge_0_95__any_overlap__all_pools__gain_le_q50__transient_le_q50__all_interference_transient__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -0.8843251466751099,
+        "v38": -2.000068485736847,
+        "v37": -2.527347505092621
+      },
+      "pair_gaps_db": [
+        1.115743339061737,
+        0.5272790193557739
+      ],
+      "min_pair_gap_db": 0.5272790193557739,
+      "mean_overlap_ratio": 0.8560457166749169,
+      "mean_interference_gain_db": -4.564875,
+      "mean_target_transient_presence_minus_mid_db_mean": -15.780638933181763,
+      "mean_interference_transient_presence_minus_mid_db_mean": 7.716675877571106,
+      "mean_target_interference_logspec_cosine": 0.5437604564808397,
+      "recipe_counts": {
+        "target_clean_speech": 8
+      },
+      "pattern_counts": {
+        "target_full": 8
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 8
+      },
+      "speaker_counts": {
+        "加萨尼": 1,
+        "君君": 2,
+        "浮游水蕈兽·元素生命": 1,
+        "琴": 1,
+        "纳西妲": 1,
+        "阿尔卡米": 1,
+        "雷电将军": 1
+      },
+      "sample_ids": [
+        "val_000139",
+        "val_000182",
+        "val_000274",
+        "val_000317",
+        "val_000318",
+        "val_000330",
+        "val_000396",
+        "val_000459"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_target_ratio": 0.95,
+        "max_interference_gain_db": -2.3610000610351562,
+        "max_target_transient_presence_minus_mid_db_mean": -11.92581844329834
+      }
+    },
+    {
+      "subset_name": "recipe_clean__pattern_full__ratio_ge_0_95__any_overlap__pool_clean__gain_le_q50__transient_le_q50__all_interference_transient__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -0.8843251466751099,
+        "v38": -2.000068485736847,
+        "v37": -2.527347505092621
+      },
+      "pair_gaps_db": [
+        1.115743339061737,
+        0.5272790193557739
+      ],
+      "min_pair_gap_db": 0.5272790193557739,
+      "mean_overlap_ratio": 0.8560457166749169,
+      "mean_interference_gain_db": -4.564875,
+      "mean_target_transient_presence_minus_mid_db_mean": -15.780638933181763,
+      "mean_interference_transient_presence_minus_mid_db_mean": 7.716675877571106,
+      "mean_target_interference_logspec_cosine": 0.5437604564808397,
+      "recipe_counts": {
+        "target_clean_speech": 8
+      },
+      "pattern_counts": {
+        "target_full": 8
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 8
+      },
+      "speaker_counts": {
+        "加萨尼": 1,
+        "君君": 2,
+        "浮游水蕈兽·元素生命": 1,
+        "琴": 1,
+        "纳西妲": 1,
+        "阿尔卡米": 1,
+        "雷电将军": 1
+      },
+      "sample_ids": [
+        "val_000139",
+        "val_000182",
+        "val_000274",
+        "val_000317",
+        "val_000318",
+        "val_000330",
+        "val_000396",
+        "val_000459"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_target_ratio": 0.95,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "max_interference_gain_db": -2.3610000610351562,
+        "max_target_transient_presence_minus_mid_db_mean": -11.92581844329834
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__any_ratio__any_overlap__pool_clean__all_gains__transient_lt_q67__interference_transient_le_q50__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -0.8480684161186218,
+        "v38": -1.9451711177825928,
+        "v37": -2.472240597009659
+      },
+      "pair_gaps_db": [
+        1.097102701663971,
+        0.527069479227066
+      ],
+      "min_pair_gap_db": 0.527069479227066,
+      "mean_overlap_ratio": 0.8197759430591817,
+      "mean_interference_gain_db": -2.7665,
+      "mean_target_transient_presence_minus_mid_db_mean": -14.708916306495667,
+      "mean_interference_transient_presence_minus_mid_db_mean": 0.2853372283279896,
+      "mean_target_interference_logspec_cosine": 0.5971644180809039,
+      "recipe_counts": {
+        "target_clean_speech": 8
+      },
+      "pattern_counts": {
+        "target_absent_tail": 2,
+        "target_full": 4,
+        "target_intermittent": 2
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 8
+      },
+      "speaker_counts": {
+        "天目十五": 1,
+        "昆钧": 1,
+        "格兰维尔": 1,
+        "歌特琳德": 1,
+        "玛乔丽": 1,
+        "琴": 1,
+        "罗纳克": 1,
+        "阿夫辛": 1
+      },
+      "sample_ids": [
+        "val_000117",
+        "val_000182",
+        "val_000190",
+        "val_000231",
+        "val_000376",
+        "val_000386",
+        "val_000390",
+        "val_000392"
+      ],
+      "builder_filters": {
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "max_target_transient_presence_minus_mid_db_mean": -9.231693267822266,
+        "max_interference_transient_presence_minus_mid_db_mean": 2.7667629718780518
+      }
+    },
+    {
+      "subset_name": "recipe_clean__all_patterns__any_ratio__any_overlap__all_pools__all_gains__transient_lt_q67__interference_transient_le_q50__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -0.8480684161186218,
+        "v38": -1.9451711177825928,
+        "v37": -2.472240597009659
+      },
+      "pair_gaps_db": [
+        1.097102701663971,
+        0.527069479227066
+      ],
+      "min_pair_gap_db": 0.527069479227066,
+      "mean_overlap_ratio": 0.8197759430591817,
+      "mean_interference_gain_db": -2.7665,
+      "mean_target_transient_presence_minus_mid_db_mean": -14.708916306495667,
+      "mean_interference_transient_presence_minus_mid_db_mean": 0.2853372283279896,
+      "mean_target_interference_logspec_cosine": 0.5971644180809039,
+      "recipe_counts": {
+        "target_clean_speech": 8
+      },
+      "pattern_counts": {
+        "target_absent_tail": 2,
+        "target_full": 4,
+        "target_intermittent": 2
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 8
+      },
+      "speaker_counts": {
+        "天目十五": 1,
+        "昆钧": 1,
+        "格兰维尔": 1,
+        "歌特琳德": 1,
+        "玛乔丽": 1,
+        "琴": 1,
+        "罗纳克": 1,
+        "阿夫辛": 1
+      },
+      "sample_ids": [
+        "val_000117",
+        "val_000182",
+        "val_000190",
+        "val_000231",
+        "val_000376",
+        "val_000386",
+        "val_000390",
+        "val_000392"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "max_target_transient_presence_minus_mid_db_mean": -9.231693267822266,
+        "max_interference_transient_presence_minus_mid_db_mean": 2.7667629718780518
+      }
+    },
+    {
+      "subset_name": "recipe_clean__all_patterns__any_ratio__any_overlap__pool_clean__all_gains__transient_lt_q67__interference_transient_le_q50__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -0.8480684161186218,
+        "v38": -1.9451711177825928,
+        "v37": -2.472240597009659
+      },
+      "pair_gaps_db": [
+        1.097102701663971,
+        0.527069479227066
+      ],
+      "min_pair_gap_db": 0.527069479227066,
+      "mean_overlap_ratio": 0.8197759430591817,
+      "mean_interference_gain_db": -2.7665,
+      "mean_target_transient_presence_minus_mid_db_mean": -14.708916306495667,
+      "mean_interference_transient_presence_minus_mid_db_mean": 0.2853372283279896,
+      "mean_target_interference_logspec_cosine": 0.5971644180809039,
+      "recipe_counts": {
+        "target_clean_speech": 8
+      },
+      "pattern_counts": {
+        "target_absent_tail": 2,
+        "target_full": 4,
+        "target_intermittent": 2
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 8
+      },
+      "speaker_counts": {
+        "天目十五": 1,
+        "昆钧": 1,
+        "格兰维尔": 1,
+        "歌特琳德": 1,
+        "玛乔丽": 1,
+        "琴": 1,
+        "罗纳克": 1,
+        "阿夫辛": 1
+      },
+      "sample_ids": [
+        "val_000117",
+        "val_000182",
+        "val_000190",
+        "val_000231",
+        "val_000376",
+        "val_000386",
+        "val_000390",
+        "val_000392"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "max_target_transient_presence_minus_mid_db_mean": -9.231693267822266,
+        "max_interference_transient_presence_minus_mid_db_mean": 2.7667629718780518
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__ratio_ge_0_95__any_overlap__pool_clean__all_gains__transient_lt_q67__interference_transient_lt_q67__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -0.8485556840896606,
+        "v38": -1.948144793510437,
+        "v37": -2.4742584824562073
+      },
+      "pair_gaps_db": [
+        1.0995891094207764,
+        0.5261136889457703
+      ],
+      "min_pair_gap_db": 0.5261136889457703,
+      "mean_overlap_ratio": 0.8448877357973811,
+      "mean_interference_gain_db": -3.2123749999999998,
+      "mean_target_transient_presence_minus_mid_db_mean": -16.334139108657837,
+      "mean_interference_transient_presence_minus_mid_db_mean": 2.713187240064144,
+      "mean_target_interference_logspec_cosine": 0.5874142588102947,
+      "recipe_counts": {
+        "target_clean_speech": 8
+      },
+      "pattern_counts": {
+        "target_full": 8
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 8
+      },
+      "speaker_counts": {
+        "加萨尼": 1,
+        "昆钧": 1,
+        "格兰维尔": 1,
+        "浮游水蕈兽·元素生命": 1,
+        "琴": 1,
+        "翰学": 1,
+        "阿二": 1,
+        "阿夫辛": 1
+      },
+      "sample_ids": [
+        "val_000069",
+        "val_000182",
+        "val_000329",
+        "val_000330",
+        "val_000376",
+        "val_000390",
+        "val_000392",
+        "val_000396"
+      ],
+      "builder_filters": {
+        "min_target_ratio": 0.95,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "max_target_transient_presence_minus_mid_db_mean": -9.231693267822266,
+        "max_interference_transient_presence_minus_mid_db_mean": 5.840137958526611
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_full__any_ratio__any_overlap__pool_clean__all_gains__transient_lt_q67__interference_transient_lt_q67__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -0.8485556840896606,
+        "v38": -1.948144793510437,
+        "v37": -2.4742584824562073
+      },
+      "pair_gaps_db": [
+        1.0995891094207764,
+        0.5261136889457703
+      ],
+      "min_pair_gap_db": 0.5261136889457703,
+      "mean_overlap_ratio": 0.8448877357973811,
+      "mean_interference_gain_db": -3.2123749999999998,
+      "mean_target_transient_presence_minus_mid_db_mean": -16.334139108657837,
+      "mean_interference_transient_presence_minus_mid_db_mean": 2.713187240064144,
+      "mean_target_interference_logspec_cosine": 0.5874142588102947,
+      "recipe_counts": {
+        "target_clean_speech": 8
+      },
+      "pattern_counts": {
+        "target_full": 8
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 8
+      },
+      "speaker_counts": {
+        "加萨尼": 1,
+        "昆钧": 1,
+        "格兰维尔": 1,
+        "浮游水蕈兽·元素生命": 1,
+        "琴": 1,
+        "翰学": 1,
+        "阿二": 1,
+        "阿夫辛": 1
+      },
+      "sample_ids": [
+        "val_000069",
+        "val_000182",
+        "val_000329",
+        "val_000330",
+        "val_000376",
+        "val_000390",
+        "val_000392",
+        "val_000396"
+      ],
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "max_target_transient_presence_minus_mid_db_mean": -9.231693267822266,
+        "max_interference_transient_presence_minus_mid_db_mean": 5.840137958526611
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_full__ratio_ge_0_95__any_overlap__pool_clean__all_gains__transient_lt_q67__interference_transient_lt_q67__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -0.8485556840896606,
+        "v38": -1.948144793510437,
+        "v37": -2.4742584824562073
+      },
+      "pair_gaps_db": [
+        1.0995891094207764,
+        0.5261136889457703
+      ],
+      "min_pair_gap_db": 0.5261136889457703,
+      "mean_overlap_ratio": 0.8448877357973811,
+      "mean_interference_gain_db": -3.2123749999999998,
+      "mean_target_transient_presence_minus_mid_db_mean": -16.334139108657837,
+      "mean_interference_transient_presence_minus_mid_db_mean": 2.713187240064144,
+      "mean_target_interference_logspec_cosine": 0.5874142588102947,
+      "recipe_counts": {
+        "target_clean_speech": 8
+      },
+      "pattern_counts": {
+        "target_full": 8
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 8
+      },
+      "speaker_counts": {
+        "加萨尼": 1,
+        "昆钧": 1,
+        "格兰维尔": 1,
+        "浮游水蕈兽·元素生命": 1,
+        "琴": 1,
+        "翰学": 1,
+        "阿二": 1,
+        "阿夫辛": 1
+      },
+      "sample_ids": [
+        "val_000069",
+        "val_000182",
+        "val_000329",
+        "val_000330",
+        "val_000376",
+        "val_000390",
+        "val_000392",
+        "val_000396"
+      ],
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_target_ratio": 0.95,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "max_target_transient_presence_minus_mid_db_mean": -9.231693267822266,
+        "max_interference_transient_presence_minus_mid_db_mean": 5.840137958526611
+      }
+    },
+    {
+      "subset_name": "recipe_clean__all_patterns__ratio_ge_0_95__any_overlap__all_pools__all_gains__transient_lt_q67__interference_transient_lt_q67__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -0.8485556840896606,
+        "v38": -1.948144793510437,
+        "v37": -2.4742584824562073
+      },
+      "pair_gaps_db": [
+        1.0995891094207764,
+        0.5261136889457703
+      ],
+      "min_pair_gap_db": 0.5261136889457703,
+      "mean_overlap_ratio": 0.8448877357973811,
+      "mean_interference_gain_db": -3.2123749999999998,
+      "mean_target_transient_presence_minus_mid_db_mean": -16.334139108657837,
+      "mean_interference_transient_presence_minus_mid_db_mean": 2.713187240064144,
+      "mean_target_interference_logspec_cosine": 0.5874142588102947,
+      "recipe_counts": {
+        "target_clean_speech": 8
+      },
+      "pattern_counts": {
+        "target_full": 8
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 8
+      },
+      "speaker_counts": {
+        "加萨尼": 1,
+        "昆钧": 1,
+        "格兰维尔": 1,
+        "浮游水蕈兽·元素生命": 1,
+        "琴": 1,
+        "翰学": 1,
+        "阿二": 1,
+        "阿夫辛": 1
+      },
+      "sample_ids": [
+        "val_000069",
+        "val_000182",
+        "val_000329",
+        "val_000330",
+        "val_000376",
+        "val_000390",
+        "val_000392",
+        "val_000396"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "min_target_ratio": 0.95,
+        "max_target_transient_presence_minus_mid_db_mean": -9.231693267822266,
+        "max_interference_transient_presence_minus_mid_db_mean": 5.840137958526611
+      }
+    },
+    {
+      "subset_name": "recipe_clean__all_patterns__ratio_ge_0_95__any_overlap__pool_clean__all_gains__transient_lt_q67__interference_transient_lt_q67__all_similarity__all_speakers",
+      "count": 8,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v32",
+        "v38",
+        "v37"
+      ],
+      "alias_scores": {
+        "v32": -0.8485556840896606,
+        "v38": -1.948144793510437,
+        "v37": -2.4742584824562073
+      },
+      "pair_gaps_db": [
+        1.0995891094207764,
+        0.5261136889457703
+      ],
+      "min_pair_gap_db": 0.5261136889457703,
+      "mean_overlap_ratio": 0.8448877357973811,
+      "mean_interference_gain_db": -3.2123749999999998,
+      "mean_target_transient_presence_minus_mid_db_mean": -16.334139108657837,
+      "mean_interference_transient_presence_minus_mid_db_mean": 2.713187240064144,
+      "mean_target_interference_logspec_cosine": 0.5874142588102947,
+      "recipe_counts": {
+        "target_clean_speech": 8
+      },
+      "pattern_counts": {
+        "target_full": 8
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 8
+      },
+      "speaker_counts": {
+        "加萨尼": 1,
+        "昆钧": 1,
+        "格兰维尔": 1,
+        "浮游水蕈兽·元素生命": 1,
+        "琴": 1,
+        "翰学": 1,
+        "阿二": 1,
+        "阿夫辛": 1
+      },
+      "sample_ids": [
+        "val_000069",
+        "val_000182",
+        "val_000329",
+        "val_000330",
+        "val_000376",
+        "val_000390",
+        "val_000392",
+        "val_000396"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "min_target_ratio": 0.95,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "max_target_transient_presence_minus_mid_db_mean": -9.231693267822266,
+        "max_interference_transient_presence_minus_mid_db_mean": 5.840137958526611
+      }
+    }
+  ],
+  "top_near_miss_candidates": [],
+  "speaker_counts": {
+    "friend_hard_negative_segments": 27,
+    "七尾": 1,
+    "伸夫": 1,
+    "克罗索": 1,
+    "其它语音 - Others": 1,
+    "凯亚": 1,
+    "刻晴": 1,
+    "加萨尼": 1,
+    "叶德": 1,
+    "君君": 2,
+    "图昂": 1,
+    "多莉": 1,
+    "天目十五": 1,
+    "小川": 1,
+    "巴蒂斯特": 1,
+    "恒雄": 1,
+    "战斗语音 - Battle": 1,
+    "斑目百兵卫": 1,
+    "昆钧": 1,
+    "普里耶": 1,
+    "格兰维尔": 1,
+    "格蕾希艾": 1,
+    "歌特琳德": 1,
+    "波林": 1,
+    "浮游水蕈兽·元素生命": 1,
+    "玛乔丽": 1,
+    "玛蕾蒂": 1,
+    "琴": 1,
+    "石壮": 1,
+    "纳西妲": 1,
+    "维格尔": 1,
+    "罗纳克": 1,
+    "翰学": 1,
+    "舍利夫": 1,
+    "芙卡洛斯": 1,
+    "芙蓉": 1,
+    "莱欧斯利": 1,
+    "葛瑞丝": 1,
+    "观众": 1,
+    "赛场司仪": 1,
+    "迪希雅": 1,
+    "铜雀": 1,
+    "阿二": 1,
+    "阿夫辛": 1,
+    "阿尔卡米": 1,
+    "雷电将军": 1
+  },
+  "num_candidates": 1870
+}

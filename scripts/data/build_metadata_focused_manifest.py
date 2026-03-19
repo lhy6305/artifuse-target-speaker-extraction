@@ -132,7 +132,7 @@ def load_sample_ids(path: Path | None) -> set[str]:
     if path is None:
         return set()
     sample_ids: set[str] = set()
-    with path.open("r", encoding="utf-8") as fh:
+    with path.open("r", encoding="utf-8-sig") as fh:
         for line in fh:
             value = line.strip()
             if not value:

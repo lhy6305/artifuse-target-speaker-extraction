@@ -28,8 +28,15 @@ from tse_prefix.pipeline import (
     interference_projection_loss,
     masked_sisdr,
     transient_presence_l1_loss,
+    weighted_stft_l1_loss,
+    weighted_waveform_l1_loss,
 )
-from tse_prefix.pipeline.loss_selectors import build_selector_sample_weights, selector_config_keys
+from tse_prefix.pipeline.loss_selectors import (
+    build_branch_selector_sample_weights,
+    build_selector_sample_weights,
+    merge_selector_sample_weights,
+    selector_config_keys,
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -113,6 +120,43 @@ def build_compute_loss_kwargs(loss_config: dict) -> dict:
     }
 
 
+def resolve_selector_sample_weights(
+    batch: dict,
+    device: torch.device,
+    loss_config: dict[str, float],
+    prefix: str,
+    extra_weight_keys: tuple[str, ...],
+) -> tuple[torch.Tensor | None, torch.Tensor | None, torch.Tensor | None]:
+    if any(float(loss_config.get(key, 0.0)) > 0.0 for key in extra_weight_keys):
+        base_sample_weights = build_branch_selector_sample_weights(
+            batch=batch,
+            device=device,
+            loss_config=loss_config,
+            prefix=prefix,
+            branch_name="",
+        )
+        extra_sample_weights = build_branch_selector_sample_weights(
+            batch=batch,
+            device=device,
+            loss_config=loss_config,
+            prefix=prefix,
+            branch_name="extra_",
+        )
+        union_sample_weights = merge_selector_sample_weights(
+            base_sample_weights,
+            extra_sample_weights,
+        )
+        return base_sample_weights, extra_sample_weights, union_sample_weights
+
+    base_sample_weights = build_selector_sample_weights(
+        batch=batch,
+        device=device,
+        loss_config=loss_config,
+        prefix=prefix,
+    )
+    return base_sample_weights, None, base_sample_weights
+
+
 def load_checkpoint(path: Path, device: torch.device) -> dict:
     try:
         return torch.load(path, map_location=device, weights_only=True)
@@ -174,10 +218,18 @@ def main() -> None:
         "loss": 0.0,
         "waveform_l1": 0.0,
         "stft_l1": 0.0,
+        "reconstruction_waveform_l1": 0.0,
+        "reconstruction_stft_l1": 0.0,
+        "reconstruction_extra_waveform_l1": 0.0,
+        "reconstruction_extra_stft_l1": 0.0,
         "sisdr_db": 0.0,
+        "interference_extra_guard_sisdr_loss": 0.0,
         "transient_presence_l1": 0.0,
+        "transient_extra_presence_l1": 0.0,
         "interference_projection_ratio": 0.0,
+        "interference_extra_projection_ratio": 0.0,
         "absent_interval_l1": 0.0,
+        "absent_extra_interval_l1": 0.0,
     }
     batch_count = 0
     pattern_metrics: dict[str, dict[str, float | int]] = defaultdict(
@@ -185,9 +237,16 @@ def main() -> None:
             "count": 0,
             "loss": 0.0,
             "sisdr_db": 0.0,
+            "reconstruction_waveform_l1": 0.0,
+            "reconstruction_stft_l1": 0.0,
+            "reconstruction_extra_waveform_l1": 0.0,
+            "reconstruction_extra_stft_l1": 0.0,
             "transient_presence_l1": 0.0,
+            "transient_extra_presence_l1": 0.0,
             "interference_projection_ratio": 0.0,
+            "interference_extra_projection_ratio": 0.0,
             "absent_interval_l1": 0.0,
+            "absent_extra_interval_l1": 0.0,
         }
     )
     recipe_metrics: dict[str, dict[str, float | int]] = defaultdict(
@@ -195,9 +254,16 @@ def main() -> None:
             "count": 0,
             "loss": 0.0,
             "sisdr_db": 0.0,
+            "reconstruction_waveform_l1": 0.0,
+            "reconstruction_stft_l1": 0.0,
+            "reconstruction_extra_waveform_l1": 0.0,
+            "reconstruction_extra_stft_l1": 0.0,
             "transient_presence_l1": 0.0,
+            "transient_extra_presence_l1": 0.0,
             "interference_projection_ratio": 0.0,
+            "interference_extra_projection_ratio": 0.0,
             "absent_interval_l1": 0.0,
+            "absent_extra_interval_l1": 0.0,
         }
     )
     ratio_bucket_metrics: dict[str, dict[str, float | int]] = defaultdict(
@@ -205,9 +271,16 @@ def main() -> None:
             "count": 0,
             "loss": 0.0,
             "sisdr_db": 0.0,
+            "reconstruction_waveform_l1": 0.0,
+            "reconstruction_stft_l1": 0.0,
+            "reconstruction_extra_waveform_l1": 0.0,
+            "reconstruction_extra_stft_l1": 0.0,
             "transient_presence_l1": 0.0,
+            "transient_extra_presence_l1": 0.0,
             "interference_projection_ratio": 0.0,
+            "interference_extra_projection_ratio": 0.0,
             "absent_interval_l1": 0.0,
+            "absent_extra_interval_l1": 0.0,
         }
     )
     saved = 0
@@ -223,23 +296,41 @@ def main() -> None:
                 reference=batch["reference"],
                 reference_lengths=batch["reference_lengths"],
             )
-            transient_sample_weights = build_selector_sample_weights(
-                batch=batch,
-                device=device,
-                loss_config=loss_config,
-                prefix="transient",
+            reconstruction_sample_weights, reconstruction_extra_sample_weights, reconstruction_union_sample_weights = (
+                resolve_selector_sample_weights(
+                    batch=batch,
+                    device=device,
+                    loss_config=loss_config,
+                    prefix="reconstruction",
+                    extra_weight_keys=("reconstruction_extra_waveform_weight", "reconstruction_extra_stft_weight"),
+                )
             )
-            interference_sample_weights = build_selector_sample_weights(
-                batch=batch,
-                device=device,
-                loss_config=loss_config,
-                prefix="interference",
+            transient_sample_weights, transient_extra_sample_weights, transient_union_sample_weights = (
+                resolve_selector_sample_weights(
+                    batch=batch,
+                    device=device,
+                    loss_config=loss_config,
+                    prefix="transient",
+                    extra_weight_keys=("transient_extra_weight",),
+                )
             )
-            absent_sample_weights = build_selector_sample_weights(
-                batch=batch,
-                device=device,
-                loss_config=loss_config,
-                prefix="absent",
+            interference_sample_weights, interference_extra_sample_weights, interference_union_sample_weights = (
+                resolve_selector_sample_weights(
+                    batch=batch,
+                    device=device,
+                    loss_config=loss_config,
+                    prefix="interference",
+                    extra_weight_keys=("interference_extra_weight", "interference_extra_guard_sisdr_weight"),
+                )
+            )
+            absent_sample_weights, absent_extra_sample_weights, absent_union_sample_weights = (
+                resolve_selector_sample_weights(
+                    batch=batch,
+                    device=device,
+                    loss_config=loss_config,
+                    prefix="absent",
+                    extra_weight_keys=("absent_extra_weight",),
+                )
             )
             losses = compute_losses(
                 prediction=outputs["estimated_waveform"],
@@ -248,9 +339,14 @@ def main() -> None:
                 lengths=batch["target_lengths"],
                 absent_intervals=batch["target_absent_intervals"],
                 model=model,
+                reconstruction_sample_weights=reconstruction_sample_weights,
+                reconstruction_extra_sample_weights=reconstruction_extra_sample_weights,
                 transient_sample_weights=transient_sample_weights,
+                transient_extra_sample_weights=transient_extra_sample_weights,
                 interference_sample_weights=interference_sample_weights,
+                interference_extra_sample_weights=interference_extra_sample_weights,
                 absent_sample_weights=absent_sample_weights,
+                absent_extra_sample_weights=absent_extra_sample_weights,
                 **compute_loss_kwargs,
             )
             sisdr = masked_sisdr(
@@ -262,10 +358,20 @@ def main() -> None:
             totals["loss"] += float(losses.total.item())
             totals["waveform_l1"] += float(losses.waveform_l1.item())
             totals["stft_l1"] += float(losses.stft_l1.item())
+            totals["reconstruction_waveform_l1"] += float(losses.reconstruction_waveform_l1.item())
+            totals["reconstruction_stft_l1"] += float(losses.reconstruction_stft_l1.item())
+            totals["reconstruction_extra_waveform_l1"] += float(losses.reconstruction_extra_waveform_l1.item())
+            totals["reconstruction_extra_stft_l1"] += float(losses.reconstruction_extra_stft_l1.item())
             totals["sisdr_db"] += float(sisdr.item())
+            totals["interference_extra_guard_sisdr_loss"] += float(losses.interference_extra_guard_sisdr_loss.item())
             totals["transient_presence_l1"] += float(losses.transient_presence_l1.item())
+            totals["transient_extra_presence_l1"] += float(losses.transient_extra_presence_l1.item())
             totals["interference_projection_ratio"] += float(losses.interference_projection_ratio.item())
+            totals["interference_extra_projection_ratio"] += float(
+                losses.interference_extra_projection_ratio.item()
+            )
             totals["absent_interval_l1"] += float(losses.absent_interval_l1.item())
+            totals["absent_extra_interval_l1"] += float(losses.absent_extra_interval_l1.item())
             batch_count += 1
 
             predictions, targets, lengths = align_waveforms(
@@ -290,6 +396,56 @@ def main() -> None:
                         lengths[idx : idx + 1],
                     ).item()
                 )
+                sample_reconstruction = float(
+                    weighted_waveform_l1_loss(
+                        prediction=predictions[idx : idx + 1],
+                        target=targets[idx : idx + 1],
+                        lengths=lengths[idx : idx + 1],
+                        sample_weights=(
+                            reconstruction_sample_weights[idx : idx + 1]
+                            if reconstruction_union_sample_weights is not None and reconstruction_sample_weights is not None
+                            else None
+                        ),
+                    ).item()
+                )
+                sample_reconstruction_stft = float(
+                    weighted_stft_l1_loss(
+                        prediction=predictions[idx : idx + 1],
+                        target=targets[idx : idx + 1],
+                        lengths=lengths[idx : idx + 1],
+                        model=model,
+                        sample_weights=(
+                            reconstruction_sample_weights[idx : idx + 1]
+                            if reconstruction_union_sample_weights is not None and reconstruction_sample_weights is not None
+                            else None
+                        ),
+                    ).item()
+                )
+                sample_reconstruction_extra = float(
+                    weighted_waveform_l1_loss(
+                        prediction=predictions[idx : idx + 1],
+                        target=targets[idx : idx + 1],
+                        lengths=lengths[idx : idx + 1],
+                        sample_weights=(
+                            reconstruction_extra_sample_weights[idx : idx + 1]
+                            if reconstruction_union_sample_weights is not None and reconstruction_extra_sample_weights is not None
+                            else None
+                        ),
+                    ).item()
+                )
+                sample_reconstruction_extra_stft = float(
+                    weighted_stft_l1_loss(
+                        prediction=predictions[idx : idx + 1],
+                        target=targets[idx : idx + 1],
+                        lengths=lengths[idx : idx + 1],
+                        model=model,
+                        sample_weights=(
+                            reconstruction_extra_sample_weights[idx : idx + 1]
+                            if reconstruction_union_sample_weights is not None and reconstruction_extra_sample_weights is not None
+                            else None
+                        ),
+                    ).item()
+                )
                 sample_transient = float(
                     transient_presence_l1_loss(
                         prediction=predictions[idx : idx + 1],
@@ -306,12 +462,43 @@ def main() -> None:
                         ratio_weight=float(loss_config.get("transient_ratio_weight", 0.5)),
                     ).item()
                 )
+                sample_transient_extra = float(
+                    transient_presence_l1_loss(
+                        prediction=predictions[idx : idx + 1],
+                        target=targets[idx : idx + 1],
+                        lengths=lengths[idx : idx + 1],
+                        model=model,
+                        sample_weights=(
+                            transient_extra_sample_weights[idx : idx + 1]
+                            if transient_union_sample_weights is not None and transient_extra_sample_weights is not None
+                            else None
+                        ),
+                        sample_rate=int(loss_config.get("sample_rate", args.sample_rate)),
+                        top_ratio=float(loss_config.get("transient_top_ratio", 0.12)),
+                        min_count=int(loss_config.get("transient_min_count", 8)),
+                        mid_low_hz=float(loss_config.get("transient_mid_low_hz", 800.0)),
+                        mid_high_hz=float(loss_config.get("transient_mid_high_hz", 3000.0)),
+                        presence_low_hz=float(loss_config.get("transient_presence_low_hz", 3000.0)),
+                        presence_high_hz=float(loss_config.get("transient_presence_high_hz", 8000.0)),
+                        ratio_weight=float(loss_config.get("transient_ratio_weight", 0.5)),
+                    ).item()
+                )
                 sample_interference = float(
                     interference_projection_loss(
                         prediction=predictions[idx : idx + 1],
                         mixture=batch["mixture"][idx : idx + 1],
                         target=targets[idx : idx + 1],
                         lengths=lengths[idx : idx + 1],
+                        mode=str(loss_config.get("interference_loss_mode", "prediction_projection_ratio")),
+                    ).item()
+                )
+                sample_interference_extra = float(
+                    interference_projection_loss(
+                        prediction=predictions[idx : idx + 1],
+                        mixture=batch["mixture"][idx : idx + 1],
+                        target=targets[idx : idx + 1],
+                        lengths=lengths[idx : idx + 1],
+                        mode=str(loss_config.get("interference_extra_loss_mode", "prediction_projection_ratio")),
                     ).item()
                 )
                 sample_absent = float(
@@ -323,24 +510,59 @@ def main() -> None:
                         sample_rate=int(loss_config.get("sample_rate", args.sample_rate)),
                     ).item()
                 )
+                sample_absent_extra = float(
+                    absent_interval_l1_loss(
+                        prediction=predictions[idx : idx + 1],
+                        target=targets[idx : idx + 1],
+                        lengths=lengths[idx : idx + 1],
+                        absent_intervals=[batch["target_absent_intervals"][idx]],
+                        sample_rate=int(loss_config.get("sample_rate", args.sample_rate)),
+                        sample_weights=(
+                            absent_extra_sample_weights[idx : idx + 1]
+                            if absent_union_sample_weights is not None and absent_extra_sample_weights is not None
+                            else None
+                        ),
+                    ).item()
+                )
                 pattern_metrics[pattern]["count"] += 1
                 pattern_metrics[pattern]["loss"] += float(sample_loss.item())
                 pattern_metrics[pattern]["sisdr_db"] += sample_sisdr
+                pattern_metrics[pattern]["reconstruction_waveform_l1"] += sample_reconstruction
+                pattern_metrics[pattern]["reconstruction_stft_l1"] += sample_reconstruction_stft
+                pattern_metrics[pattern]["reconstruction_extra_waveform_l1"] += sample_reconstruction_extra
+                pattern_metrics[pattern]["reconstruction_extra_stft_l1"] += sample_reconstruction_extra_stft
                 pattern_metrics[pattern]["transient_presence_l1"] += sample_transient
+                pattern_metrics[pattern]["transient_extra_presence_l1"] += sample_transient_extra
                 pattern_metrics[pattern]["interference_projection_ratio"] += sample_interference
+                pattern_metrics[pattern]["interference_extra_projection_ratio"] += sample_interference_extra
                 pattern_metrics[pattern]["absent_interval_l1"] += sample_absent
+                pattern_metrics[pattern]["absent_extra_interval_l1"] += sample_absent_extra
                 recipe_metrics[recipe]["count"] += 1
                 recipe_metrics[recipe]["loss"] += float(sample_loss.item())
                 recipe_metrics[recipe]["sisdr_db"] += sample_sisdr
+                recipe_metrics[recipe]["reconstruction_waveform_l1"] += sample_reconstruction
+                recipe_metrics[recipe]["reconstruction_stft_l1"] += sample_reconstruction_stft
+                recipe_metrics[recipe]["reconstruction_extra_waveform_l1"] += sample_reconstruction_extra
+                recipe_metrics[recipe]["reconstruction_extra_stft_l1"] += sample_reconstruction_extra_stft
                 recipe_metrics[recipe]["transient_presence_l1"] += sample_transient
+                recipe_metrics[recipe]["transient_extra_presence_l1"] += sample_transient_extra
                 recipe_metrics[recipe]["interference_projection_ratio"] += sample_interference
+                recipe_metrics[recipe]["interference_extra_projection_ratio"] += sample_interference_extra
                 recipe_metrics[recipe]["absent_interval_l1"] += sample_absent
+                recipe_metrics[recipe]["absent_extra_interval_l1"] += sample_absent_extra
                 ratio_bucket_metrics[ratio_bucket]["count"] += 1
                 ratio_bucket_metrics[ratio_bucket]["loss"] += float(sample_loss.item())
                 ratio_bucket_metrics[ratio_bucket]["sisdr_db"] += sample_sisdr
+                ratio_bucket_metrics[ratio_bucket]["reconstruction_waveform_l1"] += sample_reconstruction
+                ratio_bucket_metrics[ratio_bucket]["reconstruction_stft_l1"] += sample_reconstruction_stft
+                ratio_bucket_metrics[ratio_bucket]["reconstruction_extra_waveform_l1"] += sample_reconstruction_extra
+                ratio_bucket_metrics[ratio_bucket]["reconstruction_extra_stft_l1"] += sample_reconstruction_extra_stft
                 ratio_bucket_metrics[ratio_bucket]["transient_presence_l1"] += sample_transient
+                ratio_bucket_metrics[ratio_bucket]["transient_extra_presence_l1"] += sample_transient_extra
                 ratio_bucket_metrics[ratio_bucket]["interference_projection_ratio"] += sample_interference
+                ratio_bucket_metrics[ratio_bucket]["interference_extra_projection_ratio"] += sample_interference_extra
                 ratio_bucket_metrics[ratio_bucket]["absent_interval_l1"] += sample_absent
+                ratio_bucket_metrics[ratio_bucket]["absent_extra_interval_l1"] += sample_absent_extra
 
                 if saved < args.save_audio_count:
                     sample_id = batch["sample_ids"][idx]
@@ -369,9 +591,16 @@ def main() -> None:
                                 "target_present_ratio": float(
                                     batch["target_present_ratios"][idx].item()
                                 ),
+                                "reconstruction_waveform_l1": sample_reconstruction,
+                                "reconstruction_stft_l1": sample_reconstruction_stft,
+                                "reconstruction_extra_waveform_l1": sample_reconstruction_extra,
+                                "reconstruction_extra_stft_l1": sample_reconstruction_extra_stft,
                                 "transient_presence_l1": sample_transient,
+                                "transient_extra_presence_l1": sample_transient_extra,
                                 "interference_projection_ratio": sample_interference,
+                                "interference_extra_projection_ratio": sample_interference_extra,
                                 "absent_interval_l1": sample_absent,
+                                "absent_extra_interval_l1": sample_absent_extra,
                                 "metadata_path": batch["metadata_paths"][idx],
                             },
                             ensure_ascii=False,
@@ -406,11 +635,30 @@ def main() -> None:
                 "count": int(values["count"]),
                 "avg_l1": values["loss"] / max(1, int(values["count"])),
                 "avg_sisdr_db": values["sisdr_db"] / max(1, int(values["count"])),
+                "avg_reconstruction_waveform_l1": (
+                    values["reconstruction_waveform_l1"] / max(1, int(values["count"]))
+                ),
+                "avg_reconstruction_stft_l1": values["reconstruction_stft_l1"] / max(1, int(values["count"])),
+                "avg_reconstruction_extra_waveform_l1": (
+                    values["reconstruction_extra_waveform_l1"] / max(1, int(values["count"]))
+                ),
+                "avg_reconstruction_extra_stft_l1": (
+                    values["reconstruction_extra_stft_l1"] / max(1, int(values["count"]))
+                ),
                 "avg_transient_presence_l1": values["transient_presence_l1"] / max(1, int(values["count"])),
+                "avg_transient_extra_presence_l1": (
+                    values["transient_extra_presence_l1"] / max(1, int(values["count"]))
+                ),
                 "avg_interference_projection_ratio": (
                     values["interference_projection_ratio"] / max(1, int(values["count"]))
                 ),
+                "avg_interference_extra_projection_ratio": (
+                    values["interference_extra_projection_ratio"] / max(1, int(values["count"]))
+                ),
                 "avg_absent_interval_l1": values["absent_interval_l1"] / max(1, int(values["count"])),
+                "avg_absent_extra_interval_l1": (
+                    values["absent_extra_interval_l1"] / max(1, int(values["count"]))
+                ),
             }
             for pattern, values in sorted(pattern_metrics.items())
         },
@@ -419,11 +667,30 @@ def main() -> None:
                 "count": int(values["count"]),
                 "avg_l1": values["loss"] / max(1, int(values["count"])),
                 "avg_sisdr_db": values["sisdr_db"] / max(1, int(values["count"])),
+                "avg_reconstruction_waveform_l1": (
+                    values["reconstruction_waveform_l1"] / max(1, int(values["count"]))
+                ),
+                "avg_reconstruction_stft_l1": values["reconstruction_stft_l1"] / max(1, int(values["count"])),
+                "avg_reconstruction_extra_waveform_l1": (
+                    values["reconstruction_extra_waveform_l1"] / max(1, int(values["count"]))
+                ),
+                "avg_reconstruction_extra_stft_l1": (
+                    values["reconstruction_extra_stft_l1"] / max(1, int(values["count"]))
+                ),
                 "avg_transient_presence_l1": values["transient_presence_l1"] / max(1, int(values["count"])),
+                "avg_transient_extra_presence_l1": (
+                    values["transient_extra_presence_l1"] / max(1, int(values["count"]))
+                ),
                 "avg_interference_projection_ratio": (
                     values["interference_projection_ratio"] / max(1, int(values["count"]))
                 ),
+                "avg_interference_extra_projection_ratio": (
+                    values["interference_extra_projection_ratio"] / max(1, int(values["count"]))
+                ),
                 "avg_absent_interval_l1": values["absent_interval_l1"] / max(1, int(values["count"])),
+                "avg_absent_extra_interval_l1": (
+                    values["absent_extra_interval_l1"] / max(1, int(values["count"]))
+                ),
             }
             for recipe, values in sorted(recipe_metrics.items())
         },
@@ -432,11 +699,30 @@ def main() -> None:
                 "count": int(values["count"]),
                 "avg_l1": values["loss"] / max(1, int(values["count"])),
                 "avg_sisdr_db": values["sisdr_db"] / max(1, int(values["count"])),
+                "avg_reconstruction_waveform_l1": (
+                    values["reconstruction_waveform_l1"] / max(1, int(values["count"]))
+                ),
+                "avg_reconstruction_stft_l1": values["reconstruction_stft_l1"] / max(1, int(values["count"])),
+                "avg_reconstruction_extra_waveform_l1": (
+                    values["reconstruction_extra_waveform_l1"] / max(1, int(values["count"]))
+                ),
+                "avg_reconstruction_extra_stft_l1": (
+                    values["reconstruction_extra_stft_l1"] / max(1, int(values["count"]))
+                ),
                 "avg_transient_presence_l1": values["transient_presence_l1"] / max(1, int(values["count"])),
+                "avg_transient_extra_presence_l1": (
+                    values["transient_extra_presence_l1"] / max(1, int(values["count"]))
+                ),
                 "avg_interference_projection_ratio": (
                     values["interference_projection_ratio"] / max(1, int(values["count"]))
                 ),
+                "avg_interference_extra_projection_ratio": (
+                    values["interference_extra_projection_ratio"] / max(1, int(values["count"]))
+                ),
                 "avg_absent_interval_l1": values["absent_interval_l1"] / max(1, int(values["count"])),
+                "avg_absent_extra_interval_l1": (
+                    values["absent_extra_interval_l1"] / max(1, int(values["count"]))
+                ),
             }
             for bucket, values in sorted(ratio_bucket_metrics.items())
         },

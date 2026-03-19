@@ -7,6 +7,8 @@ from .baseline_train import (
     interference_projection_loss,
     masked_sisdr,
     transient_presence_l1_loss,
+    weighted_stft_l1_loss,
+    weighted_waveform_l1_loss,
 )
 
 __all__ = [
@@ -16,4 +18,6 @@ __all__ = [
     "interference_projection_loss",
     "masked_sisdr",
     "transient_presence_l1_loss",
+    "weighted_stft_l1_loss",
+    "weighted_waveform_l1_loss",
 ]

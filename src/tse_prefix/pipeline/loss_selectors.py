@@ -4,6 +4,7 @@ import torch
 
 
 SELECTOR_SUFFIXES = (
+    "focus_sample_ids",
     "focus_recipes",
     "focus_patterns",
     "focus_interference_pools",
@@ -28,7 +29,7 @@ SELECTOR_SUFFIXES = (
 SELECTOR_BRANCH_NAMES = ("", "extra_")
 
 
-def selector_config_keys(prefixes: tuple[str, ...] = ("transient", "interference", "absent")) -> set[str]:
+def selector_config_keys(prefixes: tuple[str, ...] = ("reconstruction", "transient", "interference", "absent")) -> set[str]:
     return {
         f"{prefix}_{branch_name}{suffix}"
         for prefix in prefixes
@@ -45,6 +46,7 @@ def _build_branch_selector_sample_weights(
     branch_name: str,
 ) -> torch.Tensor | None:
     key_prefix = f"{prefix}_{branch_name}"
+    sample_ids = set(str(sample_id) for sample_id in loss_config.get(f"{key_prefix}focus_sample_ids", []))
     recipes = set(loss_config.get(f"{key_prefix}focus_recipes", []))
     patterns = set(loss_config.get(f"{key_prefix}focus_patterns", []))
     pools = set(loss_config.get(f"{key_prefix}focus_interference_pools", []))
@@ -70,6 +72,8 @@ def _build_branch_selector_sample_weights(
     min_target_interference_similarity = loss_config.get(f"{key_prefix}min_target_interference_logspec_cosine")
     max_target_interference_similarity = loss_config.get(f"{key_prefix}max_target_interference_logspec_cosine")
     has_selector = bool(
+        sample_ids
+        or
         recipes
         or patterns
         or pools
@@ -95,6 +99,12 @@ def _build_branch_selector_sample_weights(
         return None
 
     weights = torch.ones(len(batch["sample_ids"]), dtype=torch.float32, device=device)
+    if sample_ids:
+        weights = weights * torch.tensor(
+            [1.0 if str(sample_id) in sample_ids else 0.0 for sample_id in batch["sample_ids"]],
+            dtype=torch.float32,
+            device=device,
+        )
     if recipes:
         weights = weights * torch.tensor(
             [1.0 if recipe in recipes else 0.0 for recipe in batch["recipes"]],
@@ -194,6 +204,27 @@ def _build_branch_selector_sample_weights(
     return weights
 
 
+def build_branch_selector_sample_weights(
+    batch: dict[str, Any],
+    device: torch.device,
+    loss_config: dict[str, Any],
+    prefix: str,
+    branch_name: str,
+) -> torch.Tensor | None:
+    if branch_name not in SELECTOR_BRANCH_NAMES:
+        raise ValueError(f"Unsupported selector branch name: {branch_name!r}")
+    return _build_branch_selector_sample_weights(batch, device, loss_config, prefix, branch_name)
+
+
+def merge_selector_sample_weights(*weights: torch.Tensor | None) -> torch.Tensor | None:
+    active_weights = [weight for weight in weights if weight is not None]
+    if not active_weights:
+        return None
+    if len(active_weights) == 1:
+        return active_weights[0]
+    return torch.stack(active_weights, dim=0).amax(dim=0)
+
+
 def build_selector_sample_weights(
     batch: dict[str, Any],
     device: torch.device,
@@ -205,11 +236,7 @@ def build_selector_sample_weights(
         for branch_name in SELECTOR_BRANCH_NAMES
         if (weights := _build_branch_selector_sample_weights(batch, device, loss_config, prefix, branch_name)) is not None
     ]
-    if not branch_weights:
-        return None
-    if len(branch_weights) == 1:
-        return branch_weights[0]
-    return torch.stack(branch_weights, dim=0).amax(dim=0)
+    return merge_selector_sample_weights(*branch_weights)
 
 
 def summarize_selector_weights(

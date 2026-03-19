@@ -11,11 +11,25 @@ class LossBreakdown:
     total: torch.Tensor
     waveform_l1: torch.Tensor
     stft_l1: torch.Tensor
+    reconstruction_waveform_l1: torch.Tensor
+    reconstruction_stft_l1: torch.Tensor
+    reconstruction_extra_waveform_l1: torch.Tensor
+    reconstruction_extra_stft_l1: torch.Tensor
     sisdr_loss: torch.Tensor
+    interference_extra_guard_sisdr_loss: torch.Tensor
     sisdr_db: torch.Tensor
     transient_presence_l1: torch.Tensor
+    transient_extra_presence_l1: torch.Tensor
     interference_projection_ratio: torch.Tensor
+    interference_extra_projection_ratio: torch.Tensor
     absent_interval_l1: torch.Tensor
+    absent_extra_interval_l1: torch.Tensor
+
+
+INTERFERENCE_LOSS_MODES = (
+    "prediction_projection_ratio",
+    "residual_projection_ratio",
+)
 
 
 def align_waveforms(
@@ -50,6 +64,25 @@ def waveform_l1_loss(
     return diff.sum() / denom
 
 
+def weighted_waveform_l1_loss(
+    prediction: torch.Tensor,
+    target: torch.Tensor,
+    lengths: torch.Tensor,
+    sample_weights: torch.Tensor | None = None,
+) -> torch.Tensor:
+    prediction, target, lengths = align_waveforms(prediction, target, lengths)
+    sample_losses: list[torch.Tensor] = []
+
+    for pred, tgt, length in zip(prediction, target, lengths):
+        length_int = int(length.item())
+        if length_int <= 0:
+            sample_losses.append(prediction.new_tensor(0.0))
+            continue
+        sample_losses.append(torch.mean(torch.abs(pred[:length_int] - tgt[:length_int])))
+
+    return average_sample_losses(sample_losses, sample_weights, prediction)
+
+
 def stft_l1_loss(
     prediction: torch.Tensor,
     target: torch.Tensor,
@@ -68,6 +101,48 @@ def stft_l1_loss(
     pred_mag = torch.abs(model.stft(prediction))
     target_mag = torch.abs(model.stft(target))
     return F.l1_loss(torch.log1p(pred_mag), torch.log1p(target_mag))
+
+
+def weighted_stft_l1_loss(
+    prediction: torch.Tensor,
+    target: torch.Tensor,
+    lengths: torch.Tensor,
+    model,
+    sample_weights: torch.Tensor | None = None,
+) -> torch.Tensor:
+    prediction, target, lengths = align_waveforms(prediction, target, lengths)
+    sample_losses: list[torch.Tensor] = []
+
+    for pred, tgt, length in zip(prediction, target, lengths):
+        length_int = int(length.item())
+        if length_int <= 0:
+            sample_losses.append(prediction.new_tensor(0.0))
+            continue
+        pred_mag = torch.abs(model.stft(pred[:length_int].unsqueeze(0)))
+        target_mag = torch.abs(model.stft(tgt[:length_int].unsqueeze(0)))
+        sample_losses.append(F.l1_loss(torch.log1p(pred_mag), torch.log1p(target_mag)))
+
+    return average_sample_losses(sample_losses, sample_weights, prediction)
+
+
+def average_sample_losses(
+    sample_losses: list[torch.Tensor],
+    sample_weights: torch.Tensor | None,
+    reference: torch.Tensor,
+) -> torch.Tensor:
+    stacked_losses = torch.stack(sample_losses)
+    if sample_weights is None:
+        return stacked_losses.mean()
+
+    weights = sample_weights.to(device=stacked_losses.device, dtype=stacked_losses.dtype)
+    if weights.ndim != 1 or weights.shape[0] != stacked_losses.shape[0]:
+        raise ValueError(
+            "sample_weights must be a 1-D tensor with one entry per batch item"
+        )
+    weight_sum = weights.sum()
+    if float(weight_sum.item()) <= 0.0:
+        return reference.new_tensor(0.0)
+    return torch.sum(stacked_losses * weights) / weight_sum
 
 
 def transient_presence_l1_loss(
@@ -137,19 +212,7 @@ def transient_presence_l1_loss(
         ratio_term = F.l1_loss(pred_ratio, target_ratio)
         sample_losses.append(presence_term + (ratio_term * ratio_weight))
 
-    stacked_losses = torch.stack(sample_losses)
-    if sample_weights is None:
-        return stacked_losses.mean()
-
-    weights = sample_weights.to(device=stacked_losses.device, dtype=stacked_losses.dtype)
-    if weights.ndim != 1 or weights.shape[0] != stacked_losses.shape[0]:
-        raise ValueError(
-            "sample_weights must be a 1-D tensor with one entry per batch item"
-        )
-    weight_sum = weights.sum()
-    if float(weight_sum.item()) <= 0.0:
-        return prediction.new_tensor(0.0)
-    return torch.sum(stacked_losses * weights) / weight_sum
+    return average_sample_losses(sample_losses, sample_weights, prediction)
 
 
 def interference_projection_loss(
@@ -158,7 +221,13 @@ def interference_projection_loss(
     target: torch.Tensor,
     lengths: torch.Tensor,
     sample_weights: torch.Tensor | None = None,
+    mode: str = "prediction_projection_ratio",
 ) -> torch.Tensor:
+    if mode not in INTERFERENCE_LOSS_MODES:
+        raise ValueError(
+            f"Unsupported interference loss mode: {mode}. Expected one of {INTERFERENCE_LOSS_MODES}."
+        )
+
     prediction, target, lengths = align_waveforms(prediction, target, lengths)
     common_length = min(prediction.shape[-1], mixture.shape[-1])
     prediction = prediction[..., :common_length]
@@ -181,25 +250,19 @@ def interference_projection_loss(
             sample_losses.append(prediction.new_tensor(0.0))
             continue
 
-        projection_scale = torch.sum(pred * interference) / interference_energy.clamp_min(eps)
+        if mode == "prediction_projection_ratio":
+            signal = pred
+            normalizer = torch.sum(signal * signal).clamp_min(eps)
+        else:
+            signal = pred - tgt[:length_int]
+            normalizer = interference_energy.clamp_min(eps)
+
+        projection_scale = torch.sum(signal * interference) / interference_energy.clamp_min(eps)
         projection = projection_scale * interference
-        pred_energy = torch.sum(pred * pred).clamp_min(eps)
-        projection_ratio = torch.sum(projection * projection) / pred_energy
+        projection_ratio = torch.sum(projection * projection) / normalizer
         sample_losses.append(projection_ratio)
 
-    stacked_losses = torch.stack(sample_losses)
-    if sample_weights is None:
-        return stacked_losses.mean()
-
-    weights = sample_weights.to(device=stacked_losses.device, dtype=stacked_losses.dtype)
-    if weights.ndim != 1 or weights.shape[0] != stacked_losses.shape[0]:
-        raise ValueError(
-            "sample_weights must be a 1-D tensor with one entry per batch item"
-        )
-    weight_sum = weights.sum()
-    if float(weight_sum.item()) <= 0.0:
-        return prediction.new_tensor(0.0)
-    return torch.sum(stacked_losses * weights) / weight_sum
+    return average_sample_losses(sample_losses, sample_weights, prediction)
 
 
 def absent_interval_l1_loss(
@@ -242,22 +305,24 @@ def absent_interval_l1_loss(
 
         sample_losses.append(torch.stack(interval_losses).sum() / float(total_interval_samples))
 
-    stacked_losses = torch.stack(sample_losses)
-    if sample_weights is None:
-        return stacked_losses.mean()
-
-    weights = sample_weights.to(device=stacked_losses.device, dtype=stacked_losses.dtype)
-    if weights.ndim != 1 or weights.shape[0] != stacked_losses.shape[0]:
-        raise ValueError(
-            "sample_weights must be a 1-D tensor with one entry per batch item"
-        )
-    weight_sum = weights.sum()
-    if float(weight_sum.item()) <= 0.0:
-        return prediction.new_tensor(0.0)
-    return torch.sum(stacked_losses * weights) / weight_sum
+    return average_sample_losses(sample_losses, sample_weights, prediction)
 
 
 def masked_sisdr(
+    prediction: torch.Tensor,
+    target: torch.Tensor,
+    lengths: torch.Tensor,
+    zero_mean: bool = False,
+) -> torch.Tensor:
+    return masked_sisdr_per_sample(
+        prediction=prediction,
+        target=target,
+        lengths=lengths,
+        zero_mean=zero_mean,
+    ).mean()
+
+
+def masked_sisdr_per_sample(
     prediction: torch.Tensor,
     target: torch.Tensor,
     lengths: torch.Tensor,
@@ -278,7 +343,24 @@ def masked_sisdr(
         noise = pred - proj
         ratio = torch.sum(proj * proj).clamp_min(eps) / torch.sum(noise * noise).clamp_min(eps)
         values.append(10.0 * torch.log10(ratio + eps))
-    return torch.stack(values).mean()
+    return torch.stack(values)
+
+
+def weighted_sisdr_loss(
+    prediction: torch.Tensor,
+    target: torch.Tensor,
+    lengths: torch.Tensor,
+    sample_weights: torch.Tensor | None = None,
+    zero_mean: bool = True,
+) -> torch.Tensor:
+    sisdr_values = masked_sisdr_per_sample(
+        prediction=prediction,
+        target=target,
+        lengths=lengths,
+        zero_mean=zero_mean,
+    )
+    sisdr_losses = -sisdr_values
+    return average_sample_losses(list(sisdr_losses), sample_weights, prediction)
 
 
 def compute_losses(
@@ -288,15 +370,30 @@ def compute_losses(
     lengths: torch.Tensor,
     absent_intervals: list[list[dict[str, float]]],
     model,
+    reconstruction_sample_weights: torch.Tensor | None = None,
+    reconstruction_extra_sample_weights: torch.Tensor | None = None,
     transient_sample_weights: torch.Tensor | None = None,
+    transient_extra_sample_weights: torch.Tensor | None = None,
     interference_sample_weights: torch.Tensor | None = None,
+    interference_extra_sample_weights: torch.Tensor | None = None,
     absent_sample_weights: torch.Tensor | None = None,
+    absent_extra_sample_weights: torch.Tensor | None = None,
     sample_rate: int = 16000,
     stft_weight: float = 0.5,
+    reconstruction_waveform_weight: float = 0.0,
+    reconstruction_stft_weight: float = 0.0,
+    reconstruction_extra_waveform_weight: float = 0.0,
+    reconstruction_extra_stft_weight: float = 0.0,
     sisdr_weight: float = 0.0,
+    interference_extra_guard_sisdr_weight: float = 0.0,
     transient_weight: float = 0.0,
+    transient_extra_weight: float = 0.0,
     interference_weight: float = 0.0,
+    interference_extra_weight: float = 0.0,
     absent_weight: float = 0.0,
+    absent_extra_weight: float = 0.0,
+    interference_loss_mode: str = "prediction_projection_ratio",
+    interference_extra_loss_mode: str = "prediction_projection_ratio",
     transient_top_ratio: float = 0.12,
     transient_min_count: int = 8,
     transient_mid_low_hz: float = 800.0,
@@ -307,8 +404,49 @@ def compute_losses(
 ) -> LossBreakdown:
     waveform_term = waveform_l1_loss(prediction, target, lengths)
     stft_term = stft_l1_loss(prediction, target, model)
+    if reconstruction_sample_weights is None:
+        reconstruction_waveform_term = prediction.new_tensor(0.0)
+        reconstruction_stft_term = prediction.new_tensor(0.0)
+    else:
+        reconstruction_waveform_term = weighted_waveform_l1_loss(
+            prediction=prediction,
+            target=target,
+            lengths=lengths,
+            sample_weights=reconstruction_sample_weights,
+        )
+        reconstruction_stft_term = weighted_stft_l1_loss(
+            prediction=prediction,
+            target=target,
+            lengths=lengths,
+            model=model,
+            sample_weights=reconstruction_sample_weights,
+        )
+    if reconstruction_extra_sample_weights is None:
+        reconstruction_extra_waveform_term = prediction.new_tensor(0.0)
+        reconstruction_extra_stft_term = prediction.new_tensor(0.0)
+    else:
+        reconstruction_extra_waveform_term = weighted_waveform_l1_loss(
+            prediction=prediction,
+            target=target,
+            lengths=lengths,
+            sample_weights=reconstruction_extra_sample_weights,
+        )
+        reconstruction_extra_stft_term = weighted_stft_l1_loss(
+            prediction=prediction,
+            target=target,
+            lengths=lengths,
+            model=model,
+            sample_weights=reconstruction_extra_sample_weights,
+        )
     sisdr_db = masked_sisdr(prediction, target, lengths, zero_mean=True)
     sisdr_term = -sisdr_db
+    interference_extra_guard_sisdr_term = weighted_sisdr_loss(
+        prediction=prediction,
+        target=target,
+        lengths=lengths,
+        sample_weights=interference_extra_sample_weights,
+        zero_mean=True,
+    )
     transient_term = transient_presence_l1_loss(
         prediction=prediction,
         target=target,
@@ -324,12 +462,36 @@ def compute_losses(
         presence_high_hz=transient_presence_high_hz,
         ratio_weight=transient_ratio_weight,
     )
+    transient_extra_term = transient_presence_l1_loss(
+        prediction=prediction,
+        target=target,
+        lengths=lengths,
+        model=model,
+        sample_weights=transient_extra_sample_weights,
+        sample_rate=sample_rate,
+        top_ratio=transient_top_ratio,
+        min_count=transient_min_count,
+        mid_low_hz=transient_mid_low_hz,
+        mid_high_hz=transient_mid_high_hz,
+        presence_low_hz=transient_presence_low_hz,
+        presence_high_hz=transient_presence_high_hz,
+        ratio_weight=transient_ratio_weight,
+    )
     interference_term = interference_projection_loss(
         prediction=prediction,
         mixture=mixture,
         target=target,
         lengths=lengths,
         sample_weights=interference_sample_weights,
+        mode=interference_loss_mode,
+    )
+    interference_extra_term = interference_projection_loss(
+        prediction=prediction,
+        mixture=mixture,
+        target=target,
+        lengths=lengths,
+        sample_weights=interference_extra_sample_weights,
+        mode=interference_extra_loss_mode,
     )
     absent_term = absent_interval_l1_loss(
         prediction=prediction,
@@ -339,21 +501,45 @@ def compute_losses(
         sample_rate=sample_rate,
         sample_weights=absent_sample_weights,
     )
+    absent_extra_term = absent_interval_l1_loss(
+        prediction=prediction,
+        target=target,
+        lengths=lengths,
+        absent_intervals=absent_intervals,
+        sample_rate=sample_rate,
+        sample_weights=absent_extra_sample_weights,
+    )
     total = (
         waveform_term
         + (stft_term * stft_weight)
+        + (reconstruction_waveform_term * reconstruction_waveform_weight)
+        + (reconstruction_stft_term * reconstruction_stft_weight)
+        + (reconstruction_extra_waveform_term * reconstruction_extra_waveform_weight)
+        + (reconstruction_extra_stft_term * reconstruction_extra_stft_weight)
         + (sisdr_term * sisdr_weight)
+        + (interference_extra_guard_sisdr_term * interference_extra_guard_sisdr_weight)
         + (transient_term * transient_weight)
+        + (transient_extra_term * transient_extra_weight)
         + (interference_term * interference_weight)
+        + (interference_extra_term * interference_extra_weight)
         + (absent_term * absent_weight)
+        + (absent_extra_term * absent_extra_weight)
     )
     return LossBreakdown(
         total=total,
         waveform_l1=waveform_term,
         stft_l1=stft_term,
+        reconstruction_waveform_l1=reconstruction_waveform_term,
+        reconstruction_stft_l1=reconstruction_stft_term,
+        reconstruction_extra_waveform_l1=reconstruction_extra_waveform_term,
+        reconstruction_extra_stft_l1=reconstruction_extra_stft_term,
         sisdr_loss=sisdr_term,
+        interference_extra_guard_sisdr_loss=interference_extra_guard_sisdr_term,
         sisdr_db=sisdr_db,
         transient_presence_l1=transient_term,
+        transient_extra_presence_l1=transient_extra_term,
         interference_projection_ratio=interference_term,
+        interference_extra_projection_ratio=interference_extra_term,
         absent_interval_l1=absent_term,
+        absent_extra_interval_l1=absent_extra_term,
     )

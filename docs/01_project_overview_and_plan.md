@@ -2148,6 +2148,519 @@
     - 或更明确的 branch-local 归属与 guardrail
   - 当前基座继续保持：
     - `v19 = legacy_transient_leakguard_probe_v19_v12_absent_proxy_v3_reverse_guardrail_v1_int_up_ft1`
+172. 已完成 `v29 = legacy_transient_leakguard_probe_v29_v19_friend_reverse_guardrail_proxy_v7_speech_leak_similarity_exact_ft1`，把 `0004-like speech-leak` 首次收紧到 exact sample-id selector：
+  - 工程补充：
+    - `scripts/data/build_metadata_focused_manifest.py` 新增 `--include-derived-metrics`
+    - `scripts/train/train_stft_mask_baseline.py` 新增 `--loss-*-focus-sample-ids-file`
+    - `src/tse_prefix/pipeline/loss_selectors.py` 新增 `focus_sample_ids`
+  - exact proxy：
+    - `train_manifest_v29_friend_reverse_guardrail_proxy_v7_speech_leak_similarity_exact.jsonl = 21`
+    - `val_manifest_v29_friend_reverse_guardrail_proxy_v7_speech_leak_similarity_exact.jsonl = 3`
+    - plus manifests：
+      - `train_manifest_v29_v19_plus_friend_reverse_guardrail_proxy_v7_speech_leak_similarity_exact.jsonl = 111`
+      - `val_manifest_v29_v19_plus_friend_reverse_guardrail_proxy_v7_speech_leak_similarity_exact.jsonl = 30`
+  - selector 命中：
+    - train transient / interference / absent = `51 / 72 / 24` out of `111`
+    - val transient / interference / absent = `18 / 21 / 4` out of `30`
+    - 其中 `interference_extra` 相对 `v19` 的新增命中正好是 train `+21`、val `+3`
+  - 相对 `v19`：
+    - default = `-0.004999 dB`
+    - `v29 exact speech-leak proxy = -0.142498 dB`
+  - 当前解释应进一步收紧为：
+    - 即便把 `0004-like speech-leak` 的 selector 边界收成 exact sample-id，
+    - 当前 objective / proxy 语义本身仍没有形成正收益
+  - 因而：
+    - `v29` 不保留为新候选
+    - `focus_sample_ids` selector plumbing 保留
+    - 下一步若继续自动推进，应优先重做 `0004-like speech-leak` objective / proxy 语义，而不是继续扫这条 exact selector 的权重、epoch、lr
+173. 已完成 `v30 = legacy_transient_leakguard_probe_v30_v19_friend_reverse_guardrail_proxy_v8_similarity_lowtransient_lowinttrans_exact_ft1`，把 `0004-like speech-leak` 再重写成 `high similarity + low target transient + low interference transient` 的 exact family：
+  - 搜索刷新：
+    - `search_synthetic_proxy_candidates.py` 新搜索已把：
+      - `interference_transient_presence_minus_mid_db_mean`
+      - `target_interference_logspec_cosine`
+      纳入 `samplewise-order-pass` family 搜索
+    - 首次搜出 train / val 都能落盘的 mixed-pattern family：
+      - clean pool
+      - higher gain
+      - higher similarity
+      - lower target transient
+      - lower interference transient
+      - `target_full + absent_head + absent_tail`
+  - exact proxy：
+    - `train_manifest_v30_friend_reverse_guardrail_proxy_v8_similarity_lowtransient_lowinttrans_exact.jsonl = 7`
+    - `val_manifest_v30_friend_reverse_guardrail_proxy_v8_similarity_lowtransient_lowinttrans_exact.jsonl = 3`
+    - plus manifests：
+      - `train_manifest_v30_v19_plus_friend_reverse_guardrail_proxy_v8_similarity_lowtransient_lowinttrans_exact.jsonl = 97`
+      - `val_manifest_v30_v19_plus_friend_reverse_guardrail_proxy_v8_similarity_lowtransient_lowinttrans_exact.jsonl = 29`
+  - selector 命中：
+    - train transient / interference / absent = `51 / 58 / 27` out of `97`
+    - val transient / interference / absent = `18 / 21 / 5` out of `29`
+    - 这说明新 exact family 已真实进入：
+      - `interference_extra`
+      - 且因为混入 nonfull 行，也改变了 absent 命中
+  - 相对 `v19`：
+    - default = `+0.015689 dB`
+    - `v30 exact proxy = -0.141952 dB`
+    - near-real speech probe overall = `-0.053396 dB`
+    - near-real `speech_leak_like (0004) = -0.035911 dB`
+  - 当前解释应继续收紧为：
+    - 即便把 `0004-like speech-leak` 改写成：
+      - `high similarity`
+      - `low target transient`
+      - `low interference transient`
+      的新 exact family，
+    - 当前 objective / branch-local guardrail 形式仍没有形成正收益
+  - 因而：
+    - `v30` 不保留为新候选
+    - 不继续围绕这条 family 扫权重、epoch、lr
+    - 下一步若继续自动推进，应优先改：
+      - `0004-like speech-leak` 的 objective 形式
+      - leak-specific guardrail
+      - 或更明确的 branch-local loss 归属
+174. 已完成 `v31 = legacy_transient_leakguard_probe_v31_v19_friend_reverse_guardrail_proxy_v8_similarity_lowtransient_lowinttrans_residualproj_ft1`，在保持 `v30` exact family 不变的前提下，把 interference objective 从 `prediction_projection_ratio` 改成 `residual_projection_ratio`：
+  - 工程补充：
+    - `src/tse_prefix/pipeline/baseline_train.py`
+      - `interference_projection_loss(...)` 新增 `mode`
+      - 支持：
+        - `prediction_projection_ratio`
+        - `residual_projection_ratio`
+    - `scripts/train/train_stft_mask_baseline.py`
+      - 新增 `--loss-interference-mode`
+    - `scripts/eval/eval_stft_mask_baseline.py`
+      - 按 checkpoint 自带 `interference_loss_mode` 复算 sample-level interference metric
+  - 训练侧：
+    - 继续使用 `v30` plus manifests
+    - selector 命中与 `v30` 保持一致：
+      - train transient / interference / absent = `51 / 58 / 27` out of `97`
+      - val transient / interference / absent = `18 / 21 / 5` out of `29`
+  - 相对 `v19`：
+    - default = `-0.011286 dB`
+    - `v30 exact proxy = -0.082113 dB`
+    - near-real speech probe overall = `-0.054149 dB`
+    - near-real `speech_leak_like (0004) = -0.041094 dB`
+  - 相对 `v30`：
+    - exact proxy = `+0.059839 dB`
+    - near-real speech probe overall = `-0.000753 dB`
+    - `friend_raw = +0.006956 dB`
+    - `speech_leak_like (0004) = -0.005182 dB`
+    - `transient_like (0006) = -0.023880 dB`
+  - 当前解释应进一步收紧为：
+    - 仅把 interference objective 从整段预测投影比切到残差投影比，
+    - 的确能部分缩小 exact speech-leak proxy 的回退；
+    - 但还不足以把 `v19` 之上的 default / near-real 一起拉正
+  - 因而：
+    - `v31` 不保留为新候选
+    - `residual_projection_ratio` 可保留为后续 primitive
+    - 下一步若继续自动推进，应优先补：
+      - leak-specific guardrail
+      - friend-side 提升与 `guodegang / 0006` 保护的解耦
+      - 或更局部的 residual constraint，而不是继续扫这条 mode 的权重/epoch/lr
+175. 已完成 `v32 = legacy_transient_leakguard_probe_v32_v19_friend_reverse_guardrail_proxy_v8_basepred_extraresidual_ft1`，在不改 `v30` exact family 的前提下，首次把 base interference 与 `interference_extra` 做成真正 branch-local 的不同 objective：
+  - 工程补充：
+    - `loss_selectors.py` 新增：
+      - `build_branch_selector_sample_weights(...)`
+      - `merge_selector_sample_weights(...)`
+    - `compute_losses(...)` 新增：
+      - `interference_extra_sample_weights`
+      - `interference_extra_weight`
+      - `interference_extra_loss_mode`
+    - train / eval summary 新增：
+      - `interference_extra_projection_ratio`
+      - `interference_extra` selector metrics
+  - branch-local interference 挂法：
+    - base interference：
+      - `weight = 0.0075`
+      - `mode = prediction_projection_ratio`
+    - interference_extra：
+      - `weight = 0.0075`
+      - `mode = residual_projection_ratio`
+      - `focus_sample_ids = v30 exact 10 ids`
+  - selector 命中：
+    - train transient / interference / interference_extra / absent = `51 / 58 / 7 / 27` out of `97`
+    - val transient / interference / interference_extra / absent = `18 / 21 / 3 / 5` out of `29`
+  - 相对 `v19`：
+    - default = `+0.019034 dB`
+    - `v30 exact proxy = -0.121204 dB`
+    - near-real speech probe overall = `-0.050465 dB`
+    - near-real `speech_leak_like (0004) = -0.041680 dB`
+  - 相对 `v31`：
+    - default = `+0.030320 dB`
+    - exact proxy = `-0.039091 dB`
+    - near-real speech probe overall = `+0.003684 dB`
+  - 当前解释应更新为：
+    - `v31` 的问题确实部分来自“全局 residual 替换过宽”；
+    - 只把 residual objective 局部化到 `interference_extra`，可以明显收回 default / near-real 稳定性；
+    - 但 exact speech-leak family 仍未被推正
+  - 因而：
+    - `v32` 不保留为新候选
+    - branch-local interference-extra split 能力保留
+    - 下一步若继续自动推进，应优先补真正 leak-specific guardrail，而不是把“局部 residual extra 已接通”误写成“speech-leak objective 已闭环”
+176. 已完成 `v33 = legacy_transient_leakguard_probe_v33_v19_friend_reverse_guardrail_proxy_v8_basepred_extraresidual_w015_ft1`，只把 `v32` 的 `interference_extra_weight` 从 `0.0075` 提到 `0.015`：
+  - 相对 `v19`：
+    - default = `+0.020266 dB`
+    - `v30 exact proxy = -0.127022 dB`
+    - near-real speech probe overall = `-0.050239 dB`
+    - near-real `speech_leak_like (0004) = -0.041911 dB`
+  - 当前解释应进一步收紧为：
+    - branch-local extra residual 的瓶颈不在“weight 还不够大”；
+    - 至少在这一档 extra weight 放大下，结构性结果几乎不变
+  - 因而：
+    - `v33` 不保留为新候选
+    - 不继续围绕 `v32 / v33` 扫更多 extra weight
+    - 下一步若继续自动推进，应优先做：
+      - leak-specific guardrail
+      - 或 friend-side / `guodegang` side 的显式解耦保护
+177. 已完成 `v34 = legacy_transient_leakguard_probe_v34_v19_friend_reverse_guardrail_proxy_v8_basepred_extraresidual_sisdrguard0002_ft1`，在 `v32` 基础上给 `interference_extra` exact speech-leak family 叠加一条很轻的 weighted SI-SDR guardrail：
+  - 工程补充：
+    - `compute_losses(...)` 新增：
+      - `interference_extra_guard_sisdr_weight`
+    - train / eval summary 新增：
+      - `interference_extra_guard_sisdr_loss`
+  - 相对 `v19`：
+    - default = `+0.058461 dB`
+    - `v30 exact proxy = +0.026174 dB`
+    - near-real speech probe overall = `-0.071357 dB`
+    - near-real `speech_leak_like (0004) = -0.045359 dB`
+    - near-real `transient_like (0006) = -0.122081 dB`
+  - 相对 `v32`：
+    - exact proxy = `+0.147378 dB`
+    - near-real speech probe overall = `-0.020892 dB`
+  - 当前解释应更新为：
+    - weighted SI-SDR guard 确实能把 exact speech-leak family 推到整体正增益；
+    - 但这并不等于 near-real 也会一起转正；
+    - `v34` 更像 exact-family overfit，而不是可保留升级
+  - 因而：
+    - `v34` 不保留为新候选
+    - 不继续沿这条 exact-family sisdr guard 直接扫权重
+178. 已完成 `v35 = legacy_transient_leakguard_probe_v35_v19_friend_guard_sisdrplus_guodegang_anchor_guard_ft1`，尝试在 `v34` 的基础上把 `guodegang_anchor_proxy_v1` 当作 decoupling protection 并入训练：
+  - 新增样本文件：
+    - `sample_ids_guodegang_anchor_proxy_v1_train.txt = 84`
+    - `sample_ids_guodegang_anchor_proxy_v1_val.txt = 22`
+    - `sample_ids_guodegang_anchor_proxy_v1_all.txt = 106`
+  - 新 union manifests：
+    - `train_manifest_v35_v19_plus_friend_reverse_guardrail_proxy_v8_plus_guodegang_anchor_proxy_v1.jsonl = 176`
+    - `val_manifest_v35_v19_plus_friend_reverse_guardrail_proxy_v8_plus_guodegang_anchor_proxy_v1.jsonl = 47`
+  - 训练侧新增：
+    - `transient_extra_focus_sample_ids = guodegang_anchor_proxy_v1`
+  - 相对 `v19`：
+    - default = `+0.061993 dB`
+    - `v30 exact proxy = +0.152425 dB`
+    - near-real speech probe overall = `-0.078793 dB`
+    - near-real `speech_leak_like (0004) = -0.022684 dB`
+    - near-real `transient_like (0006) = -0.240638 dB`
+    - `near_real_guodegang_anchor_probe_v1 = -0.352486 dB`
+  - 当前解释应进一步收紧为：
+    - `guodegang_anchor_proxy_v1` 目前不能直接当作 friend-side speech-leak guard 的 decoupling protection；
+    - 在这条组合线上，它对真实 `guodegang_anchor_120s` 反而是反向信号
+  - 因而：
+    - `v35` 不保留为新候选
+    - 不继续并更多同类 synthetic `guodegang` proxy 充当保护项
+    - 下一步若继续自动推进，应优先考虑：
+      - real / near-real gate 优先
+      - 或重新设计更贴近 `guodegang_anchor_120s` 的保护代理
+179. 已把 friend-side speech-leak follow-up 的 keep/drop 逻辑正式固化成专门 gate，并补跑了 `v34 / v35` 的落盘结果：
+  - 脚本：
+    - `scripts/eval/gate_friend_speech_leak_followup.py`
+  - 新 gate 产物：
+    - `reports/eval/compare_v19_vs_v34_on_near_real_speech_probe_v1/near_real_speech_probe_analysis/friend_speech_leak_followup_gate_vs_v32.json`
+    - `reports/eval/compare_v19_vs_v35_on_near_real_speech_probe_v1/near_real_speech_probe_analysis/friend_speech_leak_followup_gate_vs_v34.json`
+    - `reports/eval/compare_v19_vs_v35_on_near_real_speech_probe_v1/near_real_speech_probe_analysis/friend_speech_leak_followup_gate_vs_v32.json`
+  - `v34` relative to `v32`：
+    - `overall_pass = false`
+    - failed rules：
+      - `speech_leak_like_gain_floor`
+      - `guodegang_anchor_floor`
+      - `guodegang_absent_floor`
+  - `v35` relative to `v34`：
+    - `overall_pass = false`
+    - 虽然：
+      - default `+0.003533 dB`
+      - exact target_full `+0.102182 dB`
+      - near-real `speech_leak_like (0004) = +0.022676 dB`
+    - 但仍 failed：
+      - `guodegang_anchor_floor = -0.168818 dB`
+      - `guodegang_absent_floor = -0.068296 dB`
+  - `v35` relative to `v32`：
+    - `overall_pass = false`
+    - 虽然：
+      - exact target_full `+0.204893 dB`
+      - near-real `speech_leak_like (0004) = +0.018996 dB`
+    - 但仍 failed：
+      - `guodegang_anchor_floor = -0.286603 dB`
+      - `guodegang_absent_floor = -0.115565 dB`
+  - 当前解释应再收紧为：
+    - friend-side speech-leak 这条线的 keep/drop，不再由：
+      - exact proxy 有没有转正
+      - 或 `0004-like speech-leak` 有没有局部回升
+      单独决定；
+    - 真正的 stop condition 已经收敛到：
+      - `guodegang_anchor_floor`
+      - `guodegang_absent_floor`
+      这两条 real / near-real protection floor
+  - 因而：
+    - 后续这条线所有新 candidate 默认都先过 friend-side follow-up gate，再讨论是否保留
+    - 不再把“speech-leak side gain 变好”误写成“已可保留升级”
+    - 下一步若继续自动推进，应优先：
+      - 直接围绕 real / near-real gate 设计 guardrail
+      - 或重做更贴近 `guodegang_anchor_120s` / `guodegang_absent` 的保护代理
+180. 已补齐 `transient_extra / absent_extra` 的真正 branch-local 权重通道，避免后续 `anchor / absent` 保护项只能并回 base 分支同权计算：
+  - 工程补充：
+    - `src/tse_prefix/pipeline/baseline_train.py`
+      - `compute_losses(...)` 新增：
+        - `transient_extra_sample_weights`
+        - `absent_extra_sample_weights`
+        - `transient_extra_weight`
+        - `absent_extra_weight`
+      - `LossBreakdown` 新增：
+        - `transient_extra_presence_l1`
+        - `absent_extra_interval_l1`
+    - `scripts/train/train_stft_mask_baseline.py`
+      - 新增：
+        - `--loss-transient-extra-weight`
+        - `--loss-absent-extra-weight`
+      - train / val summary 新增：
+        - `transient_extra_presence_l1`
+        - `absent_extra_interval_l1`
+      - selector metrics 新增：
+        - `transient_extra`
+        - `absent_extra`
+    - `scripts/eval/eval_stft_mask_baseline.py`
+      - eval summary / bucket / sample meta 新增：
+        - `transient_extra_presence_l1`
+        - `absent_extra_interval_l1`
+  - smoke 验证：
+    - 训练 smoke：
+      - `tmp/smoke_transient_absent_extra/train_summary.json`
+      - 已确认：
+        - `transient_extra_presence_l1`
+        - `absent_extra_interval_l1`
+        - `transient_extra / absent_extra` selector metrics
+        都能正常落盘
+    - 评估 smoke：
+      - `tmp/smoke_transient_absent_extra_eval/eval_summary.json`
+      - 已确认 eval summary 也会记录上述 extra 字段
+  - 当前解释应更新为：
+    - 之前 `v35` 的一个真实工程限制是：
+      - `guodegang_anchor_proxy_v1` 只能并进原 transient 分支；
+    - 现在至少已经具备：
+      - `anchor -> transient_extra`
+      - `absent -> absent_extra`
+      这类分侧轻量保护实验的基础能力
+  - 因而：
+    - 下一步若继续自动推进，不再优先改老的 `interference_extra_guard_sisdr`
+    - 而应优先开一条真正分侧的 protection smoke：
+      - `transient_extra = guodegang_anchor_proxy_v1`
+      - `absent_extra = guodegang_absent_proxy_v3_strict`
+      - 以 friend-side follow-up gate 作为 keep/drop 裁决
+181. 第一条真正分侧的 protection smoke `v36` 已完成，并可明确判掉；`anchor transient-extra only` 不是这条线的 keep 路径，`guodegang_absent_proxy_v3_strict` 也仍缺有效 objective：
+  - 训练配置：
+    - `v36 = v32 + transient_extra(guodegang_anchor_proxy_v1, weight=0.001) + 既有 interference_extra(exact speech-leak)`
+    - `guodegang_absent_proxy_v3_strict` 虽被并进 union manifest，但未启用 `absent_extra_weight`
+  - 关键工程事实：
+    - `train_manifest_v36...` / `val_manifest_v36...` 的规模仍是：
+      - train `176`
+      - val `47`
+      与 `v35` union 相同，没有新增样本；
+    - 且这两份 manifest 中：
+      - `target_absent_intervals` 非空样本数均为 `0`
+    - 所以当前 `guodegang_absent_proxy_v3_strict` 并不能触发 `absent_extra_interval_l1`
+  - `v36` relative to `v19`：
+    - default `+0.042394 dB`
+    - exact proxy overall `-0.038284 dB`
+    - exact `target_full = -0.322388 dB`
+    - near-real speech probe overall `-0.092008 dB`
+    - near-real `speech_leak_like (0004) = -0.042726 dB`
+    - near-real `guodegang_anchor_120s = -0.300635 dB`
+    - near-real `guodegang_absent_480s = -0.094534 dB`
+  - `v36` relative to `v32` 的 `friend_speech_leak_followup_gate`：
+    - `overall_pass = false`
+    - failed：
+      - `exact_target_full_gain_floor`
+      - `speech_leak_like_gain_floor`
+      - `guodegang_anchor_floor`
+      - `guodegang_absent_floor`
+  - 当前解释应更新为：
+    - 只把 `guodegang_anchor_proxy_v1` 拆到 `transient_extra`，
+      不仅没有守住 `guodegang_anchor / absent` 两条 real floor，
+      还会把 exact speech-leak side 一并拉回；
+    - 所以 `anchor transient-extra only` 不是值得继续扫权重的方向；
+    - 真正未解决的缺口仍是：
+      - `guodegang_anchor_proxy_v1` 与 real `guodegang_anchor_120s` 的保护错配
+      - `guodegang_absent_proxy_v3_strict` 缺少与其语义匹配的独立 objective / branch
+  - 额外工程补记：
+    - `sample_ids_guodegang_anchor_proxy_v1_{train,val,all}.txt` 原先带 UTF-8 BOM
+    - 现已：
+      - 将 sample-id loader 改为 `utf-8-sig`
+      - 将这 3 个文件重写为无 BOM UTF-8
+    - 后续 selector 类实验不应再出现 `\\ufefftrain_000029` 这类脏 sample_id
+  - 因而：
+    - 下一步不继续开 `guodegang_anchor_proxy_v1` 的 `transient_extra` 权重扫描
+    - 若继续推进，应优先补：
+      - 面向 `guodegang_absent_proxy_v3_strict` 的新 objective / branch
+      - 或更贴近 real / near-real gate 的保护代理
+182. 已补齐 `reconstruction / reconstruction_extra` branch-local objective，并完成第一条 absent-side follow-up `v37`；这条线的关键信息不是“又并进了新 manifest”，而是“把早已在 `v32` 基座中的 hard `target_full` 行重新路由到更匹配的 objective”，但 `v37` 仍明确 `FAIL`：
+  - 工程补充：
+    - `src/tse_prefix/pipeline/baseline_train.py`
+      - 新增：
+        - `weighted_waveform_l1_loss(...)`
+        - `weighted_stft_l1_loss(...)`
+      - `LossBreakdown` 新增：
+        - `reconstruction_waveform_l1`
+        - `reconstruction_stft_l1`
+        - `reconstruction_extra_waveform_l1`
+        - `reconstruction_extra_stft_l1`
+      - `compute_losses(...)` 新增：
+        - `reconstruction_sample_weights`
+        - `reconstruction_extra_sample_weights`
+        - `reconstruction_waveform_weight`
+        - `reconstruction_stft_weight`
+        - `reconstruction_extra_waveform_weight`
+        - `reconstruction_extra_stft_weight`
+    - `src/tse_prefix/pipeline/__init__.py`
+      - 导出：
+        - `weighted_waveform_l1_loss`
+        - `weighted_stft_l1_loss`
+    - `src/tse_prefix/pipeline/loss_selectors.py`
+      - selector config 前缀新增：
+        - `reconstruction`
+    - `scripts/train/train_stft_mask_baseline.py`
+      - 新增 CLI：
+        - `--loss-reconstruction-waveform-weight`
+        - `--loss-reconstruction-stft-weight`
+        - `--loss-reconstruction-extra-waveform-weight`
+        - `--loss-reconstruction-extra-stft-weight`
+      - train / val summary 与 selector metrics 新增：
+        - `reconstruction*` 4 个 loss 指标
+        - `reconstruction`
+        - `reconstruction_extra`
+    - `scripts/eval/eval_stft_mask_baseline.py`
+      - eval summary / sample meta / bucket 聚合也同步新增 `reconstruction*` 指标
+  - smoke 验证：
+    - `tmp/smoke_reconstruction_extra/train_summary.json`
+    - `tmp/smoke_reconstruction_extra_eval/eval_summary.json`
+    - 已确认 train / eval 两侧都能正常落盘：
+      - `reconstruction_extra_waveform_l1`
+      - `reconstruction_extra_stft_l1`
+      - `reconstruction / reconstruction_extra` selector metrics
+  - 一个关键工程事实：
+    - `train_manifest_v37_v30_plus_guodegang_absent_proxy_v3_strict.jsonl`
+      与 `train_manifest_v30_v19_plus_friend_reverse_guardrail_proxy_v8_similarity_lowtransient_lowinttrans_exact.jsonl`
+      是：
+      - `same_order = true`
+      - `same_set = true`
+    - `val_manifest_v37_v30_plus_guodegang_absent_proxy_v3_strict.jsonl`
+      与 `val_manifest_v30_v19_plus_friend_reverse_guardrail_proxy_v8_similarity_lowtransient_lowinttrans_exact.jsonl`
+      也同样：
+      - `same_order = true`
+      - `same_set = true`
+    - 这说明：
+      - `guodegang_absent_proxy_v3_strict`
+        实际早已完整包含在 `v32` 基座 manifest 中；
+      - `v37` 的变化完全来自：
+        - objective routing
+        - 而不是 manifest coverage
+  - `v37 = legacy_transient_leakguard_probe_v37_v32_absent_reconstructionextra_smoke_ft1`
+    - 相对 `v19`：
+      - default `+0.004330 dB`
+      - exact proxy overall `-0.214515 dB`
+      - exact `target_full = -0.553167 dB`
+      - near-real speech probe overall `-0.093653 dB`
+      - near-real `speech_leak_like (0004) = -0.077866 dB`
+      - near-real `guodegang_anchor_120s = -0.122504 dB`
+      - near-real `guodegang_absent_480s = -0.051134 dB`
+    - relative to `v32` 的 `friend_speech_leak_followup_gate`：
+      - `overall_pass = false`
+      - failed：
+        - `exact_target_full_gain_floor`
+        - `speech_leak_like_gain_floor`
+        - `guodegang_anchor_floor`
+        - `guodegang_absent_floor`
+  - 当前解释应升级为：
+    - `guodegang_absent_proxy_v3_strict`
+      当前真正缺的不是“并进 manifest”，
+      而是一个语义匹配的独立 objective；
+    - `reconstruction_extra`
+      比旧 `absent_interval_l1` 更贴近这批 hard `target_full` 行，
+      且相对 `v36` 确实把：
+      - `guodegang_anchor_120s`
+      - `guodegang_absent_480s`
+      往回拉了一截；
+    - 但 absent-side only 的 `v37`
+      仍会把：
+      - exact `target_full`
+      - near-real `0004-like speech-leak`
+      一并拉坏
+  - 因而：
+    - `v37` 不保留为新候选
+    - 后续若继续推进，应优先做：
+      - 更轻的 absent reconstruction
+      - 与更强的 friend-side protection 联动的再平衡
+      - 而不是继续放大 absent-only reconstruction 权重
+183. 已完成第一条 `v37` 之后的再平衡 follow-up：`v38 = v32 + lighter waveform-only absent reconstruction + stronger friend-side exact branch`，结果仍明确 `FAIL`，因此这条线当前不值得继续扫配比：
+  - 训练配置：
+    - checkpoint：
+      - `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v38_v32_absentreconwave_friendextra_rebalance_ft1`
+    - init：
+      - `v32`
+    - manifest：
+      - 直接回到 `v32` base manifest
+      - 不再沿用与其完全等价的 `v37` union manifest
+    - 相对 `v37` 的变化：
+      - `reconstruction_extra_waveform_weight = 0.01`
+      - `reconstruction_extra_stft_weight = 0.0`
+      - `interference_extra_weight = 0.03`
+  - selector 命中：
+    - train：
+      - `reconstruction_extra = 51 / 97`
+      - `interference_extra = 7 / 97`
+    - val：
+      - `reconstruction_extra = 18 / 29`
+      - `interference_extra = 3 / 29`
+    - 说明：
+      - coverage 与 `v37 / v32` 一致
+      - 这次变化只来自 loss 配比
+  - `v38` relative to `v19`：
+    - default `+0.017846 dB`
+    - exact proxy overall `-0.238433 dB`
+    - exact `target_full = -0.582605 dB`
+    - near-real speech probe overall `-0.093675 dB`
+    - near-real `speech_leak_like (0004) = -0.082113 dB`
+    - near-real `guodegang_anchor_120s = -0.097188 dB`
+    - near-real `guodegang_absent_480s = -0.045739 dB`
+  - relative to `v32` 的 `friend_speech_leak_followup_gate`：
+    - `overall_pass = false`
+    - failed：
+      - `exact_target_full_gain_floor`
+      - `speech_leak_like_gain_floor`
+      - `guodegang_anchor_floor`
+      - `guodegang_absent_floor`
+  - 与 `v37` 的对照：
+    - `v38` 虽然把：
+      - default
+      - `guodegang_anchor_120s`
+      - `guodegang_absent_480s`
+      又回拉了一点；
+    - 但：
+      - exact `target_full`
+      - near-real `speech_leak_like (0004)`
+      反而比 `v37` 更差
+  - 当前解释应进一步收紧为：
+    - 一旦 `guodegang_absent_proxy_v3_strict`
+      以当前这组 shared hard `target_full` 行的方式接到 `reconstruction_extra`，
+      再单纯加大 friend-side `interference_extra_weight`
+      也不能把 exact speech-leak side 拉回；
+    - 所以当前冲突更像是：
+      - absent reconstruction 本身就在改写 shared hard-speech region 的优化方向
+      - 而不是 `interference_extra_weight` 还不够大
+  - 因而：
+    - `v38` 不保留为新候选
+    - 下一步不继续扫：
+      - `v37 / v38` 这族的 `interference_extra_weight`
+      - 或当前 `reconstruction_extra` 配比
+    - 若继续推进，应优先：
+      - 更细粒度的 absent proxy carve-out
+      - 更贴近 real gate 的保护代理
+      - 或避免直接作用于 shared hard `target_full` 行的 absent-side objective
 
 ## 9. 文档入口
 
@@ -2203,5 +2716,14 @@
 - 本轮 `v22` samplewise-order-pass friend proxy follow-up：`reports/daily/2026-03-18_v22_friend_proxy_samplewise_search_followup.md`
 - 本轮 `v23` friend proxy semantic split follow-up：`reports/daily/2026-03-18_v23_friend_proxy_semantic_split_followup.md`
 - 本轮 `v24-v27` friend proxy branch split follow-up：`reports/daily/2026-03-19_v24_v27_friend_proxy_branch_split_followup.md`
+- 本轮 `v29` exact speech-leak sample-id selector follow-up：`reports/daily/2026-03-19_v29_exact_speech_leak_sampleid_selector_followup.md`
+- 本轮 `v30` similarity + low-transient + low-interference-transient follow-up：`reports/daily/2026-03-19_v30_similarity_lowtransient_lowinttrans_followup.md`
+- 本轮 `v31` residual-projection follow-up：`reports/daily/2026-03-19_v31_residual_projection_followup.md`
+- 本轮 `v32 / v33` branch-local residual-extra follow-up：`reports/daily/2026-03-19_v32_v33_branch_local_residual_extra_followup.md`
+- 本轮 `v34 / v35` guardrail follow-up：`reports/daily/2026-03-19_v34_v35_guardrail_followup.md`
+- 本轮 `transient / absent extra` branch-local plumbing：`reports/daily/2026-03-19_transient_absent_extra_branch_plumbing.md`
+- 本轮 `v36` anchor transient-extra / absent-union smoke：`reports/daily/2026-03-19_v36_anchor_transientextra_absentunion_smoke.md`
+- 本轮 `reconstruction_extra` plumbing 与 `v37` absent follow-up：`reports/daily/2026-03-19_reconstruction_extra_branch_and_v37_absent_followup.md`
+- 本轮 `v38` absent-recon-wave / friend-extra rebalance：`reports/daily/2026-03-19_v38_absentreconwave_friendextra_rebalance.md`
 - 本轮仓库与 `.gitignore` 审计：`reports/daily/2026-03-18_repo_gitignore_audit.md`
 - 本轮全仓库评估总结：`reports/daily/2026-03-17_repo_evaluation_summary.md`
