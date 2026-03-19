@@ -3927,3 +3927,202 @@
 3. 所有“再平衡”实验都应先问清：
    - 当前冲突是 branch weight 不够，
    - 还是 objective 本身已经在改写共享区域
+
+### 102. 即使把 absent-side 从 shared rows 改成更窄的 metadata carve-out，也不能把 synthetic carve-out 局部转正直接当成 real gate 已被修好；`v39` 证明这类 clean absent proxy 只够说明“方向更干净”，还不够说明“真实门已过”
+
+现象：
+
+- `v39` 没再直接复用 `guodegang_absent_proxy_v3_strict` 整族 shared hard `target_full` 行；
+- 而是切到一批更窄的 metadata carve-out：
+  - `target_clean_speech`
+  - `target_full`
+  - `speech_interference_clean_pool`
+  - `target_present_ratio >= 0.95`
+  - `target_transient_presence_minus_mid_db_mean <= -9.231693`
+  - `interference_transient_presence_minus_mid_db_mean <= 5.840138`
+- 这批 `v5 cleancarve` 子集相对 `v19` 的 synthetic summary 为：
+  - `+0.181394 dB`
+- 但同一 checkpoint 在 real / near-real 侧仍然：
+  - exact `target_full = -0.467426 dB`
+  - `speech_leak_like (0004) = -0.086908 dB`
+  - `guodegang_anchor_120s = -0.099820 dB`
+  - `guodegang_absent_480s = -0.057543 dB`
+- 相对 `v32` 的 `friend_speech_leak_followup_gate` 仍：
+  - `overall_pass = false`
+
+处理：
+
+- 已补写 `v39` 日报与 gate 结果：
+  - `reports/daily/2026-03-19_v39_absent_recon_cleancarve_followup.md`
+  - `reports/eval/compare_v19_vs_v39_on_near_real_speech_probe_v1/near_real_speech_probe_analysis/friend_speech_leak_followup_gate_vs_v32.json`
+
+结果：
+
+- 当前可以确认：
+  - 更窄的 clean absent metadata carve-out 确实比直接作用 shared rows 更“干净”；
+  - 但它的 synthetic proxy 局部转正，并不会自动迁移成：
+    - friend-side exact speech-leak 转正
+    - 或 `guodegang anchor / absent` 两条 real floor 守住
+
+影响：
+
+- 以后不能把：
+  - “某个 absent carve-out 在 synthetic 自定义 proxy 上转正了”
+  直接等价成：
+  - “这条 absent-side 保护已经可保留”
+- 更准确的解释应写成：
+  - synthetic carve-out 只说明 selector / 代理方向可能更贴近目标；
+  - 是否值得保留，仍必须回到：
+    - exact `target_full`
+    - `speech_leak_like (0004)`
+    - `guodegang_anchor`
+    - `guodegang_absent`
+    这几条 gate 来裁决
+
+后续要求：
+
+1. 后续所有 absent-side metadata carve-out，都必须同步跑 real / near-real gate，不能只看自定义 proxy summary。
+2. 不继续围绕当前 `v39` 的 metadata 上界或权重做低价值细扫。
+3. 下一步若还做 absent-side follow-up，优先：
+   - 继续排查 `v5 cleancarve` 内与 friend-side exact 冲突的子集；
+   - 或补更贴近 near-real `guodegang_absent` 的保护代理；
+   - 或改成不直接改写 target reconstruction 方向的 objective。
+
+### 103. metadata carve-out 即使表面上和 friend-side exact family 不是同一条分支，也可能在 selector 交叉后重新命中 exact 样本；`v39 -> v40` 预备说明必须显式核对 overlap，而不能只看“这次没有直接传 exact sample-id”
+
+现象：
+
+- `v39` 的 absent-side `reconstruction_extra`
+  没有直接使用 friend-side exact 的 sample-id 文件；
+- 但按真实 selector 口径回放后发现，
+  它仍然命中了：
+  - train：
+    - `train_000001`
+    - `train_000432`
+    - `train_001225`
+    - `train_001610`
+  - val：
+    - `val_000075`
+- 其中 `val_000075`
+  正是 `v39` 在 exact `target_full` summary 里的主要回退点：
+  - `sisdr_delta_db = -0.467426 dB`
+
+处理：
+
+- 已生成一组去 overlap 的 `v40` 预备 allowlist：
+  - `data/synthetic/sample_ids_v40_absent_reconstructionextra_v6_cleancarve_noexactoverlap_train.txt`
+  - `data/synthetic/sample_ids_v40_absent_reconstructionextra_v6_cleancarve_noexactoverlap_val.txt`
+  - `data/synthetic/sample_ids_v40_absent_reconstructionextra_v6_cleancarve_noexactoverlap_all.txt`
+- 并补写预备日报：
+  - `reports/daily/2026-03-19_v40_absent_cleancarve_noexactoverlap_prep.md`
+
+结果：
+
+- 当前已经能把“metadata carve-out 大方向没问题”和“selector 交叉后误撞 exact family”这两类问题拆开；
+- 下一条最直接可测的 follow-up
+  就是不改 loss 图，
+  先把 overlap 显式剔掉。
+
+影响：
+
+- 以后不能把：
+  - “这次 absent-side 没直接传 exact sample-id 文件”
+  直接等价成：
+  - “它一定没有碰到 friend-side exact family”
+- 更准确的检查顺序应写成：
+  - 先回放真实 selector 命中集合；
+  - 再和当前所有关键 sample-id family 做交集；
+  - 最后再判断这条 carve-out 是方向不对，还是只是 selector crossfire。
+
+后续要求：
+
+1. 只要新分支同时存在：
+   - metadata selector
+   - 与其他 branch 的 sample-id family
+   就必须显式核对 overlap。
+2. 后续所有 absent-side carve-out 预备，都至少落一份：
+   - kept ids
+   - excluded overlap ids
+   的摘要。
+3. 若下一条 `v40` 仍失败，再把解释收紧到：
+   - selector crossfire 不是主因，
+   - 问题更可能在代理本身与 real gate 的语义错配。
+
+### 104. 不要把“新 absent proxy family 看起来更贴近 current signal”自动等价成“real absent floor 会更好”；`v40 / v41` 证明必须把 proxy 本体分数和 real gate 关键值一起落盘，否则很容易只记住 gate failed，却忘了代理自己也在反向
+
+现象：
+
+- `v40` 已经把 `v39` 的 exact overlap 显式剔掉；
+- 但 relative to `v19`，
+  它仍然是：
+  - exact `target_full = -0.467909 dB`
+  - near-real `speech_leak_like (0004) = -0.086817 dB`
+  - near-real `guodegang_anchor_120s = -0.099242 dB`
+  - near-real `guodegang_absent_480s = -0.057473 dB`
+  - `guodegang_absent_proxy_v6_currentsignal_cleanonly = -0.424082 dB`
+- `v41` 进一步把 absent-side 直接换成
+  `proxy_v6 currentsignal cleanonly allowlist`
+  后，
+  relative to `v19` 变成：
+  - exact proxy overall `+0.036695 dB`
+  - 但 exact `target_full = -0.325134 dB`
+  - near-real speech probe overall `-0.109792 dB`
+  - near-real `speech_leak_like (0004) = -0.062535 dB`
+  - near-real `guodegang_anchor_120s = -0.258474 dB`
+  - near-real `guodegang_absent_480s = -0.112892 dB`
+  - `guodegang_absent_proxy_v6_currentsignal_cleanonly = -0.627418 dB`
+- relative to `v32` 的 gate，
+  `v41` 还额外 failed：
+  - `speech_probe_overall_floor`
+
+处理：
+
+- 已把 `v40 / v41` 的裁决证据集中落盘到：
+  - `reports/daily/2026-03-19_v40_v41_absent_followup_results.md`
+- 并同步回写：
+  - `docs/01_project_overview_and_plan.md`
+  - `docs/05_task_branch_map.md`
+
+结果：
+
+- 现在可以明确写死：
+  - `proxy_v6` 本体 relative to `v19`
+    不是边走边好，
+    而是一路更差：
+    - `v32 = -0.172916 dB`
+    - `v39 = -0.424309 dB`
+    - `v40 = -0.424082 dB`
+    - `v41 = -0.627418 dB`
+- 这说明当前 `currentsignal cleanonly v6`
+  不是“更贴近 real absent 的代理还差一点点”，
+  而更像是：
+  - 代理本体就还在反向；
+  - exact overall 即使局部转正，
+    也不能推出关键的 exact `target_full`
+    和 `guodegang` real floor 已被守住。
+
+影响：
+
+- 以后不能把：
+  - `default` 还在正增益
+  - 或 exact proxy overall 变正
+  - 或代理名字看起来更像 current signal
+  直接等价成：
+  - absent-side 方向已经接近 keep
+- absent-side candidate 的最小裁决证据必须至少同时写 5 个数：
+  - exact `target_full`
+  - `speech_leak_like (0004)`
+  - `guodegang_anchor_120s`
+  - `guodegang_absent_480s`
+  - proxy 本体 summary
+
+后续要求：
+
+1. 后续每条 absent-side candidate 默认同时落盘这 5 个数值。
+2. 若 proxy 本体 relative to `v19` 已明显为负，
+   不再把它简单归因成：
+   - “只是 gate 太严”
+3. 下一条 absent-side proxy 设计，
+   必须先说明它与当前 `proxy_v6 currentsignal cleanonly`
+   的语义差异；
+   否则默认视为同类失败重试。

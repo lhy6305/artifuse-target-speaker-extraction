@@ -2661,6 +2661,169 @@
       - 更细粒度的 absent proxy carve-out
       - 更贴近 real gate 的保护代理
       - 或避免直接作用于 shared hard `target_full` 行的 absent-side objective
+184. 已补齐此前漏写到日报链路里的 `v39`：这是一条在 `v32` 基座上使用 `v5 cleancarve` metadata carve-out 的 absent-side follow-up；它证明“更窄的 clean absent proxy carve-out”在 synthetic 子集上可以转正，但仍明确 `FAIL` 于 friend-side real gate，因此当前也不保留：
+  - 训练配置：
+    - checkpoint：
+      - `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v39_v32_absent_reconstructionextra_v5_cleancarve_wave_ft1`
+    - init：
+      - `v32`
+    - manifest：
+      - `train_manifest_v39_v30_plus_guodegang_absent_proxy_v5_cleancarve.jsonl`
+      - `val_manifest_v39_v30_plus_guodegang_absent_proxy_v5_cleancarve.jsonl`
+    - manifest 规模：
+      - train `187`
+      - val `49`
+      - 相比 `v32` base 的 `97 / 29`，这次是真正新增了一批 metadata carve-out coverage
+    - `reconstruction_extra` carve 条件实际落盘为：
+      - `target_clean_speech`
+      - `target_full`
+      - `speech_interference_clean_pool`
+      - `target_present_ratio >= 0.95`
+      - `target_transient_presence_minus_mid_db_mean <= -9.231693`
+      - `interference_transient_presence_minus_mid_db_mean <= 5.840138`
+    - 关键 loss：
+      - `reconstruction_extra_waveform_weight = 0.01`
+      - `reconstruction_extra_stft_weight = 0.0`
+      - `interference_extra_weight = 0.0075`
+  - selector 命中：
+    - train：
+      - `reconstruction_extra = 94 / 187`
+      - `interference_extra = 7 / 187`
+    - val：
+      - `reconstruction_extra = 21 / 49`
+      - `interference_extra = 3 / 49`
+  - `v39` relative to `v19`：
+    - default `+0.056255 dB`
+    - exact proxy overall `-0.046377 dB`
+    - exact `target_full = -0.467426 dB`
+    - near-real speech probe overall `-0.090764 dB`
+    - near-real `speech_leak_like (0004) = -0.086908 dB`
+    - near-real `guodegang_anchor_120s = -0.099820 dB`
+    - near-real `guodegang_absent_480s = -0.057543 dB`
+  - `v5 cleancarve` synthetic absent proxy 本身：
+    - `reports/eval/compare_v19_vs_v39_on_guodegang_absent_proxy_v5_cleancarve/summary.json`
+    - overall `+0.181394 dB`
+  - relative to `v32` 的 `friend_speech_leak_followup_gate`：
+    - `overall_pass = false`
+    - failed：
+      - `exact_target_full_gain_floor`
+      - `speech_leak_like_gain_floor`
+      - `guodegang_anchor_floor`
+      - `guodegang_absent_floor`
+  - 当前解释应更新为：
+    - `v39` 证明“更细粒度的 clean absent metadata carve-out”本身是有信息量的；
+    - 它不再像 `v37 / v38` 那样只是 shared old rows 原地调权，而是真的扩了一批更窄的 absent-side synthetic coverage；
+    - 但当前 synthetic `v5 cleancarve` 子集转正，仍不足以推出：
+      - friend-side exact speech-leak 已被拉回
+      - 或 `guodegang anchor / absent` 两条 real floor 已被守住
+  - 因而：
+    - `v39` 也不保留为新候选
+    - 下一步不继续围绕当前 `v39` 的 metadata 上界或权重做低价值细扫
+    - 若继续推进，应优先：
+      - 更贴近 near-real `guodegang_absent` 的保护代理
+      - 或在 `v5 cleancarve` 内继续识别并剔除与 friend-side exact 冲突的子集
+      - 或引入不直接改写 shared target reconstruction 方向的 absent-side objective
+185. 已把当前阶段的任务分支图单独落盘，并完成 `v40` 预备分支清单；当前默认继续分支已从“抽象的更细粒度 carve-out”收敛到“`v39` carve-out 去掉 exact overlap”：
+  - 新增分支文档：
+    - `docs/05_task_branch_map.md`
+  - 当前活跃分支明确为：
+    - `B1 = v40 absent cleancarve no-exact-overlap`
+    - `B2 = 更贴近 near-real guodegang_absent 的保护代理`
+  - 已额外核对 `v39` 的一个关键事实：
+    - manifest 层面虽然完整包含 exact family 10 条样本；
+    - 但真正同时命中 `reconstruction_extra` 与 `interference_extra` 的 overlap 只有：
+      - train：
+        - `train_000001`
+        - `train_000432`
+        - `train_001225`
+        - `train_001610`
+      - val：
+        - `val_000075`
+  - 其中：
+    - `val_000075`
+      正是 `v39` 在 exact `target_full` 上的主要回退点：
+      - `sisdr_delta_db = -0.467426 dB`
+  - 已生成 `v40` 预备 sample-id 清单：
+    - `data/synthetic/sample_ids_v40_absent_reconstructionextra_v6_cleancarve_noexactoverlap_train.txt`
+    - `data/synthetic/sample_ids_v40_absent_reconstructionextra_v6_cleancarve_noexactoverlap_val.txt`
+    - `data/synthetic/sample_ids_v40_absent_reconstructionextra_v6_cleancarve_noexactoverlap_all.txt`
+  - 规模：
+    - kept：
+      - train `90`
+      - val `20`
+    - excluded exact overlap：
+      - train `4`
+      - val `1`
+  - 当前解释应更新为：
+    - `v39` 失败不只是 “metadata carve-out 方向还不够贴近 real gate”；
+    - 还至少包含一块更具体的 selector crossfire：
+      - absent-side `reconstruction_extra`
+      - 仍误命中了 friend-side exact family 的一个小交集
+  - 因而：
+    - 下一条默认实验不先改训练图
+    - 而是优先跑：
+      - `v40 = 保留 v39 carve-out 思路 + 去掉 exact overlap 的 reconstruction_extra allowlist`
+186. `v40 / v41` absent-side follow-up 现已完成，当前这轮分支的裁决证据必须连同 `proxy_v6` 本体一起记住；否则很容易下次只记得“失败了”，却忘了到底是怎么失败的：
+  - 集中日报：
+    - `reports/daily/2026-03-19_v40_v41_absent_followup_results.md`
+  - `v40 = v39 selected carve-out - exact overlap`
+  - relative to `v19`：
+    - default `+0.056136 dB`
+    - exact `target_full = -0.467909 dB`
+    - near-real `speech_leak_like (0004) = -0.086817 dB`
+    - near-real `guodegang_anchor_120s = -0.099242 dB`
+    - near-real `guodegang_absent_480s = -0.057473 dB`
+    - `guodegang_absent_proxy_v6_currentsignal_cleanonly = -0.424082 dB`
+  - relative to `v32` 的 `friend_speech_leak_followup_gate`：
+    - `overall_pass = false`
+    - failed：
+      - `exact_target_full_gain_floor`
+      - `speech_leak_like_gain_floor`
+      - `guodegang_anchor_floor`
+      - `guodegang_absent_floor`
+  - 当前解释应更新为：
+    - `v40` 证明“去掉 exact overlap”并不足以让 absent-side 线自然回正；
+    - `selector crossfire`
+      不是当前这轮失败的唯一主因
+  - `v41 = v32 + reconstruction_extra(proxy_v6 currentsignal cleanonly allowlist)`
+  - 训练摘要：
+    - train manifest `139`
+    - val manifest `38`
+    - `reconstruction_extra_waveform_weight = 0.005`
+    - selector 命中：
+      - train `46 / 139`
+      - val `13 / 38`
+  - `v41` relative to `v19`：
+    - default `+0.066352 dB`
+    - exact proxy overall `+0.036695 dB`
+    - exact `target_full = -0.325134 dB`
+    - near-real speech probe overall `-0.109792 dB`
+    - near-real `speech_leak_like (0004) = -0.062535 dB`
+    - near-real `guodegang_anchor_120s = -0.258474 dB`
+    - near-real `guodegang_absent_480s = -0.112892 dB`
+    - `guodegang_absent_proxy_v6_currentsignal_cleanonly = -0.627418 dB`
+  - relative to `v32` 的 `friend_speech_leak_followup_gate`：
+    - `overall_pass = false`
+    - failed：
+      - `speech_probe_overall_floor`
+      - `exact_target_full_gain_floor`
+      - `speech_leak_like_gain_floor`
+      - `guodegang_anchor_floor`
+      - `guodegang_absent_floor`
+  - 当前解释应更新为：
+    - `v41` 不是“代理更贴近 current signal，所以只差一点点”；
+    - 它更像是直接证明：
+      - `proxy_v6 currentsignal cleanonly`
+        本体当前就在反向；
+      - 即使 exact proxy overall 变成正值，
+        关键的 exact `target_full`
+        与 `guodegang anchor / absent`
+        仍一起回退
+  - 因而：
+    - `v40` 不保留
+    - `v41` 也不保留
+    - 下一轮 absent-side follow-up
+      不能继续把当前 `proxy_v6` family 当作默认 keep 候选
 
 ## 9. 文档入口
 
@@ -2669,6 +2832,7 @@
 - 踩坑记录：`docs/02_pitfalls_log.md`
 - 结构说明：`docs/03_project_structure.md`
 - 人耳复核指南：`docs/04_human_listening_review_guide.md`
+- 任务分支图：`docs/05_task_branch_map.md`
 - 初始设计：`initial_design.md`
 - 设计评审占位：`initial_design_judg.md`
 - 本轮模型条件化升级记录：`reports/daily/2026-03-16_ref_conditioning_upgrade.md`
@@ -2725,5 +2889,8 @@
 - 本轮 `v36` anchor transient-extra / absent-union smoke：`reports/daily/2026-03-19_v36_anchor_transientextra_absentunion_smoke.md`
 - 本轮 `reconstruction_extra` plumbing 与 `v37` absent follow-up：`reports/daily/2026-03-19_reconstruction_extra_branch_and_v37_absent_followup.md`
 - 本轮 `v38` absent-recon-wave / friend-extra rebalance：`reports/daily/2026-03-19_v38_absentreconwave_friendextra_rebalance.md`
+- 本轮 `v39` absent-recon-wave / `v5 cleancarve` metadata carve-out follow-up：`reports/daily/2026-03-19_v39_absent_recon_cleancarve_followup.md`
+- 本轮 `v40` absent cleancarve no-exact-overlap 预备：`reports/daily/2026-03-19_v40_absent_cleancarve_noexactoverlap_prep.md`
+- 本轮 `v40 / v41` absent-side follow-up 结果：`reports/daily/2026-03-19_v40_v41_absent_followup_results.md`
 - 本轮仓库与 `.gitignore` 审计：`reports/daily/2026-03-18_repo_gitignore_audit.md`
 - 本轮全仓库评估总结：`reports/daily/2026-03-17_repo_evaluation_summary.md`
