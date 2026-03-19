@@ -1,0 +1,290 @@
+{
+  "manifest": "data/synthetic/val_manifest_v22_friend_reverse_guardrail_proxy_v3_full_exact.jsonl",
+  "checkpoint_a": "experiments/checkpoints/baseline_stft_mask_stage2/best.pt",
+  "checkpoint_b": "experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v19_v12_absent_proxy_v3_reverse_guardrail_v1_int_up_ft1/best.pt",
+  "label_a": "stage2",
+  "label_b": "v19",
+  "focus_recipes": [],
+  "delta_threshold_db": 0.1,
+  "num_samples": 3,
+  "overall": {
+    "count": 3,
+    "avg_sisdr_db_a": -7.0175981521606445,
+    "avg_sisdr_db_b": -5.841061194737752,
+    "avg_sisdr_delta_db": 1.1765369574228923,
+    "avg_waveform_l1_a": 0.01221772531668345,
+    "avg_waveform_l1_b": 0.012085125471154848,
+    "avg_waveform_l1_delta": -0.0001325998455286026,
+    "improved_count": 2,
+    "regressed_count": 1,
+    "near_tie_count": 0
+  },
+  "recipe_groups": {
+    "target_clean_speech": {
+      "count": 2,
+      "avg_sisdr_db_a": -9.068100690841675,
+      "avg_sisdr_db_b": -7.141246438026428,
+      "avg_sisdr_delta_db": 1.9268542528152466,
+      "avg_waveform_l1_a": 0.010724768042564392,
+      "avg_waveform_l1_b": 0.010460345540195704,
+      "avg_waveform_l1_delta": -0.0002644225023686886,
+      "improved_count": 2,
+      "regressed_count": 0,
+      "near_tie_count": 0
+    },
+    "target_hard_speech": {
+      "count": 1,
+      "avg_sisdr_db_a": -2.916593074798584,
+      "avg_sisdr_db_b": -3.2406907081604004,
+      "avg_sisdr_delta_db": -0.3240976333618164,
+      "avg_waveform_l1_a": 0.01520363986492157,
+      "avg_waveform_l1_b": 0.01533468533307314,
+      "avg_waveform_l1_delta": 0.00013104546815156937,
+      "improved_count": 0,
+      "regressed_count": 1,
+      "near_tie_count": 0
+    }
+  },
+  "pattern_groups": {
+    "target_full": {
+      "count": 3,
+      "avg_sisdr_db_a": -7.0175981521606445,
+      "avg_sisdr_db_b": -5.841061194737752,
+      "avg_sisdr_delta_db": 1.1765369574228923,
+      "avg_waveform_l1_a": 0.01221772531668345,
+      "avg_waveform_l1_b": 0.012085125471154848,
+      "avg_waveform_l1_delta": -0.0001325998455286026,
+      "improved_count": 2,
+      "regressed_count": 1,
+      "near_tie_count": 0
+    }
+  },
+  "target_present_ratio_bucket_groups": {
+    "ratio_ge_0.95": {
+      "count": 3,
+      "avg_sisdr_db_a": -7.0175981521606445,
+      "avg_sisdr_db_b": -5.841061194737752,
+      "avg_sisdr_delta_db": 1.1765369574228923,
+      "avg_waveform_l1_a": 0.01221772531668345,
+      "avg_waveform_l1_b": 0.012085125471154848,
+      "avg_waveform_l1_delta": -0.0001325998455286026,
+      "improved_count": 2,
+      "regressed_count": 1,
+      "near_tie_count": 0
+    }
+  },
+  "top_improvements": [
+    {
+      "sample_id": "val_000496",
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/synthetic/val/val_000496/metadata.json",
+      "sisdr_a_db": -15.519896507263184,
+      "sisdr_b_db": -12.173938751220703,
+      "sisdr_delta_db": 3.3459577560424805,
+      "waveform_l1_a": 0.009437023662030697,
+      "waveform_l1_b": 0.009265266358852386,
+      "waveform_l1_delta": -0.0001717573031783104
+    },
+    {
+      "sample_id": "val_000200",
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/synthetic/val/val_000200/metadata.json",
+      "sisdr_a_db": -2.616304874420166,
+      "sisdr_b_db": -2.1085541248321533,
+      "sisdr_delta_db": 0.5077507495880127,
+      "waveform_l1_a": 0.012012512423098087,
+      "waveform_l1_b": 0.01165542472153902,
+      "waveform_l1_delta": -0.00035708770155906677
+    },
+    {
+      "sample_id": "val_000446",
+      "recipe": "target_hard_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/synthetic/val/val_000446/metadata.json",
+      "sisdr_a_db": -2.916593074798584,
+      "sisdr_b_db": -3.2406907081604004,
+      "sisdr_delta_db": -0.3240976333618164,
+      "waveform_l1_a": 0.01520363986492157,
+      "waveform_l1_b": 0.01533468533307314,
+      "waveform_l1_delta": 0.00013104546815156937
+    }
+  ],
+  "top_regressions": [
+    {
+      "sample_id": "val_000446",
+      "recipe": "target_hard_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/synthetic/val/val_000446/metadata.json",
+      "sisdr_a_db": -2.916593074798584,
+      "sisdr_b_db": -3.2406907081604004,
+      "sisdr_delta_db": -0.3240976333618164,
+      "waveform_l1_a": 0.01520363986492157,
+      "waveform_l1_b": 0.01533468533307314,
+      "waveform_l1_delta": 0.00013104546815156937
+    },
+    {
+      "sample_id": "val_000200",
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/synthetic/val/val_000200/metadata.json",
+      "sisdr_a_db": -2.616304874420166,
+      "sisdr_b_db": -2.1085541248321533,
+      "sisdr_delta_db": 0.5077507495880127,
+      "waveform_l1_a": 0.012012512423098087,
+      "waveform_l1_b": 0.01165542472153902,
+      "waveform_l1_delta": -0.00035708770155906677
+    },
+    {
+      "sample_id": "val_000496",
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/synthetic/val/val_000496/metadata.json",
+      "sisdr_a_db": -15.519896507263184,
+      "sisdr_b_db": -12.173938751220703,
+      "sisdr_delta_db": 3.3459577560424805,
+      "waveform_l1_a": 0.009437023662030697,
+      "waveform_l1_b": 0.009265266358852386,
+      "waveform_l1_delta": -0.0001717573031783104
+    }
+  ],
+  "top_near_ties": [
+    {
+      "sample_id": "val_000446",
+      "recipe": "target_hard_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/synthetic/val/val_000446/metadata.json",
+      "sisdr_a_db": -2.916593074798584,
+      "sisdr_b_db": -3.2406907081604004,
+      "sisdr_delta_db": -0.3240976333618164,
+      "waveform_l1_a": 0.01520363986492157,
+      "waveform_l1_b": 0.01533468533307314,
+      "waveform_l1_delta": 0.00013104546815156937
+    },
+    {
+      "sample_id": "val_000200",
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/synthetic/val/val_000200/metadata.json",
+      "sisdr_a_db": -2.616304874420166,
+      "sisdr_b_db": -2.1085541248321533,
+      "sisdr_delta_db": 0.5077507495880127,
+      "waveform_l1_a": 0.012012512423098087,
+      "waveform_l1_b": 0.01165542472153902,
+      "waveform_l1_delta": -0.00035708770155906677
+    },
+    {
+      "sample_id": "val_000496",
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "target_present_ratio_bucket": "ratio_ge_0.95",
+      "metadata_path": "data/synthetic/val/val_000496/metadata.json",
+      "sisdr_a_db": -15.519896507263184,
+      "sisdr_b_db": -12.173938751220703,
+      "sisdr_delta_db": 3.3459577560424805,
+      "waveform_l1_a": 0.009437023662030697,
+      "waveform_l1_b": 0.009265266358852386,
+      "waveform_l1_delta": -0.0001717573031783104
+    }
+  ],
+  "model_config_a": {
+    "conditioning_mode": "legacy_bias"
+  },
+  "model_config_b": {
+    "n_fft": 512,
+    "hop_length": 128,
+    "win_length": 512,
+    "hidden_dim": 256,
+    "reference_dim": 128,
+    "gru_layers": 2,
+    "conditioning_mode": "legacy_bias"
+  },
+  "loss_config_a": {},
+  "loss_config_b": {
+    "sample_rate": 16000,
+    "stft_weight": 0.5,
+    "sisdr_weight": 0.0,
+    "transient_weight": 0.002,
+    "interference_weight": 0.0075,
+    "absent_weight": 1.0,
+    "transient_top_ratio": 0.12,
+    "transient_min_count": 8,
+    "transient_mid_low_hz": 800.0,
+    "transient_mid_high_hz": 3000.0,
+    "transient_presence_low_hz": 3000.0,
+    "transient_presence_high_hz": 8000.0,
+    "transient_ratio_weight": 0.5,
+    "transient_focus_recipes": [
+      "target_hard_speech"
+    ],
+    "transient_focus_patterns": [
+      "target_full"
+    ],
+    "transient_focus_interference_pools": [
+      "speech_interference_hard_pool"
+    ],
+    "transient_focus_interference_speaker_names": [
+      "friend_hard_negative_segments"
+    ],
+    "transient_min_target_ratio": 0.95,
+    "transient_max_target_ratio": null,
+    "transient_min_overlap_ratio": 0.9,
+    "transient_max_overlap_ratio": null,
+    "transient_min_interference_gain_db": null,
+    "transient_max_interference_gain_db": null,
+    "interference_focus_recipes": [
+      "target_hard_speech"
+    ],
+    "interference_focus_patterns": [
+      "target_full"
+    ],
+    "interference_focus_interference_pools": [
+      "speech_interference_hard_pool"
+    ],
+    "interference_focus_interference_speaker_names": [
+      "friend_hard_negative_segments"
+    ],
+    "interference_min_target_ratio": 0.95,
+    "interference_max_target_ratio": null,
+    "interference_min_overlap_ratio": 0.9,
+    "interference_max_overlap_ratio": null,
+    "interference_min_interference_gain_db": null,
+    "interference_max_interference_gain_db": null,
+    "absent_focus_recipes": [
+      "target_clean_speech"
+    ],
+    "absent_focus_patterns": [
+      "target_absent_head",
+      "target_absent_tail",
+      "target_intermittent"
+    ],
+    "absent_focus_interference_pools": [
+      "speech_interference_clean_pool"
+    ],
+    "absent_focus_interference_speaker_names": [],
+    "absent_min_target_ratio": null,
+    "absent_max_target_ratio": null,
+    "absent_min_overlap_ratio": null,
+    "absent_max_overlap_ratio": null,
+    "absent_min_interference_gain_db": -0.8906666636466982,
+    "absent_max_interference_gain_db": null
+  }
+}

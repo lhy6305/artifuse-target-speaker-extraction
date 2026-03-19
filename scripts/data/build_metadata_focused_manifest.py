@@ -25,6 +25,12 @@ def parse_args() -> argparse.Namespace:
         default=ROOT / "data" / "synthetic" / "train_manifest.jsonl",
     )
     parser.add_argument("--output-manifest", type=Path, required=True)
+    parser.add_argument(
+        "--sample-ids-file",
+        type=Path,
+        default=None,
+        help="Optional newline-delimited sample_id allowlist applied before metadata filters.",
+    )
     parser.add_argument("--recipes", nargs="*", default=[])
     parser.add_argument("--temporal-patterns", nargs="*", default=[])
     parser.add_argument("--min-target-ratio", type=float, default=None)
@@ -85,6 +91,19 @@ def load_jsonl(path: Path) -> list[dict[str, Any]]:
                 continue
             rows.append(json.loads(line))
     return rows
+
+
+def load_sample_ids(path: Path | None) -> set[str]:
+    if path is None:
+        return set()
+    sample_ids: set[str] = set()
+    with path.open("r", encoding="utf-8") as fh:
+        for line in fh:
+            value = line.strip()
+            if not value:
+                continue
+            sample_ids.add(value)
+    return sample_ids
 
 
 def parse_recipe_caps(values: list[str]) -> dict[str, int]:
@@ -243,6 +262,7 @@ def main() -> None:
     args = parse_args()
     rng = random.Random(args.seed)
     recipe_caps = parse_recipe_caps(args.recipe_cap)
+    allowed_sample_ids = load_sample_ids(args.sample_ids_file)
     recipes = set(args.recipes)
     temporal_patterns = set(args.temporal_patterns)
     interference_pools = set(args.interference_pools)
@@ -261,6 +281,8 @@ def main() -> None:
     enriched_candidates: list[dict[str, Any]] = []
     transient_cache: dict[str, dict[str, float]] = {}
     for row in rows:
+        if allowed_sample_ids and str(row["sample_id"]) not in allowed_sample_ids:
+            continue
         if recipes and str(row["recipe"]) not in recipes:
             continue
         if temporal_patterns and str(row.get("temporal_pattern", "target_full")) not in temporal_patterns:
@@ -383,6 +405,7 @@ def main() -> None:
     summary = {
         "input_manifest": serialize_repo_path(args.input_manifest),
         "output_manifest": serialize_repo_path(args.output_manifest),
+        "sample_ids_file": serialize_repo_path(args.sample_ids_file) if args.sample_ids_file is not None else None,
         "seed": args.seed,
         "filters": {
             "recipes": sorted(recipes),

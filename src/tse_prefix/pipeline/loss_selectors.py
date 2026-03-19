@@ -19,32 +19,40 @@ SELECTOR_SUFFIXES = (
     "min_target_transient_presence_share_mean",
     "max_target_transient_presence_share_mean",
 )
+SELECTOR_BRANCH_NAMES = ("", "extra_")
 
 
 def selector_config_keys(prefixes: tuple[str, ...] = ("transient", "interference", "absent")) -> set[str]:
-    return {f"{prefix}_{suffix}" for prefix in prefixes for suffix in SELECTOR_SUFFIXES}
+    return {
+        f"{prefix}_{branch_name}{suffix}"
+        for prefix in prefixes
+        for branch_name in SELECTOR_BRANCH_NAMES
+        for suffix in SELECTOR_SUFFIXES
+    }
 
 
-def build_selector_sample_weights(
+def _build_branch_selector_sample_weights(
     batch: dict[str, Any],
     device: torch.device,
     loss_config: dict[str, Any],
     prefix: str,
+    branch_name: str,
 ) -> torch.Tensor | None:
-    recipes = set(loss_config.get(f"{prefix}_focus_recipes", []))
-    patterns = set(loss_config.get(f"{prefix}_focus_patterns", []))
-    pools = set(loss_config.get(f"{prefix}_focus_interference_pools", []))
-    speaker_names = set(loss_config.get(f"{prefix}_focus_interference_speaker_names", []))
-    min_ratio = loss_config.get(f"{prefix}_min_target_ratio")
-    max_ratio = loss_config.get(f"{prefix}_max_target_ratio")
-    min_overlap = loss_config.get(f"{prefix}_min_overlap_ratio")
-    max_overlap = loss_config.get(f"{prefix}_max_overlap_ratio")
-    min_gain = loss_config.get(f"{prefix}_min_interference_gain_db")
-    max_gain = loss_config.get(f"{prefix}_max_interference_gain_db")
-    min_transient_minus_mid = loss_config.get(f"{prefix}_min_target_transient_presence_minus_mid_db_mean")
-    max_transient_minus_mid = loss_config.get(f"{prefix}_max_target_transient_presence_minus_mid_db_mean")
-    min_transient_share = loss_config.get(f"{prefix}_min_target_transient_presence_share_mean")
-    max_transient_share = loss_config.get(f"{prefix}_max_target_transient_presence_share_mean")
+    key_prefix = f"{prefix}_{branch_name}"
+    recipes = set(loss_config.get(f"{key_prefix}focus_recipes", []))
+    patterns = set(loss_config.get(f"{key_prefix}focus_patterns", []))
+    pools = set(loss_config.get(f"{key_prefix}focus_interference_pools", []))
+    speaker_names = set(loss_config.get(f"{key_prefix}focus_interference_speaker_names", []))
+    min_ratio = loss_config.get(f"{key_prefix}min_target_ratio")
+    max_ratio = loss_config.get(f"{key_prefix}max_target_ratio")
+    min_overlap = loss_config.get(f"{key_prefix}min_overlap_ratio")
+    max_overlap = loss_config.get(f"{key_prefix}max_overlap_ratio")
+    min_gain = loss_config.get(f"{key_prefix}min_interference_gain_db")
+    max_gain = loss_config.get(f"{key_prefix}max_interference_gain_db")
+    min_transient_minus_mid = loss_config.get(f"{key_prefix}min_target_transient_presence_minus_mid_db_mean")
+    max_transient_minus_mid = loss_config.get(f"{key_prefix}max_target_transient_presence_minus_mid_db_mean")
+    min_transient_share = loss_config.get(f"{key_prefix}min_target_transient_presence_share_mean")
+    max_transient_share = loss_config.get(f"{key_prefix}max_target_transient_presence_share_mean")
     has_selector = bool(
         recipes
         or patterns
@@ -120,6 +128,24 @@ def build_selector_sample_weights(
     if max_transient_share is not None:
         weights = weights * ((~torch.isnan(transient_share)) & (transient_share <= float(max_transient_share))).float()
     return weights
+
+
+def build_selector_sample_weights(
+    batch: dict[str, Any],
+    device: torch.device,
+    loss_config: dict[str, Any],
+    prefix: str,
+) -> torch.Tensor | None:
+    branch_weights = [
+        weights
+        for branch_name in SELECTOR_BRANCH_NAMES
+        if (weights := _build_branch_selector_sample_weights(batch, device, loss_config, prefix, branch_name)) is not None
+    ]
+    if not branch_weights:
+        return None
+    if len(branch_weights) == 1:
+        return branch_weights[0]
+    return torch.stack(branch_weights, dim=0).amax(dim=0)
 
 
 def summarize_selector_weights(

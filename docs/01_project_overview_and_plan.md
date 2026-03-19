@@ -1929,6 +1929,168 @@
    - 当前主线应继续保持：
      - `v19` 作为 absent-side objective 基座
      - friend-side 仍待 branch-local proxy / selector 闭环
+162. 已完成 `v21 = legacy_transient_leakguard_probe_v21_v19_friend_reverse_guardrail_proxy_v2_transient_extra_ft1`：
+   - 本轮新增了 selector `extra` branch 能力：
+     - 单个 loss prefix 现在可以同时保留：
+       - 原有 selector branch
+       - `extra` selector branch
+     - 当前已补到：
+       - `src/tse_prefix/pipeline/loss_selectors.py`
+       - `scripts/train/train_stft_mask_baseline.py`
+   - 新 friend-side proxy `v21_v19_friend_reverse_guardrail_proxy_v2` 条件为：
+     - `target_clean_speech`
+     - `target_full`
+     - `target_present_ratio >= 0.95`
+     - `overlap_ratio >= 0.9`
+     - `speech_interference_clean_pool`
+     - `target_transient_presence_minus_mid_db_mean >= -9.179057439168297`
+   - proxy manifest：
+     - `train_manifest_v21_v19_friend_reverse_guardrail_proxy_v2.jsonl = 25`
+     - `val_manifest_v21_v19_friend_reverse_guardrail_proxy_v2.jsonl = 12`
+   - 但相对 `v19` 基座去重后，真正新增的唯一样本仍然只有：
+     - train `21`
+     - val `8`
+   - `v21` 训练时：
+     - 保留 `v19` 原有 hard friend branch
+     - 再把上述 clean/full/high-transient branch 挂到 `transient_extra`
+   - selector 命中确实显式增加：
+     - train transient / interference / absent：
+       - `76 / 51 / 24` out of `111`
+     - val transient / interference / absent：
+       - `30 / 18 / 4` out of `35`
+   - 这说明：
+     - `v20` 的“零命中增量”问题已经被解决
+     - 新 friend-side branch 确实进了专项 loss
+   - 但相对 `v19`：
+     - default val：
+       - `+0.008857 dB`
+     - `v21_v19_friend_reverse_guardrail_proxy_v2`：
+       - `-0.076726 dB`
+     - broad near-real speech probe overall：
+       - `-0.042540 dB`
+     - `near_real_guodegang_transient_probe_v1` overall：
+       - `-0.122561 dB`
+   - stage2-relative speech probe 关键锚点也都低于 `v19`：
+     - `friend_raw`：
+       - `v19 = -0.414640 dB`
+       - `v21 = -0.430507 dB`
+     - `0003`：
+       - `v19 = -0.913926 dB`
+       - `v21 = -0.938342 dB`
+     - `0004`：
+       - `v19 = +0.084646 dB`
+       - `v21 = +0.077329 dB`
+     - `0006 / guodegang`：
+       - `v19 = +1.206683 dB`
+       - `v21 = +1.084122 dB`
+   - `speech_followup_gate_vs_v19`：
+     - `FAIL`
+     - failed：
+       - `speech_probe_overall_floor`
+       - `speech_probe_friend_raw_floor`
+       - `anchor_0003_gain_floor`
+       - `anchor_0004_gain_floor`
+       - `anchor_0006_regression_floor`
+   - `probe_subset_guardrail_vs_v19_with_clips`：
+     - `FAIL`
+     - failed：
+       - `overall_floor`
+       - `family__guodegang_raw`
+       - `anchor__near_real_0006`
+       - `clip__guodegang_anchor_120s`
+       - `clip__guodegang_absent_480s`
+   - `synthetic_dual_proxy_gate_vs_v12`：
+     - `PASS`
+     - 但三项 synthetic proxy 仍都低于 `v19`：
+       - `anchor_proxy_v1 = +2.026994 dB < v19 +2.237552 dB`
+       - `absent_proxy_v3_strict = +0.110022 dB < v19 +0.142228 dB`
+       - `absent_proxy_v4_broad = +0.187115 dB < v19 +0.195950 dB`
+163. 当前默认接班口径应继续收紧为：
+   - `v21` 不保留
+   - 但 selector `extra` branch 这层基础设施保留
+   - 本轮已经证明：
+     - 让 friend-side proxy 显式命中 selector 是必要条件
+     - 但不是充分条件
+   - 当前更准确的主线解释应改写为：
+     - `v20` 失败在于新 branch 根本没进 objective
+     - `v21` 则说明：
+       - 即便显式进了 objective
+       - 当前这批 clean/full/high-transient friend proxy 本身也没有提供足够正确的优化方向
+   - 因而下一步若继续自动推进，应优先先做：
+     - 更窄、更接近 `0003 / 0004` 的 friend-side proxy 重搜
+     - 或更严格的 proxy 前置验证
+   - 而不是继续：
+     - 对现有 `v21` proxy 扫权重 / 扫 epoch / 扫 lr
+164. 已完成 friend-side `samplewise-order-pass` exact proxy 重搜：
+   - 本轮把 `scripts/eval/search_synthetic_proxy_candidates.py` 升级为支持：
+     - `--require-samplewise-order-pass`
+     - 在 top candidate 中落盘 exact `sample_ids`
+   - 同时把 `scripts/data/build_metadata_focused_manifest.py` 升级为支持：
+     - `--sample-ids-file`
+     - 可直接把 exact `sample_id` allowlist 落成 manifest
+   - `val/default` 上：
+     - 原 shared speech rows = `237`
+     - 加上单样本顺序约束 `v12 > v19 > v8` 后，只剩 `38`
+   - `train/default` 上补跑 `stage2 vs v8 / v12 / v19` compare 后：
+     - single-sample order-pass speech rows = `176`
+   - 这说明：
+     - 之前很多“均值上 order-pass”的 candidate
+     - 实际内部混有大量单样本反向行
+165. 上述 exact proxy 重搜已经把下一步结论继续收紧：
+   - train 侧 top full candidate exact manifest：
+     - `train_manifest_v22_friend_reverse_guardrail_proxy_v3_full_exact.jsonl = 10`
+   - val 侧 exact full candidate：
+     - `val_manifest_v22_friend_reverse_guardrail_proxy_v3_full_exact.jsonl = 4`
+     - ids：
+       - `val_000033`
+       - `val_000200`
+       - `val_000446`
+       - `val_000496`
+   - val 侧 exact nonfull candidate：
+     - `val_manifest_v22_friend_reverse_guardrail_proxy_v3_nonfull_exact.jsonl = 7`
+   - 但相对 `v19`：
+     - `v21` 在 exact full proxy 上：
+       - `-0.065412 dB`
+     - `v21` 在 exact nonfull proxy 上：
+       - `-0.156167 dB`
+   - 也就是说：
+     - `v21` 失败不是因为 proxy 只是“太宽”
+     - 即便改成 exact、single-sample order-pass 的 full / nonfull 子集
+       当前 `v21 transient_extra` objective 仍然低于 `v19`
+   - 当前默认接班口径因此再次收紧为：
+     - 不直接起 `v22` 训练
+     - 不继续对 `v21` 现有 objective 扫更多权重 / epoch / lr
+    - 下一步若继续自动推进，应优先改：
+      - proxy 语义本身
+      - 或 loss 归属
+    - 而不是只继续改：
+      - proxy 的宽窄
+166. 本轮进一步把 friend-side proxy 语义拆成了两个 exact family：
+  - `0003-like = residual_transient_like`
+    - `train_manifest_v23_friend_reverse_guardrail_proxy_v4_residual_transient_exact.jsonl = 10`
+    - `val_manifest_v23_friend_reverse_guardrail_proxy_v4_residual_transient_exact.jsonl = 4`
+  - `0004-like = speech_leak_like`
+    - `train_manifest_v23_friend_reverse_guardrail_proxy_v4_speech_leak_exact.jsonl = 11`
+    - `val_manifest_v23_friend_reverse_guardrail_proxy_v4_speech_leak_exact.jsonl = 3`
+  - 这一步同时确认：
+    - `0004-like` 在当前 synthetic order-pass 行里并不更像 `nonfull`
+    - 而更像：
+      - `target_full`
+      - clean pool
+      - higher-gain
+      - lower-transient
+167. 在这两族 exact val proxy 上，`v21 transient_extra` 仍都没有超过 `v19`：
+  - residual-transient exact：
+    - `compare_v19_vs_v21_on_v23_friend_reverse_guardrail_proxy_v4_residual_transient_exact = -0.065412 dB`
+  - speech-leak exact：
+    - `compare_v19_vs_v21_on_v23_friend_reverse_guardrail_proxy_v4_speech_leak_exact = -0.020621 dB`
+  - 因此当前默认接班口径继续收紧为：
+    - 不再把 `0003 / 0004` 合并成一个 friend-side proxy
+    - 不继续把 `0004-like` 默认并入单一 `transient_extra`
+    - 下一步若开新训练，应至少拆成两条 branch-local 语义：
+      - `0003-like residual-transient`
+      - `0004-like speech-leak`
+    - 其中后者更像需要 interference / leak 侧独立归属，而不是继续放在 transient-only 目标里
 
 ## 9. 文档入口
 
@@ -1980,5 +2142,8 @@
 - 本轮 reverse guardrail carve-out 与 `v16 / v17` pre-screen：`reports/daily/2026-03-18_v16_v17_reverse_guardrail_probe.md`
 - 本轮 `v18 / v19` reverse-guardrail follow-up：`reports/daily/2026-03-18_v18_v19_reverse_guardrail_followup.md`
 - 本轮 `v20` friend reverse guardrail follow-up：`reports/daily/2026-03-18_v20_friend_reverse_guardrail_followup.md`
+- 本轮 `v21` transient-extra friend reverse guardrail follow-up：`reports/daily/2026-03-18_v21_friend_reverse_guardrail_transient_extra_followup.md`
+- 本轮 `v22` samplewise-order-pass friend proxy follow-up：`reports/daily/2026-03-18_v22_friend_proxy_samplewise_search_followup.md`
+- 本轮 `v23` friend proxy semantic split follow-up：`reports/daily/2026-03-18_v23_friend_proxy_semantic_split_followup.md`
 - 本轮仓库与 `.gitignore` 审计：`reports/daily/2026-03-18_repo_gitignore_audit.md`
 - 本轮全仓库评估总结：`reports/daily/2026-03-17_repo_evaluation_summary.md`

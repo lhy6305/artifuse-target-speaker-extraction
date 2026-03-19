@@ -2976,3 +2976,180 @@
    优先做的是：
    - 让 friend-side样本进入显式 selector
    - 或先重做能复现 friend-side 排序差异的 synthetic proxy
+
+### 85. 即使把新增 friend-side proxy 真正接进了 selector，只要这批 proxy 样本本身没有提供比 `v19` 更正确的优化方向，训练仍然会回退；`v21` 说明“有 selector 命中”只是必要条件，不是充分条件
+
+现象：
+
+- 本轮 `v21 = legacy_transient_leakguard_probe_v21_v19_friend_reverse_guardrail_proxy_v2_transient_extra_ft1`
+  在 `v20` 基础上进一步补了：
+  - selector `extra` branch
+  - 把新的 clean/full/high-transient friend proxy 显式挂进 `transient_extra`
+- selector 命中数确实明显增加：
+  - train transient：
+    - `51 -> 76`
+  - val transient：
+    - `18 -> 30`
+- 说明新增 branch 已经真实进入专项 loss，而不是 `v20` 那种零命中增量
+
+影响：
+
+- 但相对 `v19`，`v21` 仍然没有把目标方向推正：
+  - default val：
+    - `+0.008857 dB`
+  - 新 proxy 自己：
+    - `-0.076726 dB`
+  - broad near-real speech probe overall：
+    - `-0.042540 dB`
+  - `near_real_guodegang_transient_probe_v1` overall：
+    - `-0.122561 dB`
+- stage2-relative 的关键 friend-side锚点也全部低于 `v19`：
+  - `friend_raw`
+  - `0003`
+  - `0004`
+  - `0006`
+- `speech_followup_gate_vs_v19` 直接失败：
+  - `speech_probe_overall_floor`
+  - `speech_probe_friend_raw_floor`
+  - `anchor_0003_gain_floor`
+  - `anchor_0004_gain_floor`
+  - `anchor_0006_regression_floor`
+- 甚至 guodegang focused probe 相对 `v19` 也全线回退：
+  - overall
+  - family
+  - `0006`
+  - `anchor_120s`
+  - `absent_480s`
+
+处理：
+
+- 本轮保留：
+  - selector `extra` branch 这层基础设施
+- 但不保留：
+  - `v21` checkpoint
+
+后续要求：
+
+1. 以后凡是新 proxy 已经显式命中 selector，也仍然必须单独核对：
+   - 该 proxy 相对当前基座是否真的转正
+   - broad near-real 的关键锚点是否同步不回退
+2. 如果出现：
+   - selector 命中数明显增加
+   - 但 proxy 自己和 near-real 关键锚点仍同时低于当前基座
+   那问题就不再是“selector 没接上”，而应改判为：
+   - “proxy 本身方向不够对，不能继续靠加预算硬推”
+3. 下一步若继续补 friend-side，优先先重搜更窄、更贴近：
+   - `0003 / 0004`
+   的 proxy；
+   不要先对这批 `v21` 样本继续扫权重、扫 epoch、扫 lr。
+
+### 86. 如果一个 friend-side objective 在更严格的 exact samplewise-order-pass proxy 上仍然低于当前基座，那问题就不再是“proxy 太宽”，而是当前 objective / proxy 语义本身仍然不对；`v21` 在 `v22` exact full / nonfull proxy 上依然回退，说明继续缩窄同类 proxy 也不足以救活这条线
+
+现象：
+
+- 本轮把 friend-side proxy 搜索进一步收紧为：
+  - 单样本先满足 `v12 > v19 > v8`
+  - 再搜索 metadata 子集
+- 对应地：
+  - `val/default` shared speech rows 从 `237` 收缩到 `38`
+  - `train/default` 也有 `176` 条 single-sample order-pass speech rows
+- 基于这套 exact 搜索又落了两类 proxy：
+  - exact full：
+    - train `10`
+    - val `4`
+  - exact nonfull：
+    - val `7`
+- 但相对 `v19`：
+  - `v21` 在 exact full 上仍是：
+    - `-0.065412 dB`
+  - `v21` 在 exact nonfull 上仍是：
+    - `-0.156167 dB`
+
+影响：
+
+- 这说明 `v21` 的失败已经不能再归因于：
+  - “proxy 还不够窄”
+  - 或“proxy 里还混了太多单样本方向相反的行”
+- 更准确的解释应改写为：
+  - 当前 `transient_extra` 这条 friend-side objective
+  - 即便只看 exact、single-sample order-pass 的 full / nonfull 子集
+  - 也仍然没有把优化方向推到 `v19` 之上
+
+处理：
+
+- 本轮保留：
+  - `samplewise-order-pass` exact proxy 搜索链
+  - `sample_ids_file` manifest 构建链
+- 但不保留：
+  - 直接沿当前 `v21` 逻辑开 `v22` 训练
+
+后续要求：
+
+1. 以后若某条 friend-side objective 在 exact full / nonfull proxy 上仍低于当前基座，
+   就不要再把下一步写成：
+   - “继续缩窄 proxy 再试一次”
+2. 这种情况下应直接把问题升级为：
+   - objective / proxy 语义不匹配
+   - 需要换 proxy 形态或换 loss 归属
+3. 对当前这条线，下一步优先应改：
+   - 更贴近 `0003 / 0004` 的 residual-transient / speech-leak 语义
+   - 或不再继续只挂在 `transient_extra`
+   而不是继续：
+   - 同类 full/high-transient proxy 的宽窄扫描
+
+### 87. `near_real_0004` 不能默认并入同一个 transient-only friend objective；本轮 semantic split 已显示它更像 `target_full + clean-pool + higher-gain + lower-transient` 的 speech-leak 语义，继续把 `0003 / 0004` 合并进单一 `transient_extra`，即使 exact proxy 也仍压不过 `v19`
+
+现象：
+
+- 本轮给 `search_synthetic_proxy_candidates.py` 补了 low-side bucket：
+  - `gain_le_q50`
+  - `transient_le_q50`
+  - `transient_lt_q67`
+- 然后把 friend-side exact proxy 明确拆成两族：
+  - `0003-like residual-transient`：
+    - train `10`
+    - val `4`
+  - `0004-like speech-leak`：
+    - train `11`
+    - val `3`
+- 其中 `0004-like` 这族在当前 synthetic order-pass 行里并不落在：
+  - `nonfull`
+  - 或另一批 high-transient
+  之上；
+  它反而更像：
+  - `target_full`
+  - clean speech pool
+  - higher-gain
+  - lower-transient
+- 但即便这样拆开后，`v21` 相对 `v19` 仍然：
+  - residual-transient exact：`-0.065412 dB`
+  - speech-leak exact：`-0.020621 dB`
+
+影响：
+
+- 这说明当前问题已经不能再描述成：
+  - “只要把 `0004-like` 再收进同一个 transient 分支就会好”
+- 更准确的描述应改成：
+  - `0003 / 0004` 虽然都属于 friend-side speech overlap 回退
+  - 但它们不是同一种 synthetic proxy 语义
+  - 尤其 `0004-like` 不应默认按 transient-only 目标去吸收
+
+处理：
+
+- 本轮保留：
+  - semantic-split exact proxy 搜索与 manifests
+- 但不保留：
+  - 继续把 `0003 / 0004` 合并成一个 single-branch friend objective 的写法
+
+后续要求：
+
+1. 以后若要继续补 friend-side `0003 / 0004`，至少先分两条语义：
+   - residual-transient-like
+   - speech-leak-like
+2. 不要再把 `0004-like` 默认写成：
+   - “另一批 transient proxy”
+3. 新训练若要开，应优先考虑：
+   - `0003-like` 仍挂 transient-adjacent 分支
+   - `0004-like` 单独挂 interference / leak 侧归属
+   而不是继续：
+   - 两者并到同一个 `transient_extra`

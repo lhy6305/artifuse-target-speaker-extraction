@@ -82,36 +82,43 @@ def parse_args() -> argparse.Namespace:
 
 
 def add_selector_args(parser: argparse.ArgumentParser, prefix: str) -> None:
-    parser.add_argument(f"--loss-{prefix}-focus-recipes", nargs="*", default=[])
-    parser.add_argument(f"--loss-{prefix}-focus-patterns", nargs="*", default=[])
-    parser.add_argument(f"--loss-{prefix}-focus-interference-pools", nargs="*", default=[])
-    parser.add_argument(f"--loss-{prefix}-focus-interference-speaker-names", nargs="*", default=[])
-    parser.add_argument(f"--loss-{prefix}-min-target-ratio", type=float, default=None)
-    parser.add_argument(f"--loss-{prefix}-max-target-ratio", type=float, default=None)
-    parser.add_argument(f"--loss-{prefix}-min-overlap-ratio", type=float, default=None)
-    parser.add_argument(f"--loss-{prefix}-max-overlap-ratio", type=float, default=None)
-    parser.add_argument(f"--loss-{prefix}-min-interference-gain-db", type=float, default=None)
-    parser.add_argument(f"--loss-{prefix}-max-interference-gain-db", type=float, default=None)
-    parser.add_argument(
-        f"--loss-{prefix}-min-target-transient-presence-minus-mid-db-mean",
-        type=float,
-        default=None,
-    )
-    parser.add_argument(
-        f"--loss-{prefix}-max-target-transient-presence-minus-mid-db-mean",
-        type=float,
-        default=None,
-    )
-    parser.add_argument(
-        f"--loss-{prefix}-min-target-transient-presence-share-mean",
-        type=float,
-        default=None,
-    )
-    parser.add_argument(
-        f"--loss-{prefix}-max-target-transient-presence-share-mean",
-        type=float,
-        default=None,
-    )
+    for branch_name in ("", "extra_"):
+        flag_prefix = f"--loss-{prefix}-" if not branch_name else f"--loss-{prefix}-{branch_name.replace('_', '-')}"
+        attr_prefix = f"loss_{prefix}_" if not branch_name else f"loss_{prefix}_{branch_name}"
+        parser.add_argument(f"{flag_prefix}focus-recipes", nargs="*", default=[])
+        parser.add_argument(f"{flag_prefix}focus-patterns", nargs="*", default=[])
+        parser.add_argument(f"{flag_prefix}focus-interference-pools", nargs="*", default=[])
+        parser.add_argument(f"{flag_prefix}focus-interference-speaker-names", nargs="*", default=[])
+        parser.add_argument(f"{flag_prefix}min-target-ratio", type=float, default=None)
+        parser.add_argument(f"{flag_prefix}max-target-ratio", type=float, default=None)
+        parser.add_argument(f"{flag_prefix}min-overlap-ratio", type=float, default=None)
+        parser.add_argument(f"{flag_prefix}max-overlap-ratio", type=float, default=None)
+        parser.add_argument(f"{flag_prefix}min-interference-gain-db", type=float, default=None)
+        parser.add_argument(f"{flag_prefix}max-interference-gain-db", type=float, default=None)
+        parser.add_argument(
+            f"{flag_prefix}min-target-transient-presence-minus-mid-db-mean",
+            dest=f"{attr_prefix}min_target_transient_presence_minus_mid_db_mean",
+            type=float,
+            default=None,
+        )
+        parser.add_argument(
+            f"{flag_prefix}max-target-transient-presence-minus-mid-db-mean",
+            dest=f"{attr_prefix}max_target_transient_presence_minus_mid_db_mean",
+            type=float,
+            default=None,
+        )
+        parser.add_argument(
+            f"{flag_prefix}min-target-transient-presence-share-mean",
+            dest=f"{attr_prefix}min_target_transient_presence_share_mean",
+            type=float,
+            default=None,
+        )
+        parser.add_argument(
+            f"{flag_prefix}max-target-transient-presence-share-mean",
+            dest=f"{attr_prefix}max_target_transient_presence_share_mean",
+            type=float,
+            default=None,
+        )
 
 
 def set_seed(seed: int) -> None:
@@ -170,24 +177,27 @@ def build_loss_config(args: argparse.Namespace) -> dict[str, float]:
         "transient_ratio_weight": 0.5,
     }
     for prefix in ("transient", "interference", "absent"):
-        for suffix in (
-            "focus_recipes",
-            "focus_patterns",
-            "focus_interference_pools",
-            "focus_interference_speaker_names",
-            "min_target_ratio",
-            "max_target_ratio",
-            "min_overlap_ratio",
-            "max_overlap_ratio",
-            "min_interference_gain_db",
-            "max_interference_gain_db",
-            "min_target_transient_presence_minus_mid_db_mean",
-            "max_target_transient_presence_minus_mid_db_mean",
-            "min_target_transient_presence_share_mean",
-            "max_target_transient_presence_share_mean",
-        ):
-            attr_name = f"loss_{prefix}_{suffix}"
-            loss_config[f"{prefix}_{suffix}"] = getattr(args, attr_name)
+        for branch_name in ("", "extra_"):
+            config_prefix = f"{prefix}_" if not branch_name else f"{prefix}_{branch_name}"
+            attr_prefix = f"loss_{prefix}_" if not branch_name else f"loss_{prefix}_{branch_name}"
+            for suffix in (
+                "focus_recipes",
+                "focus_patterns",
+                "focus_interference_pools",
+                "focus_interference_speaker_names",
+                "min_target_ratio",
+                "max_target_ratio",
+                "min_overlap_ratio",
+                "max_overlap_ratio",
+                "min_interference_gain_db",
+                "max_interference_gain_db",
+                "min_target_transient_presence_minus_mid_db_mean",
+                "max_target_transient_presence_minus_mid_db_mean",
+                "min_target_transient_presence_share_mean",
+                "max_target_transient_presence_share_mean",
+            ):
+                attr_name = f"{attr_prefix}{suffix}"
+                loss_config[f"{config_prefix}{suffix}"] = getattr(args, attr_name)
     return loss_config
 
 

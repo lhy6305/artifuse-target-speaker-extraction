@@ -39,6 +39,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--min-count", type=int, default=8)
     parser.add_argument("--min-speaker-count", type=int, default=8)
     parser.add_argument("--min-order-gap-db", type=float, default=0.0)
+    parser.add_argument(
+        "--require-samplewise-order-pass",
+        action="store_true",
+        help="Only search over rows whose per-sample alias ordering already satisfies the requested ordering.",
+    )
     return parser.parse_args()
 
 
@@ -223,6 +228,7 @@ def main() -> None:
     base_alias = ordered_aliases[0]
     transient_cache: dict[str, dict[str, float]] = {}
     enriched_rows: list[dict[str, Any]] = []
+    samplewise_order_pass_count = 0
     for sample_id in sorted(shared_sample_ids):
         base_row = compare_rows_by_alias[base_alias][sample_id]
         if str(base_row.get("recipe", "")) not in SPEECH_RECIPES:
@@ -242,6 +248,15 @@ def main() -> None:
             alias: float(compare_rows_by_alias[alias][sample_id]["sisdr_delta_db"])
             for alias in compare_map
         }
+        samplewise_order_pass, samplewise_pair_gaps = strict_order_pass(
+            alias_deltas,
+            ordered_aliases,
+            min_order_gap_db=args.min_order_gap_db,
+        )
+        if samplewise_order_pass:
+            samplewise_order_pass_count += 1
+        if args.require_samplewise_order_pass and not samplewise_order_pass:
+            continue
         enriched_rows.append(
             {
                 "sample_id": sample_id,
@@ -254,6 +269,8 @@ def main() -> None:
                 "overlap_ratio": compute_overlap_ratio(metadata),
                 "interference_speaker_name": infer_interference_speaker_name(str(first_layer.get("audio_path", ""))),
                 "alias_deltas": alias_deltas,
+                "samplewise_order_pass": samplewise_order_pass,
+                "samplewise_pair_gaps_db": samplewise_pair_gaps,
                 **transient_metrics,
             }
         )
@@ -316,6 +333,11 @@ def main() -> None:
     gain_filters: list[FilterDef] = [
         ("all_gains", lambda row: True, {}),
         (
+            "gain_le_q50",
+            lambda row, threshold=gain_thresholds["q50"]: row["interference_gain_db"] <= threshold,
+            {"max_interference_gain_db": gain_thresholds["q50"]},
+        ),
+        (
             "gain_ge_q50",
             lambda row, threshold=gain_thresholds["q50"]: row["interference_gain_db"] >= threshold,
             {"min_interference_gain_db": gain_thresholds["q50"]},
@@ -328,6 +350,18 @@ def main() -> None:
     ]
     transient_filters: list[FilterDef] = [
         ("all_transient", lambda row: True, {}),
+        (
+            "transient_le_q50",
+            lambda row, threshold=transient_thresholds["q50"]: row["target_transient_presence_minus_mid_db_mean"]
+            <= threshold,
+            {"max_target_transient_presence_minus_mid_db_mean": transient_thresholds["q50"]},
+        ),
+        (
+            "transient_lt_q67",
+            lambda row, threshold=transient_thresholds["q67"]: row["target_transient_presence_minus_mid_db_mean"]
+            < threshold,
+            {"max_target_transient_presence_minus_mid_db_mean": transient_thresholds["q67"]},
+        ),
         (
             "transient_ge_q50",
             lambda row, threshold=transient_thresholds["q50"]: row["target_transient_presence_minus_mid_db_mean"] >= threshold,
@@ -446,6 +480,7 @@ def main() -> None:
                                                     ).items()
                                                 )
                                             ),
+                                            "sample_ids": [str(row["sample_id"]) for row in selected_rows],
                                             "builder_filters": builder_filters,
                                         }
                                     )
@@ -466,6 +501,8 @@ def main() -> None:
         },
         "ordered_aliases": ordered_aliases,
         "num_shared_speech_rows": len(enriched_rows),
+        "num_samplewise_order_pass_rows_before_optional_filter": samplewise_order_pass_count,
+        "require_samplewise_order_pass": bool(args.require_samplewise_order_pass),
         "thresholds": {
             "gain_thresholds_db": gain_thresholds,
             "transient_thresholds_db": transient_thresholds,
@@ -490,6 +527,8 @@ def main() -> None:
             {
                 "output_json": serialize_repo_path(args.output_json),
                 "num_shared_speech_rows": len(enriched_rows),
+                "num_samplewise_order_pass_rows_before_optional_filter": samplewise_order_pass_count,
+                "require_samplewise_order_pass": bool(args.require_samplewise_order_pass),
                 "num_candidates": len(candidates),
                 "top_order_pass_count": len(output["top_order_pass_candidates"]),
             },

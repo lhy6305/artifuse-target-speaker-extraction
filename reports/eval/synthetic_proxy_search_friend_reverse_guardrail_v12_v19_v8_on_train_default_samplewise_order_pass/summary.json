@@ -1,0 +1,2950 @@
+{
+  "compares": {
+    "v8": "reports/eval/compare_stage2_vs_v8_on_train_default/per_sample_metrics.jsonl",
+    "v12": "reports/eval/compare_stage2_vs_v12_on_train_default/per_sample_metrics.jsonl",
+    "v19": "reports/eval/compare_stage2_vs_v19_on_train_default/per_sample_metrics.jsonl"
+  },
+  "ordered_aliases": [
+    "v12",
+    "v19",
+    "v8"
+  ],
+  "num_shared_speech_rows": 176,
+  "num_samplewise_order_pass_rows_before_optional_filter": 176,
+  "require_samplewise_order_pass": true,
+  "thresholds": {
+    "gain_thresholds_db": {
+      "q50": -2.127000093460083,
+      "q67": -1.2216666142145796
+    },
+    "transient_thresholds_db": {
+      "q50": -11.799183368682861,
+      "q67": -10.407621065775553
+    },
+    "min_count": 8,
+    "min_speaker_count": 1,
+    "min_order_gap_db": 0.0
+  },
+  "top_order_pass_candidates": [
+    {
+      "subset_name": "all_speech__all_patterns__ratio_ge_0_95__overlap_ge_0_90__all_pools__gain_ge_q50__transient_ge_q67__all_speakers",
+      "count": 10,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.955093002319336,
+        "v19": 1.8218201875686646,
+        "v8": 0.8721280097961426
+      },
+      "pair_gaps_db": [
+        0.13327281475067143,
+        0.949692177772522
+      ],
+      "min_pair_gap_db": 0.13327281475067143,
+      "mean_overlap_ratio": 0.9612231055251845,
+      "mean_interference_gain_db": -0.9109,
+      "mean_target_transient_presence_minus_mid_db_mean": -7.9813022911548615,
+      "recipe_counts": {
+        "target_clean_speech": 10
+      },
+      "pattern_counts": {
+        "target_full": 10
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 10
+      },
+      "speaker_counts": {
+        "久彦": 1,
+        "克洛琳德": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000700",
+        "train_000762",
+        "train_000826",
+        "train_001360",
+        "train_001586",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -10.407621065775553
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__ratio_ge_0_95__overlap_ge_0_90__pool_clean__gain_ge_q50__transient_ge_q67__all_speakers",
+      "count": 10,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.955093002319336,
+        "v19": 1.8218201875686646,
+        "v8": 0.8721280097961426
+      },
+      "pair_gaps_db": [
+        0.13327281475067143,
+        0.949692177772522
+      ],
+      "min_pair_gap_db": 0.13327281475067143,
+      "mean_overlap_ratio": 0.9612231055251845,
+      "mean_interference_gain_db": -0.9109,
+      "mean_target_transient_presence_minus_mid_db_mean": -7.9813022911548615,
+      "recipe_counts": {
+        "target_clean_speech": 10
+      },
+      "pattern_counts": {
+        "target_full": 10
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 10
+      },
+      "speaker_counts": {
+        "久彦": 1,
+        "克洛琳德": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000700",
+        "train_000762",
+        "train_000826",
+        "train_001360",
+        "train_001586",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -10.407621065775553
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_full__any_ratio__overlap_ge_0_90__all_pools__gain_ge_q50__transient_ge_q67__all_speakers",
+      "count": 10,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.955093002319336,
+        "v19": 1.8218201875686646,
+        "v8": 0.8721280097961426
+      },
+      "pair_gaps_db": [
+        0.13327281475067143,
+        0.949692177772522
+      ],
+      "min_pair_gap_db": 0.13327281475067143,
+      "mean_overlap_ratio": 0.9612231055251845,
+      "mean_interference_gain_db": -0.9109,
+      "mean_target_transient_presence_minus_mid_db_mean": -7.9813022911548615,
+      "recipe_counts": {
+        "target_clean_speech": 10
+      },
+      "pattern_counts": {
+        "target_full": 10
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 10
+      },
+      "speaker_counts": {
+        "久彦": 1,
+        "克洛琳德": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000700",
+        "train_000762",
+        "train_000826",
+        "train_001360",
+        "train_001586",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_overlap_ratio": 0.9,
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -10.407621065775553
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_full__any_ratio__overlap_ge_0_90__pool_clean__gain_ge_q50__transient_ge_q67__all_speakers",
+      "count": 10,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.955093002319336,
+        "v19": 1.8218201875686646,
+        "v8": 0.8721280097961426
+      },
+      "pair_gaps_db": [
+        0.13327281475067143,
+        0.949692177772522
+      ],
+      "min_pair_gap_db": 0.13327281475067143,
+      "mean_overlap_ratio": 0.9612231055251845,
+      "mean_interference_gain_db": -0.9109,
+      "mean_target_transient_presence_minus_mid_db_mean": -7.9813022911548615,
+      "recipe_counts": {
+        "target_clean_speech": 10
+      },
+      "pattern_counts": {
+        "target_full": 10
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 10
+      },
+      "speaker_counts": {
+        "久彦": 1,
+        "克洛琳德": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000700",
+        "train_000762",
+        "train_000826",
+        "train_001360",
+        "train_001586",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -10.407621065775553
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_full__ratio_ge_0_95__overlap_ge_0_90__all_pools__gain_ge_q50__transient_ge_q67__all_speakers",
+      "count": 10,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.955093002319336,
+        "v19": 1.8218201875686646,
+        "v8": 0.8721280097961426
+      },
+      "pair_gaps_db": [
+        0.13327281475067143,
+        0.949692177772522
+      ],
+      "min_pair_gap_db": 0.13327281475067143,
+      "mean_overlap_ratio": 0.9612231055251845,
+      "mean_interference_gain_db": -0.9109,
+      "mean_target_transient_presence_minus_mid_db_mean": -7.9813022911548615,
+      "recipe_counts": {
+        "target_clean_speech": 10
+      },
+      "pattern_counts": {
+        "target_full": 10
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 10
+      },
+      "speaker_counts": {
+        "久彦": 1,
+        "克洛琳德": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000700",
+        "train_000762",
+        "train_000826",
+        "train_001360",
+        "train_001586",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -10.407621065775553
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_full__ratio_ge_0_95__overlap_ge_0_90__pool_clean__gain_ge_q50__transient_ge_q67__all_speakers",
+      "count": 10,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.955093002319336,
+        "v19": 1.8218201875686646,
+        "v8": 0.8721280097961426
+      },
+      "pair_gaps_db": [
+        0.13327281475067143,
+        0.949692177772522
+      ],
+      "min_pair_gap_db": 0.13327281475067143,
+      "mean_overlap_ratio": 0.9612231055251845,
+      "mean_interference_gain_db": -0.9109,
+      "mean_target_transient_presence_minus_mid_db_mean": -7.9813022911548615,
+      "recipe_counts": {
+        "target_clean_speech": 10
+      },
+      "pattern_counts": {
+        "target_full": 10
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 10
+      },
+      "speaker_counts": {
+        "久彦": 1,
+        "克洛琳德": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000700",
+        "train_000762",
+        "train_000826",
+        "train_001360",
+        "train_001586",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -10.407621065775553
+      }
+    },
+    {
+      "subset_name": "recipe_clean__all_patterns__ratio_ge_0_95__overlap_ge_0_90__all_pools__gain_ge_q50__transient_ge_q67__all_speakers",
+      "count": 10,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.955093002319336,
+        "v19": 1.8218201875686646,
+        "v8": 0.8721280097961426
+      },
+      "pair_gaps_db": [
+        0.13327281475067143,
+        0.949692177772522
+      ],
+      "min_pair_gap_db": 0.13327281475067143,
+      "mean_overlap_ratio": 0.9612231055251845,
+      "mean_interference_gain_db": -0.9109,
+      "mean_target_transient_presence_minus_mid_db_mean": -7.9813022911548615,
+      "recipe_counts": {
+        "target_clean_speech": 10
+      },
+      "pattern_counts": {
+        "target_full": 10
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 10
+      },
+      "speaker_counts": {
+        "久彦": 1,
+        "克洛琳德": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000700",
+        "train_000762",
+        "train_000826",
+        "train_001360",
+        "train_001586",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -10.407621065775553
+      }
+    },
+    {
+      "subset_name": "recipe_clean__all_patterns__ratio_ge_0_95__overlap_ge_0_90__pool_clean__gain_ge_q50__transient_ge_q67__all_speakers",
+      "count": 10,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.955093002319336,
+        "v19": 1.8218201875686646,
+        "v8": 0.8721280097961426
+      },
+      "pair_gaps_db": [
+        0.13327281475067143,
+        0.949692177772522
+      ],
+      "min_pair_gap_db": 0.13327281475067143,
+      "mean_overlap_ratio": 0.9612231055251845,
+      "mean_interference_gain_db": -0.9109,
+      "mean_target_transient_presence_minus_mid_db_mean": -7.9813022911548615,
+      "recipe_counts": {
+        "target_clean_speech": 10
+      },
+      "pattern_counts": {
+        "target_full": 10
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 10
+      },
+      "speaker_counts": {
+        "久彦": 1,
+        "克洛琳德": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000700",
+        "train_000762",
+        "train_000826",
+        "train_001360",
+        "train_001586",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -10.407621065775553
+      }
+    },
+    {
+      "subset_name": "recipe_clean__pattern_full__any_ratio__overlap_ge_0_90__all_pools__gain_ge_q50__transient_ge_q67__all_speakers",
+      "count": 10,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.955093002319336,
+        "v19": 1.8218201875686646,
+        "v8": 0.8721280097961426
+      },
+      "pair_gaps_db": [
+        0.13327281475067143,
+        0.949692177772522
+      ],
+      "min_pair_gap_db": 0.13327281475067143,
+      "mean_overlap_ratio": 0.9612231055251845,
+      "mean_interference_gain_db": -0.9109,
+      "mean_target_transient_presence_minus_mid_db_mean": -7.9813022911548615,
+      "recipe_counts": {
+        "target_clean_speech": 10
+      },
+      "pattern_counts": {
+        "target_full": 10
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 10
+      },
+      "speaker_counts": {
+        "久彦": 1,
+        "克洛琳德": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000700",
+        "train_000762",
+        "train_000826",
+        "train_001360",
+        "train_001586",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_overlap_ratio": 0.9,
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -10.407621065775553
+      }
+    },
+    {
+      "subset_name": "recipe_clean__pattern_full__any_ratio__overlap_ge_0_90__pool_clean__gain_ge_q50__transient_ge_q67__all_speakers",
+      "count": 10,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.955093002319336,
+        "v19": 1.8218201875686646,
+        "v8": 0.8721280097961426
+      },
+      "pair_gaps_db": [
+        0.13327281475067143,
+        0.949692177772522
+      ],
+      "min_pair_gap_db": 0.13327281475067143,
+      "mean_overlap_ratio": 0.9612231055251845,
+      "mean_interference_gain_db": -0.9109,
+      "mean_target_transient_presence_minus_mid_db_mean": -7.9813022911548615,
+      "recipe_counts": {
+        "target_clean_speech": 10
+      },
+      "pattern_counts": {
+        "target_full": 10
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 10
+      },
+      "speaker_counts": {
+        "久彦": 1,
+        "克洛琳德": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000700",
+        "train_000762",
+        "train_000826",
+        "train_001360",
+        "train_001586",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -10.407621065775553
+      }
+    },
+    {
+      "subset_name": "recipe_clean__pattern_full__ratio_ge_0_95__overlap_ge_0_90__all_pools__gain_ge_q50__transient_ge_q67__all_speakers",
+      "count": 10,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.955093002319336,
+        "v19": 1.8218201875686646,
+        "v8": 0.8721280097961426
+      },
+      "pair_gaps_db": [
+        0.13327281475067143,
+        0.949692177772522
+      ],
+      "min_pair_gap_db": 0.13327281475067143,
+      "mean_overlap_ratio": 0.9612231055251845,
+      "mean_interference_gain_db": -0.9109,
+      "mean_target_transient_presence_minus_mid_db_mean": -7.9813022911548615,
+      "recipe_counts": {
+        "target_clean_speech": 10
+      },
+      "pattern_counts": {
+        "target_full": 10
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 10
+      },
+      "speaker_counts": {
+        "久彦": 1,
+        "克洛琳德": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000700",
+        "train_000762",
+        "train_000826",
+        "train_001360",
+        "train_001586",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -10.407621065775553
+      }
+    },
+    {
+      "subset_name": "recipe_clean__pattern_full__ratio_ge_0_95__overlap_ge_0_90__pool_clean__gain_ge_q50__transient_ge_q67__all_speakers",
+      "count": 10,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.955093002319336,
+        "v19": 1.8218201875686646,
+        "v8": 0.8721280097961426
+      },
+      "pair_gaps_db": [
+        0.13327281475067143,
+        0.949692177772522
+      ],
+      "min_pair_gap_db": 0.13327281475067143,
+      "mean_overlap_ratio": 0.9612231055251845,
+      "mean_interference_gain_db": -0.9109,
+      "mean_target_transient_presence_minus_mid_db_mean": -7.9813022911548615,
+      "recipe_counts": {
+        "target_clean_speech": 10
+      },
+      "pattern_counts": {
+        "target_full": 10
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 10
+      },
+      "speaker_counts": {
+        "久彦": 1,
+        "克洛琳德": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000700",
+        "train_000762",
+        "train_000826",
+        "train_001360",
+        "train_001586",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -10.407621065775553
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__any_ratio__overlap_ge_0_90__pool_clean__gain_ge_q50__transient_ge_q67__all_speakers",
+      "count": 11,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.982627348466353,
+        "v19": 1.8592431111769243,
+        "v8": 0.9769775000485507
+      },
+      "pair_gaps_db": [
+        0.12338423728942871,
+        0.8822656111283737
+      ],
+      "min_pair_gap_db": 0.12338423728942871,
+      "mean_overlap_ratio": 0.9597609040127941,
+      "mean_interference_gain_db": -1.0205454545454546,
+      "mean_target_transient_presence_minus_mid_db_mean": -8.137646788900549,
+      "recipe_counts": {
+        "target_clean_speech": 11
+      },
+      "pattern_counts": {
+        "target_absent_head": 1,
+        "target_full": 10
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 11
+      },
+      "speaker_counts": {
+        "久彦": 1,
+        "克洛琳德": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1,
+        "高善": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000654",
+        "train_000700",
+        "train_000762",
+        "train_000826",
+        "train_001360",
+        "train_001586",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -10.407621065775553
+      }
+    },
+    {
+      "subset_name": "recipe_clean__all_patterns__any_ratio__overlap_ge_0_90__all_pools__gain_ge_q50__transient_ge_q67__all_speakers",
+      "count": 11,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.982627348466353,
+        "v19": 1.8592431111769243,
+        "v8": 0.9769775000485507
+      },
+      "pair_gaps_db": [
+        0.12338423728942871,
+        0.8822656111283737
+      ],
+      "min_pair_gap_db": 0.12338423728942871,
+      "mean_overlap_ratio": 0.9597609040127941,
+      "mean_interference_gain_db": -1.0205454545454546,
+      "mean_target_transient_presence_minus_mid_db_mean": -8.137646788900549,
+      "recipe_counts": {
+        "target_clean_speech": 11
+      },
+      "pattern_counts": {
+        "target_absent_head": 1,
+        "target_full": 10
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 11
+      },
+      "speaker_counts": {
+        "久彦": 1,
+        "克洛琳德": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1,
+        "高善": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000654",
+        "train_000700",
+        "train_000762",
+        "train_000826",
+        "train_001360",
+        "train_001586",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "min_overlap_ratio": 0.9,
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -10.407621065775553
+      }
+    },
+    {
+      "subset_name": "recipe_clean__all_patterns__any_ratio__overlap_ge_0_90__pool_clean__gain_ge_q50__transient_ge_q67__all_speakers",
+      "count": 11,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.982627348466353,
+        "v19": 1.8592431111769243,
+        "v8": 0.9769775000485507
+      },
+      "pair_gaps_db": [
+        0.12338423728942871,
+        0.8822656111283737
+      ],
+      "min_pair_gap_db": 0.12338423728942871,
+      "mean_overlap_ratio": 0.9597609040127941,
+      "mean_interference_gain_db": -1.0205454545454546,
+      "mean_target_transient_presence_minus_mid_db_mean": -8.137646788900549,
+      "recipe_counts": {
+        "target_clean_speech": 11
+      },
+      "pattern_counts": {
+        "target_absent_head": 1,
+        "target_full": 10
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 11
+      },
+      "speaker_counts": {
+        "久彦": 1,
+        "克洛琳德": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1,
+        "高善": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000654",
+        "train_000700",
+        "train_000762",
+        "train_000826",
+        "train_001360",
+        "train_001586",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -10.407621065775553
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__ratio_ge_0_95__overlap_ge_0_90__all_pools__gain_ge_q50__transient_ge_q50__all_speakers",
+      "count": 11,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.9555599039251155,
+        "v19": 1.8329010659998113,
+        "v8": 0.9126806259155273
+      },
+      "pair_gaps_db": [
+        0.12265883792530419,
+        0.9202204400842839
+      ],
+      "min_pair_gap_db": 0.12265883792530419,
+      "mean_overlap_ratio": 0.9618817748836649,
+      "mean_interference_gain_db": -0.9102727272727275,
+      "mean_target_transient_presence_minus_mid_db_mean": -8.220958736809818,
+      "recipe_counts": {
+        "target_clean_speech": 11
+      },
+      "pattern_counts": {
+        "target_full": 11
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 11
+      },
+      "speaker_counts": {
+        "「女士」": 1,
+        "久彦": 1,
+        "克洛琳德": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000634",
+        "train_000700",
+        "train_000762",
+        "train_000826",
+        "train_001360",
+        "train_001586",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -11.799183368682861
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__ratio_ge_0_95__overlap_ge_0_90__pool_clean__gain_ge_q50__transient_ge_q50__all_speakers",
+      "count": 11,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.9555599039251155,
+        "v19": 1.8329010659998113,
+        "v8": 0.9126806259155273
+      },
+      "pair_gaps_db": [
+        0.12265883792530419,
+        0.9202204400842839
+      ],
+      "min_pair_gap_db": 0.12265883792530419,
+      "mean_overlap_ratio": 0.9618817748836649,
+      "mean_interference_gain_db": -0.9102727272727275,
+      "mean_target_transient_presence_minus_mid_db_mean": -8.220958736809818,
+      "recipe_counts": {
+        "target_clean_speech": 11
+      },
+      "pattern_counts": {
+        "target_full": 11
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 11
+      },
+      "speaker_counts": {
+        "「女士」": 1,
+        "久彦": 1,
+        "克洛琳德": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000634",
+        "train_000700",
+        "train_000762",
+        "train_000826",
+        "train_001360",
+        "train_001586",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -11.799183368682861
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_full__any_ratio__overlap_ge_0_90__all_pools__gain_ge_q50__transient_ge_q50__all_speakers",
+      "count": 11,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.9555599039251155,
+        "v19": 1.8329010659998113,
+        "v8": 0.9126806259155273
+      },
+      "pair_gaps_db": [
+        0.12265883792530419,
+        0.9202204400842839
+      ],
+      "min_pair_gap_db": 0.12265883792530419,
+      "mean_overlap_ratio": 0.9618817748836649,
+      "mean_interference_gain_db": -0.9102727272727275,
+      "mean_target_transient_presence_minus_mid_db_mean": -8.220958736809818,
+      "recipe_counts": {
+        "target_clean_speech": 11
+      },
+      "pattern_counts": {
+        "target_full": 11
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 11
+      },
+      "speaker_counts": {
+        "「女士」": 1,
+        "久彦": 1,
+        "克洛琳德": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000634",
+        "train_000700",
+        "train_000762",
+        "train_000826",
+        "train_001360",
+        "train_001586",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_overlap_ratio": 0.9,
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -11.799183368682861
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_full__any_ratio__overlap_ge_0_90__pool_clean__gain_ge_q50__transient_ge_q50__all_speakers",
+      "count": 11,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.9555599039251155,
+        "v19": 1.8329010659998113,
+        "v8": 0.9126806259155273
+      },
+      "pair_gaps_db": [
+        0.12265883792530419,
+        0.9202204400842839
+      ],
+      "min_pair_gap_db": 0.12265883792530419,
+      "mean_overlap_ratio": 0.9618817748836649,
+      "mean_interference_gain_db": -0.9102727272727275,
+      "mean_target_transient_presence_minus_mid_db_mean": -8.220958736809818,
+      "recipe_counts": {
+        "target_clean_speech": 11
+      },
+      "pattern_counts": {
+        "target_full": 11
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 11
+      },
+      "speaker_counts": {
+        "「女士」": 1,
+        "久彦": 1,
+        "克洛琳德": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000634",
+        "train_000700",
+        "train_000762",
+        "train_000826",
+        "train_001360",
+        "train_001586",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -11.799183368682861
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_full__ratio_ge_0_95__overlap_ge_0_90__all_pools__gain_ge_q50__transient_ge_q50__all_speakers",
+      "count": 11,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.9555599039251155,
+        "v19": 1.8329010659998113,
+        "v8": 0.9126806259155273
+      },
+      "pair_gaps_db": [
+        0.12265883792530419,
+        0.9202204400842839
+      ],
+      "min_pair_gap_db": 0.12265883792530419,
+      "mean_overlap_ratio": 0.9618817748836649,
+      "mean_interference_gain_db": -0.9102727272727275,
+      "mean_target_transient_presence_minus_mid_db_mean": -8.220958736809818,
+      "recipe_counts": {
+        "target_clean_speech": 11
+      },
+      "pattern_counts": {
+        "target_full": 11
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 11
+      },
+      "speaker_counts": {
+        "「女士」": 1,
+        "久彦": 1,
+        "克洛琳德": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000634",
+        "train_000700",
+        "train_000762",
+        "train_000826",
+        "train_001360",
+        "train_001586",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -11.799183368682861
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_full__ratio_ge_0_95__overlap_ge_0_90__pool_clean__gain_ge_q50__transient_ge_q50__all_speakers",
+      "count": 11,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.9555599039251155,
+        "v19": 1.8329010659998113,
+        "v8": 0.9126806259155273
+      },
+      "pair_gaps_db": [
+        0.12265883792530419,
+        0.9202204400842839
+      ],
+      "min_pair_gap_db": 0.12265883792530419,
+      "mean_overlap_ratio": 0.9618817748836649,
+      "mean_interference_gain_db": -0.9102727272727275,
+      "mean_target_transient_presence_minus_mid_db_mean": -8.220958736809818,
+      "recipe_counts": {
+        "target_clean_speech": 11
+      },
+      "pattern_counts": {
+        "target_full": 11
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 11
+      },
+      "speaker_counts": {
+        "「女士」": 1,
+        "久彦": 1,
+        "克洛琳德": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000634",
+        "train_000700",
+        "train_000762",
+        "train_000826",
+        "train_001360",
+        "train_001586",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -11.799183368682861
+      }
+    },
+    {
+      "subset_name": "recipe_clean__all_patterns__ratio_ge_0_95__overlap_ge_0_90__all_pools__gain_ge_q50__transient_ge_q50__all_speakers",
+      "count": 11,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.9555599039251155,
+        "v19": 1.8329010659998113,
+        "v8": 0.9126806259155273
+      },
+      "pair_gaps_db": [
+        0.12265883792530419,
+        0.9202204400842839
+      ],
+      "min_pair_gap_db": 0.12265883792530419,
+      "mean_overlap_ratio": 0.9618817748836649,
+      "mean_interference_gain_db": -0.9102727272727275,
+      "mean_target_transient_presence_minus_mid_db_mean": -8.220958736809818,
+      "recipe_counts": {
+        "target_clean_speech": 11
+      },
+      "pattern_counts": {
+        "target_full": 11
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 11
+      },
+      "speaker_counts": {
+        "「女士」": 1,
+        "久彦": 1,
+        "克洛琳德": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000634",
+        "train_000700",
+        "train_000762",
+        "train_000826",
+        "train_001360",
+        "train_001586",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -11.799183368682861
+      }
+    },
+    {
+      "subset_name": "recipe_clean__all_patterns__ratio_ge_0_95__overlap_ge_0_90__pool_clean__gain_ge_q50__transient_ge_q50__all_speakers",
+      "count": 11,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.9555599039251155,
+        "v19": 1.8329010659998113,
+        "v8": 0.9126806259155273
+      },
+      "pair_gaps_db": [
+        0.12265883792530419,
+        0.9202204400842839
+      ],
+      "min_pair_gap_db": 0.12265883792530419,
+      "mean_overlap_ratio": 0.9618817748836649,
+      "mean_interference_gain_db": -0.9102727272727275,
+      "mean_target_transient_presence_minus_mid_db_mean": -8.220958736809818,
+      "recipe_counts": {
+        "target_clean_speech": 11
+      },
+      "pattern_counts": {
+        "target_full": 11
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 11
+      },
+      "speaker_counts": {
+        "「女士」": 1,
+        "久彦": 1,
+        "克洛琳德": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000634",
+        "train_000700",
+        "train_000762",
+        "train_000826",
+        "train_001360",
+        "train_001586",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -11.799183368682861
+      }
+    },
+    {
+      "subset_name": "recipe_clean__pattern_full__any_ratio__overlap_ge_0_90__all_pools__gain_ge_q50__transient_ge_q50__all_speakers",
+      "count": 11,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.9555599039251155,
+        "v19": 1.8329010659998113,
+        "v8": 0.9126806259155273
+      },
+      "pair_gaps_db": [
+        0.12265883792530419,
+        0.9202204400842839
+      ],
+      "min_pair_gap_db": 0.12265883792530419,
+      "mean_overlap_ratio": 0.9618817748836649,
+      "mean_interference_gain_db": -0.9102727272727275,
+      "mean_target_transient_presence_minus_mid_db_mean": -8.220958736809818,
+      "recipe_counts": {
+        "target_clean_speech": 11
+      },
+      "pattern_counts": {
+        "target_full": 11
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 11
+      },
+      "speaker_counts": {
+        "「女士」": 1,
+        "久彦": 1,
+        "克洛琳德": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000634",
+        "train_000700",
+        "train_000762",
+        "train_000826",
+        "train_001360",
+        "train_001586",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_overlap_ratio": 0.9,
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -11.799183368682861
+      }
+    },
+    {
+      "subset_name": "recipe_clean__pattern_full__any_ratio__overlap_ge_0_90__pool_clean__gain_ge_q50__transient_ge_q50__all_speakers",
+      "count": 11,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.9555599039251155,
+        "v19": 1.8329010659998113,
+        "v8": 0.9126806259155273
+      },
+      "pair_gaps_db": [
+        0.12265883792530419,
+        0.9202204400842839
+      ],
+      "min_pair_gap_db": 0.12265883792530419,
+      "mean_overlap_ratio": 0.9618817748836649,
+      "mean_interference_gain_db": -0.9102727272727275,
+      "mean_target_transient_presence_minus_mid_db_mean": -8.220958736809818,
+      "recipe_counts": {
+        "target_clean_speech": 11
+      },
+      "pattern_counts": {
+        "target_full": 11
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 11
+      },
+      "speaker_counts": {
+        "「女士」": 1,
+        "久彦": 1,
+        "克洛琳德": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000634",
+        "train_000700",
+        "train_000762",
+        "train_000826",
+        "train_001360",
+        "train_001586",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -11.799183368682861
+      }
+    },
+    {
+      "subset_name": "recipe_clean__pattern_full__ratio_ge_0_95__overlap_ge_0_90__all_pools__gain_ge_q50__transient_ge_q50__all_speakers",
+      "count": 11,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.9555599039251155,
+        "v19": 1.8329010659998113,
+        "v8": 0.9126806259155273
+      },
+      "pair_gaps_db": [
+        0.12265883792530419,
+        0.9202204400842839
+      ],
+      "min_pair_gap_db": 0.12265883792530419,
+      "mean_overlap_ratio": 0.9618817748836649,
+      "mean_interference_gain_db": -0.9102727272727275,
+      "mean_target_transient_presence_minus_mid_db_mean": -8.220958736809818,
+      "recipe_counts": {
+        "target_clean_speech": 11
+      },
+      "pattern_counts": {
+        "target_full": 11
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 11
+      },
+      "speaker_counts": {
+        "「女士」": 1,
+        "久彦": 1,
+        "克洛琳德": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000634",
+        "train_000700",
+        "train_000762",
+        "train_000826",
+        "train_001360",
+        "train_001586",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -11.799183368682861
+      }
+    },
+    {
+      "subset_name": "recipe_clean__pattern_full__ratio_ge_0_95__overlap_ge_0_90__pool_clean__gain_ge_q50__transient_ge_q50__all_speakers",
+      "count": 11,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.9555599039251155,
+        "v19": 1.8329010659998113,
+        "v8": 0.9126806259155273
+      },
+      "pair_gaps_db": [
+        0.12265883792530419,
+        0.9202204400842839
+      ],
+      "min_pair_gap_db": 0.12265883792530419,
+      "mean_overlap_ratio": 0.9618817748836649,
+      "mean_interference_gain_db": -0.9102727272727275,
+      "mean_target_transient_presence_minus_mid_db_mean": -8.220958736809818,
+      "recipe_counts": {
+        "target_clean_speech": 11
+      },
+      "pattern_counts": {
+        "target_full": 11
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 11
+      },
+      "speaker_counts": {
+        "「女士」": 1,
+        "久彦": 1,
+        "克洛琳德": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000634",
+        "train_000700",
+        "train_000762",
+        "train_000826",
+        "train_001360",
+        "train_001586",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_target_ratio": 0.95,
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -11.799183368682861
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__ratio_ge_0_95__any_overlap__pool_clean__gain_ge_q50__transient_ge_q67__all_speakers",
+      "count": 15,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 2.247465141614278,
+        "v19": 2.1319827318191527,
+        "v8": 1.2087803681691487
+      },
+      "pair_gaps_db": [
+        0.11548240979512547,
+        0.923202363650004
+      ],
+      "min_pair_gap_db": 0.11548240979512547,
+      "mean_overlap_ratio": 0.8952673801354329,
+      "mean_interference_gain_db": -0.9160666666666668,
+      "mean_target_transient_presence_minus_mid_db_mean": -7.663540510336558,
+      "recipe_counts": {
+        "target_clean_speech": 15
+      },
+      "pattern_counts": {
+        "target_full": 15
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 15
+      },
+      "speaker_counts": {
+        "久彦": 1,
+        "今谷三郎": 1,
+        "克洛琳德": 1,
+        "卡瓦贾": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "毗伽尔": 1,
+        "泽维尔": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1,
+        "长门幸子": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000370",
+        "train_000700",
+        "train_000727",
+        "train_000756",
+        "train_000762",
+        "train_000826",
+        "train_001180",
+        "train_001360",
+        "train_001586",
+        "train_001657",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "min_target_ratio": 0.95,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -10.407621065775553
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_full__any_ratio__any_overlap__pool_clean__gain_ge_q50__transient_ge_q67__all_speakers",
+      "count": 15,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 2.247465141614278,
+        "v19": 2.1319827318191527,
+        "v8": 1.2087803681691487
+      },
+      "pair_gaps_db": [
+        0.11548240979512547,
+        0.923202363650004
+      ],
+      "min_pair_gap_db": 0.11548240979512547,
+      "mean_overlap_ratio": 0.8952673801354329,
+      "mean_interference_gain_db": -0.9160666666666668,
+      "mean_target_transient_presence_minus_mid_db_mean": -7.663540510336558,
+      "recipe_counts": {
+        "target_clean_speech": 15
+      },
+      "pattern_counts": {
+        "target_full": 15
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 15
+      },
+      "speaker_counts": {
+        "久彦": 1,
+        "今谷三郎": 1,
+        "克洛琳德": 1,
+        "卡瓦贾": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "毗伽尔": 1,
+        "泽维尔": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1,
+        "长门幸子": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000370",
+        "train_000700",
+        "train_000727",
+        "train_000756",
+        "train_000762",
+        "train_000826",
+        "train_001180",
+        "train_001360",
+        "train_001586",
+        "train_001657",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -10.407621065775553
+      }
+    },
+    {
+      "subset_name": "all_speech__pattern_full__ratio_ge_0_95__any_overlap__pool_clean__gain_ge_q50__transient_ge_q67__all_speakers",
+      "count": 15,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 2.247465141614278,
+        "v19": 2.1319827318191527,
+        "v8": 1.2087803681691487
+      },
+      "pair_gaps_db": [
+        0.11548240979512547,
+        0.923202363650004
+      ],
+      "min_pair_gap_db": 0.11548240979512547,
+      "mean_overlap_ratio": 0.8952673801354329,
+      "mean_interference_gain_db": -0.9160666666666668,
+      "mean_target_transient_presence_minus_mid_db_mean": -7.663540510336558,
+      "recipe_counts": {
+        "target_clean_speech": 15
+      },
+      "pattern_counts": {
+        "target_full": 15
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 15
+      },
+      "speaker_counts": {
+        "久彦": 1,
+        "今谷三郎": 1,
+        "克洛琳德": 1,
+        "卡瓦贾": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "毗伽尔": 1,
+        "泽维尔": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1,
+        "长门幸子": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000370",
+        "train_000700",
+        "train_000727",
+        "train_000756",
+        "train_000762",
+        "train_000826",
+        "train_001180",
+        "train_001360",
+        "train_001586",
+        "train_001657",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_target_ratio": 0.95,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -10.407621065775553
+      }
+    },
+    {
+      "subset_name": "recipe_clean__all_patterns__ratio_ge_0_95__any_overlap__all_pools__gain_ge_q50__transient_ge_q67__all_speakers",
+      "count": 15,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 2.247465141614278,
+        "v19": 2.1319827318191527,
+        "v8": 1.2087803681691487
+      },
+      "pair_gaps_db": [
+        0.11548240979512547,
+        0.923202363650004
+      ],
+      "min_pair_gap_db": 0.11548240979512547,
+      "mean_overlap_ratio": 0.8952673801354329,
+      "mean_interference_gain_db": -0.9160666666666668,
+      "mean_target_transient_presence_minus_mid_db_mean": -7.663540510336558,
+      "recipe_counts": {
+        "target_clean_speech": 15
+      },
+      "pattern_counts": {
+        "target_full": 15
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 15
+      },
+      "speaker_counts": {
+        "久彦": 1,
+        "今谷三郎": 1,
+        "克洛琳德": 1,
+        "卡瓦贾": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "毗伽尔": 1,
+        "泽维尔": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1,
+        "长门幸子": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000370",
+        "train_000700",
+        "train_000727",
+        "train_000756",
+        "train_000762",
+        "train_000826",
+        "train_001180",
+        "train_001360",
+        "train_001586",
+        "train_001657",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "min_target_ratio": 0.95,
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -10.407621065775553
+      }
+    },
+    {
+      "subset_name": "recipe_clean__all_patterns__ratio_ge_0_95__any_overlap__pool_clean__gain_ge_q50__transient_ge_q67__all_speakers",
+      "count": 15,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 2.247465141614278,
+        "v19": 2.1319827318191527,
+        "v8": 1.2087803681691487
+      },
+      "pair_gaps_db": [
+        0.11548240979512547,
+        0.923202363650004
+      ],
+      "min_pair_gap_db": 0.11548240979512547,
+      "mean_overlap_ratio": 0.8952673801354329,
+      "mean_interference_gain_db": -0.9160666666666668,
+      "mean_target_transient_presence_minus_mid_db_mean": -7.663540510336558,
+      "recipe_counts": {
+        "target_clean_speech": 15
+      },
+      "pattern_counts": {
+        "target_full": 15
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 15
+      },
+      "speaker_counts": {
+        "久彦": 1,
+        "今谷三郎": 1,
+        "克洛琳德": 1,
+        "卡瓦贾": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "毗伽尔": 1,
+        "泽维尔": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1,
+        "长门幸子": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000370",
+        "train_000700",
+        "train_000727",
+        "train_000756",
+        "train_000762",
+        "train_000826",
+        "train_001180",
+        "train_001360",
+        "train_001586",
+        "train_001657",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "min_target_ratio": 0.95,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -10.407621065775553
+      }
+    },
+    {
+      "subset_name": "recipe_clean__pattern_full__any_ratio__any_overlap__all_pools__gain_ge_q50__transient_ge_q67__all_speakers",
+      "count": 15,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 2.247465141614278,
+        "v19": 2.1319827318191527,
+        "v8": 1.2087803681691487
+      },
+      "pair_gaps_db": [
+        0.11548240979512547,
+        0.923202363650004
+      ],
+      "min_pair_gap_db": 0.11548240979512547,
+      "mean_overlap_ratio": 0.8952673801354329,
+      "mean_interference_gain_db": -0.9160666666666668,
+      "mean_target_transient_presence_minus_mid_db_mean": -7.663540510336558,
+      "recipe_counts": {
+        "target_clean_speech": 15
+      },
+      "pattern_counts": {
+        "target_full": 15
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 15
+      },
+      "speaker_counts": {
+        "久彦": 1,
+        "今谷三郎": 1,
+        "克洛琳德": 1,
+        "卡瓦贾": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "毗伽尔": 1,
+        "泽维尔": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1,
+        "长门幸子": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000370",
+        "train_000700",
+        "train_000727",
+        "train_000756",
+        "train_000762",
+        "train_000826",
+        "train_001180",
+        "train_001360",
+        "train_001586",
+        "train_001657",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -10.407621065775553
+      }
+    },
+    {
+      "subset_name": "recipe_clean__pattern_full__any_ratio__any_overlap__pool_clean__gain_ge_q50__transient_ge_q67__all_speakers",
+      "count": 15,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 2.247465141614278,
+        "v19": 2.1319827318191527,
+        "v8": 1.2087803681691487
+      },
+      "pair_gaps_db": [
+        0.11548240979512547,
+        0.923202363650004
+      ],
+      "min_pair_gap_db": 0.11548240979512547,
+      "mean_overlap_ratio": 0.8952673801354329,
+      "mean_interference_gain_db": -0.9160666666666668,
+      "mean_target_transient_presence_minus_mid_db_mean": -7.663540510336558,
+      "recipe_counts": {
+        "target_clean_speech": 15
+      },
+      "pattern_counts": {
+        "target_full": 15
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 15
+      },
+      "speaker_counts": {
+        "久彦": 1,
+        "今谷三郎": 1,
+        "克洛琳德": 1,
+        "卡瓦贾": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "毗伽尔": 1,
+        "泽维尔": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1,
+        "长门幸子": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000370",
+        "train_000700",
+        "train_000727",
+        "train_000756",
+        "train_000762",
+        "train_000826",
+        "train_001180",
+        "train_001360",
+        "train_001586",
+        "train_001657",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -10.407621065775553
+      }
+    },
+    {
+      "subset_name": "recipe_clean__pattern_full__ratio_ge_0_95__any_overlap__all_pools__gain_ge_q50__transient_ge_q67__all_speakers",
+      "count": 15,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 2.247465141614278,
+        "v19": 2.1319827318191527,
+        "v8": 1.2087803681691487
+      },
+      "pair_gaps_db": [
+        0.11548240979512547,
+        0.923202363650004
+      ],
+      "min_pair_gap_db": 0.11548240979512547,
+      "mean_overlap_ratio": 0.8952673801354329,
+      "mean_interference_gain_db": -0.9160666666666668,
+      "mean_target_transient_presence_minus_mid_db_mean": -7.663540510336558,
+      "recipe_counts": {
+        "target_clean_speech": 15
+      },
+      "pattern_counts": {
+        "target_full": 15
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 15
+      },
+      "speaker_counts": {
+        "久彦": 1,
+        "今谷三郎": 1,
+        "克洛琳德": 1,
+        "卡瓦贾": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "毗伽尔": 1,
+        "泽维尔": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1,
+        "长门幸子": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000370",
+        "train_000700",
+        "train_000727",
+        "train_000756",
+        "train_000762",
+        "train_000826",
+        "train_001180",
+        "train_001360",
+        "train_001586",
+        "train_001657",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_target_ratio": 0.95,
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -10.407621065775553
+      }
+    },
+    {
+      "subset_name": "recipe_clean__pattern_full__ratio_ge_0_95__any_overlap__pool_clean__gain_ge_q50__transient_ge_q67__all_speakers",
+      "count": 15,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 2.247465141614278,
+        "v19": 2.1319827318191527,
+        "v8": 1.2087803681691487
+      },
+      "pair_gaps_db": [
+        0.11548240979512547,
+        0.923202363650004
+      ],
+      "min_pair_gap_db": 0.11548240979512547,
+      "mean_overlap_ratio": 0.8952673801354329,
+      "mean_interference_gain_db": -0.9160666666666668,
+      "mean_target_transient_presence_minus_mid_db_mean": -7.663540510336558,
+      "recipe_counts": {
+        "target_clean_speech": 15
+      },
+      "pattern_counts": {
+        "target_full": 15
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 15
+      },
+      "speaker_counts": {
+        "久彦": 1,
+        "今谷三郎": 1,
+        "克洛琳德": 1,
+        "卡瓦贾": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "毗伽尔": 1,
+        "泽维尔": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1,
+        "长门幸子": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000370",
+        "train_000700",
+        "train_000727",
+        "train_000756",
+        "train_000762",
+        "train_000826",
+        "train_001180",
+        "train_001360",
+        "train_001586",
+        "train_001657",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "temporal_patterns": [
+          "target_full"
+        ],
+        "min_target_ratio": 0.95,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -10.407621065775553
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__any_ratio__overlap_ge_0_90__all_pools__gain_ge_q50__transient_ge_q67__all_speakers",
+      "count": 12,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 2.0249950091044107,
+        "v19": 1.9098937312761943,
+        "v8": 1.057045837243398
+      },
+      "pair_gaps_db": [
+        0.11510127782821633,
+        0.8528478940327964
+      ],
+      "min_pair_gap_db": 0.11510127782821633,
+      "mean_overlap_ratio": 0.9566542136913144,
+      "mean_interference_gain_db": -0.7881666666666667,
+      "mean_target_transient_presence_minus_mid_db_mean": -8.08377991616726,
+      "recipe_counts": {
+        "target_clean_speech": 11,
+        "target_hard_speech": 1
+      },
+      "pattern_counts": {
+        "target_absent_head": 2,
+        "target_full": 10
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 11,
+        "speech_interference_hard_pool": 1
+      },
+      "speaker_counts": {
+        "friend_hard_negative_segments": 1,
+        "久彦": 1,
+        "克洛琳德": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1,
+        "高善": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000454",
+        "train_000654",
+        "train_000700",
+        "train_000762",
+        "train_000826",
+        "train_001360",
+        "train_001586",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "min_overlap_ratio": 0.9,
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -10.407621065775553
+      }
+    },
+    {
+      "subset_name": "all_speech__all_patterns__any_ratio__overlap_ge_0_90__pool_clean__gain_ge_q50__transient_ge_q50__all_speakers",
+      "count": 12,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.9807608127593994,
+        "v19": 1.8662820061047871,
+        "v8": 1.0054132739702861
+      },
+      "pair_gaps_db": [
+        0.1144788066546123,
+        0.860868732134501
+      ],
+      "min_pair_gap_db": 0.1144788066546123,
+      "mean_overlap_ratio": 0.9604865343841004,
+      "mean_interference_gain_db": -1.0108333333333335,
+      "mean_target_transient_presence_minus_mid_db_mean": -8.344303155938784,
+      "recipe_counts": {
+        "target_clean_speech": 12
+      },
+      "pattern_counts": {
+        "target_absent_head": 1,
+        "target_full": 11
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 12
+      },
+      "speaker_counts": {
+        "「女士」": 1,
+        "久彦": 1,
+        "克洛琳德": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1,
+        "高善": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000634",
+        "train_000654",
+        "train_000700",
+        "train_000762",
+        "train_000826",
+        "train_001360",
+        "train_001586",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -11.799183368682861
+      }
+    },
+    {
+      "subset_name": "recipe_clean__all_patterns__any_ratio__overlap_ge_0_90__all_pools__gain_ge_q50__transient_ge_q50__all_speakers",
+      "count": 12,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.9807608127593994,
+        "v19": 1.8662820061047871,
+        "v8": 1.0054132739702861
+      },
+      "pair_gaps_db": [
+        0.1144788066546123,
+        0.860868732134501
+      ],
+      "min_pair_gap_db": 0.1144788066546123,
+      "mean_overlap_ratio": 0.9604865343841004,
+      "mean_interference_gain_db": -1.0108333333333335,
+      "mean_target_transient_presence_minus_mid_db_mean": -8.344303155938784,
+      "recipe_counts": {
+        "target_clean_speech": 12
+      },
+      "pattern_counts": {
+        "target_absent_head": 1,
+        "target_full": 11
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 12
+      },
+      "speaker_counts": {
+        "「女士」": 1,
+        "久彦": 1,
+        "克洛琳德": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1,
+        "高善": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000634",
+        "train_000654",
+        "train_000700",
+        "train_000762",
+        "train_000826",
+        "train_001360",
+        "train_001586",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "min_overlap_ratio": 0.9,
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -11.799183368682861
+      }
+    },
+    {
+      "subset_name": "recipe_clean__all_patterns__any_ratio__overlap_ge_0_90__pool_clean__gain_ge_q50__transient_ge_q50__all_speakers",
+      "count": 12,
+      "order_pass": true,
+      "ordered_aliases": [
+        "v12",
+        "v19",
+        "v8"
+      ],
+      "alias_scores": {
+        "v12": 1.9807608127593994,
+        "v19": 1.8662820061047871,
+        "v8": 1.0054132739702861
+      },
+      "pair_gaps_db": [
+        0.1144788066546123,
+        0.860868732134501
+      ],
+      "min_pair_gap_db": 0.1144788066546123,
+      "mean_overlap_ratio": 0.9604865343841004,
+      "mean_interference_gain_db": -1.0108333333333335,
+      "mean_target_transient_presence_minus_mid_db_mean": -8.344303155938784,
+      "recipe_counts": {
+        "target_clean_speech": 12
+      },
+      "pattern_counts": {
+        "target_absent_head": 1,
+        "target_full": 11
+      },
+      "pool_counts": {
+        "speech_interference_clean_pool": 12
+      },
+      "speaker_counts": {
+        "「女士」": 1,
+        "久彦": 1,
+        "克洛琳德": 1,
+        "埃兰": 1,
+        "埃泽": 1,
+        "巴达维": 1,
+        "提问者": 1,
+        "玛达赫": 1,
+        "纳比尔": 1,
+        "罗莎莉亚": 1,
+        "荫山": 1,
+        "高善": 1
+      },
+      "sample_ids": [
+        "train_000162",
+        "train_000225",
+        "train_000237",
+        "train_000245",
+        "train_000634",
+        "train_000654",
+        "train_000700",
+        "train_000762",
+        "train_000826",
+        "train_001360",
+        "train_001586",
+        "train_001894"
+      ],
+      "builder_filters": {
+        "recipes": [
+          "target_clean_speech"
+        ],
+        "min_overlap_ratio": 0.9,
+        "interference_pools": [
+          "speech_interference_clean_pool"
+        ],
+        "min_interference_gain_db": -2.127000093460083,
+        "min_target_transient_presence_minus_mid_db_mean": -11.799183368682861
+      }
+    }
+  ],
+  "top_near_miss_candidates": [],
+  "speaker_counts": {
+    "friend_hard_negative_segments": 38,
+    "「女士」": 1,
+    "一正": 1,
+    "上杉": 1,
+    "久利须": 1,
+    "久彦": 1,
+    "乾玮": 1,
+    "亚拉": 1,
+    "今谷三郎": 1,
+    "伊丝黛莱": 1,
+    "伊利亚斯": 1,
+    "侍从丙": 1,
+    "侍从乙": 1,
+    "健三郎": 1,
+    "元太": 1,
+    "克洛琳德": 1,
+    "公主": 1,
+    "兴修": 1,
+    "其它语音 - Others": 4,
+    "内嘉": 1,
+    "凝光": 1,
+    "加藤信悟": 1,
+    "加藤洋平": 1,
+    "北村": 1,
+    "博易": 1,
+    "卡瓦贾": 1,
+    "卯师傅": 2,
+    "厄舍": 1,
+    "古谷升": 1,
+    "哈拉夫": 1,
+    "唐娜": 2,
+    "埃兰": 1,
+    "埃德": 1,
+    "埃泽": 1,
+    "塞德娜": 1,
+    "夏妮": 1,
+    "多梅尼科": 1,
+    "天目优也": 1,
+    "奥特": 1,
+    "娜比雅": 1,
+    "娜维娅": 1,
+    "孟迪尔": 1,
+    "安柏": 1,
+    "宛烟": 1,
+    "小川": 1,
+    "巴达维": 1,
+    "帕帕克": 1,
+    "带变量语音 - Placeholder": 5,
+    "库塞拉": 1,
+    "康纳": 1,
+    "德田": 1,
+    "悠策": 1,
+    "战斗语音 - Battle": 5,
+    "提问者": 1,
+    "摆渡人": 1,
+    "斯万": 1,
+    "斯嘉莉": 1,
+    "早柚": 1,
+    "星稀": 1,
+    "普里耶": 1,
+    "有乐斋": 1,
+    "望雅": 1,
+    "木南杏奈": 1,
+    "木村": 1,
+    "札齐": 1,
+    "朱老板": 2,
+    "村上": 1,
+    "杰巴里": 1,
+    "枕鸢": 1,
+    "查尔斯": 1,
+    "柴毅": 1,
+    "桂一": 1,
+    "榎本": 1,
+    "武沛": 1,
+    "毅": 1,
+    "毗伽尔": 1,
+    "法尔罗赫": 1,
+    "法拉娜": 2,
+    "波洛": 1,
+    "泽维尔": 1,
+    "洛伦佐": 1,
+    "浮游风蕈兽·元素生命": 1,
+    "海芭夏": 1,
+    "深渊法师": 2,
+    "狗三儿": 1,
+    "玛维斯": 1,
+    "玛达赫": 1,
+    "珊瑚": 2,
+    "知易": 1,
+    "知贵": 1,
+    "祖莉亚·德斯特雷": 1,
+    "神里绫人": 1,
+    "科拉莉": 1,
+    "穆妮尔": 1,
+    "纳比尔": 1,
+    "纳西妲": 1,
+    "罗莎莉亚": 1,
+    "羽生田千鹤": 1,
+    "艾尔海森": 1,
+    "荫山": 1,
+    "莎拉": 1,
+    "莱欧斯利": 2,
+    "薇若妮卡": 1,
+    "裕子": 1,
+    "辛程": 1,
+    "酒井": 1,
+    "重云": 1,
+    "长门幸子": 1,
+    "阿丑": 1,
+    "阿二": 1,
+    "阿夫辛": 1,
+    "阿斯法德": 1,
+    "阿洛瓦": 1,
+    "阿米尔": 2,
+    "飞飞": 1,
+    "高善": 1,
+    "麦娜尔": 1,
+    "黑田": 1,
+    "齐格芙丽雅": 1,
+    "龙二": 1
+  },
+  "num_candidates": 667
+}

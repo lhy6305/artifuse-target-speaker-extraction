@@ -1,0 +1,257 @@
+{
+  "train_manifest": "data/synthetic/train_manifest_v21_v19_plus_friend_reverse_guardrail_proxy_v2.jsonl",
+  "val_manifest": "data/synthetic/val_manifest_v21_v19_plus_friend_reverse_guardrail_proxy_v2.jsonl",
+  "output_dir": "experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v21_v19_friend_reverse_guardrail_proxy_v2_transient_extra_ft1",
+  "device": "cuda",
+  "epochs": 1,
+  "batch_size": 4,
+  "learning_rate": 1e-05,
+  "model_config": {
+    "n_fft": 512,
+    "hop_length": 128,
+    "win_length": 512,
+    "hidden_dim": 256,
+    "reference_dim": 128,
+    "gru_layers": 2,
+    "conditioning_mode": "legacy_bias"
+  },
+  "loss_config": {
+    "sample_rate": 16000,
+    "stft_weight": 0.5,
+    "sisdr_weight": 0.0,
+    "transient_weight": 0.002,
+    "interference_weight": 0.0075,
+    "absent_weight": 1.0,
+    "transient_top_ratio": 0.12,
+    "transient_min_count": 8,
+    "transient_mid_low_hz": 800.0,
+    "transient_mid_high_hz": 3000.0,
+    "transient_presence_low_hz": 3000.0,
+    "transient_presence_high_hz": 8000.0,
+    "transient_ratio_weight": 0.5,
+    "transient_focus_recipes": [
+      "target_hard_speech"
+    ],
+    "transient_focus_patterns": [
+      "target_full"
+    ],
+    "transient_focus_interference_pools": [
+      "speech_interference_hard_pool"
+    ],
+    "transient_focus_interference_speaker_names": [
+      "friend_hard_negative_segments"
+    ],
+    "transient_min_target_ratio": 0.95,
+    "transient_max_target_ratio": null,
+    "transient_min_overlap_ratio": 0.9,
+    "transient_max_overlap_ratio": null,
+    "transient_min_interference_gain_db": null,
+    "transient_max_interference_gain_db": null,
+    "transient_min_target_transient_presence_minus_mid_db_mean": null,
+    "transient_max_target_transient_presence_minus_mid_db_mean": null,
+    "transient_min_target_transient_presence_share_mean": null,
+    "transient_max_target_transient_presence_share_mean": null,
+    "transient_extra_focus_recipes": [
+      "target_clean_speech"
+    ],
+    "transient_extra_focus_patterns": [
+      "target_full"
+    ],
+    "transient_extra_focus_interference_pools": [
+      "speech_interference_clean_pool"
+    ],
+    "transient_extra_focus_interference_speaker_names": [],
+    "transient_extra_min_target_ratio": 0.95,
+    "transient_extra_max_target_ratio": null,
+    "transient_extra_min_overlap_ratio": 0.9,
+    "transient_extra_max_overlap_ratio": null,
+    "transient_extra_min_interference_gain_db": null,
+    "transient_extra_max_interference_gain_db": null,
+    "transient_extra_min_target_transient_presence_minus_mid_db_mean": -9.179057439168297,
+    "transient_extra_max_target_transient_presence_minus_mid_db_mean": null,
+    "transient_extra_min_target_transient_presence_share_mean": null,
+    "transient_extra_max_target_transient_presence_share_mean": null,
+    "interference_focus_recipes": [
+      "target_hard_speech"
+    ],
+    "interference_focus_patterns": [
+      "target_full"
+    ],
+    "interference_focus_interference_pools": [
+      "speech_interference_hard_pool"
+    ],
+    "interference_focus_interference_speaker_names": [
+      "friend_hard_negative_segments"
+    ],
+    "interference_min_target_ratio": 0.95,
+    "interference_max_target_ratio": null,
+    "interference_min_overlap_ratio": 0.9,
+    "interference_max_overlap_ratio": null,
+    "interference_min_interference_gain_db": null,
+    "interference_max_interference_gain_db": null,
+    "interference_min_target_transient_presence_minus_mid_db_mean": null,
+    "interference_max_target_transient_presence_minus_mid_db_mean": null,
+    "interference_min_target_transient_presence_share_mean": null,
+    "interference_max_target_transient_presence_share_mean": null,
+    "interference_extra_focus_recipes": [],
+    "interference_extra_focus_patterns": [],
+    "interference_extra_focus_interference_pools": [],
+    "interference_extra_focus_interference_speaker_names": [],
+    "interference_extra_min_target_ratio": null,
+    "interference_extra_max_target_ratio": null,
+    "interference_extra_min_overlap_ratio": null,
+    "interference_extra_max_overlap_ratio": null,
+    "interference_extra_min_interference_gain_db": null,
+    "interference_extra_max_interference_gain_db": null,
+    "interference_extra_min_target_transient_presence_minus_mid_db_mean": null,
+    "interference_extra_max_target_transient_presence_minus_mid_db_mean": null,
+    "interference_extra_min_target_transient_presence_share_mean": null,
+    "interference_extra_max_target_transient_presence_share_mean": null,
+    "absent_focus_recipes": [
+      "target_clean_speech"
+    ],
+    "absent_focus_patterns": [
+      "target_absent_head",
+      "target_absent_tail",
+      "target_intermittent"
+    ],
+    "absent_focus_interference_pools": [
+      "speech_interference_clean_pool"
+    ],
+    "absent_focus_interference_speaker_names": [],
+    "absent_min_target_ratio": null,
+    "absent_max_target_ratio": null,
+    "absent_min_overlap_ratio": null,
+    "absent_max_overlap_ratio": null,
+    "absent_min_interference_gain_db": -0.8906666636466982,
+    "absent_max_interference_gain_db": null,
+    "absent_min_target_transient_presence_minus_mid_db_mean": null,
+    "absent_max_target_transient_presence_minus_mid_db_mean": null,
+    "absent_min_target_transient_presence_share_mean": null,
+    "absent_max_target_transient_presence_share_mean": null,
+    "absent_extra_focus_recipes": [],
+    "absent_extra_focus_patterns": [],
+    "absent_extra_focus_interference_pools": [],
+    "absent_extra_focus_interference_speaker_names": [],
+    "absent_extra_min_target_ratio": null,
+    "absent_extra_max_target_ratio": null,
+    "absent_extra_min_overlap_ratio": null,
+    "absent_extra_max_overlap_ratio": null,
+    "absent_extra_min_interference_gain_db": null,
+    "absent_extra_max_interference_gain_db": null,
+    "absent_extra_min_target_transient_presence_minus_mid_db_mean": null,
+    "absent_extra_max_target_transient_presence_minus_mid_db_mean": null,
+    "absent_extra_min_target_transient_presence_share_mean": null,
+    "absent_extra_max_target_transient_presence_share_mean": null
+  },
+  "init_checkpoint": "experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v19_v12_absent_proxy_v3_reverse_guardrail_v1_int_up_ft1/best.pt",
+  "global_steps": 28,
+  "start_time": "2026-03-18T23:08:04",
+  "end_time": "2026-03-18T23:08:08",
+  "elapsed_sec": 3.734,
+  "best_val_loss": 0.025415682337350316,
+  "selector_metrics": {
+    "train": {
+      "transient": {
+        "active": true,
+        "selected_count": 76,
+        "total_count": 111,
+        "selected_fraction": 0.6846846846846847
+      },
+      "interference": {
+        "active": true,
+        "selected_count": 51,
+        "total_count": 111,
+        "selected_fraction": 0.4594594594594595
+      },
+      "absent": {
+        "active": true,
+        "selected_count": 24,
+        "total_count": 111,
+        "selected_fraction": 0.21621621621621623
+      }
+    },
+    "val": {
+      "transient": {
+        "active": true,
+        "selected_count": 30,
+        "total_count": 35,
+        "selected_fraction": 0.8571428571428571
+      },
+      "interference": {
+        "active": true,
+        "selected_count": 18,
+        "total_count": 35,
+        "selected_fraction": 0.5142857142857142
+      },
+      "absent": {
+        "active": true,
+        "selected_count": 4,
+        "total_count": 35,
+        "selected_fraction": 0.11428571428571428
+      }
+    }
+  },
+  "history": [
+    {
+      "epoch": 1,
+      "global_step": 28,
+      "train_loss": 0.02500367330919419,
+      "train_waveform_l1": 0.013043333377156938,
+      "train_stft_l1": 0.020495324162766337,
+      "train_sisdr_loss": 9.910891243389674,
+      "train_sisdr_db": -9.910891243389674,
+      "train_transient_presence_l1": 0.5752609297633171,
+      "train_interference_projection_ratio": 0.059311172392751486,
+      "train_absent_interval_l1": 0.00011732249560085973,
+      "train_selector_metrics": {
+        "transient": {
+          "active": true,
+          "selected_count": 76,
+          "total_count": 111,
+          "selected_fraction": 0.6846846846846847
+        },
+        "interference": {
+          "active": true,
+          "selected_count": 51,
+          "total_count": 111,
+          "selected_fraction": 0.4594594594594595
+        },
+        "absent": {
+          "active": true,
+          "selected_count": 24,
+          "total_count": 111,
+          "selected_fraction": 0.21621621621621623
+        }
+      },
+      "val_loss": 0.025415682337350316,
+      "val_waveform_l1": 0.012458681335879697,
+      "val_stft_l1": 0.022045252430770133,
+      "val_sisdr_loss": 12.137556499905056,
+      "val_sisdr_db": -12.137556499905056,
+      "val_transient_presence_l1": 0.7152492006619772,
+      "val_interference_projection_ratio": 0.05941899824473593,
+      "val_absent_interval_l1": 5.823424312565193e-05,
+      "val_selector_metrics": {
+        "transient": {
+          "active": true,
+          "selected_count": 30,
+          "total_count": 35,
+          "selected_fraction": 0.8571428571428571
+        },
+        "interference": {
+          "active": true,
+          "selected_count": 18,
+          "total_count": 35,
+          "selected_fraction": 0.5142857142857142
+        },
+        "absent": {
+          "active": true,
+          "selected_count": 4,
+          "total_count": 35,
+          "selected_fraction": 0.11428571428571428
+        }
+      }
+    }
+  ]
+}
