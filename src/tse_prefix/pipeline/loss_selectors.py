@@ -18,6 +18,12 @@ SELECTOR_SUFFIXES = (
     "max_target_transient_presence_minus_mid_db_mean",
     "min_target_transient_presence_share_mean",
     "max_target_transient_presence_share_mean",
+    "min_interference_transient_presence_minus_mid_db_mean",
+    "max_interference_transient_presence_minus_mid_db_mean",
+    "min_interference_transient_presence_share_mean",
+    "max_interference_transient_presence_share_mean",
+    "min_target_interference_logspec_cosine",
+    "max_target_interference_logspec_cosine",
 )
 SELECTOR_BRANCH_NAMES = ("", "extra_")
 
@@ -53,6 +59,16 @@ def _build_branch_selector_sample_weights(
     max_transient_minus_mid = loss_config.get(f"{key_prefix}max_target_transient_presence_minus_mid_db_mean")
     min_transient_share = loss_config.get(f"{key_prefix}min_target_transient_presence_share_mean")
     max_transient_share = loss_config.get(f"{key_prefix}max_target_transient_presence_share_mean")
+    min_interference_transient_minus_mid = loss_config.get(
+        f"{key_prefix}min_interference_transient_presence_minus_mid_db_mean"
+    )
+    max_interference_transient_minus_mid = loss_config.get(
+        f"{key_prefix}max_interference_transient_presence_minus_mid_db_mean"
+    )
+    min_interference_transient_share = loss_config.get(f"{key_prefix}min_interference_transient_presence_share_mean")
+    max_interference_transient_share = loss_config.get(f"{key_prefix}max_interference_transient_presence_share_mean")
+    min_target_interference_similarity = loss_config.get(f"{key_prefix}min_target_interference_logspec_cosine")
+    max_target_interference_similarity = loss_config.get(f"{key_prefix}max_target_interference_logspec_cosine")
     has_selector = bool(
         recipes
         or patterns
@@ -68,6 +84,12 @@ def _build_branch_selector_sample_weights(
         or max_transient_minus_mid is not None
         or min_transient_share is not None
         or max_transient_share is not None
+        or min_interference_transient_minus_mid is not None
+        or max_interference_transient_minus_mid is not None
+        or min_interference_transient_share is not None
+        or max_interference_transient_share is not None
+        or min_target_interference_similarity is not None
+        or max_target_interference_similarity is not None
     )
     if not has_selector:
         return None
@@ -101,6 +123,18 @@ def _build_branch_selector_sample_weights(
     ratios = batch["target_present_ratios"].to(device=device, dtype=torch.float32)
     transient_minus_mid = batch["target_transient_presence_minus_mid_db_means"].to(device=device, dtype=torch.float32)
     transient_share = batch["target_transient_presence_share_means"].to(device=device, dtype=torch.float32)
+    interference_transient_minus_mid = batch["interference_transient_presence_minus_mid_db_means"].to(
+        device=device,
+        dtype=torch.float32,
+    )
+    interference_transient_share = batch["interference_transient_presence_share_means"].to(
+        device=device,
+        dtype=torch.float32,
+    )
+    target_interference_similarity = batch["target_interference_logspec_cosines"].to(
+        device=device,
+        dtype=torch.float32,
+    )
     overlaps = batch["overlap_ratios"].to(device=device, dtype=torch.float32)
     gains = batch["interference_gain_dbs"].to(device=device, dtype=torch.float32)
     if min_ratio is not None:
@@ -127,6 +161,36 @@ def _build_branch_selector_sample_weights(
         weights = weights * ((~torch.isnan(transient_share)) & (transient_share >= float(min_transient_share))).float()
     if max_transient_share is not None:
         weights = weights * ((~torch.isnan(transient_share)) & (transient_share <= float(max_transient_share))).float()
+    if min_interference_transient_minus_mid is not None:
+        weights = weights * (
+            (~torch.isnan(interference_transient_minus_mid))
+            & (interference_transient_minus_mid >= float(min_interference_transient_minus_mid))
+        ).float()
+    if max_interference_transient_minus_mid is not None:
+        weights = weights * (
+            (~torch.isnan(interference_transient_minus_mid))
+            & (interference_transient_minus_mid <= float(max_interference_transient_minus_mid))
+        ).float()
+    if min_interference_transient_share is not None:
+        weights = weights * (
+            (~torch.isnan(interference_transient_share))
+            & (interference_transient_share >= float(min_interference_transient_share))
+        ).float()
+    if max_interference_transient_share is not None:
+        weights = weights * (
+            (~torch.isnan(interference_transient_share))
+            & (interference_transient_share <= float(max_interference_transient_share))
+        ).float()
+    if min_target_interference_similarity is not None:
+        weights = weights * (
+            (~torch.isnan(target_interference_similarity))
+            & (target_interference_similarity >= float(min_target_interference_similarity))
+        ).float()
+    if max_target_interference_similarity is not None:
+        weights = weights * (
+            (~torch.isnan(target_interference_similarity))
+            & (target_interference_similarity <= float(max_target_interference_similarity))
+        ).float()
     return weights
 
 

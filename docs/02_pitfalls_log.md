@@ -3153,3 +3153,96 @@
    - `0004-like` 单独挂 interference / leak 侧归属
    而不是继续：
    - 两者并到同一个 `transient_extra`
+
+### 88. 即使已经把 `0003-like` / `0004-like` 分别接到 `transient_extra` 和 `interference_extra`，one-shot semantic split 也不等于 friend-side objective 已经转正；`v24 / v25` 证明“语义拆开”只是开始，不是完成
+
+现象：
+
+- 本轮已把 friend-side 两条语义真正接进训练：
+  - `v24`:
+    - train transient `55 / 109`
+    - train interference `51 / 109`
+  - `v25`:
+    - train transient `63 / 109`
+    - train interference `62 / 109`
+- 说明这批 friend-side proxy：
+  - 不是 `v20` 那种零命中增量
+  - 已真实进入 active selector
+- 但相对 `v19`：
+  - `v24 semantic-split proxy = -0.091072 dB`
+  - `v25 semantic-split proxy = -0.152489 dB`
+  - `v25 residual-transient exact = -0.176585 dB`
+  - `v25 speech-leak exact = -0.120362 dB`
+  - `v24 near_real_friend_speech_probe = -0.041770 dB`
+  - `v25 near_real_friend_speech_probe = -0.037164 dB`
+
+影响：
+
+- 这说明当前问题已经不能再主要解释成：
+  - selector 没接上
+  - 或 `0003 / 0004` 还没有拆语义
+- 更准确的说法应改成：
+  - 当前 semantic split 的 objective / proxy 语义仍不够对
+  - 即便已经分挂到不同 loss 归属
+  - 也还没有把 friend-side 的 exact proxy 和 near-real bucket 一起推正
+
+处理：
+
+- 本轮保留：
+  - semantic split 训练入口本身
+  - `v24 / v25` 这批结果作为反例与边界
+- 但不保留：
+  - 把 `v24 / v25` 当成新候选继续放大预算
+
+后续要求：
+
+1. 以后即使已经把多个语义分挂到不同 selector，也不能默认写成：
+   - “objective 已经对了”
+2. 若 exact proxy 和 near-real friend bucket 仍同时低于当前基座，
+   结论应直接升级为：
+   - objective / proxy 语义本身仍需重做
+3. 对当前这条线，不再优先做：
+   - `v24 / v25` 的权重、epoch、lr 微扫
+
+### 89. 把 `0003-like` 或 `0004-like` 单独 carve-out，也不等于至少能救回一半问题；`v26 / v27` 证明两侧 branch-local objective 当前都还不够稳
+
+现象：
+
+- `v26 residual-only` 相对 `v19`：
+  - `residual-only proxy = -0.201198 dB`
+  - `near_real_friend_speech_probe = -0.049491 dB`
+  - `near_real_guodegang_speech_probe = +0.003146 dB`
+- `v27 speech-leak-only` 相对 `v19`：
+  - `speech-leak-only proxy = -0.144539 dB`
+  - `near_real_friend_speech_probe = -0.044400 dB`
+  - `near_real_guodegang_speech_probe = -0.004776 dB`
+
+影响：
+
+- 这说明：
+  - `0003-like residual-transient`
+    当前还不能被视为单独可保留的安全训练入口；
+  - `0004-like speech-leak`
+    当前也还没有形成稳定的 interference/leak-side 正收益；
+  - 尤其后者已经开始把 `guodegang` 侧已有收益一起回吐
+
+处理：
+
+- 本轮不保留：
+  - `v26`
+  - `v27`
+- 当前只把它们记为：
+  - 单侧 carve-out 已验证过，但都未转正
+
+后续要求：
+
+1. 以后不要把“先单独 carve-out 一侧试一下”默认理解成：
+   - 至少能保住另一侧不坏
+2. 如果单侧 carve-out 仍然同时表现为：
+   - 自己的 proxy 为负
+   - friend-side near-real bucket 也为负
+   结论应直接写成：
+   - 这一侧的 branch-local objective 还不够对
+3. 对当前这条线，下一步优先应继续改：
+   - speech-leak / residual-transient 的 proxy 语义或 guardrail
+   而不是继续沿当前 `v26 / v27` 直接放大预算

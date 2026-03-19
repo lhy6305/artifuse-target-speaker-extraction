@@ -173,6 +173,55 @@ def build_target_transient_metrics(target_audio_path: Path) -> dict[str, float]:
     }
 
 
+def build_interference_transient_metrics(interference_audio_path: Path) -> dict[str, float]:
+    waveform, sample_rate = load_audio(interference_audio_path)
+    power = stft_power(waveform, n_fft=1024, hop_length=256)
+    freqs = np.fft.rfftfreq(1024, d=1.0 / sample_rate).astype(np.float32)
+    transient_indices = detect_transient_indices(
+        power=power,
+        freqs=freqs,
+        low_hz=3000.0,
+        high_hz=min(8000.0, sample_rate / 2.0),
+        top_ratio=0.12,
+        min_count=8,
+    )
+    transient_indices = transient_indices[transient_indices < power.shape[0]]
+    if transient_indices.size == 0:
+        transient_indices = np.array([0], dtype=np.int64)
+
+    mid_energy = band_energy(power, freqs, 800.0, 3000.0)[transient_indices]
+    presence_energy = band_energy(power, freqs, 3000.0, min(8000.0, sample_rate / 2.0))[transient_indices]
+    presence_minus_mid_db = safe_log_ratio(presence_energy, mid_energy)
+    presence_share = presence_energy / (power.sum(axis=1)[transient_indices] + 1e-12)
+    return {
+        "interference_transient_presence_minus_mid_db_mean": float(np.mean(presence_minus_mid_db)),
+        "interference_transient_presence_share_mean": float(np.mean(presence_share)),
+    }
+
+
+def build_target_interference_pair_metrics(
+    target_audio_path: Path,
+    interference_audio_path: Path,
+) -> dict[str, float]:
+    target_waveform, target_sample_rate = load_audio(target_audio_path)
+    interference_waveform, interference_sample_rate = load_audio(interference_audio_path)
+    target_power = stft_power(target_waveform, n_fft=1024, hop_length=256)
+    interference_power = stft_power(interference_waveform, n_fft=1024, hop_length=256)
+    target_logspec = np.log1p(target_power.mean(axis=0))
+    interference_logspec = np.log1p(interference_power.mean(axis=0))
+    if target_sample_rate != interference_sample_rate:
+        min_length = min(target_logspec.shape[0], interference_logspec.shape[0])
+        target_logspec = target_logspec[:min_length]
+        interference_logspec = interference_logspec[:min_length]
+    cosine = float(
+        np.dot(target_logspec, interference_logspec)
+        / ((np.linalg.norm(target_logspec) * np.linalg.norm(interference_logspec)) + 1e-12)
+    )
+    return {
+        "target_interference_logspec_cosine": cosine,
+    }
+
+
 def infer_interference_speaker_name(audio_path: str | None) -> str | None:
     if not audio_path:
         return None
@@ -226,7 +275,9 @@ def main() -> None:
         raise RuntimeError("No shared sample ids across compare inputs.")
 
     base_alias = ordered_aliases[0]
-    transient_cache: dict[str, dict[str, float]] = {}
+    target_transient_cache: dict[str, dict[str, float]] = {}
+    interference_transient_cache: dict[str, dict[str, float]] = {}
+    pair_metric_cache: dict[tuple[str, str], dict[str, float]] = {}
     enriched_rows: list[dict[str, Any]] = []
     samplewise_order_pass_count = 0
     for sample_id in sorted(shared_sample_ids):
@@ -239,10 +290,22 @@ def main() -> None:
             continue
         first_layer = layers[0]
         target_audio_path = ROOT / str(metadata["output_paths"]["target_audio_path"])
-        transient_metrics = transient_cache.get(str(target_audio_path))
-        if transient_metrics is None:
-            transient_metrics = build_target_transient_metrics(target_audio_path)
-            transient_cache[str(target_audio_path)] = transient_metrics
+        interference_audio_path = ROOT / str(first_layer["audio_path"])
+        target_key = str(target_audio_path)
+        interference_key = str(interference_audio_path)
+        target_transient_metrics = target_transient_cache.get(target_key)
+        if target_transient_metrics is None:
+            target_transient_metrics = build_target_transient_metrics(target_audio_path)
+            target_transient_cache[target_key] = target_transient_metrics
+        interference_transient_metrics = interference_transient_cache.get(interference_key)
+        if interference_transient_metrics is None:
+            interference_transient_metrics = build_interference_transient_metrics(interference_audio_path)
+            interference_transient_cache[interference_key] = interference_transient_metrics
+        pair_key = (target_key, interference_key)
+        pair_metrics = pair_metric_cache.get(pair_key)
+        if pair_metrics is None:
+            pair_metrics = build_target_interference_pair_metrics(target_audio_path, interference_audio_path)
+            pair_metric_cache[pair_key] = pair_metrics
 
         alias_deltas = {
             alias: float(compare_rows_by_alias[alias][sample_id]["sisdr_delta_db"])
@@ -271,7 +334,9 @@ def main() -> None:
                 "alias_deltas": alias_deltas,
                 "samplewise_order_pass": samplewise_order_pass,
                 "samplewise_pair_gaps_db": samplewise_pair_gaps,
-                **transient_metrics,
+                **target_transient_metrics,
+                **interference_transient_metrics,
+                **pair_metrics,
             }
         )
 
@@ -284,6 +349,14 @@ def main() -> None:
     )
     transient_thresholds = quantile_thresholds(
         [row["target_transient_presence_minus_mid_db_mean"] for row in enriched_rows],
+        [0.5, 2.0 / 3.0],
+    )
+    interference_transient_thresholds = quantile_thresholds(
+        [row["interference_transient_presence_minus_mid_db_mean"] for row in enriched_rows],
+        [0.5, 2.0 / 3.0],
+    )
+    similarity_thresholds = quantile_thresholds(
+        [row["target_interference_logspec_cosine"] for row in enriched_rows],
         [0.5, 2.0 / 3.0],
     )
 
@@ -373,6 +446,46 @@ def main() -> None:
             {"min_target_transient_presence_minus_mid_db_mean": transient_thresholds["q67"]},
         ),
     ]
+    interference_transient_filters: list[FilterDef] = [
+        ("all_interference_transient", lambda row: True, {}),
+        (
+            "interference_transient_le_q50",
+            lambda row, threshold=interference_transient_thresholds["q50"]: row[
+                "interference_transient_presence_minus_mid_db_mean"
+            ]
+            <= threshold,
+            {"max_interference_transient_presence_minus_mid_db_mean": interference_transient_thresholds["q50"]},
+        ),
+        (
+            "interference_transient_lt_q67",
+            lambda row, threshold=interference_transient_thresholds["q67"]: row[
+                "interference_transient_presence_minus_mid_db_mean"
+            ]
+            < threshold,
+            {"max_interference_transient_presence_minus_mid_db_mean": interference_transient_thresholds["q67"]},
+        ),
+        (
+            "interference_transient_ge_q50",
+            lambda row, threshold=interference_transient_thresholds["q50"]: row[
+                "interference_transient_presence_minus_mid_db_mean"
+            ]
+            >= threshold,
+            {"min_interference_transient_presence_minus_mid_db_mean": interference_transient_thresholds["q50"]},
+        ),
+    ]
+    similarity_filters: list[FilterDef] = [
+        ("all_similarity", lambda row: True, {}),
+        (
+            "similarity_ge_q50",
+            lambda row, threshold=similarity_thresholds["q50"]: row["target_interference_logspec_cosine"] >= threshold,
+            {"min_target_interference_logspec_cosine": similarity_thresholds["q50"]},
+        ),
+        (
+            "similarity_ge_q67",
+            lambda row, threshold=similarity_thresholds["q67"]: row["target_interference_logspec_cosine"] >= threshold,
+            {"min_target_interference_logspec_cosine": similarity_thresholds["q67"]},
+        ),
+    ]
     speaker_filters: list[FilterDef] = [("all_speakers", lambda row: True, {})]
     for speaker_name, count in sorted(speaker_counts.items()):
         if count < args.min_speaker_count:
@@ -393,97 +506,116 @@ def main() -> None:
                     for pool_name, pool_pred, pool_builder in pool_filters:
                         for gain_name, gain_pred, gain_builder in gain_filters:
                             for transient_name, transient_pred, transient_builder in transient_filters:
-                                for speaker_name, speaker_pred, speaker_builder in speaker_filters:
-                                    selected_rows = [
-                                        row
-                                        for row in enriched_rows
-                                        if recipe_pred(row)
-                                        and pattern_pred(row)
-                                        and ratio_pred(row)
-                                        and overlap_pred(row)
-                                        and pool_pred(row)
-                                        and gain_pred(row)
-                                        and transient_pred(row)
-                                        and speaker_pred(row)
-                                    ]
-                                    if len(selected_rows) < args.min_count:
-                                        continue
+                                for interference_transient_name, interference_transient_pred, interference_transient_builder in interference_transient_filters:
+                                    for similarity_name, similarity_pred, similarity_builder in similarity_filters:
+                                        for speaker_name, speaker_pred, speaker_builder in speaker_filters:
+                                            selected_rows = [
+                                                row
+                                                for row in enriched_rows
+                                                if recipe_pred(row)
+                                                and pattern_pred(row)
+                                                and ratio_pred(row)
+                                                and overlap_pred(row)
+                                                and pool_pred(row)
+                                                and gain_pred(row)
+                                                and transient_pred(row)
+                                                and interference_transient_pred(row)
+                                                and similarity_pred(row)
+                                                and speaker_pred(row)
+                                            ]
+                                            if len(selected_rows) < args.min_count:
+                                                continue
 
-                                    alias_scores = {
-                                        alias: float(
-                                            sum(row["alias_deltas"][alias] for row in selected_rows) / len(selected_rows)
-                                        )
-                                        for alias in ordered_aliases
-                                    }
-                                    order_pass, pair_gaps = strict_order_pass(
-                                        alias_scores,
-                                        ordered_aliases,
-                                        min_order_gap_db=args.min_order_gap_db,
-                                    )
-                                    builder_filters = {
-                                        **recipe_builder,
-                                        **pattern_builder,
-                                        **ratio_builder,
-                                        **overlap_builder,
-                                        **pool_builder,
-                                        **gain_builder,
-                                        **transient_builder,
-                                        **speaker_builder,
-                                    }
-                                    candidates.append(
-                                        {
-                                            "subset_name": "__".join(
-                                                [
-                                                    recipe_name,
-                                                    pattern_name,
-                                                    ratio_name,
-                                                    overlap_name,
-                                                    pool_name,
-                                                    gain_name,
-                                                    transient_name,
-                                                    speaker_name,
-                                                ]
-                                            ),
-                                            "count": len(selected_rows),
-                                            "order_pass": order_pass,
-                                            "ordered_aliases": ordered_aliases,
-                                            "alias_scores": alias_scores,
-                                            "pair_gaps_db": pair_gaps,
-                                            "min_pair_gap_db": float(min(pair_gaps)) if pair_gaps else 0.0,
-                                            "mean_overlap_ratio": float(
-                                                sum((row["overlap_ratio"] or 0.0) for row in selected_rows) / len(selected_rows)
-                                            ),
-                                            "mean_interference_gain_db": float(
-                                                sum(row["interference_gain_db"] for row in selected_rows) / len(selected_rows)
-                                            ),
-                                            "mean_target_transient_presence_minus_mid_db_mean": float(
-                                                sum(
-                                                    row["target_transient_presence_minus_mid_db_mean"] for row in selected_rows
+                                            alias_scores = {
+                                                alias: float(
+                                                    sum(row["alias_deltas"][alias] for row in selected_rows) / len(selected_rows)
                                                 )
-                                                / len(selected_rows)
-                                            ),
-                                            "recipe_counts": dict(
-                                                sorted(Counter(row["recipe"] for row in selected_rows).items())
-                                            ),
-                                            "pattern_counts": dict(
-                                                sorted(Counter(row["temporal_pattern"] for row in selected_rows).items())
-                                            ),
-                                            "pool_counts": dict(
-                                                sorted(Counter(row["interference_pool"] for row in selected_rows).items())
-                                            ),
-                                            "speaker_counts": dict(
-                                                sorted(
-                                                    Counter(
-                                                        row["interference_speaker_name"]
-                                                        for row in selected_rows
-                                                        if row["interference_speaker_name"] is not None
-                                                    ).items()
-                                                )
-                                            ),
-                                            "sample_ids": [str(row["sample_id"]) for row in selected_rows],
-                                            "builder_filters": builder_filters,
-                                        }
-                                    )
+                                                for alias in ordered_aliases
+                                            }
+                                            order_pass, pair_gaps = strict_order_pass(
+                                                alias_scores,
+                                                ordered_aliases,
+                                                min_order_gap_db=args.min_order_gap_db,
+                                            )
+                                            builder_filters = {
+                                                **recipe_builder,
+                                                **pattern_builder,
+                                                **ratio_builder,
+                                                **overlap_builder,
+                                                **pool_builder,
+                                                **gain_builder,
+                                                **transient_builder,
+                                                **interference_transient_builder,
+                                                **similarity_builder,
+                                                **speaker_builder,
+                                            }
+                                            candidates.append(
+                                                {
+                                                    "subset_name": "__".join(
+                                                        [
+                                                            recipe_name,
+                                                            pattern_name,
+                                                            ratio_name,
+                                                            overlap_name,
+                                                            pool_name,
+                                                            gain_name,
+                                                            transient_name,
+                                                            interference_transient_name,
+                                                            similarity_name,
+                                                            speaker_name,
+                                                        ]
+                                                    ),
+                                                    "count": len(selected_rows),
+                                                    "order_pass": order_pass,
+                                                    "ordered_aliases": ordered_aliases,
+                                                    "alias_scores": alias_scores,
+                                                    "pair_gaps_db": pair_gaps,
+                                                    "min_pair_gap_db": float(min(pair_gaps)) if pair_gaps else 0.0,
+                                                    "mean_overlap_ratio": float(
+                                                        sum((row["overlap_ratio"] or 0.0) for row in selected_rows) / len(selected_rows)
+                                                    ),
+                                                    "mean_interference_gain_db": float(
+                                                        sum(row["interference_gain_db"] for row in selected_rows) / len(selected_rows)
+                                                    ),
+                                                    "mean_target_transient_presence_minus_mid_db_mean": float(
+                                                        sum(
+                                                            row["target_transient_presence_minus_mid_db_mean"] for row in selected_rows
+                                                        )
+                                                        / len(selected_rows)
+                                                    ),
+                                                    "mean_interference_transient_presence_minus_mid_db_mean": float(
+                                                        sum(
+                                                            row["interference_transient_presence_minus_mid_db_mean"]
+                                                            for row in selected_rows
+                                                        )
+                                                        / len(selected_rows)
+                                                    ),
+                                                    "mean_target_interference_logspec_cosine": float(
+                                                        sum(row["target_interference_logspec_cosine"] for row in selected_rows)
+                                                        / len(selected_rows)
+                                                    ),
+                                                    "recipe_counts": dict(
+                                                        sorted(Counter(row["recipe"] for row in selected_rows).items())
+                                                    ),
+                                                    "pattern_counts": dict(
+                                                        sorted(Counter(row["temporal_pattern"] for row in selected_rows).items())
+                                                    ),
+                                                    "pool_counts": dict(
+                                                        sorted(Counter(row["interference_pool"] for row in selected_rows).items())
+                                                    ),
+                                                    "speaker_counts": dict(
+                                                        sorted(
+                                                            Counter(
+                                                                row["interference_speaker_name"]
+                                                                for row in selected_rows
+                                                                if row["interference_speaker_name"] is not None
+                                                            ).items()
+                                                        )
+                                                    ),
+                                                    "sample_ids": [str(row["sample_id"]) for row in selected_rows],
+                                                    "builder_filters": builder_filters,
+                                                }
+                                            )
 
     candidates.sort(
         key=lambda row: (
@@ -506,6 +638,8 @@ def main() -> None:
         "thresholds": {
             "gain_thresholds_db": gain_thresholds,
             "transient_thresholds_db": transient_thresholds,
+            "interference_transient_thresholds_db": interference_transient_thresholds,
+            "target_interference_similarity_thresholds": similarity_thresholds,
             "min_count": args.min_count,
             "min_speaker_count": args.min_speaker_count,
             "min_order_gap_db": args.min_order_gap_db,

@@ -2091,6 +2091,63 @@
       - `0003-like residual-transient`
       - `0004-like speech-leak`
     - 其中后者更像需要 interference / leak 侧独立归属，而不是继续放在 transient-only 目标里
+168. 已完成第一轮 semantic-split 训练侧落地与 follow-up：
+  - `v24 = legacy_transient_leakguard_probe_v24_v19_friend_reverse_guardrail_proxy_v4_semantic_split_ft1`
+  - `v25 = legacy_transient_leakguard_probe_v25_v19_friend_reverse_guardrail_proxy_v4_semantic_split_ft1`
+  - `v26 = legacy_transient_leakguard_probe_v26_v19_friend_reverse_guardrail_proxy_v4_residual_only_ft1`
+  - `v27 = legacy_transient_leakguard_probe_v27_v19_friend_reverse_guardrail_proxy_v4_speech_leak_only_ft1`
+  - 当前这 4 条 follow-up 的共同点是：
+    - friend-side 样本已真实接入 active selector
+    - 不再是 `v20` 那种“total count 增了、selected_count 不变”的 base-loss nudging
+169. 但 `v24 / v25` 这两版 one-shot semantic split 仍都没有把 friend-side 方向推到 `v19` 之上：
+  - `v24` 相对 `v19`：
+    - `default = +0.021078 dB`
+    - `v24 semantic-split proxy = -0.091072 dB`
+    - `near_real_friend_speech_probe = -0.041770 dB`
+    - `near_real_guodegang_speech_probe = +0.060570 dB`
+  - `v25` 相对 `v19`：
+    - `default = +0.028038 dB`
+    - `v25 semantic-split proxy = -0.152489 dB`
+    - `v25 residual-transient exact = -0.176585 dB`
+    - `v25 speech-leak exact = -0.120362 dB`
+    - `near_real_friend_speech_probe = -0.037164 dB`
+    - `near_real_guodegang_speech_probe = +0.088547 dB`
+  - 因而当前不能把：
+    - “已经按 `0003 / 0004` semantic split”
+    - 误写成：
+    - “friend-side objective 已基本闭环”
+170. 单侧 carve-out 也没有转正：
+  - `v26 residual-only` 相对 `v19`：
+    - `default = +0.045235 dB`
+    - `residual-only proxy = -0.201198 dB`
+    - `near_real_friend_speech_probe = -0.049491 dB`
+    - `near_real_guodegang_speech_probe = +0.003146 dB`
+  - `v27 speech-leak-only` 相对 `v19`：
+    - `default = +0.037512 dB`
+    - `speech-leak-only proxy = -0.144539 dB`
+    - `near_real_friend_speech_probe = -0.044400 dB`
+    - `near_real_guodegang_speech_probe = -0.004776 dB`
+  - 因而当前不能把：
+    - `0003-like residual-transient`
+    - 或 `0004-like speech-leak`
+    - 视为已经找到单侧可稳定保留的训练入口
+171. 当前默认接班口径应继续收紧为：
+  - `v24-v27` 全部不保留为新的主候选
+  - `v25` 只能记为：
+    - 在这组 follow-up 里 broad overall 代价最小的一版
+    - 但仍未通过 exact proxy 与 near-real friend bucket
+  - 当前 friend-side 问题已不能再主要归因于：
+    - selector 没接上
+    - 或两条语义还没拆开
+  - 更准确的解释应改写为：
+    - 当前 `0003-like / 0004-like` 的 objective-proxy 语义仍不够对
+  - 下一步若继续自动推进，不再优先做：
+    - `v24-v27` 的权重 / epoch / lr 微扫
+  - 而应优先改：
+    - `0004-like speech-leak` 的 proxy / objective 语义
+    - 或更明确的 branch-local 归属与 guardrail
+  - 当前基座继续保持：
+    - `v19 = legacy_transient_leakguard_probe_v19_v12_absent_proxy_v3_reverse_guardrail_v1_int_up_ft1`
 
 ## 9. 文档入口
 
@@ -2145,5 +2202,6 @@
 - 本轮 `v21` transient-extra friend reverse guardrail follow-up：`reports/daily/2026-03-18_v21_friend_reverse_guardrail_transient_extra_followup.md`
 - 本轮 `v22` samplewise-order-pass friend proxy follow-up：`reports/daily/2026-03-18_v22_friend_proxy_samplewise_search_followup.md`
 - 本轮 `v23` friend proxy semantic split follow-up：`reports/daily/2026-03-18_v23_friend_proxy_semantic_split_followup.md`
+- 本轮 `v24-v27` friend proxy branch split follow-up：`reports/daily/2026-03-19_v24_v27_friend_proxy_branch_split_followup.md`
 - 本轮仓库与 `.gitignore` 审计：`reports/daily/2026-03-18_repo_gitignore_audit.md`
 - 本轮全仓库评估总结：`reports/daily/2026-03-17_repo_evaluation_summary.md`

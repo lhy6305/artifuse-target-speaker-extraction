@@ -31,6 +31,11 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help="Optional newline-delimited sample_id allowlist applied before metadata filters.",
     )
+    parser.add_argument(
+        "--include-derived-metrics",
+        action="store_true",
+        help="Compute and persist derived transient/similarity metrics even when they are not used as filters.",
+    )
     parser.add_argument("--recipes", nargs="*", default=[])
     parser.add_argument("--temporal-patterns", nargs="*", default=[])
     parser.add_argument("--min-target-ratio", type=float, default=None)
@@ -58,6 +63,36 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--max-target-transient-presence-share-mean",
+        type=float,
+        default=None,
+    )
+    parser.add_argument(
+        "--min-interference-transient-presence-minus-mid-db-mean",
+        type=float,
+        default=None,
+    )
+    parser.add_argument(
+        "--max-interference-transient-presence-minus-mid-db-mean",
+        type=float,
+        default=None,
+    )
+    parser.add_argument(
+        "--min-interference-transient-presence-share-mean",
+        type=float,
+        default=None,
+    )
+    parser.add_argument(
+        "--max-interference-transient-presence-share-mean",
+        type=float,
+        default=None,
+    )
+    parser.add_argument(
+        "--min-target-interference-logspec-cosine",
+        type=float,
+        default=None,
+    )
+    parser.add_argument(
+        "--max-target-interference-logspec-cosine",
         type=float,
         default=None,
     )
@@ -209,6 +244,56 @@ def build_target_transient_metrics(target_audio_path: Path) -> dict[str, float]:
     }
 
 
+def build_interference_transient_metrics(interference_audio_path: Path) -> dict[str, float]:
+    waveform, sample_rate = load_audio(interference_audio_path)
+    power = stft_power(waveform, n_fft=1024, hop_length=256)
+    freqs = np.fft.rfftfreq(1024, d=1.0 / sample_rate).astype(np.float32)
+    transient_indices = detect_transient_indices(
+        power=power,
+        freqs=freqs,
+        low_hz=3000.0,
+        high_hz=min(8000.0, sample_rate / 2.0),
+        top_ratio=0.12,
+        min_count=8,
+    )
+    transient_indices = transient_indices[transient_indices < power.shape[0]]
+    if transient_indices.size == 0:
+        transient_indices = np.array([0], dtype=np.int64)
+
+    mid_energy = band_energy(power, freqs, 800.0, 3000.0)[transient_indices]
+    presence_energy = band_energy(power, freqs, 3000.0, min(8000.0, sample_rate / 2.0))[transient_indices]
+    presence_minus_mid_db = safe_log_ratio(presence_energy, mid_energy)
+    total_energy = power.sum(axis=1)[transient_indices] + 1e-12
+    presence_share = presence_energy / total_energy
+    return {
+        "interference_transient_presence_minus_mid_db_mean": float(np.mean(presence_minus_mid_db)),
+        "interference_transient_presence_share_mean": float(np.mean(presence_share)),
+    }
+
+
+def build_target_interference_pair_metrics(
+    target_audio_path: Path,
+    interference_audio_path: Path,
+) -> dict[str, float]:
+    target_waveform, target_sample_rate = load_audio(target_audio_path)
+    interference_waveform, interference_sample_rate = load_audio(interference_audio_path)
+    target_power = stft_power(target_waveform, n_fft=1024, hop_length=256)
+    interference_power = stft_power(interference_waveform, n_fft=1024, hop_length=256)
+    target_logspec = np.log1p(target_power.mean(axis=0))
+    interference_logspec = np.log1p(interference_power.mean(axis=0))
+    if target_sample_rate != interference_sample_rate:
+        min_length = min(target_logspec.shape[0], interference_logspec.shape[0])
+        target_logspec = target_logspec[:min_length]
+        interference_logspec = interference_logspec[:min_length]
+    cosine = float(
+        np.dot(target_logspec, interference_logspec)
+        / ((np.linalg.norm(target_logspec) * np.linalg.norm(interference_logspec)) + 1e-12)
+    )
+    return {
+        "target_interference_logspec_cosine": cosine,
+    }
+
+
 def passes_optional_bounds(
     *,
     value: float,
@@ -274,12 +359,21 @@ def main() -> None:
             args.max_target_transient_presence_minus_mid_db_mean,
             args.min_target_transient_presence_share_mean,
             args.max_target_transient_presence_share_mean,
+            args.min_interference_transient_presence_minus_mid_db_mean,
+            args.max_interference_transient_presence_minus_mid_db_mean,
+            args.min_interference_transient_presence_share_mean,
+            args.max_interference_transient_presence_share_mean,
+            args.min_target_interference_logspec_cosine,
+            args.max_target_interference_logspec_cosine,
         ]
     )
+    use_derived_metrics = bool(args.include_derived_metrics) or use_transient_filters
 
     rows = load_jsonl(args.input_manifest)
     enriched_candidates: list[dict[str, Any]] = []
-    transient_cache: dict[str, dict[str, float]] = {}
+    target_transient_cache: dict[str, dict[str, float]] = {}
+    interference_transient_cache: dict[str, dict[str, float]] = {}
+    pair_metric_cache: dict[tuple[str, str], dict[str, float]] = {}
     for row in rows:
         if allowed_sample_ids and str(row["sample_id"]) not in allowed_sample_ids:
             continue
@@ -321,41 +415,94 @@ def main() -> None:
             continue
 
         transient_metrics: dict[str, float] = {}
-        if use_transient_filters:
+        if use_derived_metrics:
             target_audio_path = ROOT / str(metadata["output_paths"]["target_audio_path"])
-            transient_metrics = transient_cache.get(str(target_audio_path), {})
-            if not transient_metrics:
-                transient_metrics = build_target_transient_metrics(target_audio_path)
-                transient_cache[str(target_audio_path)] = transient_metrics
+            target_key = str(target_audio_path)
+            target_transient_metrics = target_transient_cache.get(target_key, {})
+            if not target_transient_metrics:
+                target_transient_metrics = build_target_transient_metrics(target_audio_path)
+                target_transient_cache[target_key] = target_transient_metrics
 
-            transient_checks = [
-                passes_optional_bounds(
-                    value=transient_metrics["target_transient_presence_minus_mid_db_mean"],
-                    min_value=args.min_target_transient_presence_minus_mid_db_mean,
-                    max_value=args.max_target_transient_presence_minus_mid_db_mean,
-                ),
-                passes_optional_bounds(
-                    value=transient_metrics["target_transient_presence_share_mean"],
-                    min_value=args.min_target_transient_presence_share_mean,
-                    max_value=args.max_target_transient_presence_share_mean,
-                ),
-            ]
-            active_checks = [
-                transient_checks[0]
-                for _ in [0]
-                if args.min_target_transient_presence_minus_mid_db_mean is not None
-                or args.max_target_transient_presence_minus_mid_db_mean is not None
-            ] + [
-                transient_checks[1]
-                for _ in [0]
-                if args.min_target_transient_presence_share_mean is not None
-                or args.max_target_transient_presence_share_mean is not None
-            ]
-            if active_checks:
-                if args.transient_filter_mode == "all" and not all(active_checks):
-                    continue
-                if args.transient_filter_mode == "any" and not any(active_checks):
-                    continue
+            interference_transient_metrics: dict[str, float] = {}
+            pair_metrics: dict[str, float] = {}
+            if first_layer is not None and first_layer.get("audio_path"):
+                interference_audio_path = ROOT / str(first_layer["audio_path"])
+                interference_key = str(interference_audio_path)
+                interference_transient_metrics = interference_transient_cache.get(interference_key, {})
+                if not interference_transient_metrics:
+                    interference_transient_metrics = build_interference_transient_metrics(interference_audio_path)
+                    interference_transient_cache[interference_key] = interference_transient_metrics
+                pair_key = (target_key, interference_key)
+                pair_metrics = pair_metric_cache.get(pair_key, {})
+                if not pair_metrics:
+                    pair_metrics = build_target_interference_pair_metrics(target_audio_path, interference_audio_path)
+                    pair_metric_cache[pair_key] = pair_metrics
+
+            transient_metrics = {
+                **target_transient_metrics,
+                **interference_transient_metrics,
+                **pair_metrics,
+            }
+
+            if use_transient_filters:
+                transient_checks = [
+                    passes_optional_bounds(
+                        value=transient_metrics["target_transient_presence_minus_mid_db_mean"],
+                        min_value=args.min_target_transient_presence_minus_mid_db_mean,
+                        max_value=args.max_target_transient_presence_minus_mid_db_mean,
+                    ),
+                    passes_optional_bounds(
+                        value=transient_metrics["target_transient_presence_share_mean"],
+                        min_value=args.min_target_transient_presence_share_mean,
+                        max_value=args.max_target_transient_presence_share_mean,
+                    ),
+                    passes_optional_bounds(
+                        value=transient_metrics.get("interference_transient_presence_minus_mid_db_mean", float("nan")),
+                        min_value=args.min_interference_transient_presence_minus_mid_db_mean,
+                        max_value=args.max_interference_transient_presence_minus_mid_db_mean,
+                    ),
+                    passes_optional_bounds(
+                        value=transient_metrics.get("interference_transient_presence_share_mean", float("nan")),
+                        min_value=args.min_interference_transient_presence_share_mean,
+                        max_value=args.max_interference_transient_presence_share_mean,
+                    ),
+                    passes_optional_bounds(
+                        value=transient_metrics.get("target_interference_logspec_cosine", float("nan")),
+                        min_value=args.min_target_interference_logspec_cosine,
+                        max_value=args.max_target_interference_logspec_cosine,
+                    ),
+                ]
+                active_checks = [
+                    transient_checks[0]
+                    for _ in [0]
+                    if args.min_target_transient_presence_minus_mid_db_mean is not None
+                    or args.max_target_transient_presence_minus_mid_db_mean is not None
+                ] + [
+                    transient_checks[1]
+                    for _ in [0]
+                    if args.min_target_transient_presence_share_mean is not None
+                    or args.max_target_transient_presence_share_mean is not None
+                ] + [
+                    transient_checks[2]
+                    for _ in [0]
+                    if args.min_interference_transient_presence_minus_mid_db_mean is not None
+                    or args.max_interference_transient_presence_minus_mid_db_mean is not None
+                ] + [
+                    transient_checks[3]
+                    for _ in [0]
+                    if args.min_interference_transient_presence_share_mean is not None
+                    or args.max_interference_transient_presence_share_mean is not None
+                ] + [
+                    transient_checks[4]
+                    for _ in [0]
+                    if args.min_target_interference_logspec_cosine is not None
+                    or args.max_target_interference_logspec_cosine is not None
+                ]
+                if active_checks:
+                    if args.transient_filter_mode == "all" and not all(active_checks):
+                        continue
+                    if args.transient_filter_mode == "any" and not any(active_checks):
+                        continue
 
         enriched_candidates.append(
             {
@@ -422,7 +569,18 @@ def main() -> None:
             "max_target_transient_presence_minus_mid_db_mean": args.max_target_transient_presence_minus_mid_db_mean,
             "min_target_transient_presence_share_mean": args.min_target_transient_presence_share_mean,
             "max_target_transient_presence_share_mean": args.max_target_transient_presence_share_mean,
+            "min_interference_transient_presence_minus_mid_db_mean": (
+                args.min_interference_transient_presence_minus_mid_db_mean
+            ),
+            "max_interference_transient_presence_minus_mid_db_mean": (
+                args.max_interference_transient_presence_minus_mid_db_mean
+            ),
+            "min_interference_transient_presence_share_mean": args.min_interference_transient_presence_share_mean,
+            "max_interference_transient_presence_share_mean": args.max_interference_transient_presence_share_mean,
+            "min_target_interference_logspec_cosine": args.min_target_interference_logspec_cosine,
+            "max_target_interference_logspec_cosine": args.max_target_interference_logspec_cosine,
             "transient_filter_mode": args.transient_filter_mode,
+            "include_derived_metrics": bool(args.include_derived_metrics),
         },
         "recipe_caps": recipe_caps,
         "selected_count": len(plain_rows),

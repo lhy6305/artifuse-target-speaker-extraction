@@ -23,6 +23,9 @@ class SyntheticSample:
     target_present_ratio: float
     target_transient_presence_minus_mid_db_mean: float | None
     target_transient_presence_share_mean: float | None
+    interference_transient_presence_minus_mid_db_mean: float | None
+    interference_transient_presence_share_mean: float | None
+    target_interference_logspec_cosine: float | None
 
 
 def _compute_overlap_ratio(metadata: dict[str, Any]) -> float:
@@ -94,6 +97,21 @@ class SyntheticTSEDataset(Dataset[dict[str, Any]]):
                     if row.get("target_transient_presence_share_mean") is not None
                     else None
                 ),
+                interference_transient_presence_minus_mid_db_mean=(
+                    float(row["interference_transient_presence_minus_mid_db_mean"])
+                    if row.get("interference_transient_presence_minus_mid_db_mean") is not None
+                    else None
+                ),
+                interference_transient_presence_share_mean=(
+                    float(row["interference_transient_presence_share_mean"])
+                    if row.get("interference_transient_presence_share_mean") is not None
+                    else None
+                ),
+                target_interference_logspec_cosine=(
+                    float(row["target_interference_logspec_cosine"])
+                    if row.get("target_interference_logspec_cosine") is not None
+                    else None
+                ),
             )
             for row in load_jsonl(manifest_path)
         ]
@@ -122,6 +140,21 @@ class SyntheticTSEDataset(Dataset[dict[str, Any]]):
             "target_transient_presence_share_mean": (
                 float(sample.target_transient_presence_share_mean)
                 if sample.target_transient_presence_share_mean is not None
+                else float("nan")
+            ),
+            "interference_transient_presence_minus_mid_db_mean": (
+                float(sample.interference_transient_presence_minus_mid_db_mean)
+                if sample.interference_transient_presence_minus_mid_db_mean is not None
+                else float("nan")
+            ),
+            "interference_transient_presence_share_mean": (
+                float(sample.interference_transient_presence_share_mean)
+                if sample.interference_transient_presence_share_mean is not None
+                else float("nan")
+            ),
+            "target_interference_logspec_cosine": (
+                float(sample.target_interference_logspec_cosine)
+                if sample.target_interference_logspec_cosine is not None
                 else float("nan")
             ),
             "overlap_ratio": _compute_overlap_ratio(metadata),
@@ -174,6 +207,18 @@ def synthetic_collate_fn(batch: list[dict[str, Any]]) -> dict[str, Any]:
         ),
         "target_transient_presence_share_means": torch.tensor(
             [item["target_transient_presence_share_mean"] for item in batch],
+            dtype=torch.float32,
+        ),
+        "interference_transient_presence_minus_mid_db_means": torch.tensor(
+            [item["interference_transient_presence_minus_mid_db_mean"] for item in batch],
+            dtype=torch.float32,
+        ),
+        "interference_transient_presence_share_means": torch.tensor(
+            [item["interference_transient_presence_share_mean"] for item in batch],
+            dtype=torch.float32,
+        ),
+        "target_interference_logspec_cosines": torch.tensor(
+            [item["target_interference_logspec_cosine"] for item in batch],
             dtype=torch.float32,
         ),
         "overlap_ratios": torch.tensor(

@@ -119,6 +119,42 @@ def add_selector_args(parser: argparse.ArgumentParser, prefix: str) -> None:
             type=float,
             default=None,
         )
+        parser.add_argument(
+            f"{flag_prefix}min-interference-transient-presence-minus-mid-db-mean",
+            dest=f"{attr_prefix}min_interference_transient_presence_minus_mid_db_mean",
+            type=float,
+            default=None,
+        )
+        parser.add_argument(
+            f"{flag_prefix}max-interference-transient-presence-minus-mid-db-mean",
+            dest=f"{attr_prefix}max_interference_transient_presence_minus_mid_db_mean",
+            type=float,
+            default=None,
+        )
+        parser.add_argument(
+            f"{flag_prefix}min-interference-transient-presence-share-mean",
+            dest=f"{attr_prefix}min_interference_transient_presence_share_mean",
+            type=float,
+            default=None,
+        )
+        parser.add_argument(
+            f"{flag_prefix}max-interference-transient-presence-share-mean",
+            dest=f"{attr_prefix}max_interference_transient_presence_share_mean",
+            type=float,
+            default=None,
+        )
+        parser.add_argument(
+            f"{flag_prefix}min-target-interference-logspec-cosine",
+            dest=f"{attr_prefix}min_target_interference_logspec_cosine",
+            type=float,
+            default=None,
+        )
+        parser.add_argument(
+            f"{flag_prefix}max-target-interference-logspec-cosine",
+            dest=f"{attr_prefix}max_target_interference_logspec_cosine",
+            type=float,
+            default=None,
+        )
 
 
 def set_seed(seed: int) -> None:
@@ -141,6 +177,9 @@ def move_batch_to_device(batch: dict, device: torch.device) -> dict:
         "target_present_ratios",
         "target_transient_presence_minus_mid_db_means",
         "target_transient_presence_share_means",
+        "interference_transient_presence_minus_mid_db_means",
+        "interference_transient_presence_share_means",
+        "target_interference_logspec_cosines",
         "overlap_ratios",
         "interference_gain_dbs",
     ]:
@@ -195,6 +234,12 @@ def build_loss_config(args: argparse.Namespace) -> dict[str, float]:
                 "max_target_transient_presence_minus_mid_db_mean",
                 "min_target_transient_presence_share_mean",
                 "max_target_transient_presence_share_mean",
+                "min_interference_transient_presence_minus_mid_db_mean",
+                "max_interference_transient_presence_minus_mid_db_mean",
+                "min_interference_transient_presence_share_mean",
+                "max_interference_transient_presence_share_mean",
+                "min_target_interference_logspec_cosine",
+                "max_target_interference_logspec_cosine",
             ):
                 attr_name = f"{attr_prefix}{suffix}"
                 loss_config[f"{config_prefix}{suffix}"] = getattr(args, attr_name)
