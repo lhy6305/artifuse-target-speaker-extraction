@@ -17,6 +17,8 @@ class LossBreakdown:
     reconstruction_extra_stft_l1: torch.Tensor
     sisdr_loss: torch.Tensor
     interference_extra_guard_sisdr_loss: torch.Tensor
+    interference_extra_base_align_l1: torch.Tensor
+    interference_extra_base_delta_projection_ratio: torch.Tensor
     sisdr_db: torch.Tensor
     transient_presence_l1: torch.Tensor
     transient_extra_presence_l1: torch.Tensor
@@ -265,6 +267,45 @@ def interference_projection_loss(
     return average_sample_losses(sample_losses, sample_weights, prediction)
 
 
+def base_delta_interference_projection_loss(
+    prediction: torch.Tensor,
+    reference_prediction: torch.Tensor,
+    mixture: torch.Tensor,
+    target: torch.Tensor,
+    lengths: torch.Tensor,
+    sample_weights: torch.Tensor | None = None,
+) -> torch.Tensor:
+    prediction, reference_prediction, lengths = align_waveforms(prediction, reference_prediction, lengths)
+    common_length = min(prediction.shape[-1], mixture.shape[-1], target.shape[-1])
+    prediction = prediction[..., :common_length]
+    reference_prediction = reference_prediction[..., :common_length]
+    target = target[..., :common_length]
+    mixture = mixture[..., :common_length]
+    lengths = torch.clamp(lengths, max=common_length)
+
+    eps = 1e-8
+    sample_losses: list[torch.Tensor] = []
+    for pred, ref_pred, mix, tgt, length in zip(prediction, reference_prediction, mixture, target, lengths):
+        length_int = int(length.item())
+        if length_int <= 0:
+            sample_losses.append(prediction.new_tensor(0.0))
+            continue
+
+        delta = pred[:length_int] - ref_pred[:length_int]
+        interference = mix[:length_int] - tgt[:length_int]
+        interference_energy = torch.sum(interference * interference)
+        if float(interference_energy.item()) <= eps:
+            sample_losses.append(prediction.new_tensor(0.0))
+            continue
+
+        projection_scale = torch.sum(delta * interference) / interference_energy.clamp_min(eps)
+        projection = projection_scale * interference
+        projection_ratio = torch.sum(projection * projection) / interference_energy.clamp_min(eps)
+        sample_losses.append(projection_ratio)
+
+    return average_sample_losses(sample_losses, sample_weights, prediction)
+
+
 def absent_interval_l1_loss(
     prediction: torch.Tensor,
     target: torch.Tensor,
@@ -371,6 +412,7 @@ def compute_losses(
     absent_intervals: list[list[dict[str, float]]],
     model,
     reconstruction_extra_prediction: torch.Tensor | None = None,
+    extra_prediction: torch.Tensor | None = None,
     reconstruction_sample_weights: torch.Tensor | None = None,
     reconstruction_extra_sample_weights: torch.Tensor | None = None,
     transient_sample_weights: torch.Tensor | None = None,
@@ -387,6 +429,8 @@ def compute_losses(
     reconstruction_extra_stft_weight: float = 0.0,
     sisdr_weight: float = 0.0,
     interference_extra_guard_sisdr_weight: float = 0.0,
+    interference_extra_base_align_weight: float = 0.0,
+    interference_extra_base_delta_projection_weight: float = 0.0,
     transient_weight: float = 0.0,
     transient_extra_weight: float = 0.0,
     interference_weight: float = 0.0,
@@ -404,6 +448,7 @@ def compute_losses(
     transient_ratio_weight: float = 0.5,
 ) -> LossBreakdown:
     reconstruction_extra_prediction = prediction if reconstruction_extra_prediction is None else reconstruction_extra_prediction
+    extra_prediction = prediction if extra_prediction is None else extra_prediction
     waveform_term = waveform_l1_loss(prediction, target, lengths)
     stft_term = stft_l1_loss(prediction, target, model)
     if reconstruction_sample_weights is None:
@@ -443,11 +488,25 @@ def compute_losses(
     sisdr_db = masked_sisdr(prediction, target, lengths, zero_mean=True)
     sisdr_term = -sisdr_db
     interference_extra_guard_sisdr_term = weighted_sisdr_loss(
-        prediction=prediction,
+        prediction=extra_prediction,
         target=target,
         lengths=lengths,
         sample_weights=interference_extra_sample_weights,
         zero_mean=True,
+    )
+    interference_extra_base_align_term = weighted_waveform_l1_loss(
+        prediction=extra_prediction,
+        target=prediction,
+        lengths=lengths,
+        sample_weights=interference_extra_sample_weights,
+    )
+    interference_extra_base_delta_projection_term = base_delta_interference_projection_loss(
+        prediction=extra_prediction,
+        reference_prediction=prediction,
+        mixture=mixture,
+        target=target,
+        lengths=lengths,
+        sample_weights=interference_extra_sample_weights,
     )
     transient_term = transient_presence_l1_loss(
         prediction=prediction,
@@ -465,7 +524,7 @@ def compute_losses(
         ratio_weight=transient_ratio_weight,
     )
     transient_extra_term = transient_presence_l1_loss(
-        prediction=prediction,
+        prediction=extra_prediction,
         target=target,
         lengths=lengths,
         model=model,
@@ -488,7 +547,7 @@ def compute_losses(
         mode=interference_loss_mode,
     )
     interference_extra_term = interference_projection_loss(
-        prediction=prediction,
+        prediction=extra_prediction,
         mixture=mixture,
         target=target,
         lengths=lengths,
@@ -504,7 +563,7 @@ def compute_losses(
         sample_weights=absent_sample_weights,
     )
     absent_extra_term = absent_interval_l1_loss(
-        prediction=prediction,
+        prediction=extra_prediction,
         target=target,
         lengths=lengths,
         absent_intervals=absent_intervals,
@@ -520,6 +579,8 @@ def compute_losses(
         + (reconstruction_extra_stft_term * reconstruction_extra_stft_weight)
         + (sisdr_term * sisdr_weight)
         + (interference_extra_guard_sisdr_term * interference_extra_guard_sisdr_weight)
+        + (interference_extra_base_align_term * interference_extra_base_align_weight)
+        + (interference_extra_base_delta_projection_term * interference_extra_base_delta_projection_weight)
         + (transient_term * transient_weight)
         + (transient_extra_term * transient_extra_weight)
         + (interference_term * interference_weight)
@@ -537,6 +598,8 @@ def compute_losses(
         reconstruction_extra_stft_l1=reconstruction_extra_stft_term,
         sisdr_loss=sisdr_term,
         interference_extra_guard_sisdr_loss=interference_extra_guard_sisdr_term,
+        interference_extra_base_align_l1=interference_extra_base_align_term,
+        interference_extra_base_delta_projection_ratio=interference_extra_base_delta_projection_term,
         sisdr_db=sisdr_db,
         transient_presence_l1=transient_term,
         transient_extra_presence_l1=transient_extra_term,

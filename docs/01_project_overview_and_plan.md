@@ -3332,6 +3332,323 @@
     - 而是：
       - 真正独立的 dual-head / branch-local decoder
       - 或训练图级别的更强语义解耦
+198. 已补 `dual-head / branch-local decoder` 的正式工程能力，并完成一轮 `v32 -> branch decoder` 最小 smoke；当前说明下一条已经不再是“补 plumbing”，而是可以直接开第一条正式 dual-head follow-up：
+  - 集中日报：
+    - `reports/daily/2026-03-20_v53_dual_head_branch_decoder_plumbing.md`
+  - 工程补充：
+    - `src/tse_prefix/models/stft_mask_baseline.py`
+      新增：
+      - `enable_branch_decoder_head`
+      - `reset_branch_decoder_from_base()`
+      - 启用后额外复制：
+        - `branch_decoder_temporal_model`
+        - `branch_decoder_mask_head`
+      - 推理输出改为：
+        - `estimated_waveform = branch decoder output`
+        - `estimated_waveform_base = shared base output`
+    - `scripts/train/train_stft_mask_baseline.py`
+      新增：
+      - `--model-enable-branch-decoder-head`
+      - 旧 checkpoint 初始化时允许缺失：
+        - `branch_decoder_temporal_model.*`
+        - `branch_decoder_mask_head.*`
+      - 若缺失则自动：
+        - `reset_branch_decoder_from_base()`
+  - smoke：
+    - 输出目录：
+      - `tmp/smoke_branch_decoder_v53`
+    - init：
+      - `v32`
+    - manifest：
+      - `proxy_v7 train / val`
+    - 仅训练：
+      - `branch_decoder_temporal_model`
+      - `branch_decoder_mask_head`
+    - `max_steps = 1`
+    - 结果：
+      - 运行通过
+      - `device = cuda`
+      - trainable parameter count：
+        - `2,169,601 / 4,537,218`
+        - `47.82%`
+      - `reconstruction_extra` selector 命中：
+        - train `1 / 1`
+        - val `8 / 8`
+  - 当前解释应更新为：
+    - 现在已经可以严谨地区分：
+      - “dual-head 方向本身是否成立”
+      - 与
+      - “之前只是 plumbing 没接通”
+    - 下一条默认不再继续补工程底座，
+      而是直接基于 `proxy_v7`
+      跑第一条正式 dual-head / branch-local decoder follow-up
+199. 已完成第一条正式 `dual-head / branch-local decoder` 候选：`v53 = dual-head + proxy_v7 reconstruction only`；结果说明 dual-head 本身不是没方向，`proxy_v7 / guodegang` 反而明显增强，但这时新分支实际上只吃到了 absent-side objective，friend-side guardrail 还没有真正回流到 branch decoder：
+  - 集中日报：
+    - `reports/daily/2026-03-20_v53_v54_dualdecoder_followup.md`
+  - `v53` 定义：
+    - checkpoint：
+      - `baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v53_v32_absent_dualdecoder_v7_wave_ft1`
+    - init：
+      - `v32`
+    - model：
+      - `enable_branch_decoder_head = true`
+    - 仅训练：
+      - `branch_decoder_temporal_model`
+      - `branch_decoder_mask_head`
+    - branch decoder 真正吃到的有效梯度：
+      - `reconstruction_extra(proxy_v7)`
+  - `v53` relative to `v19`：
+    - default `+0.117316 dB`
+    - exact `target_full = -0.875034 dB`
+    - `speech_leak_like (0004) = -0.104842 dB`
+    - `guodegang_anchor_120s = +0.296715 dB`
+    - `guodegang_absent_480s = +0.060516 dB`
+    - `proxy_v7 = +1.465092 dB`
+  - relative to `v32` gate：
+    - `overall_judgement = fail`
+    - `clear_fail_rules`：
+      - `exact_target_full_gain_floor`
+      - `speech_leak_like_gain_floor`
+  - 当前解释应更新为：
+    - `dual-head`
+      不是无效；
+    - `v53`
+      的主要问题不是结构没学到东西，
+      而是：
+      - branch decoder 当前只顾 absent / `guodegang`
+      - friend-side guardrail 还没真正接上
+200. 已把 `extra` 类 loss 真正路由到 `branch decoder`，并完成 `v54 = dual-head + proxy_v7 reconstruction + friend exact interference_extra`；结果说明这条 routing 现在已经接通，但把现有 `residual_projection_ratio` friend-side objective 接到 dual-head 上，并不会把它拉向 keep，反而会把 `proxy_v7 / guodegang` 与 friend-side failure 一起放大：
+  - 集中日报：
+    - `reports/daily/2026-03-20_v53_v54_dualdecoder_followup.md`
+  - 工程补充：
+    - `src/tse_prefix/pipeline/baseline_train.py`
+      新增：
+      - `extra_prediction`
+      - 让：
+        - `interference_extra_guard_sisdr`
+        - `transient_extra`
+        - `interference_extra`
+        - `absent_extra`
+        可独立吃 branch output
+    - `scripts/train/train_stft_mask_baseline.py`
+      新增：
+      - `resolve_branch_extra_prediction(outputs)`
+    - `scripts/eval/eval_stft_mask_baseline.py`
+      同步补齐相同 routing
+  - `v54` 定义：
+    - checkpoint：
+      - `baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v54_v32_absent_dualdecoder_v7_wave_exactguard_ft1`
+    - 相比 `v53`
+      只额外补：
+      - `interference_extra_focus_sample_ids = v30 exact 10 ids`
+    - 且已确认 `interference_extra` 命中：
+      - train `7 / 129`
+      - val `3 / 37`
+  - `v54` relative to `v19`：
+    - default `+0.123281 dB`
+    - exact `target_full = -1.349682 dB`
+    - `speech_leak_like (0004) = -0.128521 dB`
+    - `guodegang_anchor_120s = +0.465969 dB`
+    - `guodegang_absent_480s = +0.097155 dB`
+    - `proxy_v7 = +2.016788 dB`
+  - relative to `v32` gate：
+    - `overall_judgement = fail`
+    - `clear_fail_rules`：
+      - `exact_target_full_gain_floor`
+      - `speech_leak_like_gain_floor`
+ - 当前解释应更新为：
+    - 现在 dual-head 的缺口
+      已经不再是：
+      - extra routing 没接上
+    - 而是：
+      - 现有 friend-side `interference_extra residual_projection_ratio`
+        即便接到 branch decoder，
+        也不会形成有效对冲；
+      - 下一条默认不再扫这条 objective 在 dual-head 上的权重，
+        而应改成更贴近
+        `keep target_full / protect speech_leak_like`
+        的 branch-local protect objective
+201. 已完成 `v55 = dual-head + proxy_v7 reconstruction + exact SI-SDR guard`；结果说明把 exact-family `target-preservation` guard 直接挂到 dual-head 上，仍会把这条线推成 exact-family overfit，而不是 keep 方向的真实 friend-side protect：
+  - 集中日报：
+    - `reports/daily/2026-03-20_v55_v58_dualdecoder_protect_objective_followup.md`
+  - `v55` 定义：
+    - checkpoint：
+      - `baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v55_v32_absent_dualdecoder_v7_wave_exactsisdrguard_ft1`
+    - init：
+      - `v32`
+    - model：
+      - `enable_branch_decoder_head = true`
+    - 仅训练：
+      - `branch_decoder_temporal_model`
+      - `branch_decoder_mask_head`
+    - absent-side：
+      - `reconstruction_extra_waveform_weight = 0.005`
+      - `focus = proxy_v7`
+    - friend-side protect：
+      - `interference_extra_guard_sisdr_weight = 0.0002`
+      - `focus = v30 exact 10 ids`
+    - 不启用：
+      - `interference_extra_weight`
+  - `v55` relative to `v19`：
+    - default `+0.126371 dB`
+    - exact proxy overall `+0.394224 dB`
+    - near-real speech probe overall `-0.140416 dB`
+    - `guodegang_anchor_120s = -0.494584 dB`
+    - `guodegang_absent_480s = -0.157483 dB`
+    - `proxy_v7 = +1.859823 dB`
+  - relative to `v32` gate：
+    - `overall_judgement = fail`
+    - failed rules：
+      - `speech_probe_overall_floor`
+      - `speech_leak_like_gain_floor`
+      - `guodegang_anchor_floor`
+      - `guodegang_absent_floor`
+  - 当前解释应更新为：
+    - 对 dual-head 来说，
+      单纯 exact-family `SI-SDR guard`
+      仍然更像 exact overfit signal；
+    - 它不应继续作为默认的 branch-local protect objective
+202. 已补入 `branch-to-base align protect objective`，并确认 `v56` 是一次无效 plumbing 轮次；这次问题不在模型结论，而在 selector 激活条件没有把新 weight 算进去：
+  - 集中日报：
+    - `reports/daily/2026-03-20_v55_v58_dualdecoder_protect_objective_followup.md`
+  - 工程补充：
+    - `src/tse_prefix/pipeline/baseline_train.py`
+      新增：
+      - `interference_extra_base_align_l1`
+      - `interference_extra_base_align_weight`
+      - 语义是：
+        - 只在 `interference_extra`
+          命中的样本上，
+          约束 `extra_prediction`
+          不要偏离 frozen base `prediction`
+    - `scripts/train/train_stft_mask_baseline.py`
+      新增：
+      - `--loss-interference-extra-base-align-weight`
+      - 并把
+        `interference_extra_base_align_weight`
+        补入 `interference` 分支的 `extra_weight_keys`
+    - `scripts/eval/eval_stft_mask_baseline.py`
+      同步补：
+      - `interference_extra_base_align_l1`
+        指标落盘
+      - `interference_extra_base_align_weight`
+        激活 `interference_extra` selector
+  - `v56` 说明：
+    - 首次 `base-align` 版本虽然传了：
+      - `--loss-interference-extra-base-align-weight`
+      - `--loss-interference-extra-focus-sample-ids-file`
+    - 但当时 selector 激活逻辑还没把
+      `interference_extra_base_align_weight`
+      算进 `interference_extra`
+    - 因而：
+      - `v56`
+        记为无效轮次，
+        不纳入实验结论；
+      - 有效结论从 `v57`
+        开始计
+203. 已完成 `v57 / v58` 两条 dual-head `base-align` protect follow-up；结果说明这条 primitive 本身有信号，但继续扫同一条 weight 已经不是默认优先级：
+  - 集中日报：
+    - `reports/daily/2026-03-20_v55_v58_dualdecoder_protect_objective_followup.md`
+  - `v57` 定义：
+    - checkpoint：
+      - `baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v57_v32_absent_dualdecoder_v7_wave_basealign_ft1`
+    - friend-side protect：
+      - `interference_extra_base_align_weight = 0.02`
+      - `focus = v30 exact 10 ids`
+    - selector 命中：
+      - train `7 / 129`
+      - val `3 / 37`
+  - `v57` relative to `v19`：
+    - default `+0.032309 dB`
+    - exact `target_full = -0.218561 dB`
+    - near-real speech probe overall `-0.046852 dB`
+    - `speech_leak_like (0004) = -0.047720 dB`
+    - `guodegang_anchor_120s = -0.052475 dB`
+    - `guodegang_absent_480s = -0.000021 dB`
+    - `proxy_v7 = -1.498264 dB`
+  - relative to `v32` gate：
+    - `overall_judgement = near_tie`
+    - 唯一 near-tie rule：
+      - `speech_leak_like_gain_floor`
+        只差 `-0.006040 dB`
+  - `v58` 定义：
+    - checkpoint：
+      - `baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v58_v32_absent_dualdecoder_v7_wave_basealign_w005_ft1`
+    - 相比 `v57` 仅改：
+      - `interference_extra_base_align_weight = 0.005`
+  - `v58` relative to `v19`：
+    - default `+0.091565 dB`
+    - exact `target_full = -0.250669 dB`
+    - near-real speech probe overall `-0.053238 dB`
+    - `speech_leak_like (0004) = -0.076592 dB`
+    - `guodegang_anchor_120s = +0.061275 dB`
+    - `guodegang_absent_480s = +0.027740 dB`
+    - `proxy_v7 = +0.042581 dB`
+  - relative to `v32` gate：
+    - `overall_judgement = fail`
+    - 唯一 clear fail：
+      - `speech_leak_like_gain_floor`
+  - 当前解释应进一步收紧为：
+    - `base-align`
+      这条 protect primitive
+      是对题的；
+    - 但：
+      - `v57`
+        会保护过头，
+        直接压塌 `proxy_v7`
+      - `v58`
+        一放轻又保不住
+        `speech_leak_like (0004)`
+    - 因而当前默认下一步应改成：
+      - 继续保留
+        dual-head plumbing、`proxy_v7`、`v32` frozen base anchor
+      - 但不再继续扫
+        `interference_extra_base_align_weight`
+      - 而是优先改成更直接面向
+        `speech_leak_like (0004)`
+        的 branch-local protect objective
+      - 当前工程上已补好一个可直接试验的候选 primitive：
+        - `interference_extra_base_delta_projection_weight`
+        - 语义是：
+          - 只压 branch 相对 frozen base 的 interference-like delta
+          - 而不是把整段 branch 输出都强行拉回 base
+204. 已把下一条 dual-head protect candidate 的工程入口补齐，并完成 1-step smoke；当前已可直接测试 `interference_extra_base_delta_projection_weight`，不需要再担心 selector / summary plumbing：
+  - 集中日报：
+    - `reports/daily/2026-03-20_dualdecoder_base_delta_projection_smoke.md`
+  - 工程补充：
+    - `src/tse_prefix/pipeline/baseline_train.py`
+      新增：
+      - `base_delta_interference_projection_loss(...)`
+      - `interference_extra_base_delta_projection_weight`
+      - `interference_extra_base_delta_projection_ratio`
+    - `scripts/train/train_stft_mask_baseline.py`
+      新增：
+      - `--loss-interference-extra-base-delta-projection-weight`
+      - 并补齐 `interference_extra` selector 激活
+    - `scripts/eval/eval_stft_mask_baseline.py`
+      同步补：
+      - summary / pattern / recipe / ratio bucket
+        的新指标落盘
+  - smoke：
+    - 输出目录：
+      - `tmp/smoke_branch_decoder_base_delta_projection`
+    - init：
+      - `v32`
+    - `max_steps = 1`
+    - 已确认：
+      - `interference_extra` selector
+        train `1 / 4`
+        val `3 / 37`
+      - 新指标已落盘到 `train_summary.json`
+  - 当前解释应补充为：
+    - 下一条 dual-head protect
+      已不再缺工程底座；
+    - 现在真正待验证的是：
+      - 这条更局部的 delta-interference protect
+        是否比 exact-family `base-align`
+        更能兼顾
+        `proxy_v7`
+        与 `speech_leak_like (0004)`
 
 ## 9. 文档入口
 
@@ -3400,5 +3717,11 @@
 - 本轮 `v39` absent-recon-wave / `v5 cleancarve` metadata carve-out follow-up：`reports/daily/2026-03-19_v39_absent_recon_cleancarve_followup.md`
 - 本轮 `v40` absent cleancarve no-exact-overlap 预备：`reports/daily/2026-03-19_v40_absent_cleancarve_noexactoverlap_prep.md`
 - 本轮 `v40 / v41` absent-side follow-up 结果：`reports/daily/2026-03-19_v40_v41_absent_followup_results.md`
+- 本轮 `v49 / v50` adapter residual output follow-up：`reports/daily/2026-03-20_v49_v50_adaptermask_followup.md`
+- 本轮 `v51 / v52` adapter conditioning and temporal follow-up：`reports/daily/2026-03-20_v51_v52_adapter_conditioning_and_temporal_followup.md`
+- 本轮 `v53` dual-head / branch-local decoder plumbing：`reports/daily/2026-03-20_v53_dual_head_branch_decoder_plumbing.md`
+- 本轮 `v53 / v54` dual-head follow-up：`reports/daily/2026-03-20_v53_v54_dualdecoder_followup.md`
+- 本轮 `v55 - v58` dual-head protect-objective follow-up：`reports/daily/2026-03-20_v55_v58_dualdecoder_protect_objective_followup.md`
+- 本轮 dual-head `base-delta-interference projection` smoke：`reports/daily/2026-03-20_dualdecoder_base_delta_projection_smoke.md`
 - 本轮仓库与 `.gitignore` 审计：`reports/daily/2026-03-18_repo_gitignore_audit.md`
 - 本轮全仓库评估总结：`reports/daily/2026-03-17_repo_evaluation_summary.md`

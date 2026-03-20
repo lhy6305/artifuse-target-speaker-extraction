@@ -89,6 +89,11 @@ def parse_args() -> argparse.Namespace:
         help="Enable a zero-init residual mask adapter head on top of the shared encoder output.",
     )
     parser.add_argument(
+        "--model-enable-branch-decoder-head",
+        action="store_true",
+        help="Enable a second decoder branch with its own temporal model and mask head.",
+    )
+    parser.add_argument(
         "--model-enable-adapter-temporal-model",
         action="store_true",
         help="Add a dedicated bidirectional GRU inside the adapter branch before adapter mask prediction.",
@@ -104,6 +109,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--loss-stft-weight", type=float, default=0.5)
     parser.add_argument("--loss-sisdr-weight", type=float, default=0.0)
     parser.add_argument("--loss-interference-extra-guard-sisdr-weight", type=float, default=0.0)
+    parser.add_argument("--loss-interference-extra-base-align-weight", type=float, default=0.0)
+    parser.add_argument("--loss-interference-extra-base-delta-projection-weight", type=float, default=0.0)
     parser.add_argument("--loss-transient-weight", type=float, default=0.0)
     parser.add_argument("--loss-transient-extra-weight", type=float, default=0.0)
     parser.add_argument("--loss-interference-weight", type=float, default=0.0)
@@ -253,6 +260,7 @@ def build_model_config(args: argparse.Namespace) -> dict[str, int]:
         "gru_layers": args.model_gru_layers,
         "conditioning_mode": args.model_conditioning_mode,
         "enable_adapter_mask_head": args.model_enable_adapter_mask_head,
+        "enable_branch_decoder_head": args.model_enable_branch_decoder_head,
         "enable_adapter_temporal_model": args.model_enable_adapter_temporal_model,
         "adapter_gru_layers": args.model_adapter_gru_layers,
         "adapter_conditioning_mode": args.model_adapter_conditioning_mode,
@@ -282,6 +290,10 @@ def build_loss_config(args: argparse.Namespace) -> dict[str, float]:
         "reconstruction_extra_stft_weight": args.loss_reconstruction_extra_stft_weight,
         "sisdr_weight": args.loss_sisdr_weight,
         "interference_extra_guard_sisdr_weight": args.loss_interference_extra_guard_sisdr_weight,
+        "interference_extra_base_align_weight": args.loss_interference_extra_base_align_weight,
+        "interference_extra_base_delta_projection_weight": (
+            args.loss_interference_extra_base_delta_projection_weight
+        ),
         "transient_weight": args.loss_transient_weight,
         "transient_extra_weight": args.loss_transient_extra_weight,
         "interference_weight": args.loss_interference_weight,
@@ -340,6 +352,12 @@ def build_compute_loss_kwargs(loss_config: dict) -> dict:
     }
 
 
+def resolve_branch_extra_prediction(outputs: dict[str, torch.Tensor]) -> torch.Tensor | None:
+    if outputs.get("branch_decoder_mask") is not None:
+        return outputs["estimated_waveform"]
+    return None
+
+
 def resolve_selector_sample_weights(
     batch: dict,
     device: torch.device,
@@ -394,6 +412,8 @@ def serialize_repo_path(path: Path | None) -> str | None:
 def load_model_state_dict_for_init(model: nn.Module, checkpoint_state_dict: dict[str, torch.Tensor]) -> None:
     missing_keys, unexpected_keys = model.load_state_dict(checkpoint_state_dict, strict=False)
     allowed_missing_prefixes = (
+        "branch_decoder_temporal_model.",
+        "branch_decoder_mask_head.",
         "adapter_mask_head.",
         "adapter_condition_proj.",
         "adapter_condition_scale.",
@@ -408,6 +428,8 @@ def load_model_state_dict_for_init(model: nn.Module, checkpoint_state_dict: dict
             "Unexpected state-dict mismatch when loading init checkpoint: "
             f"missing={disallowed_missing}, unexpected={unexpected_keys}"
         )
+    if any(key.startswith("branch_decoder_") for key in missing_keys) and hasattr(model, "reset_branch_decoder_from_base"):
+        model.reset_branch_decoder_from_base()
 
 
 def _matches_module_prefix(parameter_name: str, module_prefix: str) -> bool:
@@ -489,6 +511,8 @@ def evaluate(
     total_reconstruction_extra_stft = 0.0
     total_sisdr_loss = 0.0
     total_interference_extra_guard_sisdr_loss = 0.0
+    total_interference_extra_base_align_l1 = 0.0
+    total_interference_extra_base_delta_projection_ratio = 0.0
     total_sisdr_db = 0.0
     total_transient = 0.0
     total_transient_extra = 0.0
@@ -544,7 +568,12 @@ def evaluate(
                     device=device,
                     loss_config=loss_config,
                     prefix="interference",
-                    extra_weight_keys=("interference_extra_weight", "interference_extra_guard_sisdr_weight"),
+                    extra_weight_keys=(
+                        "interference_extra_weight",
+                        "interference_extra_guard_sisdr_weight",
+                        "interference_extra_base_align_weight",
+                        "interference_extra_base_delta_projection_weight",
+                    ),
                 )
             )
             absent_sample_weights, absent_extra_sample_weights, absent_union_sample_weights = (
@@ -573,6 +602,7 @@ def evaluate(
             losses = compute_losses(
                 prediction=outputs.get("estimated_waveform_base", outputs["estimated_waveform"]),
                 reconstruction_extra_prediction=outputs["estimated_waveform"],
+                extra_prediction=resolve_branch_extra_prediction(outputs),
                 mixture=batch["mixture"],
                 target=batch["target"],
                 lengths=batch["target_lengths"],
@@ -597,6 +627,10 @@ def evaluate(
             total_reconstruction_extra_stft += float(losses.reconstruction_extra_stft_l1.item())
             total_sisdr_loss += float(losses.sisdr_loss.item())
             total_interference_extra_guard_sisdr_loss += float(losses.interference_extra_guard_sisdr_loss.item())
+            total_interference_extra_base_align_l1 += float(losses.interference_extra_base_align_l1.item())
+            total_interference_extra_base_delta_projection_ratio += float(
+                losses.interference_extra_base_delta_projection_ratio.item()
+            )
             total_sisdr_db += float(losses.sisdr_db.item())
             total_transient += float(losses.transient_presence_l1.item())
             total_transient_extra += float(losses.transient_extra_presence_l1.item())
@@ -616,6 +650,8 @@ def evaluate(
             "reconstruction_extra_stft_l1": 0.0,
             "sisdr_loss": 0.0,
             "interference_extra_guard_sisdr_loss": 0.0,
+            "interference_extra_base_align_l1": 0.0,
+            "interference_extra_base_delta_projection_ratio": 0.0,
             "sisdr_db": 0.0,
             "transient_presence_l1": 0.0,
             "transient_extra_presence_l1": 0.0,
@@ -635,6 +671,10 @@ def evaluate(
             "reconstruction_extra_stft_l1": total_reconstruction_extra_stft / batch_count,
             "sisdr_loss": total_sisdr_loss / batch_count,
             "interference_extra_guard_sisdr_loss": total_interference_extra_guard_sisdr_loss / batch_count,
+            "interference_extra_base_align_l1": total_interference_extra_base_align_l1 / batch_count,
+            "interference_extra_base_delta_projection_ratio": (
+                total_interference_extra_base_delta_projection_ratio / batch_count
+            ),
             "sisdr_db": total_sisdr_db / batch_count,
             "transient_presence_l1": total_transient / batch_count,
             "transient_extra_presence_l1": total_transient_extra / batch_count,
@@ -728,6 +768,8 @@ def main() -> None:
         epoch_reconstruction_extra_stft = 0.0
         epoch_sisdr_loss = 0.0
         epoch_interference_extra_guard_sisdr_loss = 0.0
+        epoch_interference_extra_base_align_l1 = 0.0
+        epoch_interference_extra_base_delta_projection_ratio = 0.0
         epoch_sisdr_db = 0.0
         epoch_transient = 0.0
         epoch_transient_extra = 0.0
@@ -782,7 +824,12 @@ def main() -> None:
                     device=device,
                     loss_config=loss_config,
                     prefix="interference",
-                    extra_weight_keys=("interference_extra_weight", "interference_extra_guard_sisdr_weight"),
+                    extra_weight_keys=(
+                        "interference_extra_weight",
+                        "interference_extra_guard_sisdr_weight",
+                        "interference_extra_base_align_weight",
+                        "interference_extra_base_delta_projection_weight",
+                    ),
                 )
             )
             absent_sample_weights, absent_extra_sample_weights, absent_union_sample_weights = (
@@ -811,6 +858,7 @@ def main() -> None:
             losses = compute_losses(
                 prediction=outputs.get("estimated_waveform_base", outputs["estimated_waveform"]),
                 reconstruction_extra_prediction=outputs["estimated_waveform"],
+                extra_prediction=resolve_branch_extra_prediction(outputs),
                 mixture=batch["mixture"],
                 target=batch["target"],
                 lengths=batch["target_lengths"],
@@ -844,6 +892,10 @@ def main() -> None:
             epoch_reconstruction_extra_stft += float(losses.reconstruction_extra_stft_l1.item())
             epoch_sisdr_loss += float(losses.sisdr_loss.item())
             epoch_interference_extra_guard_sisdr_loss += float(losses.interference_extra_guard_sisdr_loss.item())
+            epoch_interference_extra_base_align_l1 += float(losses.interference_extra_base_align_l1.item())
+            epoch_interference_extra_base_delta_projection_ratio += float(
+                losses.interference_extra_base_delta_projection_ratio.item()
+            )
             epoch_sisdr_db += float(losses.sisdr_db.item())
             epoch_transient += float(losses.transient_presence_l1.item())
             epoch_transient_extra += float(losses.transient_extra_presence_l1.item())
@@ -874,6 +926,12 @@ def main() -> None:
                             "sisdr_loss": round(float(losses.sisdr_loss.item()), 6),
                             "interference_extra_guard_sisdr_loss": round(
                                 float(losses.interference_extra_guard_sisdr_loss.item()), 6
+                            ),
+                            "interference_extra_base_align_l1": round(
+                                float(losses.interference_extra_base_align_l1.item()), 6
+                            ),
+                            "interference_extra_base_delta_projection_ratio": round(
+                                float(losses.interference_extra_base_delta_projection_ratio.item()), 6
                             ),
                             "sisdr_db": round(float(losses.sisdr_db.item()), 6),
                             "transient_presence_l1": round(float(losses.transient_presence_l1.item()), 6),
@@ -908,6 +966,10 @@ def main() -> None:
             "reconstruction_extra_stft_l1": epoch_reconstruction_extra_stft / max(1, step_count),
             "sisdr_loss": epoch_sisdr_loss / max(1, step_count),
             "interference_extra_guard_sisdr_loss": epoch_interference_extra_guard_sisdr_loss / max(1, step_count),
+            "interference_extra_base_align_l1": epoch_interference_extra_base_align_l1 / max(1, step_count),
+            "interference_extra_base_delta_projection_ratio": (
+                epoch_interference_extra_base_delta_projection_ratio / max(1, step_count)
+            ),
             "sisdr_db": epoch_sisdr_db / max(1, step_count),
             "transient_presence_l1": epoch_transient / max(1, step_count),
             "transient_extra_presence_l1": epoch_transient_extra / max(1, step_count),
@@ -943,6 +1005,10 @@ def main() -> None:
                 "train_reconstruction_extra_stft_l1": train_metrics["reconstruction_extra_stft_l1"],
                 "train_sisdr_loss": train_metrics["sisdr_loss"],
                 "train_interference_extra_guard_sisdr_loss": train_metrics["interference_extra_guard_sisdr_loss"],
+                "train_interference_extra_base_align_l1": train_metrics["interference_extra_base_align_l1"],
+                "train_interference_extra_base_delta_projection_ratio": (
+                    train_metrics["interference_extra_base_delta_projection_ratio"]
+                ),
                 "train_sisdr_db": train_metrics["sisdr_db"],
                 "train_transient_presence_l1": train_metrics["transient_presence_l1"],
                 "train_transient_extra_presence_l1": train_metrics["transient_extra_presence_l1"],
@@ -960,6 +1026,10 @@ def main() -> None:
                 "val_reconstruction_extra_stft_l1": val_metrics["reconstruction_extra_stft_l1"],
                 "val_sisdr_loss": val_metrics["sisdr_loss"],
                 "val_interference_extra_guard_sisdr_loss": val_metrics["interference_extra_guard_sisdr_loss"],
+                "val_interference_extra_base_align_l1": val_metrics["interference_extra_base_align_l1"],
+                "val_interference_extra_base_delta_projection_ratio": (
+                    val_metrics["interference_extra_base_delta_projection_ratio"]
+                ),
                 "val_sisdr_db": val_metrics["sisdr_db"],
                 "val_transient_presence_l1": val_metrics["transient_presence_l1"],
                 "val_transient_extra_presence_l1": val_metrics["transient_extra_presence_l1"],

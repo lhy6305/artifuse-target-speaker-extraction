@@ -4807,3 +4807,348 @@
    - “adapter line has been structurally pressure-tested”
    而不是：
    - “这条 adapter 再堆一点容量也许就够了”。
+
+### 116. 真正的 dual-head / branch-local decoder 若从旧 checkpoint 起步，却不先复制 base decoder 权重，实验会被“随机新头”噪声污染
+
+现象：
+
+- 当前已正式补入：
+  - `enable_branch_decoder_head`
+  - `branch_decoder_temporal_model`
+  - `branch_decoder_mask_head`
+- 这条线的目标是：
+  - 给 absent-side 一套真正独立的 decoder；
+  - 不再只是 shared path 上叠 residual branch。
+- 但如果直接从旧 checkpoint
+  `strict=False` 加载后就开跑，
+  新 branch decoder
+  会保留随机初始化；
+- 这样第一条 dual-head 实验
+  就不再是：
+  - “从 `v32` 等价起步，只让 branch-local decoder 学增量”；
+  而会混进：
+  - “随机新头本身带来的大幅 default / proxy 扰动”。
+
+处理：
+
+- 已在：
+  - `src/tse_prefix/models/stft_mask_baseline.py`
+    增加：
+    - `reset_branch_decoder_from_base()`
+- 已在：
+  - `scripts/train/train_stft_mask_baseline.py`
+    增加：
+    - `--model-enable-branch-decoder-head`
+    - 旧 checkpoint 初始化时允许缺失：
+      - `branch_decoder_temporal_model.*`
+      - `branch_decoder_mask_head.*`
+    - 若缺失则自动：
+      - `reset_branch_decoder_from_base()`
+- 并已用：
+  - `v32 -> tmp/smoke_branch_decoder_v53`
+    跑过一轮 `max_steps = 1` smoke，
+    确认旧 checkpoint 兼容、
+    branch decoder 自举初始化、
+    以及 `reconstruction_extra` 路由都正常。
+
+结果：
+
+- 现在第一条 dual-head follow-up
+  可以默认解释成：
+  - 与旧 base decoder 同起点；
+  - 差异主要来自 branch-local decoder 的后续更新；
+- 不再把“随机新头初始偏差”
+  误读成：
+  - dual-head 方向本身失败
+  - 或 dual-head 一上来就明显伤 default。
+
+影响：
+
+1. 后续任何 `dual-head / branch-local decoder` 候选，
+   若是从旧 checkpoint warm-start，
+   都应显式确认：
+   - branch decoder 是否已从 base decoder 自举复制。
+2. 若某轮 dual-head 结果很差，
+   先排除：
+   - 是训练方向错了；
+   还是：
+   - 新头其实根本没按 base 权重起步。
+3. `tmp/smoke_branch_decoder_v53/train_summary.json`
+   应视为这条 plumbing 已接通的最低证据，
+   后续不再重复怀疑：
+   - “是不是工程根本没接好”。 
+
+### 117. 对 dual-head 分支，如果 extra 类 loss 仍默认挂在 frozen base output 上，新分支就会只吃到 absent-side reconstruction，friend-side guardrail 根本不会真正回流
+
+现象：
+
+- 本轮第一条正式 dual-head 候选：
+  - `v53 = dual-head + proxy_v7 reconstruction only`
+- 训练配置表面上仍保留了：
+  - `transient_weight`
+  - `interference_weight`
+  - `interference_extra_weight`
+  - `absent_weight`
+- 但在 `v53` 当时的训练图里：
+  - base losses 继续看 frozen `estimated_waveform_base`
+  - branch decoder 只通过：
+    - `reconstruction_extra_prediction = estimated_waveform`
+    收梯度
+- 结果是：
+  - `proxy_v7 = +1.465092 dB`
+  - `guodegang_anchor = +0.296715 dB`
+  - `guodegang_absent = +0.060516 dB`
+  都明显增强；
+  - 但 friend-side 仍 clear fail：
+    - exact `target_full = -0.875034 dB`
+    - `speech_leak_like (0004) = -0.104842 dB`
+
+处理：
+
+- 已在：
+  - `src/tse_prefix/pipeline/baseline_train.py`
+    新增：
+    - `extra_prediction`
+- 已在：
+  - `scripts/train/train_stft_mask_baseline.py`
+  - `scripts/eval/eval_stft_mask_baseline.py`
+    补入：
+    - `resolve_branch_extra_prediction(outputs)`
+
+结果：
+
+- 现在可以明确区分：
+  - `v53`
+    是“friend-side extra guardrail 实际没接到 dual-head”
+  - 而不是：
+    - dual-head 本身完全没有方向
+
+影响：
+
+1. 以后只要 trainable prefixes
+   只剩 branch-local decoder，
+   就不能再默认认为：
+   - base loss 配着 extra weight
+     就已经在约束新分支。
+2. 判断 dual-head 失败前，
+   先核对：
+   - 这条分支到底真正吃到了哪些 loss。
+3. `v53`
+   应记成：
+   - “single-sided absent training on dual-head”
+   而不是：
+   - “dual-head fully tested and failed”。
+
+### 118. 即使把现有 friend-side `interference_extra residual_projection_ratio` 真正接到 dual-head，上面的冲突也不会自动变成有效对冲；`v54` 说明它反而会把 absent-side 收益和 friend-side 回退一起放大
+
+现象：
+
+- 本轮在修好 routing 后继续跑了：
+  - `v54 = dual-head + proxy_v7 reconstruction + friend exact interference_extra`
+- 并确认：
+  - `interference_extra`
+    真正命中 branch decoder：
+    - train `7 / 129`
+    - val `3 / 37`
+- 但相对 `v53`：
+  - `proxy_v7`
+    继续增强：
+    - `+1.465092 -> +2.016788`
+  - `guodegang_anchor`
+    继续增强：
+    - `+0.296715 -> +0.465969`
+  - `guodegang_absent`
+    继续增强：
+    - `+0.060516 -> +0.097155`
+  - 同时 friend-side 更差：
+    - exact `target_full`
+      `-0.875034 -> -1.349682`
+    - `speech_leak_like (0004)`
+      `-0.104842 -> -0.128521`
+
+处理：
+
+- 已把 `v53 / v54`
+  的训练、compare、gate 与解释集中落盘到：
+  - `reports/daily/2026-03-20_v53_v54_dualdecoder_followup.md`
+
+结果：
+
+- 当前 dual-head 的主要缺口
+  已不再是：
+  - extra routing 没接上
+- 而是：
+  - 现有这条 friend-side
+    `residual_projection_ratio`
+    objective
+    即便接到 branch decoder，
+    也不会形成 keep 方向的对冲；
+  - 它和 absent-side `proxy_v7 reconstruction`
+    在这条新分支上，
+    更像同向强化，
+    不是互相制衡。
+
+影响：
+
+1. 下一条 dual-head follow-up
+   默认不再扫：
+   - 同一条 `interference_extra residual_projection_ratio`
+     的权重；
+   - 或继续机械复用同一批 `v30 exact 10 ids`
+     当 protect objective。
+2. 后续若继续保留 dual-head，
+   friend-side protect objective
+   应改成更贴近：
+   - `keep target_full`
+   - `protect speech_leak_like`
+   的 branch-local 约束，
+   而不是再把当前 residual extra
+   当默认答案。
+
+### 119. 对 dual-head 来说，exact-family `SI-SDR guard` 依然很容易把训练推成 exact overfit；`v55` 证明“exact 更好”并不等于 near-real protect 真成立
+
+现象：
+
+- 本轮在 dual-head 上测试了：
+  - `v55 = dual-head + proxy_v7 reconstruction + exact SI-SDR guard`
+- relative to `v19`：
+  - default `+0.126371 dB`
+  - exact proxy overall `+0.394224 dB`
+  - `proxy_v7 = +1.859823 dB`
+- 但 near-real 明显转负：
+  - speech probe overall `-0.140416 dB`
+  - `guodegang_anchor = -0.494584 dB`
+  - `guodegang_absent = -0.157483 dB`
+
+影响：
+
+- 如果只看到：
+  - exact family 变正
+  - `proxy_v7` 继续变强
+  很容易误以为 dual-head protect objective 已经更接近 keep。
+- 实际上这更像：
+  - exact-family overfit
+  - 而不是 friend-side / near-real protect 真正成立。
+
+处理：
+
+- 已把 `v55`
+  的训练、compare、gate 与解释集中落盘到：
+  - `reports/daily/2026-03-20_v55_v58_dualdecoder_protect_objective_followup.md`
+
+后续要求：
+
+1. 后续 dual-head protect objective 不能把 exact-family 变正自动当作放行理由。
+2. 若某条 protect objective 把 exact / `proxy_v7` 一起推强，但 `guodegang` 或 near-real speech 明显转负，应直接判成 overfit 型失败。
+3. 对这条线，默认不再继续扫 exact `SI-SDR guard` 的小权重变体。
+
+### 120. 新增 extra-only protect weight 时，如果 selector 激活逻辑没把它算进 `extra_weight_keys`，实验会静默失效；`v56` 就属于这种无效轮次
+
+现象：
+
+- 首次跑 dual-head `base-align` 版本时，
+  训练命令已经传了：
+  - `--loss-interference-extra-base-align-weight`
+  - `--loss-interference-extra-focus-sample-ids-file`
+- 但当时
+  `resolve_selector_sample_weights(...)`
+  里，
+  `interference_extra`
+  的激活条件还没把：
+  - `interference_extra_base_align_weight`
+  算进去。
+- 结果：
+  - `v56`
+    实际上 `interference_extra = inactive`
+  - exact ids 并没有真正命中这条 protect objective。
+
+影响：
+
+- 这类问题不会像 shape error 那样直接崩；
+  训练能跑完，
+  但实验结论是假的。
+- 如果不单独标记，
+  后续很容易把这类无效轮次误当成：
+  - objective 无效
+  - 或 dual-head 本身没信号。
+
+处理：
+
+- 已在：
+  - `scripts/train/train_stft_mask_baseline.py`
+  - `scripts/eval/eval_stft_mask_baseline.py`
+  把：
+  - `interference_extra_base_align_weight`
+  加入 `interference` 分支的 `extra_weight_keys`。
+- 并把：
+  - `v56`
+    明确记为无效 plumbing 轮次；
+  - 有效结论从 `v57`
+    开始算。
+
+后续要求：
+
+1. 以后每新增一个 extra-only loss weight，都要同步检查 selector 激活条件是否已纳入它。
+2. 新 protect primitive 首轮若结果异常平，应先核对 selector 命中，再下模型结论。
+3. 无效轮次要明确写成 invalid / plumbing issue，不能混进模型比较序列。
+
+### 121. dual-head 的 `base-align` protect primitive 有信号，但继续扫同一条 weight 已进入平台区；`v57 / v58` 说明当前缺的不是“小数点再调一下”
+
+现象：
+
+- 本轮在 dual-head 上新增：
+  - `interference_extra_base_align_l1`
+  - 语义是：
+    - exact ids 上约束 branch output 不要偏离 frozen base output
+- `v57`（weight `0.02`）relative to `v19`：
+  - `speech_leak_like (0004) = -0.047720 dB`
+  - `guodegang_absent = -0.000021 dB`
+  - `proxy_v7 = -1.498264 dB`
+  - relative to `v32 gate`：
+    - `overall_judgement = near_tie`
+    - 唯一 near-tie rule：
+      - `speech_leak_like_gain_floor`
+- `v58`（weight `0.005`）relative to `v19`：
+  - `speech_leak_like (0004) = -0.076592 dB`
+  - `guodegang_anchor = +0.061275 dB`
+  - `guodegang_absent = +0.027740 dB`
+  - `proxy_v7 = +0.042581 dB`
+  - relative to `v32 gate`：
+    - 唯一 clear fail：
+      - `speech_leak_like_gain_floor`
+
+影响：
+
+- `base-align`
+  说明 protect primitive 方向是对题的；
+  它确实能把 dual-head 拉近 gate。
+- 但当前 trade-off 已经很清楚：
+  - 保护重了，
+    `proxy_v7` 会被压塌；
+  - 放轻一点，
+    `speech_leak_like (0004)` 又重新 clear fail。
+- 如果继续只扫这同一条 weight，
+  很容易进入：
+  - 实验很多，
+  - 但结论不再变硬
+  的平台区。
+
+处理：
+
+- 已把：
+  - `v57`
+  - `v58`
+  的结果与解释集中落盘到：
+  - `reports/daily/2026-03-20_v55_v58_dualdecoder_protect_objective_followup.md`
+
+后续要求：
+
+1. 当前默认不再继续扫 `interference_extra_base_align_weight` 的近邻小变体。
+2. 下一条 dual-head protect objective 应更直接面向：
+   - `speech_leak_like (0004)`
+   - 而不是继续只做 exact-family base 对齐。
+3. 同时继续保留：
+   - dual-head plumbing
+   - `proxy_v7`
+   - `v32` frozen base anchor
+   这三项资产，作为下一条新 protect objective 的底座。

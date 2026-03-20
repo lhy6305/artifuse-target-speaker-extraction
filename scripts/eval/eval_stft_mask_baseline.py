@@ -120,6 +120,12 @@ def build_compute_loss_kwargs(loss_config: dict) -> dict:
     }
 
 
+def resolve_branch_extra_prediction(outputs: dict[str, torch.Tensor]) -> torch.Tensor | None:
+    if outputs.get("branch_decoder_mask") is not None:
+        return outputs["estimated_waveform"]
+    return None
+
+
 def resolve_selector_sample_weights(
     batch: dict,
     device: torch.device,
@@ -224,6 +230,8 @@ def main() -> None:
         "reconstruction_extra_stft_l1": 0.0,
         "sisdr_db": 0.0,
         "interference_extra_guard_sisdr_loss": 0.0,
+        "interference_extra_base_align_l1": 0.0,
+        "interference_extra_base_delta_projection_ratio": 0.0,
         "transient_presence_l1": 0.0,
         "transient_extra_presence_l1": 0.0,
         "interference_projection_ratio": 0.0,
@@ -247,6 +255,8 @@ def main() -> None:
             "interference_extra_projection_ratio": 0.0,
             "absent_interval_l1": 0.0,
             "absent_extra_interval_l1": 0.0,
+            "interference_extra_base_align_l1": 0.0,
+            "interference_extra_base_delta_projection_ratio": 0.0,
         }
     )
     recipe_metrics: dict[str, dict[str, float | int]] = defaultdict(
@@ -264,6 +274,8 @@ def main() -> None:
             "interference_extra_projection_ratio": 0.0,
             "absent_interval_l1": 0.0,
             "absent_extra_interval_l1": 0.0,
+            "interference_extra_base_align_l1": 0.0,
+            "interference_extra_base_delta_projection_ratio": 0.0,
         }
     )
     ratio_bucket_metrics: dict[str, dict[str, float | int]] = defaultdict(
@@ -281,6 +293,8 @@ def main() -> None:
             "interference_extra_projection_ratio": 0.0,
             "absent_interval_l1": 0.0,
             "absent_extra_interval_l1": 0.0,
+            "interference_extra_base_align_l1": 0.0,
+            "interference_extra_base_delta_projection_ratio": 0.0,
         }
     )
     saved = 0
@@ -320,7 +334,12 @@ def main() -> None:
                     device=device,
                     loss_config=loss_config,
                     prefix="interference",
-                    extra_weight_keys=("interference_extra_weight", "interference_extra_guard_sisdr_weight"),
+                    extra_weight_keys=(
+                        "interference_extra_weight",
+                        "interference_extra_guard_sisdr_weight",
+                        "interference_extra_base_align_weight",
+                        "interference_extra_base_delta_projection_weight",
+                    ),
                 )
             )
             absent_sample_weights, absent_extra_sample_weights, absent_union_sample_weights = (
@@ -333,7 +352,9 @@ def main() -> None:
                 )
             )
             losses = compute_losses(
-                prediction=outputs["estimated_waveform"],
+                prediction=outputs.get("estimated_waveform_base", outputs["estimated_waveform"]),
+                reconstruction_extra_prediction=outputs["estimated_waveform"],
+                extra_prediction=resolve_branch_extra_prediction(outputs),
                 mixture=batch["mixture"],
                 target=batch["target"],
                 lengths=batch["target_lengths"],
@@ -364,6 +385,10 @@ def main() -> None:
             totals["reconstruction_extra_stft_l1"] += float(losses.reconstruction_extra_stft_l1.item())
             totals["sisdr_db"] += float(sisdr.item())
             totals["interference_extra_guard_sisdr_loss"] += float(losses.interference_extra_guard_sisdr_loss.item())
+            totals["interference_extra_base_align_l1"] += float(losses.interference_extra_base_align_l1.item())
+            totals["interference_extra_base_delta_projection_ratio"] += float(
+                losses.interference_extra_base_delta_projection_ratio.item()
+            )
             totals["transient_presence_l1"] += float(losses.transient_presence_l1.item())
             totals["transient_extra_presence_l1"] += float(losses.transient_extra_presence_l1.item())
             totals["interference_projection_ratio"] += float(losses.interference_projection_ratio.item())
@@ -537,6 +562,12 @@ def main() -> None:
                 pattern_metrics[pattern]["interference_extra_projection_ratio"] += sample_interference_extra
                 pattern_metrics[pattern]["absent_interval_l1"] += sample_absent
                 pattern_metrics[pattern]["absent_extra_interval_l1"] += sample_absent_extra
+                pattern_metrics[pattern]["interference_extra_base_align_l1"] += float(
+                    losses.interference_extra_base_align_l1.item()
+                )
+                pattern_metrics[pattern]["interference_extra_base_delta_projection_ratio"] += float(
+                    losses.interference_extra_base_delta_projection_ratio.item()
+                )
                 recipe_metrics[recipe]["count"] += 1
                 recipe_metrics[recipe]["loss"] += float(sample_loss.item())
                 recipe_metrics[recipe]["sisdr_db"] += sample_sisdr
@@ -550,6 +581,12 @@ def main() -> None:
                 recipe_metrics[recipe]["interference_extra_projection_ratio"] += sample_interference_extra
                 recipe_metrics[recipe]["absent_interval_l1"] += sample_absent
                 recipe_metrics[recipe]["absent_extra_interval_l1"] += sample_absent_extra
+                recipe_metrics[recipe]["interference_extra_base_align_l1"] += float(
+                    losses.interference_extra_base_align_l1.item()
+                )
+                recipe_metrics[recipe]["interference_extra_base_delta_projection_ratio"] += float(
+                    losses.interference_extra_base_delta_projection_ratio.item()
+                )
                 ratio_bucket_metrics[ratio_bucket]["count"] += 1
                 ratio_bucket_metrics[ratio_bucket]["loss"] += float(sample_loss.item())
                 ratio_bucket_metrics[ratio_bucket]["sisdr_db"] += sample_sisdr
@@ -563,6 +600,12 @@ def main() -> None:
                 ratio_bucket_metrics[ratio_bucket]["interference_extra_projection_ratio"] += sample_interference_extra
                 ratio_bucket_metrics[ratio_bucket]["absent_interval_l1"] += sample_absent
                 ratio_bucket_metrics[ratio_bucket]["absent_extra_interval_l1"] += sample_absent_extra
+                ratio_bucket_metrics[ratio_bucket]["interference_extra_base_align_l1"] += float(
+                    losses.interference_extra_base_align_l1.item()
+                )
+                ratio_bucket_metrics[ratio_bucket]["interference_extra_base_delta_projection_ratio"] += float(
+                    losses.interference_extra_base_delta_projection_ratio.item()
+                )
 
                 if saved < args.save_audio_count:
                     sample_id = batch["sample_ids"][idx]
@@ -655,6 +698,12 @@ def main() -> None:
                 "avg_interference_extra_projection_ratio": (
                     values["interference_extra_projection_ratio"] / max(1, int(values["count"]))
                 ),
+                "avg_interference_extra_base_align_l1": (
+                    values["interference_extra_base_align_l1"] / max(1, int(values["count"]))
+                ),
+                "avg_interference_extra_base_delta_projection_ratio": (
+                    values["interference_extra_base_delta_projection_ratio"] / max(1, int(values["count"]))
+                ),
                 "avg_absent_interval_l1": values["absent_interval_l1"] / max(1, int(values["count"])),
                 "avg_absent_extra_interval_l1": (
                     values["absent_extra_interval_l1"] / max(1, int(values["count"]))
@@ -687,6 +736,12 @@ def main() -> None:
                 "avg_interference_extra_projection_ratio": (
                     values["interference_extra_projection_ratio"] / max(1, int(values["count"]))
                 ),
+                "avg_interference_extra_base_align_l1": (
+                    values["interference_extra_base_align_l1"] / max(1, int(values["count"]))
+                ),
+                "avg_interference_extra_base_delta_projection_ratio": (
+                    values["interference_extra_base_delta_projection_ratio"] / max(1, int(values["count"]))
+                ),
                 "avg_absent_interval_l1": values["absent_interval_l1"] / max(1, int(values["count"])),
                 "avg_absent_extra_interval_l1": (
                     values["absent_extra_interval_l1"] / max(1, int(values["count"]))
@@ -718,6 +773,12 @@ def main() -> None:
                 ),
                 "avg_interference_extra_projection_ratio": (
                     values["interference_extra_projection_ratio"] / max(1, int(values["count"]))
+                ),
+                "avg_interference_extra_base_align_l1": (
+                    values["interference_extra_base_align_l1"] / max(1, int(values["count"]))
+                ),
+                "avg_interference_extra_base_delta_projection_ratio": (
+                    values["interference_extra_base_delta_projection_ratio"] / max(1, int(values["count"]))
                 ),
                 "avg_absent_interval_l1": values["absent_interval_l1"] / max(1, int(values["count"])),
                 "avg_absent_extra_interval_l1": (
