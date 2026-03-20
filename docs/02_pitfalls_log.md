@@ -5486,3 +5486,76 @@
    而不是继续扫
    `exact_nontargetfull`
    的 guard weight。
+
+### 104. checkpoint / compare / gate 已落盘但日报未补，会把“当前停点”误导回更早分支；`v64 / v65` 本轮就是这个问题
+
+现象：
+
+- 本次接班恢复时，
+  主文档和分支图都还停在：
+  - `v63`
+  - 以及
+    “不要直接起 `v64`”
+- 但磁盘上已经实际存在：
+  - `v64 / v65` checkpoint
+  - 对应 compare summary
+  - 对应 `friend_speech_leak_followup_gate`
+  - 对应新 selector / union manifest
+- 也就是：
+  - 真实实验状态
+    已经比日报和总览
+    多往前走了两步；
+  - 只是当轮没有把
+    结果及时写回文档。
+
+影响：
+
+- 下次接手的人如果只看文档，
+  会误以为：
+  - `v64 / v65`
+    还没跑；
+  - 或仍值得按旧思路
+    再启动一次。
+- 这种错位最麻烦的地方在于：
+  - 它不是“文件丢了”
+  - 而是“文件在，但裁决缺席”
+- 于是很容易把：
+  - `v64`
+    这种只差一条 `near_tie`
+    的证据轮次
+  - 和
+    `v65`
+    这种已经明确伤到
+    `guodegang` guardrail
+    的失败轮次
+  一起重新考古一遍。
+
+处理：
+
+- 已新增恢复补记日报：
+  - `reports/daily/2026-03-20_v64_v65_dualprotect_recovery.md`
+- 并同步回填：
+  - `docs/01_project_overview_and_plan.md`
+  - `docs/05_task_branch_map.md`
+
+后续要求：
+
+1. 以后只要实际生成了：
+   - 新 checkpoint
+   - compare summary
+   - 或 gate summary
+   三者中的任意关键组合，
+   当轮就必须至少补一份最小日报。
+2. 若当轮来不及写完整复盘，
+   也至少要补齐：
+   - checkpoint 名称
+   - train / val manifest
+   - gate 结果
+   - keep / drop judgement
+3. 在准备起下一条分支前，
+   先检查上一条是否已经同时写进：
+   - 日报
+   - 总览
+   - 分支图；
+   否则先补文档，
+   不继续开新实验。

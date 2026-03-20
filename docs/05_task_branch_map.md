@@ -1080,6 +1080,126 @@
           不再保留为
           第二 protect selector
           的默认定义
+    - `v64`
+      已实际执行并回收：
+      - 第二 selector
+        改成直接的
+        `v23 friend speech_leak exact minus target_full`
+      - 但仍直接跑在默认
+        `v42` split 上，
+        `branch_protect`
+        实际命中只有：
+        - train `1 / 129`
+        - val `0 / 37`
+      - gate 结果为：
+        - 只剩
+          `speech_leak_like_gain_floor`
+          一个 `near_tie`
+      - 因而：
+        - 这条 selector
+          语义上
+          比 `exact_nontargetfull`
+          更像对题；
+        - 但当前 hit 太稀，
+          不能直接记成 keep
+    - `v65`
+      已实际执行并回收：
+      - 把上述 `v23minus`
+        rows 真正 union
+        进 train / val manifest
+      - `branch_protect`
+        命中补到：
+        - train `7 / 135`
+        - val `2 / 39`
+      - `target_full`
+        进一步转正到：
+        - `+0.031807 dB`
+      - 但：
+        - `speech_leak_like (0004)`
+          仍未转正；
+        - `guodegang_anchor / absent`
+          明显转负
+      - 因而：
+        - 单纯 union
+          这批 rows
+          不是 keep 方向；
+        - 当前不应再直接沿
+          `v65`
+          放大训练预算
+
+### `v64`
+
+- 定义：
+  - `v63`
+    之后的第一条恢复验证轮次
+  - `target_full`-only `base-align`
+    保持不变
+  - 第二 protect selector
+    改为：
+    - `sample_ids_v23_friend_reverse_guardrail_proxy_v4_speech_leak_exact_minus_targetfull_all.txt`
+- 结论：
+  - `NOT keep`
+  - `closed_but_evidence_keep`
+- 主要原因：
+  - 相对 `v32` gate
+    只剩：
+    - `speech_leak_like_gain_floor`
+      一个 `near_tie`
+  - `guodegang_anchor / absent`
+    继续保持正向
+  - 但 `branch_protect`
+    在当前 split
+    实际命中过稀，
+    还不足以形成可保留候选
+- 解释：
+  - `v64`
+    不应记成：
+    - “又一次普通 fail”
+  - 它真正写死的是：
+    - 直接对准
+      `exact minus target_full`
+      的 selector
+      语义上更对；
+    - 但若这批 rows
+      没有真实并入
+      当前 manifest，
+      证据强度仍然不够
+- 入口：
+  - `reports/daily/2026-03-20_v64_v65_dualprotect_recovery.md`
+
+### `v65`
+
+- 定义：
+  - `v64`
+    的 union-manifest follow-up
+  - 将：
+    - `train_manifest_v65_v42_plus_friend_reverse_guardrail_proxy_v4_speech_leak_exact_minus_targetfull.jsonl`
+    - `val_manifest_v65_v42_plus_friend_reverse_guardrail_proxy_v4_speech_leak_exact_minus_targetfull.jsonl`
+    作为新的 train / val split
+- 结论：
+  - `FAIL as keep candidate`
+- 主要原因：
+  - `target_full`
+    虽明显更强，
+    甚至转正；
+  - 但 `speech_leak_like (0004)`
+    仍未过线；
+  - 同时：
+    - `guodegang_anchor_floor`
+    - `guodegang_absent_floor`
+      都变成 `clear_fail`
+- 解释：
+  - `v65`
+    证明当前问题
+    不是简单的
+    “让第二 selector
+    多命中一点”
+  - 一旦真的补足 coverage，
+    这条线仍会把
+    `guodegang`
+    保护项重新打坏
+- 入口：
+  - `reports/daily/2026-03-20_v64_v65_dualprotect_recovery.md`
 
 ## 5. 下一条默认执行分支
 
@@ -1121,23 +1241,34 @@
 7. `v63`
    已完成并判定：
    - `closed_failed`
-8. 当前不再把：
+8. `v64`
+   已完成并判定：
+   - `closed_but_evidence_keep`
+9. `v65`
+   已完成并判定：
+   - `closed_failed`
+10. 当前不再把：
    - `exact_all - exact_targetfull_all`
    解释为：
    - `0004-like branch_protect selector`
-9. 若后续继续 dual-protect，
+11. 若后续继续 dual-protect，
    默认前置动作改为：
    - 先重建真正对应
      `speech_leak_like (0004)`
      的第二 selector / proxy
-   - 不直接起
+   - 不直接重跑
      `v64`
-     扫现有 `branch_protect` weight
-10. 当前分支标签应固定写成：
+   - 不直接放大
+     `v65`
+   - 不继续扫现有
+     `branch_protect` weight
+12. 当前分支标签应固定写成：
    - `v57 / v58 = closed_but_evidence_keep`
    - `v54 / v55 / v59 / v60 = closed_failed`
    - `v63 = closed_failed`
-11. 只有在用户明确允许时，
+   - `v64 = closed_but_evidence_keep`
+   - `v65 = closed_failed`
+13. 只有在用户明确允许时，
    才重新从：
    - `v32`
      warm-start
@@ -1155,7 +1286,9 @@
 3. `docs/02_pitfalls_log.md`
 4. 本文档 `docs/05_task_branch_map.md`
 5. 当前活跃分支日报：
-   - 现在是 `reports/daily/2026-03-20_v63_dualdecoder_targetfull_basealign_branchprotect_followup.md`
+   - 现在是 `reports/daily/2026-03-20_v64_v65_dualprotect_recovery.md`
+   - `v63` 主日报：
+     - `reports/daily/2026-03-20_v63_dualdecoder_targetfull_basealign_branchprotect_followup.md`
    - `v63` 旧启动清单：
      - `reports/daily/2026-03-20_v63_written_spec_no_run.md`
 

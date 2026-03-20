@@ -3943,6 +3943,79 @@
       的 selector / proxy，
       而不是直接起 `v64`
       扫现有 guard weight
+213. 接班恢复时，已确认 `v64 / v65` 并不是“未执行的设想”，而是磁盘上已经实际跑完、评估完、但此前没有补日报和主文档的两条 dual-protect follow-up；当前已完成事实回填：
+  - 集中恢复日报：
+    - `reports/daily/2026-03-20_v64_v65_dualprotect_recovery.md`
+  - `v64`：
+    - checkpoint：
+      - `baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v64_v32_absent_dualdecoder_v7_wave_targetfullbasealign_branchprotect_v23minus0002_ft1`
+    - 第二 selector：
+      - `sample_ids_v23_friend_reverse_guardrail_proxy_v4_speech_leak_exact_minus_targetfull_all.txt`
+    - branch_protect 命中偏稀：
+      - train `1 / 129`
+      - val `0 / 37`
+    - relative to `v19`：
+      - default `+0.079474 dB`
+      - near-real speech probe overall `-0.038093 dB`
+      - exact `target_full = -0.212114 dB`
+      - near-real `speech_leak_like (0004) = -0.055069 dB`
+      - `guodegang_anchor_120s = +0.048336 dB`
+      - `guodegang_absent_480s = +0.019495 dB`
+    - relative to `v32` 的 `friend_speech_leak_followup_gate`：
+      - `overall_judgement = near_tie`
+      - 唯一未过规则：
+        - `speech_leak_like_gain_floor`
+    - 当前定位：
+      - `closed_but_evidence_keep`
+      - 说明直接面向 `exact minus target_full` 的 selector
+        比 `exact_nontargetfull`
+        更接近真实 `0004-like`
+        症状，
+        但当前命中太稀，
+        还不足以形成 keep 候选
+  - `v65`：
+    - checkpoint：
+      - `baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v65_v32_absent_dualdecoder_v7_wave_targetfullbasealign_branchprotect_v23minus_union0002_ft1`
+    - train / val manifest：
+      - `data/synthetic/train_manifest_v65_v42_plus_friend_reverse_guardrail_proxy_v4_speech_leak_exact_minus_targetfull.jsonl`
+      - `data/synthetic/val_manifest_v65_v42_plus_friend_reverse_guardrail_proxy_v4_speech_leak_exact_minus_targetfull.jsonl`
+    - branch_protect 命中已补足到：
+      - train `7 / 135`
+      - val `2 / 39`
+    - relative to `v19`：
+      - default `+0.106078 dB`
+      - near-real speech probe overall `-0.070686 dB`
+      - exact `target_full = +0.031807 dB`
+      - near-real `speech_leak_like (0004) = -0.067371 dB`
+      - `guodegang_anchor_120s = -0.147071 dB`
+      - `guodegang_absent_480s = -0.057623 dB`
+    - relative to `v32` 的 `friend_speech_leak_followup_gate`：
+      - `overall_judgement = fail`
+      - near-tie：
+        - `speech_leak_like_gain_floor`
+      - clear fail：
+        - `guodegang_anchor_floor`
+        - `guodegang_absent_floor`
+    - 当前定位：
+      - `closed_failed`
+      - 说明把 `v23minus` rows
+        真正并入 manifest 后，
+        仍然没有把 `0004-like`
+        拉到正向，
+        反而会重新打坏
+        `guodegang` guardrail
+  - 当前更新后的结论：
+    - `v64` 可保留为“selector 语义更对、但命中太稀”的证据轮次
+    - `v65` 证明“单纯把这批 rows union 进训练集”不是 keep 方向
+    - 若后续继续 dual-protect，
+      默认前置动作改为：
+      - 先正式重建真正对应
+        `speech_leak_like (0004)`
+        的 selector / proxy
+      - 不直接重跑 `v64`
+      - 不直接放大 `v65`
+      - 不继续扫现有
+        `branch_protect_guard_sisdr_weight`
 
 ## 9. 文档入口
 
@@ -4022,5 +4095,6 @@
 - 本轮 `branch_protect` guard selector plumbing：`reports/daily/2026-03-20_branch_protect_guard_plumbing.md`
 - 本轮项目状态重置与方案修正：`reports/daily/2026-03-20_project_state_reset_after_review.md`
 - 本轮 `v63` dual-protect follow-up：`reports/daily/2026-03-20_v63_dualdecoder_targetfull_basealign_branchprotect_followup.md`
+- 本轮 `v64 / v65` dual-protect 恢复补记：`reports/daily/2026-03-20_v64_v65_dualprotect_recovery.md`
 - 本轮仓库与 `.gitignore` 审计：`reports/daily/2026-03-18_repo_gitignore_audit.md`
 - 本轮全仓库评估总结：`reports/daily/2026-03-17_repo_evaluation_summary.md`
