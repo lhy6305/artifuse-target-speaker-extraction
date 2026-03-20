@@ -3719,6 +3719,161 @@
       而应改成更直接面向
       `target_full / speech_leak_like (0004)`
       的 protect objective
+207. 已完成 `v61 / v62 = dual-head + proxy_v7 reconstruction + target_full-only base-align` follow-up；结果说明 `base-align` primitive 的问题主要不在它本身，而在此前 protect selector 过粗，但同一条 primitive 继续加权也不是 closing gap 的正确方向：
+  - 集中日报：
+    - `reports/daily/2026-03-20_v61_v62_dualdecoder_targetfull_basealign_followup.md`
+  - `v61` 定义：
+    - checkpoint：
+      - `baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v61_v32_absent_dualdecoder_v7_wave_targetfullbasealign_w02_ft1`
+    - friend-side protect：
+      - `interference_extra_base_align_weight = 0.02`
+      - `focus = data/synthetic/sample_ids_v30_friend_reverse_guardrail_proxy_v8_similarity_lowtransient_lowinttrans_exact_targetfull_all.txt`
+    - selector 命中：
+      - train `4 / 129`
+      - val `1 / 37`
+  - `v61` relative to `v19`：
+    - default `+0.075905 dB`
+    - exact `target_full = -0.369736 dB`
+    - `speech_leak_like (0004) = -0.071034 dB`
+    - `guodegang_anchor_120s = +0.069889 dB`
+    - `guodegang_absent_480s = +0.043306 dB`
+    - `proxy_v7 = -0.029114 dB`
+  - relative to `v32` gate：
+    - `overall_judgement = fail`
+    - `clear_fail_rules`：
+      - `exact_target_full_gain_floor`
+    - `near_tie_rules`：
+      - `speech_leak_like_gain_floor`
+  - 这说明：
+    - 只保护 `target_full` 子集
+      是对的；
+    - `target_full`
+      已从 `v59 / v60`
+      的 `-0.95 / -0.98 dB`
+      明显收回，
+      `0004`
+      也从 clear fail 收到 near-tie，
+      且 `guodegang`
+      没塌
+208. 已完成更强档位 `v62 = target_full-only base-align(0.05)`；结果说明在这条更细 selector 上，继续把同一条 `base-align` primitive 往上加权，并不会把最后缺口自然关掉：
+  - 集中日报：
+    - `reports/daily/2026-03-20_v61_v62_dualdecoder_targetfull_basealign_followup.md`
+  - `v62` 定义：
+    - checkpoint：
+      - `baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v62_v32_absent_dualdecoder_v7_wave_targetfullbasealign_w05_ft1`
+    - 相比 `v61`
+      仅改：
+      - `interference_extra_base_align_weight = 0.05`
+  - `v62` relative to `v19`：
+    - default `+0.079917 dB`
+    - exact `target_full = -0.586134 dB`
+    - `speech_leak_like (0004) = -0.063768 dB`
+    - `guodegang_anchor_120s = +0.118074 dB`
+    - `guodegang_absent_480s = +0.042873 dB`
+    - `proxy_v7 = +0.861507 dB`
+  - relative to `v32` gate：
+    - `overall_judgement = fail`
+    - `clear_fail_rules`：
+      - `exact_target_full_gain_floor`
+    - `near_tie_rules`：
+      - `speech_leak_like_gain_floor`
+  - 当前解释应更新为：
+    - `target_full`-only selector
+      这条修正是成立的；
+    - 但下一条默认不再继续扫
+      同一条 `interference_extra_base_align_weight`
+      的近邻值；
+    - 更合理的下一步应改成：
+      - 保留 `target_full`-only selector
+      - 再显式补一条
+        更直接面向
+        `speech_leak_like (0004)`
+        的 branch-local protect objective
+209. 已把“第二条 branch-local protect selector” 的工程入口补齐；当前可直接把 `target_full` 与 `0004-like speech leak` 拆成两条独立 protect 信号，不需要再改 plumbing：
+  - 集中日报：
+    - `reports/daily/2026-03-20_branch_protect_guard_plumbing.md`
+  - 工程补充：
+    - `src/tse_prefix/pipeline/baseline_train.py`
+      新增：
+      - `branch_protect_guard_sisdr_loss`
+      - `branch_protect_sample_weights`
+      - `branch_protect_guard_sisdr_weight`
+    - `scripts/train/train_stft_mask_baseline.py`
+      新增：
+      - `--loss-branch-protect-guard-sisdr-weight`
+      - `--loss-branch-protect-*`
+      - train / val summary 中的
+        `branch_protect_guard_sisdr_loss`
+        与 `branch_protect` selector metrics
+    - `scripts/eval/eval_stft_mask_baseline.py`
+      同步补：
+      - eval summary / pattern / recipe / ratio bucket
+        中的 `branch_protect_guard_sisdr_loss`
+  - 1-step smoke：
+    - 输出目录：
+      - `tmp/smoke_branch_protect_guard_sisdr`
+    - eval：
+      - `tmp/smoke_branch_protect_guard_sisdr_eval`
+    - 已确认：
+      - `branch_protect` selector
+        train `4 / 7`
+        val `1 / 3`
+      - 新指标已正常进入
+        train / eval summary
+  - 当前解释应更新为：
+    - 下一条默认已可直接测试：
+      - `target_full`-only `base-align`
+      - `+`
+      - `0004-like branch_protect guard`
+    - 当前不再缺“双 protect selector”
+      的工程底座
+210. 已完成本轮阶段性状态重置；当前正式口径更新为“默认主线冻结、研究分支停扩、下一条方案只保留书面规格”，不再把后续 dual-head 分支误写成即将替换主线的连续版本：
+  - 集中日报：
+    - `reports/daily/2026-03-20_project_state_reset_after_review.md`
+  - 当前正式状态板：
+    - 默认主线：
+      - `legacy stage2`
+    - 研究基座：
+      - `v19`
+      - `v32`
+      - `proxy_v7`
+      - dual-head / branch-local decoder
+    - 当前 `v36+`
+      默认解释为：
+      - 研究排雷分支
+      - 不是主线替换候选序列
+  - 当前正式停止继续扫的内容：
+    - `proxy_v7` 微幅 waveform / stft 小变体
+    - prefix-freeze 小组合
+    - simple adapter 小参数与容量变体
+    - dual-head 上已证伪或已进入平台区的 primitive 近邻值：
+      - `interference_extra residual_projection_ratio`
+      - exact-family `SI-SDR guard`
+      - `base-align`
+      - `base-delta-interference projection`
+    - 回到 `proxy_v6`
+    - 旧 absent reconstruction carve-out 族
+211. 当前下一条方案只保留为书面规格，不执行训练；若后续重新开启实验，默认候选定义为 `v63 = target_full-only base-align + 0004-like branch_protect guard`：
+  - 集中日报：
+    - `reports/daily/2026-03-20_project_state_reset_after_review.md`
+  - `v63` 书面规格：
+    - 保留：
+      - `target_full`-only `base-align`
+    - 额外补：
+      - `0004-like branch_protect guard`
+  - 当前建议的第二条 protect selector
+    采用：
+    - `exact_all - exact_targetfull_all`
+  - 当前已确认的补集 ids：
+    - `train_000405`
+    - `train_001279`
+    - `train_001491`
+    - `val_000096`
+    - `val_000297`
+  - 当前执行约束：
+    - 本次不启动新训练
+    - 本次不生成新 checkpoint
+    - 本次不生成新 compare / gate
 
 ## 9. 文档入口
 
@@ -3794,5 +3949,8 @@
 - 本轮 `v55 - v58` dual-head protect-objective follow-up：`reports/daily/2026-03-20_v55_v58_dualdecoder_protect_objective_followup.md`
 - 本轮 dual-head `base-delta-interference projection` smoke：`reports/daily/2026-03-20_dualdecoder_base_delta_projection_smoke.md`
 - 本轮 `v59 / v60` dual-head `base-delta-interference projection` follow-up：`reports/daily/2026-03-20_v59_v60_dualdecoder_basedeltaproj_followup.md`
+- 本轮 `v61 / v62` dual-head `target_full`-only `base-align` follow-up：`reports/daily/2026-03-20_v61_v62_dualdecoder_targetfull_basealign_followup.md`
+- 本轮 `branch_protect` guard selector plumbing：`reports/daily/2026-03-20_branch_protect_guard_plumbing.md`
+- 本轮项目状态重置与方案修正：`reports/daily/2026-03-20_project_state_reset_after_review.md`
 - 本轮仓库与 `.gitignore` 审计：`reports/daily/2026-03-18_repo_gitignore_audit.md`
 - 本轮全仓库评估总结：`reports/daily/2026-03-17_repo_evaluation_summary.md`

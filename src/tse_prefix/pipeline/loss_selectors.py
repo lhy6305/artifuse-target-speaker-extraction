@@ -29,7 +29,9 @@ SELECTOR_SUFFIXES = (
 SELECTOR_BRANCH_NAMES = ("", "extra_")
 
 
-def selector_config_keys(prefixes: tuple[str, ...] = ("reconstruction", "transient", "interference", "absent")) -> set[str]:
+def selector_config_keys(
+    prefixes: tuple[str, ...] = ("reconstruction", "transient", "interference", "absent", "branch_protect")
+) -> set[str]:
     return {
         f"{prefix}_{branch_name}{suffix}"
         for prefix in prefixes

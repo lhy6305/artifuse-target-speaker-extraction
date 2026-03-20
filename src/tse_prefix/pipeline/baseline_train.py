@@ -16,6 +16,7 @@ class LossBreakdown:
     reconstruction_extra_waveform_l1: torch.Tensor
     reconstruction_extra_stft_l1: torch.Tensor
     sisdr_loss: torch.Tensor
+    branch_protect_guard_sisdr_loss: torch.Tensor
     interference_extra_guard_sisdr_loss: torch.Tensor
     interference_extra_base_align_l1: torch.Tensor
     interference_extra_base_delta_projection_ratio: torch.Tensor
@@ -419,6 +420,7 @@ def compute_losses(
     transient_extra_sample_weights: torch.Tensor | None = None,
     interference_sample_weights: torch.Tensor | None = None,
     interference_extra_sample_weights: torch.Tensor | None = None,
+    branch_protect_sample_weights: torch.Tensor | None = None,
     absent_sample_weights: torch.Tensor | None = None,
     absent_extra_sample_weights: torch.Tensor | None = None,
     sample_rate: int = 16000,
@@ -428,6 +430,7 @@ def compute_losses(
     reconstruction_extra_waveform_weight: float = 0.0,
     reconstruction_extra_stft_weight: float = 0.0,
     sisdr_weight: float = 0.0,
+    branch_protect_guard_sisdr_weight: float = 0.0,
     interference_extra_guard_sisdr_weight: float = 0.0,
     interference_extra_base_align_weight: float = 0.0,
     interference_extra_base_delta_projection_weight: float = 0.0,
@@ -487,6 +490,13 @@ def compute_losses(
         )
     sisdr_db = masked_sisdr(prediction, target, lengths, zero_mean=True)
     sisdr_term = -sisdr_db
+    branch_protect_guard_sisdr_term = weighted_sisdr_loss(
+        prediction=extra_prediction,
+        target=target,
+        lengths=lengths,
+        sample_weights=branch_protect_sample_weights,
+        zero_mean=True,
+    )
     interference_extra_guard_sisdr_term = weighted_sisdr_loss(
         prediction=extra_prediction,
         target=target,
@@ -578,6 +588,7 @@ def compute_losses(
         + (reconstruction_extra_waveform_term * reconstruction_extra_waveform_weight)
         + (reconstruction_extra_stft_term * reconstruction_extra_stft_weight)
         + (sisdr_term * sisdr_weight)
+        + (branch_protect_guard_sisdr_term * branch_protect_guard_sisdr_weight)
         + (interference_extra_guard_sisdr_term * interference_extra_guard_sisdr_weight)
         + (interference_extra_base_align_term * interference_extra_base_align_weight)
         + (interference_extra_base_delta_projection_term * interference_extra_base_delta_projection_weight)
@@ -597,6 +608,7 @@ def compute_losses(
         reconstruction_extra_waveform_l1=reconstruction_extra_waveform_term,
         reconstruction_extra_stft_l1=reconstruction_extra_stft_term,
         sisdr_loss=sisdr_term,
+        branch_protect_guard_sisdr_loss=branch_protect_guard_sisdr_term,
         interference_extra_guard_sisdr_loss=interference_extra_guard_sisdr_term,
         interference_extra_base_align_l1=interference_extra_base_align_term,
         interference_extra_base_delta_projection_ratio=interference_extra_base_delta_projection_term,

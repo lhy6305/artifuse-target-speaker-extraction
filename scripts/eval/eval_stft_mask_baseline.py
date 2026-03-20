@@ -229,6 +229,7 @@ def main() -> None:
         "reconstruction_extra_waveform_l1": 0.0,
         "reconstruction_extra_stft_l1": 0.0,
         "sisdr_db": 0.0,
+        "branch_protect_guard_sisdr_loss": 0.0,
         "interference_extra_guard_sisdr_loss": 0.0,
         "interference_extra_base_align_l1": 0.0,
         "interference_extra_base_delta_projection_ratio": 0.0,
@@ -255,6 +256,7 @@ def main() -> None:
             "interference_extra_projection_ratio": 0.0,
             "absent_interval_l1": 0.0,
             "absent_extra_interval_l1": 0.0,
+            "branch_protect_guard_sisdr_loss": 0.0,
             "interference_extra_base_align_l1": 0.0,
             "interference_extra_base_delta_projection_ratio": 0.0,
         }
@@ -274,6 +276,7 @@ def main() -> None:
             "interference_extra_projection_ratio": 0.0,
             "absent_interval_l1": 0.0,
             "absent_extra_interval_l1": 0.0,
+            "branch_protect_guard_sisdr_loss": 0.0,
             "interference_extra_base_align_l1": 0.0,
             "interference_extra_base_delta_projection_ratio": 0.0,
         }
@@ -293,6 +296,7 @@ def main() -> None:
             "interference_extra_projection_ratio": 0.0,
             "absent_interval_l1": 0.0,
             "absent_extra_interval_l1": 0.0,
+            "branch_protect_guard_sisdr_loss": 0.0,
             "interference_extra_base_align_l1": 0.0,
             "interference_extra_base_delta_projection_ratio": 0.0,
         }
@@ -351,6 +355,12 @@ def main() -> None:
                     extra_weight_keys=("absent_extra_weight",),
                 )
             )
+            branch_protect_sample_weights = build_selector_sample_weights(
+                batch=batch,
+                device=device,
+                loss_config=loss_config,
+                prefix="branch_protect",
+            )
             losses = compute_losses(
                 prediction=outputs.get("estimated_waveform_base", outputs["estimated_waveform"]),
                 reconstruction_extra_prediction=outputs["estimated_waveform"],
@@ -366,6 +376,7 @@ def main() -> None:
                 transient_extra_sample_weights=transient_extra_sample_weights,
                 interference_sample_weights=interference_sample_weights,
                 interference_extra_sample_weights=interference_extra_sample_weights,
+                branch_protect_sample_weights=branch_protect_sample_weights,
                 absent_sample_weights=absent_sample_weights,
                 absent_extra_sample_weights=absent_extra_sample_weights,
                 **compute_loss_kwargs,
@@ -384,6 +395,7 @@ def main() -> None:
             totals["reconstruction_extra_waveform_l1"] += float(losses.reconstruction_extra_waveform_l1.item())
             totals["reconstruction_extra_stft_l1"] += float(losses.reconstruction_extra_stft_l1.item())
             totals["sisdr_db"] += float(sisdr.item())
+            totals["branch_protect_guard_sisdr_loss"] += float(losses.branch_protect_guard_sisdr_loss.item())
             totals["interference_extra_guard_sisdr_loss"] += float(losses.interference_extra_guard_sisdr_loss.item())
             totals["interference_extra_base_align_l1"] += float(losses.interference_extra_base_align_l1.item())
             totals["interference_extra_base_delta_projection_ratio"] += float(
@@ -562,6 +574,9 @@ def main() -> None:
                 pattern_metrics[pattern]["interference_extra_projection_ratio"] += sample_interference_extra
                 pattern_metrics[pattern]["absent_interval_l1"] += sample_absent
                 pattern_metrics[pattern]["absent_extra_interval_l1"] += sample_absent_extra
+                pattern_metrics[pattern]["branch_protect_guard_sisdr_loss"] += float(
+                    losses.branch_protect_guard_sisdr_loss.item()
+                )
                 pattern_metrics[pattern]["interference_extra_base_align_l1"] += float(
                     losses.interference_extra_base_align_l1.item()
                 )
@@ -581,6 +596,9 @@ def main() -> None:
                 recipe_metrics[recipe]["interference_extra_projection_ratio"] += sample_interference_extra
                 recipe_metrics[recipe]["absent_interval_l1"] += sample_absent
                 recipe_metrics[recipe]["absent_extra_interval_l1"] += sample_absent_extra
+                recipe_metrics[recipe]["branch_protect_guard_sisdr_loss"] += float(
+                    losses.branch_protect_guard_sisdr_loss.item()
+                )
                 recipe_metrics[recipe]["interference_extra_base_align_l1"] += float(
                     losses.interference_extra_base_align_l1.item()
                 )
@@ -600,6 +618,9 @@ def main() -> None:
                 ratio_bucket_metrics[ratio_bucket]["interference_extra_projection_ratio"] += sample_interference_extra
                 ratio_bucket_metrics[ratio_bucket]["absent_interval_l1"] += sample_absent
                 ratio_bucket_metrics[ratio_bucket]["absent_extra_interval_l1"] += sample_absent_extra
+                ratio_bucket_metrics[ratio_bucket]["branch_protect_guard_sisdr_loss"] += float(
+                    losses.branch_protect_guard_sisdr_loss.item()
+                )
                 ratio_bucket_metrics[ratio_bucket]["interference_extra_base_align_l1"] += float(
                     losses.interference_extra_base_align_l1.item()
                 )
@@ -698,6 +719,9 @@ def main() -> None:
                 "avg_interference_extra_projection_ratio": (
                     values["interference_extra_projection_ratio"] / max(1, int(values["count"]))
                 ),
+                "avg_branch_protect_guard_sisdr_loss": (
+                    values["branch_protect_guard_sisdr_loss"] / max(1, int(values["count"]))
+                ),
                 "avg_interference_extra_base_align_l1": (
                     values["interference_extra_base_align_l1"] / max(1, int(values["count"]))
                 ),
@@ -736,6 +760,9 @@ def main() -> None:
                 "avg_interference_extra_projection_ratio": (
                     values["interference_extra_projection_ratio"] / max(1, int(values["count"]))
                 ),
+                "avg_branch_protect_guard_sisdr_loss": (
+                    values["branch_protect_guard_sisdr_loss"] / max(1, int(values["count"]))
+                ),
                 "avg_interference_extra_base_align_l1": (
                     values["interference_extra_base_align_l1"] / max(1, int(values["count"]))
                 ),
@@ -773,6 +800,9 @@ def main() -> None:
                 ),
                 "avg_interference_extra_projection_ratio": (
                     values["interference_extra_projection_ratio"] / max(1, int(values["count"]))
+                ),
+                "avg_branch_protect_guard_sisdr_loss": (
+                    values["branch_protect_guard_sisdr_loss"] / max(1, int(values["count"]))
                 ),
                 "avg_interference_extra_base_align_l1": (
                     values["interference_extra_base_align_l1"] / max(1, int(values["count"]))

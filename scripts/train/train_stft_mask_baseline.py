@@ -108,6 +108,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model-adapter-mask-max-delta", type=float, default=0.25)
     parser.add_argument("--loss-stft-weight", type=float, default=0.5)
     parser.add_argument("--loss-sisdr-weight", type=float, default=0.0)
+    parser.add_argument("--loss-branch-protect-guard-sisdr-weight", type=float, default=0.0)
     parser.add_argument("--loss-interference-extra-guard-sisdr-weight", type=float, default=0.0)
     parser.add_argument("--loss-interference-extra-base-align-weight", type=float, default=0.0)
     parser.add_argument("--loss-interference-extra-base-delta-projection-weight", type=float, default=0.0)
@@ -135,12 +136,18 @@ def parse_args() -> argparse.Namespace:
     add_selector_args(parser, "transient")
     add_selector_args(parser, "interference")
     add_selector_args(parser, "absent")
+    add_selector_args(parser, "branch_protect")
     return parser.parse_args()
 
 
 def add_selector_args(parser: argparse.ArgumentParser, prefix: str) -> None:
+    flag_prefix_root = prefix.replace("_", "-")
     for branch_name in ("", "extra_"):
-        flag_prefix = f"--loss-{prefix}-" if not branch_name else f"--loss-{prefix}-{branch_name.replace('_', '-')}"
+        flag_prefix = (
+            f"--loss-{flag_prefix_root}-"
+            if not branch_name
+            else f"--loss-{flag_prefix_root}-{branch_name.replace('_', '-')}"
+        )
         attr_prefix = f"loss_{prefix}_" if not branch_name else f"loss_{prefix}_{branch_name}"
         parser.add_argument(
             f"{flag_prefix}focus-sample-ids-file",
@@ -289,6 +296,7 @@ def build_loss_config(args: argparse.Namespace) -> dict[str, float]:
         "reconstruction_extra_waveform_weight": args.loss_reconstruction_extra_waveform_weight,
         "reconstruction_extra_stft_weight": args.loss_reconstruction_extra_stft_weight,
         "sisdr_weight": args.loss_sisdr_weight,
+        "branch_protect_guard_sisdr_weight": args.loss_branch_protect_guard_sisdr_weight,
         "interference_extra_guard_sisdr_weight": args.loss_interference_extra_guard_sisdr_weight,
         "interference_extra_base_align_weight": args.loss_interference_extra_base_align_weight,
         "interference_extra_base_delta_projection_weight": (
@@ -310,7 +318,7 @@ def build_loss_config(args: argparse.Namespace) -> dict[str, float]:
         "transient_presence_high_hz": 8000.0,
         "transient_ratio_weight": 0.5,
     }
-    for prefix in ("reconstruction", "transient", "interference", "absent"):
+    for prefix in ("reconstruction", "transient", "interference", "absent", "branch_protect"):
         for branch_name in ("", "extra_"):
             config_prefix = f"{prefix}_" if not branch_name else f"{prefix}_{branch_name}"
             attr_prefix = f"loss_{prefix}_" if not branch_name else f"loss_{prefix}_{branch_name}"
@@ -510,6 +518,7 @@ def evaluate(
     total_reconstruction_extra_wave = 0.0
     total_reconstruction_extra_stft = 0.0
     total_sisdr_loss = 0.0
+    total_branch_protect_guard_sisdr_loss = 0.0
     total_interference_extra_guard_sisdr_loss = 0.0
     total_interference_extra_base_align_l1 = 0.0
     total_interference_extra_base_delta_projection_ratio = 0.0
@@ -533,6 +542,7 @@ def evaluate(
             "interference_extra",
             "absent",
             "absent_extra",
+            "branch_protect",
         )
     }
     with torch.no_grad():
@@ -585,6 +595,12 @@ def evaluate(
                     extra_weight_keys=("absent_extra_weight",),
                 )
             )
+            branch_protect_sample_weights = build_selector_sample_weights(
+                batch=batch,
+                device=device,
+                loss_config=loss_config,
+                prefix="branch_protect",
+            )
             for prefix, weights in (
                 ("reconstruction", reconstruction_union_sample_weights),
                 ("reconstruction_extra", reconstruction_extra_sample_weights),
@@ -594,6 +610,7 @@ def evaluate(
                 ("interference_extra", interference_extra_sample_weights),
                 ("absent", absent_union_sample_weights),
                 ("absent_extra", absent_extra_sample_weights),
+                ("branch_protect", branch_protect_sample_weights),
             ):
                 stats = summarize_selector_weights(weights, len(batch["sample_ids"]))
                 selector_totals[prefix]["active"] = selector_totals[prefix]["active"] or bool(stats["active"])
@@ -614,6 +631,7 @@ def evaluate(
                 transient_extra_sample_weights=transient_extra_sample_weights,
                 interference_sample_weights=interference_sample_weights,
                 interference_extra_sample_weights=interference_extra_sample_weights,
+                branch_protect_sample_weights=branch_protect_sample_weights,
                 absent_sample_weights=absent_sample_weights,
                 absent_extra_sample_weights=absent_extra_sample_weights,
                 **compute_loss_kwargs,
@@ -626,6 +644,7 @@ def evaluate(
             total_reconstruction_extra_wave += float(losses.reconstruction_extra_waveform_l1.item())
             total_reconstruction_extra_stft += float(losses.reconstruction_extra_stft_l1.item())
             total_sisdr_loss += float(losses.sisdr_loss.item())
+            total_branch_protect_guard_sisdr_loss += float(losses.branch_protect_guard_sisdr_loss.item())
             total_interference_extra_guard_sisdr_loss += float(losses.interference_extra_guard_sisdr_loss.item())
             total_interference_extra_base_align_l1 += float(losses.interference_extra_base_align_l1.item())
             total_interference_extra_base_delta_projection_ratio += float(
@@ -649,6 +668,7 @@ def evaluate(
             "reconstruction_extra_waveform_l1": 0.0,
             "reconstruction_extra_stft_l1": 0.0,
             "sisdr_loss": 0.0,
+            "branch_protect_guard_sisdr_loss": 0.0,
             "interference_extra_guard_sisdr_loss": 0.0,
             "interference_extra_base_align_l1": 0.0,
             "interference_extra_base_delta_projection_ratio": 0.0,
@@ -670,6 +690,7 @@ def evaluate(
             "reconstruction_extra_waveform_l1": total_reconstruction_extra_wave / batch_count,
             "reconstruction_extra_stft_l1": total_reconstruction_extra_stft / batch_count,
             "sisdr_loss": total_sisdr_loss / batch_count,
+            "branch_protect_guard_sisdr_loss": total_branch_protect_guard_sisdr_loss / batch_count,
             "interference_extra_guard_sisdr_loss": total_interference_extra_guard_sisdr_loss / batch_count,
             "interference_extra_base_align_l1": total_interference_extra_base_align_l1 / batch_count,
             "interference_extra_base_delta_projection_ratio": (
@@ -767,6 +788,7 @@ def main() -> None:
         epoch_reconstruction_extra_wave = 0.0
         epoch_reconstruction_extra_stft = 0.0
         epoch_sisdr_loss = 0.0
+        epoch_branch_protect_guard_sisdr_loss = 0.0
         epoch_interference_extra_guard_sisdr_loss = 0.0
         epoch_interference_extra_base_align_l1 = 0.0
         epoch_interference_extra_base_delta_projection_ratio = 0.0
@@ -789,6 +811,7 @@ def main() -> None:
                 "interference_extra",
                 "absent",
                 "absent_extra",
+                "branch_protect",
             )
         }
 
@@ -841,6 +864,12 @@ def main() -> None:
                     extra_weight_keys=("absent_extra_weight",),
                 )
             )
+            branch_protect_sample_weights = build_selector_sample_weights(
+                batch=batch,
+                device=device,
+                loss_config=loss_config,
+                prefix="branch_protect",
+            )
             for prefix, weights in (
                 ("reconstruction", reconstruction_union_sample_weights),
                 ("reconstruction_extra", reconstruction_extra_sample_weights),
@@ -850,6 +879,7 @@ def main() -> None:
                 ("interference_extra", interference_extra_sample_weights),
                 ("absent", absent_union_sample_weights),
                 ("absent_extra", absent_extra_sample_weights),
+                ("branch_protect", branch_protect_sample_weights),
             ):
                 stats = summarize_selector_weights(weights, len(batch["sample_ids"]))
                 train_selector_totals[prefix]["active"] = train_selector_totals[prefix]["active"] or bool(stats["active"])
@@ -870,6 +900,7 @@ def main() -> None:
                 transient_extra_sample_weights=transient_extra_sample_weights,
                 interference_sample_weights=interference_sample_weights,
                 interference_extra_sample_weights=interference_extra_sample_weights,
+                branch_protect_sample_weights=branch_protect_sample_weights,
                 absent_sample_weights=absent_sample_weights,
                 absent_extra_sample_weights=absent_extra_sample_weights,
                 **compute_loss_kwargs,
@@ -891,6 +922,7 @@ def main() -> None:
             epoch_reconstruction_extra_wave += float(losses.reconstruction_extra_waveform_l1.item())
             epoch_reconstruction_extra_stft += float(losses.reconstruction_extra_stft_l1.item())
             epoch_sisdr_loss += float(losses.sisdr_loss.item())
+            epoch_branch_protect_guard_sisdr_loss += float(losses.branch_protect_guard_sisdr_loss.item())
             epoch_interference_extra_guard_sisdr_loss += float(losses.interference_extra_guard_sisdr_loss.item())
             epoch_interference_extra_base_align_l1 += float(losses.interference_extra_base_align_l1.item())
             epoch_interference_extra_base_delta_projection_ratio += float(
@@ -924,6 +956,9 @@ def main() -> None:
                                 float(losses.reconstruction_extra_stft_l1.item()), 6
                             ),
                             "sisdr_loss": round(float(losses.sisdr_loss.item()), 6),
+                            "branch_protect_guard_sisdr_loss": round(
+                                float(losses.branch_protect_guard_sisdr_loss.item()), 6
+                            ),
                             "interference_extra_guard_sisdr_loss": round(
                                 float(losses.interference_extra_guard_sisdr_loss.item()), 6
                             ),
@@ -965,6 +1000,7 @@ def main() -> None:
             "reconstruction_extra_waveform_l1": epoch_reconstruction_extra_wave / max(1, step_count),
             "reconstruction_extra_stft_l1": epoch_reconstruction_extra_stft / max(1, step_count),
             "sisdr_loss": epoch_sisdr_loss / max(1, step_count),
+            "branch_protect_guard_sisdr_loss": epoch_branch_protect_guard_sisdr_loss / max(1, step_count),
             "interference_extra_guard_sisdr_loss": epoch_interference_extra_guard_sisdr_loss / max(1, step_count),
             "interference_extra_base_align_l1": epoch_interference_extra_base_align_l1 / max(1, step_count),
             "interference_extra_base_delta_projection_ratio": (
@@ -1004,6 +1040,7 @@ def main() -> None:
                 "train_reconstruction_extra_waveform_l1": train_metrics["reconstruction_extra_waveform_l1"],
                 "train_reconstruction_extra_stft_l1": train_metrics["reconstruction_extra_stft_l1"],
                 "train_sisdr_loss": train_metrics["sisdr_loss"],
+                "train_branch_protect_guard_sisdr_loss": train_metrics["branch_protect_guard_sisdr_loss"],
                 "train_interference_extra_guard_sisdr_loss": train_metrics["interference_extra_guard_sisdr_loss"],
                 "train_interference_extra_base_align_l1": train_metrics["interference_extra_base_align_l1"],
                 "train_interference_extra_base_delta_projection_ratio": (
@@ -1025,6 +1062,7 @@ def main() -> None:
                 "val_reconstruction_extra_waveform_l1": val_metrics["reconstruction_extra_waveform_l1"],
                 "val_reconstruction_extra_stft_l1": val_metrics["reconstruction_extra_stft_l1"],
                 "val_sisdr_loss": val_metrics["sisdr_loss"],
+                "val_branch_protect_guard_sisdr_loss": val_metrics["branch_protect_guard_sisdr_loss"],
                 "val_interference_extra_guard_sisdr_loss": val_metrics["interference_extra_guard_sisdr_loss"],
                 "val_interference_extra_base_align_l1": val_metrics["interference_extra_base_align_l1"],
                 "val_interference_extra_base_delta_projection_ratio": (

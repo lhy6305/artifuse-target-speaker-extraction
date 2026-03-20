@@ -683,6 +683,86 @@
 - 入口：
   - `reports/daily/2026-03-20_v59_v60_dualdecoder_basedeltaproj_followup.md`
 
+### `v61`
+
+- 定义：
+  - `dual-head + proxy_v7 reconstruction`
+  - friend-side protect
+    改为：
+    - `target_full`-only `base-align`
+    - `interference_extra_base_align_weight = 0.02`
+  - protect selector：
+    - `data/synthetic/sample_ids_v30_friend_reverse_guardrail_proxy_v8_similarity_lowtransient_lowinttrans_exact_targetfull_all.txt`
+- 结论：
+  - `NOT keep`
+- 主要原因：
+  - 这是目前最有信息量的一次 selector 修正；
+  - `target_full`
+    明显从此前
+    `-0.95 / -0.98 dB`
+    级别回收到：
+    - `-0.369736 dB`
+  - `speech_leak_like (0004)`
+    也只剩 near-tie：
+    - `-0.071034 dB`
+  - 同时：
+    - `guodegang_anchor = +0.069889 dB`
+    - `guodegang_absent = +0.043306 dB`
+    都保持正向；
+  - 但相对 `v32` gate
+    仍有：
+    - `exact_target_full_gain_floor = clear_fail`
+- 解释：
+  - `v61`
+    不能记成：
+    - keep 候选
+  - 但也不能只记成：
+    - 又一次 fail
+  - 它真正写死的是：
+    - `base-align`
+      的关键问题之一
+      确实是 selector 过粗；
+    - 只保护 `target_full` 子集
+      是对的
+- 入口：
+  - `reports/daily/2026-03-20_v61_v62_dualdecoder_targetfull_basealign_followup.md`
+
+### `v62`
+
+- 定义：
+  - `v61`
+    的更强档位
+  - 仅改：
+    - `interference_extra_base_align_weight = 0.05`
+- 结论：
+  - `FAIL as keep candidate`
+- 主要原因：
+  - `speech_leak_like (0004)`
+    只小幅改善到：
+    - `-0.063768 dB`
+  - 但 exact `target_full`
+    明显变差到：
+    - `-0.586134 dB`
+  - 同时：
+    - `proxy_v7 = +0.861507 dB`
+    - `guodegang_anchor = +0.118074 dB`
+    又继续变强
+- 解释：
+  - `v62`
+    说明当前不该继续把
+    同一条 `target_full`-only `base-align`
+    primitive 往上加权；
+  - 现在缺的不是：
+    - “最后一点 weight”
+  - 而是：
+    - 在保留 `target_full`
+      保护的同时，
+      单独补一条更直接面向
+      `speech_leak_like (0004)`
+      的 protect objective
+- 入口：
+  - `reports/daily/2026-03-20_v61_v62_dualdecoder_targetfull_basealign_followup.md`
+
 ## 4. 当前分支状态
 
 ### 分支 `B1`: `v5 cleancarve` 内继续细粒度 carve-out
@@ -943,78 +1023,97 @@
           继续 clear fail
       - 因而这条 primitive
         当前也不值得继续扫权重
+    - `v61`
+      已证明：
+      - 把 protect selector
+        收窄到 `target_full` 子集
+        是有效修正；
+      - 这不是 trivial 摆动，
+        而是把：
+        - exact `target_full`
+        - `0004`
+        - `guodegang`
+        三者同时拉回到更平衡的区间
+    - `v62`
+      已证明：
+      - 在这个更细 selector 上，
+        继续把同一条 `base-align`
+        weight 往上推，
+        不是 closing gap 的正确方向；
+      - 当前缺的已不是：
+        - 同一 primitive 的更强档
+      - 而是：
+        - 面向 `0004-like speech leak`
+          的第二条显式 protect 信号
+    - 当前已补好第二条 protect selector
+      的工程入口：
+      - `branch_protect`
+      - `--loss-branch-protect-guard-sisdr-weight`
+      - `--loss-branch-protect-*`
+      - `tmp/smoke_branch_protect_guard_sisdr`
+        已完成 1-step smoke
+      - 已确认：
+        - selector 命中
+        - train / eval summary
+          新指标落盘
+      - 因而下一条已不再缺：
+        - 双 protect selector
+          的 plumbing
 
 ## 5. 下一条默认执行分支
 
-如果下一轮没有新用户决策，默认继续：
-
-- `B3 / 保留 proxy_v7，重写 absent-side routing 与 friend-side 解耦`
+如果下一轮没有新用户决策，默认暂停，不启动新实验。
 
 即：
 
-1. 先明确这条新线到底是：
-   - 已不再是重搜 proxy；
-   - 而是围绕 `proxy_v7`
-     的 objective / guardrail 解耦；
-2. 默认不再回到
+1. 当前项目状态应固定区分为两层：
+   - 默认主线：
+     - `legacy stage2`
+   - 研究基座：
+     - `v19`
+     - `v32`
+     - `proxy_v7`
+     - dual-head / branch-local decoder
+2. 当前 `v36+`
+   默认解释为：
+   - 研究排雷分支；
+   - 不是主线替换候选序列；
+3. 默认不再回到
    `proxy_v6 currentsignal cleanonly`
    或继续重做 overlap carve-out；
-3. 默认也不继续扫
+4. 默认也不继续扫
    `proxy_v7` 的微幅 waveform weight rescale；
-4. 单纯 `stft_only`
+5. 单纯 `stft_only`
    也不作为默认延伸方向；
-5. 默认优先继续沿
-   `proxy_v7` 的更强 branch-local output decoupling；
-6. 当前更偏向：
-   - 真正独立的 dual-head / branch-local decoder；
-   而不是继续做：
-   - selector 细修
-   - prefix freeze 的小组合
+6. 默认不再继续扫：
+   - prefix-freeze 小组合
    - simple residual adapter 的小参数
-   - adapter branch 的 conditioning / temporal 变体；
-   - 并且这一步的工程底座已完成，
-     可以直接从：
-     - `v32`
-       warm-start
-   - branch decoder bootstrap from base
-   - 但当前又新增一条边界：
-     - 默认不再继续扫
-       `interference_extra residual_projection_ratio`
-       在 dual-head 上的权重或同类小变体；
-     - 默认也不再继续扫
-       `interference_extra_base_align_weight`
-       的近邻小变体；
-     - 默认也不再继续扫
-       `interference_extra_base_delta_projection_weight`
-       的近邻小变体；
-     - 下一条更合理的默认方向应改成：
-       - 更贴近 `keep target_full`
-         与尤其直接面向
-         `speech_leak_like (0004)`
-         的 branch-local protect objective；
-       - 而不是继续复用当前这条
-         residual extra
-         或 exact-family `base-align`
-         或 `base-delta-interference projection`
-     - 当前工程上已补好一条可直接试验的候选 primitive：
-       - `interference_extra_base_delta_projection_weight`
-       - 它只约束：
-         - branch output
-           相对 frozen base 的 interference-like 改动
-       - 不再像 `base-align` 那样
-         直接约束整段 branch 输出贴回 base
-     - 并已完成 1-step smoke：
-       - `tmp/smoke_branch_decoder_base_delta_projection`
-       - 已确认：
-         - `v32` 旧 checkpoint 兼容
-         - `interference_extra` selector
-           train `1 / 4`
-           val `3 / 37`
-         - 新指标已写入 `train_summary.json`
-7. 仍按同一套裁决口径重新走：
-   - 训练
-   - default / exact / near-real / guodegang eval
-   - `friend_speech_leak_followup_gate`
+   - adapter branch 的 conditioning / temporal 变体
+   - `interference_extra residual_projection_ratio`
+     在 dual-head 上的权重或同类小变体
+   - `interference_extra_base_align_weight`
+     的近邻小变体
+   - `interference_extra_base_delta_projection_weight`
+     的近邻小变体；
+7. 当前只保留下一条书面规格，不执行：
+   - `v63 = target_full-only base-align + 0004-like branch_protect guard`
+8. `v63` 的第二条 protect selector
+   当前建议定义为：
+   - `exact_all - exact_targetfull_all`
+   - 对应 ids：
+     - `train_000405`
+     - `train_001279`
+     - `train_001491`
+     - `val_000096`
+     - `val_000297`
+9. 只有在用户明确允许时，
+   才重新从：
+   - `v32`
+     warm-start
+   - 并按同一套裁决口径重新走：
+     - 训练
+     - default / exact / near-real / guodegang eval
+     - `friend_speech_leak_followup_gate`
 
 ## 6. 忘线检查表
 
@@ -1025,7 +1124,7 @@
 3. `docs/02_pitfalls_log.md`
 4. 本文档 `docs/05_task_branch_map.md`
 5. 当前活跃分支日报：
-   - 现在是 `reports/daily/2026-03-20_v59_v60_dualdecoder_basedeltaproj_followup.md`
+   - 现在是 `reports/daily/2026-03-20_project_state_reset_after_review.md`
 
 每次准备开新分支前，至少回答：
 

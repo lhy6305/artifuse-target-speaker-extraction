@@ -5209,3 +5209,185 @@
    - primitive 没真正碰到当前坏掉的行为语义，
    而不是：
    - “再多试两档 weight 也许就行”。
+
+### 123. 如果 protect selector 仍把多类 exact-family 行为绑在一起，可能会把本来对题的 protect primitive 误判成“方向不对”；`v61` 说明 `base-align` 真正的问题之一是 selector 过粗，而不是 primitive 本身失效
+
+现象：
+
+- `v57 / v58`
+  已说明 dual-head 上的 `base-align`
+  primitive 有信号；
+- 但当时 protect selector
+  仍挂在整组
+  `v30 exact 10 ids`
+  上，
+  会同时混入：
+  - `target_full`
+  - `speech_leak_like (0004)`
+  - 以及其它 exact-family 行为；
+- 本轮把 selector 收窄到：
+  - `data/synthetic/sample_ids_v30_friend_reverse_guardrail_proxy_v8_similarity_lowtransient_lowinttrans_exact_targetfull_all.txt`
+  后，
+  `v61`
+  相对 `v19`：
+  - exact `target_full`
+    从前一轮同类失败点
+    `-0.95 / -0.98 dB`
+    回收到：
+    - `-0.369736 dB`
+  - `speech_leak_like (0004)`
+    也回收到：
+    - `-0.071034 dB`
+    并在 relative to `v32` gate
+    中只剩：
+    - `near_tie`
+  - 同时：
+    - `guodegang_anchor = +0.069889 dB`
+    - `guodegang_absent = +0.043306 dB`
+    都没有塌。
+
+影响：
+
+- 如果只看早一轮粗 selector 下的表现，
+  很容易把：
+  - `base-align`
+    误写成：
+    - primitive 本身不对题
+- 但 `v61`
+  说明更准确的解释是：
+  - protect primitive 可能是对的；
+  - 真正坏的是 selector 语义过粗，
+    把不同坏行为绑成同一条约束。
+
+处理：
+
+- 已把 `v61 / v62`
+  的结果集中落盘到：
+  - `reports/daily/2026-03-20_v61_v62_dualdecoder_targetfull_basealign_followup.md`
+
+后续要求：
+
+1. 以后评估 protect objective 时，不能只问“primitive 是什么”，还要问“selector 语义是不是过粗”。
+2. 如果一个 protect primitive 在粗 selector 下表现摇摆，但在更细 selector 下出现实质回收，应先把问题归因到 selector，再决定是否放弃 primitive。
+3. 当前 dual-head protect 线里，`target_full` 应视为一个独立保护子问题，不再默认和整组 exact-family 绑死。
+
+### 124. 当更细 selector 已证明方向成立后，继续单纯把同一条 protect weight 往上推，可能只会把 trade-off 再次推回去；`v62` 说明下一步该补的是第二条行为约束，而不是同一 primitive 的更强档
+
+现象：
+
+- `v61`
+  已证明：
+  - `target_full`-only selector
+    是对的；
+- 本轮继续把同一条
+  `interference_extra_base_align_weight`
+  从：
+  - `0.02`
+  加到：
+  - `0.05`
+  得到 `v62`；
+- `v62`
+  相对 `v61`：
+  - `speech_leak_like (0004)`
+    只小幅改善：
+    - `-0.071034 -> -0.063768 dB`
+  - 但 exact `target_full`
+    明显变差：
+    - `-0.369736 -> -0.586134 dB`
+  - 同时：
+    - `proxy_v7`
+      从：
+      - `-0.029114 dB`
+      变成：
+      - `+0.861507 dB`
+    - `guodegang_anchor`
+      也进一步转强。
+
+影响：
+
+- 这说明当前缺的
+  已不是：
+  - “同一条 protect primitive
+     的 weight 还没调到位”
+- 而是：
+  - `target_full`
+  - 与 `0004-like speech leak`
+    其实是两类不同的保护行为，
+    需要拆开约束。
+
+处理：
+
+- 已把这条结论同步写入：
+  - `docs/01_project_overview_and_plan.md`
+  - `docs/05_task_branch_map.md`
+  - `reports/daily/2026-03-20_v61_v62_dualdecoder_targetfull_basealign_followup.md`
+
+后续要求：
+
+1. 当前默认不再继续扫 `target_full`-only `base-align` 的近邻更强档。
+2. 下一条 dual-head protect objective，应在保留 `target_full` 保护的前提下，再补一条更直接面向 `speech_leak_like (0004)` 的 branch-local protect signal。
+3. 以后遇到“更强权重把一个子问题略微拉好、却把另一个关键子问题重新推坏”的情况，应优先考虑拆目标，而不是继续扫同一条 weight。
+
+### 125. 当主线是否切换其实已经有稳定主观结论后，项目如果继续默认沿 objective / gate 自动扩实验树，就会让“研究排雷”和“主线决策”混层；这时需要项目级 stop rule，而不是继续靠局部 gate 自己滚
+
+现象：
+
+- 当前项目早已得到：
+  - `ref_film + stft0.5 + sisdr0.0005`
+    不升主线；
+  - focused `ft2 / ft3`
+    也不升主候选；
+- 但后续推进仍然持续长出了：
+  - `v36+`
+    大量 absent / friend-side / dual-head
+    objective 研究分支；
+- 这些分支的价值主要是：
+  - 排雷
+  - 定位冲突
+  - 写清哪些 primitive / routing / selector
+    不值得再扫；
+  - 而不是：
+    - 已经接近替换默认主线。
+
+影响：
+
+- 如果不显式把：
+  - 默认主线
+  - 研究基座
+  - 已关闭分支
+  这三层拆开，
+  项目会自然滑向：
+  - 还有什么能试就继续试什么；
+- 这会让：
+  - objective / gate
+    成为实际节奏驱动，
+  - 而不是：
+    - 主观结论
+    - 真实症状
+    - 项目级停止条件。
+
+处理：
+
+- 已新增：
+  - `reports/daily/2026-03-20_project_state_reset_after_review.md`
+- 并把正式口径更新为：
+  - 默认主线：
+    - `legacy stage2`
+  - 当前 `v36+`
+    解释为：
+    - 研究排雷分支
+  - 默认下一步：
+    - 暂停等待用户指示，
+      不自动起新实验
+
+后续要求：
+
+1. 以后必须把“主线是否切换”与“研究是否继续”分成两套决策，不再混用同一条默认推进逻辑。
+2. 当主线结论已锁定而研究仍在继续时，默认计划应写成：
+   - `paused / pending instruction`
+   而不是：
+   - `continue training`
+3. 若后续重新启动实验，新分支必须先写明：
+   - 服务的真实问题症状是什么；
+   - 为什么不是旧 primitive 的近邻重扫；
+   - 对应哪条人耳或 near-real 复核入口。
