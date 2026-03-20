@@ -4584,3 +4584,226 @@
    - “确定了需要 branch-local output plasticity”
    而不是：
    - “prefix freeze 方向已经足够接近 keep”。
+
+### 112. 如果给 absent-side 只加一条 zero-init 的 simple residual `adapter_mask_head`，并让 `reconstruction_extra` 只更新这条专属输出分支，它仍然可能在 absent proxy 本体上明显反向；这说明“专属分支”这个方向是对的，但当前这条 simple output residual adapter 还不够表达
+
+现象：
+
+- 本轮补了：
+  - `enable_adapter_mask_head`
+  - `adapter_mask_max_delta`
+  - `reconstruction_extra_prediction`
+- 并跑了：
+  - `v49 = adapter_mask_head only`
+- `v49`
+  只训练：
+  - `adapter_mask_head`
+  - trainable parameter count：
+    - `197,377 / 2,564,994`
+    - `7.70%`
+- relative to `v19`：
+  - `proxy_v7 = -1.542894 dB`
+  - exact `target_full = -0.406366 dB`
+  - `speech_leak_like (0004) = -0.048850 dB`
+- relative to `v32` gate：
+  - `exact_target_full_gain_floor = clear_fail`
+  - `speech_leak_like_gain_floor = near_tie`
+  - `guodegang_absent_floor = near_tie`
+
+处理：
+
+- 已把这轮 adapter branch 工程补充与 `v49`
+  结果集中落盘到：
+  - `reports/daily/2026-03-20_v49_v50_adaptermask_followup.md`
+
+结果：
+
+- 现在可以明确写死：
+  - “给 absent-side 独立输出分支”
+    这个大方向仍值得保留；
+  - 但当前这种
+    - shared encoded feature
+      上直接叠一个 simple residual mask head
+    还远远不够；
+  - 不能把：
+    - `v49`
+      的结构方向成立
+    误写成：
+    - “这条 simple adapter 已经可继续微调到 keep”
+
+影响：
+
+1. 以后若继续沿 adapter 方向，
+   默认要升级成：
+   - adapter-specific conditioning
+   - 或真正 dual-head
+2. 不再把：
+   - simple residual output head
+   当作默认终局结构。
+
+### 113. 当 simple residual adapter 的大残差会把 absent proxy 明显推反时，把 `max_delta` 压小确实能把 friend-side 拉回到 near-tie，但如果 absent proxy 本体仍明显负向，就不该继续扫这条 residual safety knob
+
+现象：
+
+- 本轮继续跑了：
+  - `v50 = same adapter, adapter_mask_max_delta = 0.05`
+- relative to `v49`：
+  - exact `target_full`
+    - `-0.406366 -> -0.323341 dB`
+  - `speech_leak_like (0004)`
+    - `-0.048850 -> -0.042961 dB`
+  - `proxy_v7`
+    - `-1.542894 -> -1.082981 dB`
+- relative to `v32` gate：
+  - `overall_judgement = near_tie`
+  - `clear_fail_rules = []`
+  - 但仍 failed：
+    - `exact_target_full_gain_floor`
+    - `speech_leak_like_gain_floor`
+    - `guodegang_absent_floor`
+    全部只到 `near_tie`
+
+处理：
+
+- 已把 `v50`
+  的训练、compare、gate 与裁决集中落盘到：
+  - `reports/daily/2026-03-20_v49_v50_adaptermask_followup.md`
+
+结果：
+
+- 现在可以明确写死：
+  - `v49`
+    的严重反向，
+    部分确实来自 residual step 太大；
+  - 但即便把 residual 幅度压小，
+    simple adapter branch
+    仍然拉不回 absent proxy 本体；
+  - 当前问题不再是：
+    - `max_delta`
+      该调到多少
+    而是：
+    - 结构表达力本身不够
+
+影响：
+
+1. 下一条若继续自动推进，
+   默认不再扫：
+   - `adapter_mask_max_delta`
+   - 或 simple residual adapter 的小数点参数
+2. 当前更合理的默认延伸应升级成：
+   - adapter-specific conditioning
+   - 或真正 dual-head / branch-local output branch
+3. 回看 `v49 / v50`
+   时，要把它们记成：
+   - “确认 simple adapter 不够”
+   而不是：
+   - “只是还没调到合适幅度”。
+
+### 114. 如果 simple adapter 已经证明“看 reference 不够”，那么继续给这条 residual branch 补 `ref_film` 条件化，只能把它维持在 near-tie，不会自然把 absent proxy 本体拉回；这说明当前缺口不只是 adapter 没看到 reference
+
+现象：
+
+- 本轮继续给 adapter 分支新增：
+  - `adapter_conditioning_mode`
+  - `none / ref_bias / ref_film`
+- 并跑了：
+  - `v51 = adapter ref_film conditioning`
+- `v51`
+  仅训练：
+  - `adapter_condition_scale`
+  - `adapter_condition_shift`
+  - `adapter_mask_head`
+- relative to `v19`：
+  - `proxy_v7 = -1.016036 dB`
+  - exact `target_full = -0.317694 dB`
+  - `speech_leak_like (0004) = -0.042935 dB`
+- relative to `v32` gate：
+  - `overall_judgement = near_tie`
+  - near-tie：
+    - `exact_target_full_gain_floor`
+    - `speech_leak_like_gain_floor`
+    - `guodegang_absent_floor`
+
+处理：
+
+- 已把 `v51`
+  的训练、compare、gate 与裁决集中落盘到：
+  - `reports/daily/2026-03-20_v51_v52_adapter_conditioning_and_temporal_followup.md`
+
+结果：
+
+- 现在可以明确写死：
+  - 当前问题不只是：
+    - adapter 分支没看到 reference
+  - 因为即便 adapter 已经吃到自己的 `ref_film` 条件，
+    `proxy_v7`
+    仍然明显负向
+
+影响：
+
+1. 以后若继续沿 branch-local adapter，
+   默认不再把：
+   - “再给它多一层 reference conditioning”
+   当成主要缺口
+2. 当前更合理的默认方向应升级成：
+   - 更强的 branch-local decoder / dual-head
+   而不是继续堆 adapter conditioning。
+
+### 115. 如果 adapter 分支已经有自己的时序模型，结果仍然只是 near-tie 而 `proxy_v7` 继续负向，就该把“shared path 上叠 residual branch”这条大类结构判为基本到头，而不是继续加深 adapter 容量
+
+现象：
+
+- 本轮继续新增：
+  - `enable_adapter_temporal_model`
+  - `adapter_gru_layers`
+- 并跑了：
+  - `v52 = adapter_temporal_model + adapter_mask_head`
+- `v52`
+  仅训练：
+  - `adapter_temporal_model`
+  - `adapter_mask_head`
+  - trainable parameter count：
+    - `986,881 / 3,354,498`
+    - `29.42%`
+- relative to `v19`：
+  - `proxy_v7 = -0.876078 dB`
+  - exact `target_full = -0.310738 dB`
+  - `speech_leak_like (0004) = -0.041941 dB`
+- relative to `v32` gate：
+  - `overall_judgement = near_tie`
+  - near-tie：
+    - `exact_target_full_gain_floor`
+    - `speech_leak_like_gain_floor`
+    - `guodegang_absent_floor`
+
+处理：
+
+- 已把 `v52`
+  的训练、compare、gate 与裁决集中落盘到：
+  - `reports/daily/2026-03-20_v51_v52_adapter_conditioning_and_temporal_followup.md`
+
+结果：
+
+- 现在可以明确写死：
+  - 当前缺的已经不是：
+    - adapter 分支更强一点的 conditioning
+    - 或更大一点的 temporal capacity
+  - 即便给 adapter branch
+    自己的一层双向 GRU，
+    仍然只能把结果压到 near-tie，
+    拉不回 absent proxy 本体
+
+影响：
+
+1. 下一条若继续自动推进，
+   默认不再扫：
+   - adapter branch 的 conditioning 变体
+   - adapter branch 的 temporal 容量
+2. 当前更合理的默认方向应直接升级成：
+   - 真正独立的 dual-head / branch-local decoder
+   - 或训练图级别的更强语义解耦
+3. 回看 `v51 / v52`
+   时，要把它们记成：
+   - “adapter line has been structurally pressure-tested”
+   而不是：
+   - “这条 adapter 再堆一点容量也许就够了”。

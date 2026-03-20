@@ -88,6 +88,18 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Enable a zero-init residual mask adapter head on top of the shared encoder output.",
     )
+    parser.add_argument(
+        "--model-enable-adapter-temporal-model",
+        action="store_true",
+        help="Add a dedicated bidirectional GRU inside the adapter branch before adapter mask prediction.",
+    )
+    parser.add_argument("--model-adapter-gru-layers", type=int, default=1)
+    parser.add_argument(
+        "--model-adapter-conditioning-mode",
+        choices=["none", "ref_bias", "ref_film"],
+        default="none",
+        help="Optional reference conditioning mode used only inside the adapter mask branch.",
+    )
     parser.add_argument("--model-adapter-mask-max-delta", type=float, default=0.25)
     parser.add_argument("--loss-stft-weight", type=float, default=0.5)
     parser.add_argument("--loss-sisdr-weight", type=float, default=0.0)
@@ -241,6 +253,9 @@ def build_model_config(args: argparse.Namespace) -> dict[str, int]:
         "gru_layers": args.model_gru_layers,
         "conditioning_mode": args.model_conditioning_mode,
         "enable_adapter_mask_head": args.model_enable_adapter_mask_head,
+        "enable_adapter_temporal_model": args.model_enable_adapter_temporal_model,
+        "adapter_gru_layers": args.model_adapter_gru_layers,
+        "adapter_conditioning_mode": args.model_adapter_conditioning_mode,
         "adapter_mask_max_delta": args.model_adapter_mask_max_delta,
     }
 
@@ -378,7 +393,13 @@ def serialize_repo_path(path: Path | None) -> str | None:
 
 def load_model_state_dict_for_init(model: nn.Module, checkpoint_state_dict: dict[str, torch.Tensor]) -> None:
     missing_keys, unexpected_keys = model.load_state_dict(checkpoint_state_dict, strict=False)
-    allowed_missing_prefixes = ("adapter_mask_head.",)
+    allowed_missing_prefixes = (
+        "adapter_mask_head.",
+        "adapter_condition_proj.",
+        "adapter_condition_scale.",
+        "adapter_condition_shift.",
+        "adapter_temporal_model.",
+    )
     disallowed_missing = [
         key for key in missing_keys if not any(key.startswith(prefix) for prefix in allowed_missing_prefixes)
     ]

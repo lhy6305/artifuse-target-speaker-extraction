@@ -17,6 +17,9 @@ class STFTMaskBaseline(nn.Module):
         gru_layers: int = 2,
         conditioning_mode: str = "ref_film",
         enable_adapter_mask_head: bool = False,
+        enable_adapter_temporal_model: bool = False,
+        adapter_gru_layers: int = 1,
+        adapter_conditioning_mode: str = "none",
         adapter_mask_max_delta: float = 0.25,
     ) -> None:
         super().__init__()
@@ -26,6 +29,8 @@ class STFTMaskBaseline(nn.Module):
         self.freq_bins = (n_fft // 2) + 1
         self.conditioning_mode = conditioning_mode
         self.enable_adapter_mask_head = enable_adapter_mask_head
+        self.enable_adapter_temporal_model = enable_adapter_temporal_model
+        self.adapter_conditioning_mode = adapter_conditioning_mode
         self.adapter_mask_max_delta = adapter_mask_max_delta
 
         if conditioning_mode == "legacy_bias":
@@ -79,8 +84,33 @@ class STFTMaskBaseline(nn.Module):
             nn.Sigmoid(),
         )
         if enable_adapter_mask_head:
+            adapter_hidden_dim = hidden_dim * 2
+            if enable_adapter_temporal_model:
+                self.adapter_temporal_model = nn.GRU(
+                    input_size=gru_input_dim,
+                    hidden_size=hidden_dim,
+                    num_layers=adapter_gru_layers,
+                    batch_first=True,
+                    bidirectional=True,
+                )
+            else:
+                self.adapter_temporal_model = None
+            if adapter_conditioning_mode == "none":
+                self.adapter_condition_proj = None
+                self.adapter_condition_scale = None
+                self.adapter_condition_shift = None
+            elif adapter_conditioning_mode == "ref_bias":
+                self.adapter_condition_proj = nn.Linear(reference_dim, adapter_hidden_dim)
+                self.adapter_condition_scale = None
+                self.adapter_condition_shift = None
+            elif adapter_conditioning_mode == "ref_film":
+                self.adapter_condition_proj = None
+                self.adapter_condition_scale = nn.Linear(reference_dim, adapter_hidden_dim)
+                self.adapter_condition_shift = nn.Linear(reference_dim, adapter_hidden_dim)
+            else:
+                raise ValueError(f"Unsupported adapter_conditioning_mode: {adapter_conditioning_mode}")
             self.adapter_mask_head = nn.Sequential(
-                nn.Linear(hidden_dim * 2, hidden_dim),
+                nn.Linear(adapter_hidden_dim, hidden_dim),
                 nn.ReLU(),
                 nn.Linear(hidden_dim, self.freq_bins),
             )
@@ -88,6 +118,10 @@ class STFTMaskBaseline(nn.Module):
             nn.init.zeros_(final_layer.weight)
             nn.init.zeros_(final_layer.bias)
         else:
+            self.adapter_temporal_model = None
+            self.adapter_condition_proj = None
+            self.adapter_condition_scale = None
+            self.adapter_condition_shift = None
             self.adapter_mask_head = None
 
         self.register_buffer("window", torch.hann_window(win_length), persistent=False)
@@ -205,8 +239,17 @@ class STFTMaskBaseline(nn.Module):
         adapter_mask_delta = None
         mask = base_mask
         if self.adapter_mask_head is not None:
+            adapter_features = encoded
+            if self.adapter_temporal_model is not None:
+                adapter_features, _ = self.adapter_temporal_model(temporal_input)
+            if self.adapter_conditioning_mode == "ref_bias":
+                adapter_features = adapter_features + self.adapter_condition_proj(ref_embedding).unsqueeze(1)
+            elif self.adapter_conditioning_mode == "ref_film":
+                adapter_gamma = torch.tanh(self.adapter_condition_scale(ref_embedding)).unsqueeze(1)
+                adapter_beta = self.adapter_condition_shift(ref_embedding).unsqueeze(1)
+                adapter_features = (adapter_features * (1.0 + adapter_gamma)) + adapter_beta
             adapter_mask_delta = (
-                torch.tanh(self.adapter_mask_head(encoded)).transpose(1, 2) * self.adapter_mask_max_delta
+                torch.tanh(self.adapter_mask_head(adapter_features)).transpose(1, 2) * self.adapter_mask_max_delta
             )
             mask = torch.clamp(base_mask + adapter_mask_delta, min=0.0, max=1.0)
 

@@ -3165,6 +3165,173 @@
         而是转向：
         - absent-only residual adapter
         - 或独立 output branch / dual-head
+194. 已补第一条真正的 `absent-only residual output branch` 验证：`v49 = adapter_mask_head only`；结果说明单纯在 shared encoded feature 上叠一个 simple residual mask head，还不足以把 absent proxy 本体拉回正向，甚至在 `proxy_v7` 上直接明显反向：
+  - 集中日报：
+    - `reports/daily/2026-03-20_v49_v50_adaptermask_followup.md`
+  - 工程补充：
+    - `src/tse_prefix/models/stft_mask_baseline.py`
+      新增：
+      - `enable_adapter_mask_head`
+      - `adapter_mask_max_delta`
+    - `src/tse_prefix/pipeline/baseline_train.py`
+      新增：
+      - `reconstruction_extra_prediction`
+        让 base losses 继续看 shared base output，
+        只有 `reconstruction_extra`
+        走 adapter-combined output
+    - `scripts/train/train_stft_mask_baseline.py`
+      新增：
+      - `--model-enable-adapter-mask-head`
+      - `--model-adapter-mask-max-delta`
+      - 旧 checkpoint 初始化时允许 adapter 新键缺失
+      - 无梯度 batch 跳过 `backward / step`
+  - `v49` 定义：
+    - `enable_adapter_mask_head = true`
+    - `adapter_mask_max_delta = 0.25`
+    - 仅训练：
+      - `adapter_mask_head`
+    - trainable parameter count：
+      - `197,377 / 2,564,994`
+      - `7.70%`
+  - `v49` relative to `v19`：
+    - default `+0.004926 dB`
+    - exact `target_full = -0.406366 dB`
+    - `speech_leak_like (0004) = -0.048850 dB`
+    - `guodegang_anchor_120s = -0.056997 dB`
+    - `guodegang_absent_480s = -0.015182 dB`
+    - `proxy_v7 = -1.542894 dB`
+  - relative to `v32` gate：
+    - `overall_judgement = fail`
+    - `clear_fail_rules`：
+      - `exact_target_full_gain_floor`
+    - `near_tie_rules`：
+      - `speech_leak_like_gain_floor`
+      - `guodegang_absent_floor`
+  - 当前解释应更新为：
+    - simple output residual adapter
+      还不够表达；
+    - 当前问题不是“shared output head 不该专属化”，
+      而是“这条专属分支本身还太弱 / 太粗”
+195. 已继续补这条新结构的安全边界检查：`v50 = same adapter, tighter max delta`；结果说明把 residual 幅度压小后，friend-side 确实能回到 near-tie，但 absent proxy 本体仍然明显负向，所以问题不只是步子太大：
+  - 集中日报：
+    - `reports/daily/2026-03-20_v49_v50_adaptermask_followup.md`
+  - `v50` 定义：
+    - 与 `v49`
+      相同，
+      仅改：
+      - `adapter_mask_max_delta = 0.05`
+  - `v50` relative to `v19`：
+    - default `+0.013945 dB`
+    - exact `target_full = -0.323341 dB`
+    - `speech_leak_like (0004) = -0.042961 dB`
+    - `guodegang_anchor_120s = -0.064364 dB`
+    - `guodegang_absent_480s = -0.013611 dB`
+    - `proxy_v7 = -1.082981 dB`
+  - relative to `v32` gate：
+    - `overall_judgement = near_tie`
+    - `near_tie_rules`：
+      - `exact_target_full_gain_floor`
+      - `speech_leak_like_gain_floor`
+      - `guodegang_absent_floor`
+    - `clear_fail_rules = []`
+  - 当前解释应更新为：
+    - `v49`
+      的严重反向，
+      部分确实来自 residual step 过大；
+    - 但即便压小到更保守的幅度，
+      simple adapter branch
+      仍然带不回 absent proxy 本体；
+    - 因而：
+      - `v50` 不保留
+      - 下一条若继续自动推进，
+        默认不再扫 `adapter_mask_max_delta`
+        或 simple residual adapter 的小参数；
+        而是转向：
+        - adapter-specific conditioning
+        - 或真正的 dual-head / branch-local output branch
+196. 已继续补第一条 `adapter-specific conditioning` 验证：`v51 = adapter ref_film conditioning`；结果说明让 adapter 分支显式吃自己的 reference-conditioned feature，仍然只能维持 near-tie，拉不回 `proxy_v7` 本体：
+  - 集中日报：
+    - `reports/daily/2026-03-20_v51_v52_adapter_conditioning_and_temporal_followup.md`
+  - 工程补充：
+    - `src/tse_prefix/models/stft_mask_baseline.py`
+      新增：
+      - `adapter_conditioning_mode`
+        - `none / ref_bias / ref_film`
+    - `scripts/train/train_stft_mask_baseline.py`
+      新增：
+      - `--model-adapter-conditioning-mode`
+  - `v51` 定义：
+    - `enable_adapter_mask_head = true`
+    - `adapter_conditioning_mode = ref_film`
+    - `adapter_mask_max_delta = 0.05`
+    - 仅训练：
+      - `adapter_condition_scale`
+      - `adapter_condition_shift`
+      - `adapter_mask_head`
+    - trainable parameter count：
+      - `329,473 / 2,697,090`
+      - `12.22%`
+  - `v51` relative to `v19`：
+    - default `+0.015467 dB`
+    - exact `target_full = -0.317694 dB`
+    - `speech_leak_like (0004) = -0.042935 dB`
+    - `guodegang_anchor_120s = -0.064897 dB`
+    - `guodegang_absent_480s = -0.013696 dB`
+    - `proxy_v7 = -1.016036 dB`
+  - relative to `v32` gate：
+    - `overall_judgement = near_tie`
+    - `near_tie_rules`：
+      - `exact_target_full_gain_floor`
+      - `speech_leak_like_gain_floor`
+      - `guodegang_absent_floor`
+  - 当前解释应更新为：
+    - 当前问题不只是
+      “adapter 没看到 reference”；
+    - 即便 adapter 分支已经看到了自己的 reference-conditioned feature，
+      仍拉不回 absent proxy 本体
+197. 已继续补第一条 `adapter-specific temporal model` 验证：`v52 = adapter GRU + adapter head`；结果说明即便给 absent branch 单独的一层双向时序模型，它仍只能把整体压到 near-tie，依然不能把 `proxy_v7` 拉回正向：
+  - 集中日报：
+    - `reports/daily/2026-03-20_v51_v52_adapter_conditioning_and_temporal_followup.md`
+  - 工程补充：
+    - `src/tse_prefix/models/stft_mask_baseline.py`
+      新增：
+      - `enable_adapter_temporal_model`
+      - `adapter_gru_layers`
+    - `scripts/train/train_stft_mask_baseline.py`
+      新增：
+      - `--model-enable-adapter-temporal-model`
+      - `--model-adapter-gru-layers`
+  - `v52` 定义：
+    - `enable_adapter_mask_head = true`
+    - `enable_adapter_temporal_model = true`
+    - `adapter_gru_layers = 1`
+    - `adapter_mask_max_delta = 0.05`
+    - 仅训练：
+      - `adapter_temporal_model`
+      - `adapter_mask_head`
+    - trainable parameter count：
+      - `986,881 / 3,354,498`
+      - `29.42%`
+  - `v52` relative to `v19`：
+    - default `+0.017187 dB`
+    - exact `target_full = -0.310738 dB`
+    - `speech_leak_like (0004) = -0.041941 dB`
+    - `guodegang_anchor_120s = -0.065335 dB`
+    - `guodegang_absent_480s = -0.013233 dB`
+    - `proxy_v7 = -0.876078 dB`
+  - relative to `v32` gate：
+    - `overall_judgement = near_tie`
+    - `near_tie_rules`：
+      - `exact_target_full_gain_floor`
+      - `speech_leak_like_gain_floor`
+      - `guodegang_absent_floor`
+  - 当前解释应更新为：
+    - 当前缺的已经不是：
+      - adapter branch 更强一点的 conditioning
+      - 或更大一点的 temporal capacity
+    - 而是：
+      - 真正独立的 dual-head / branch-local decoder
+      - 或训练图级别的更强语义解耦
 
 ## 9. 文档入口
 

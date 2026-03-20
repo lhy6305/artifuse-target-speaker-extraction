@@ -336,6 +336,121 @@
 - 入口：
   - `reports/daily/2026-03-20_v47_v48_prefix_freeze_decoupling_followup.md`
 
+### `v49`
+
+- 定义：
+  - 启用：
+    - `adapter_mask_head`
+  - `reconstruction_extra(proxy_v7)`
+    只走 adapter-combined output
+  - shared base losses
+    继续只看 `estimated_waveform_base`
+  - 仅训练：
+    - `adapter_mask_head`
+  - `adapter_mask_max_delta = 0.25`
+- 结论：
+  - `FAIL as keep candidate`
+- 主要原因：
+  - `proxy_v7`
+    在这条 simple residual adapter 上
+    明显反向：
+    - `-1.542894 dB`
+  - friend-side 也没被真正守住：
+    - exact `target_full`
+      仍 clear fail
+- 解释：
+  - “给 absent-side 独立输出分支”
+    这个大方向是对的；
+  - 但当前这条
+    simple output residual adapter
+    还不够表达
+- 入口：
+  - `reports/daily/2026-03-20_v49_v50_adaptermask_followup.md`
+
+### `v50`
+
+- 定义：
+  - 与 `v49`
+    相同，
+    仅改：
+    - `adapter_mask_max_delta = 0.05`
+- 结论：
+  - `FAIL as keep candidate`
+- 主要原因：
+  - friend-side 已回到 near-tie：
+    - exact `target_full`
+    - `speech_leak_like`
+    - `guodegang_absent`
+      都只差 very small negative delta
+  - 但 `proxy_v7`
+    仍明显负向：
+    - `-1.082981 dB`
+- 解释：
+  - `v49`
+    的问题部分确实来自 residual step 太大；
+  - 但即便把幅度压小，
+    simple adapter branch
+    仍拉不回 absent proxy 本体
+- 入口：
+  - `reports/daily/2026-03-20_v49_v50_adaptermask_followup.md`
+
+### `v51`
+
+- 定义：
+  - `adapter_mask_head`
+    保留
+  - adapter branch
+    额外启用：
+    - `adapter_conditioning_mode = ref_film`
+  - 仅训练：
+    - `adapter_condition_scale`
+    - `adapter_condition_shift`
+    - `adapter_mask_head`
+- 结论：
+  - `FAIL as keep candidate`
+- 主要原因：
+  - friend-side 仍只到 near-tie；
+  - `proxy_v7`
+    仍明显负向：
+    - `-1.016036 dB`
+- 解释：
+  - 当前问题不只是：
+    - adapter branch 没看到 reference
+  - 即便 adapter
+    已吃到自己的 reference-conditioned feature，
+    absent proxy 本体仍拉不回
+- 入口：
+  - `reports/daily/2026-03-20_v51_v52_adapter_conditioning_and_temporal_followup.md`
+
+### `v52`
+
+- 定义：
+  - `adapter_mask_head`
+    保留
+  - adapter branch
+    额外启用：
+    - `adapter_temporal_model`
+    - `adapter_gru_layers = 1`
+  - 仅训练：
+    - `adapter_temporal_model`
+    - `adapter_mask_head`
+- 结论：
+  - `FAIL as keep candidate`
+- 主要原因：
+  - friend-side 仍只到 near-tie；
+  - `proxy_v7`
+    仍明显负向：
+    - `-0.876078 dB`
+- 解释：
+  - 当前缺的已经不是：
+    - adapter branch 更强一点的 conditioning
+    - 或更大一点的 temporal capacity
+  - 即便给 adapter branch
+    自己的一层双向 GRU，
+    也仍拉不回 absent proxy 本体
+- 入口：
+  - `reports/daily/2026-03-20_v51_v52_adapter_conditioning_and_temporal_followup.md`
+
 ## 4. 当前分支状态
 
 ### 分支 `B1`: `v5 cleancarve` 内继续细粒度 carve-out
@@ -444,6 +559,34 @@
     - `guodegang_anchor_120s = -0.014192 dB`
     - `guodegang_absent_480s = -0.017526 dB`
     - `proxy_v7 = -0.274633 dB`
+  - `v49` relative to `v19`：
+    - default `+0.004926 dB`
+    - exact `target_full = -0.406366 dB`
+    - `speech_leak_like (0004) = -0.048850 dB`
+    - `guodegang_anchor_120s = -0.056997 dB`
+    - `guodegang_absent_480s = -0.015182 dB`
+    - `proxy_v7 = -1.542894 dB`
+  - `v50` relative to `v19`：
+    - default `+0.013945 dB`
+    - exact `target_full = -0.323341 dB`
+    - `speech_leak_like (0004) = -0.042961 dB`
+    - `guodegang_anchor_120s = -0.064364 dB`
+    - `guodegang_absent_480s = -0.013611 dB`
+    - `proxy_v7 = -1.082981 dB`
+  - `v51` relative to `v19`：
+    - default `+0.015467 dB`
+    - exact `target_full = -0.317694 dB`
+    - `speech_leak_like (0004) = -0.042935 dB`
+    - `guodegang_anchor_120s = -0.064897 dB`
+    - `guodegang_absent_480s = -0.013696 dB`
+    - `proxy_v7 = -1.016036 dB`
+  - `v52` relative to `v19`：
+    - default `+0.017187 dB`
+    - exact `target_full = -0.310738 dB`
+    - `speech_leak_like (0004) = -0.041941 dB`
+    - `guodegang_anchor_120s = -0.065335 dB`
+    - `guodegang_absent_480s = -0.013233 dB`
+    - `proxy_v7 = -0.876078 dB`
 - 当前缺口：
   - 现在不再缺 absent proxy 本体；
   - 当前真正缺的是：
@@ -477,6 +620,18 @@
       但还没等 `proxy_v7`
       回到正向，
       friend-side 两条就先重新坏掉了
+    - simple output residual adapter
+      已证明：
+      - 大残差会把 absent proxy 明显推反
+      - 小残差只能把 friend-side
+        拉回 near-tie，
+        但仍带不回 absent proxy 本体
+    - 继续给 adapter branch
+      增加：
+      - reference conditioning
+      - 或自己的 temporal model
+      也仍然只能把结果压到 near-tie，
+      拉不回 absent proxy 本体
 
 ## 5. 下一条默认执行分支
 
@@ -498,13 +653,14 @@
 4. 单纯 `stft_only`
    也不作为默认延伸方向；
 5. 默认优先继续沿
-   `proxy_v7` 的真正 branch-local output decoupling；
+   `proxy_v7` 的更强 branch-local output decoupling；
 6. 当前更偏向：
-   - absent-only residual adapter
-   - 或独立 output branch / dual-head；
+   - 真正独立的 dual-head / branch-local decoder；
    而不是继续做：
    - selector 细修
-   - 或 prefix freeze 的小组合；
+   - prefix freeze 的小组合
+   - simple residual adapter 的小参数
+   - adapter branch 的 conditioning / temporal 变体；
 7. 仍按同一套裁决口径重新走：
    - 训练
    - default / exact / near-real / guodegang eval
@@ -519,7 +675,7 @@
 3. `docs/02_pitfalls_log.md`
 4. 本文档 `docs/05_task_branch_map.md`
 5. 当前活跃分支日报：
-   - 现在是 `reports/daily/2026-03-20_v47_v48_prefix_freeze_decoupling_followup.md`
+   - 现在是 `reports/daily/2026-03-20_v51_v52_adapter_conditioning_and_temporal_followup.md`
 
 每次准备开新分支前，至少回答：
 
