@@ -1059,6 +1059,27 @@
       - 因而下一条已不再缺：
         - 双 protect selector
           的 plumbing
+    - `v63`
+      已实际执行并失败：
+      - `target_full`
+        确实继续收回；
+      - 但 `0004-like`
+        没有被真正拉正；
+      - `guodegang_anchor / absent`
+        反而一起转负；
+      - 额外 metadata 复盘已确认：
+        - `exact_nontargetfull`
+          并不是
+          `0004-like`
+          的保守近似，
+          而几乎全是
+          `target_absent_head / tail`
+          子集
+      - 因而：
+        - `exact_all - exact_targetfull_all`
+          不再保留为
+          第二 protect selector
+          的默认定义
 
 ## 5. 下一条默认执行分支
 
@@ -1069,11 +1090,13 @@
 1. 当前项目状态应固定区分为两层：
    - 默认主线：
      - `legacy stage2`
+     - status: `mainline_keep`
    - 研究基座：
      - `v19`
      - `v32`
      - `proxy_v7`
      - dual-head / branch-local decoder
+     - status: `research_base_keep`
 2. 当前 `v36+`
    默认解释为：
    - 研究排雷分支；
@@ -1095,18 +1118,26 @@
      的近邻小变体
    - `interference_extra_base_delta_projection_weight`
      的近邻小变体；
-7. 当前只保留下一条书面规格，不执行：
-   - `v63 = target_full-only base-align + 0004-like branch_protect guard`
-8. `v63` 的第二条 protect selector
-   当前建议定义为：
+7. `v63`
+   已完成并判定：
+   - `closed_failed`
+8. 当前不再把：
    - `exact_all - exact_targetfull_all`
-   - 对应 ids：
-     - `train_000405`
-     - `train_001279`
-     - `train_001491`
-     - `val_000096`
-     - `val_000297`
-9. 只有在用户明确允许时，
+   解释为：
+   - `0004-like branch_protect selector`
+9. 若后续继续 dual-protect，
+   默认前置动作改为：
+   - 先重建真正对应
+     `speech_leak_like (0004)`
+     的第二 selector / proxy
+   - 不直接起
+     `v64`
+     扫现有 `branch_protect` weight
+10. 当前分支标签应固定写成：
+   - `v57 / v58 = closed_but_evidence_keep`
+   - `v54 / v55 / v59 / v60 = closed_failed`
+   - `v63 = closed_failed`
+11. 只有在用户明确允许时，
    才重新从：
    - `v32`
      warm-start
@@ -1124,7 +1155,9 @@
 3. `docs/02_pitfalls_log.md`
 4. 本文档 `docs/05_task_branch_map.md`
 5. 当前活跃分支日报：
-   - 现在是 `reports/daily/2026-03-20_project_state_reset_after_review.md`
+   - 现在是 `reports/daily/2026-03-20_v63_dualdecoder_targetfull_basealign_branchprotect_followup.md`
+   - `v63` 旧启动清单：
+     - `reports/daily/2026-03-20_v63_written_spec_no_run.md`
 
 每次准备开新分支前，至少回答：
 

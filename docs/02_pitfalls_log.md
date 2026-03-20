@@ -5391,3 +5391,98 @@
    - 服务的真实问题症状是什么；
    - 为什么不是旧 primitive 的近邻重扫；
    - 对应哪条人耳或 near-real 复核入口。
+
+### 126. `exact_all - exact_targetfull_all` 这种“补集 selector”如果没先过 metadata 语义复核，很容易被误当成另一个症状族；在本项目里它并不是 `0004-like speech leak`，而几乎全是 `target_absent_head / tail`
+
+现象：
+
+- `v61 / v62`
+  已经证明：
+  - `target_full`-only `base-align`
+    是对的；
+- 因而后续很自然地把：
+  - `exact_all - exact_targetfull_all`
+  当成
+  “第二条 `0004-like` protect selector”
+  去执行了 `v63`；
+- 但 `v63`
+  的结果形态是：
+  - exact `target_full`
+    继续明显收回；
+  - `proxy_v7`
+    继续放大；
+  - near-real `0004`
+    几乎没变好；
+  - `guodegang_anchor / absent`
+    一起转负。
+
+复盘：
+
+- 进一步检查这 5 个
+  `exact_nontargetfull`
+  ids 的 metadata 后发现：
+  - `train_000405`
+    - `target_absent_head`
+  - `train_001279`
+    - `target_absent_head`
+  - `train_001491`
+    - `target_absent_tail`
+  - `val_000096`
+    - `target_absent_tail`
+  - `val_000297`
+    - `target_absent_head`
+- 也就是：
+  - 这个补集 selector
+    几乎全是
+    `absent-like nonfull`
+    行为；
+  - 它并不表达
+    `speech_leak_like (0004)`
+    语义。
+
+影响：
+
+- 如果直接把这种补集
+  当成另一个症状族去训练，
+  很容易出现：
+  - exact / proxy
+    某一侧继续变强；
+  - 但真正想修的 near-real 症状
+    不动甚至更差；
+  - 同时把别的 real anchor
+    一起打坏。
+
+处理：
+
+- 已把 `v63`
+  结论落盘到：
+  - `reports/daily/2026-03-20_v63_dualdecoder_targetfull_basealign_branchprotect_followup.md`
+- 并同步修正文档口径：
+  - `exact_all - exact_targetfull_all`
+    不再保留为
+    第二 protect selector
+    的默认定义。
+
+后续要求：
+
+1. 以后任何“补集 selector”
+   在进入训练前，
+   必须先抽样读 metadata，
+   确认它的实际 pattern / recipe
+   语义。
+2. 如果一个 selector
+   的语言标签是：
+   - `0004-like`
+   - `friend speech leak`
+   之类真实症状名，
+   那它必须能在 metadata 复核里
+   说清为什么真对应这类症状，
+   不能只靠集合差。
+3. 下一条 dual-protect
+   若继续，
+   应先重建真正对应
+   `speech_leak_like (0004)`
+   的 proxy / selector，
+   而不是继续扫
+   `exact_nontargetfull`
+   的 guard weight。

@@ -70,12 +70,27 @@
 
 - absent-side 研究基座：
   - `v19`
+  - status: `research_base_keep`
 - friend-side / branch-local 工程基座：
   - `v32`
+  - status: `research_base_keep`
 - 有效 absent proxy：
   - `proxy_v7`
+  - status: `research_base_keep`
 - 仍保留的结构方向：
   - dual-head / branch-local decoder
+  - status: `research_base_keep`
+
+### 当前分支标签
+
+- `legacy stage2`
+  - status: `mainline_keep`
+- `v19 / v32 / proxy_v7`
+  - status: `research_base_keep`
+- `v57 / v58`
+  - status: `closed_but_evidence_keep`
+- `v54 / v55 / v59 / v60`
+  - status: `closed_failed`
 
 ### 当前明确停止继续扫的内容
 
@@ -116,6 +131,12 @@
 
 - `exact_all - exact_targetfull_all`
 
+本轮已正式物化为：
+
+- `data/synthetic/sample_ids_v30_friend_reverse_guardrail_proxy_v8_similarity_lowtransient_lowinttrans_exact_nontargetfull_train.txt`
+- `data/synthetic/sample_ids_v30_friend_reverse_guardrail_proxy_v8_similarity_lowtransient_lowinttrans_exact_nontargetfull_val.txt`
+- `data/synthetic/sample_ids_v30_friend_reverse_guardrail_proxy_v8_similarity_lowtransient_lowinttrans_exact_nontargetfull_all.txt`
+
 对应当前已确认的补集 ids：
 
 - `train_000405`
@@ -128,6 +149,10 @@
 不写新的 checkpoint，
 不跑训练，
 不生成 compare / gate 产物。
+
+对应单独启动清单：
+
+- `reports/daily/2026-03-20_v63_written_spec_no_run.md`
 
 ### 3. 重新启动实验前的前置条件
 

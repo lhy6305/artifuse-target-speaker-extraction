@@ -3833,15 +3833,20 @@
   - 当前正式状态板：
     - 默认主线：
       - `legacy stage2`
+      - status: `mainline_keep`
     - 研究基座：
       - `v19`
       - `v32`
       - `proxy_v7`
       - dual-head / branch-local decoder
+      - status: `research_base_keep`
     - 当前 `v36+`
       默认解释为：
       - 研究排雷分支
       - 不是主线替换候选序列
+    - 当前分支标签：
+      - `v57 / v58 = closed_but_evidence_keep`
+      - `v54 / v55 / v59 / v60 = closed_failed`
   - 当前正式停止继续扫的内容：
     - `proxy_v7` 微幅 waveform / stft 小变体
     - prefix-freeze 小组合
@@ -3864,6 +3869,8 @@
   - 当前建议的第二条 protect selector
     采用：
     - `exact_all - exact_targetfull_all`
+  - 本轮已正式物化为：
+    - `data/synthetic/sample_ids_v30_friend_reverse_guardrail_proxy_v8_similarity_lowtransient_lowinttrans_exact_nontargetfull_all.txt`
   - 当前已确认的补集 ids：
     - `train_000405`
     - `train_001279`
@@ -3874,6 +3881,68 @@
     - 本次不启动新训练
     - 本次不生成新 checkpoint
     - 本次不生成新 compare / gate
+  - 单独启动清单：
+    - `reports/daily/2026-03-20_v63_written_spec_no_run.md`
+212. 已完成 `v63 = dual-head + proxy_v7 reconstruction + target_full-only base-align + branch_protect guard`；结果说明 dual-protect plumbing 是通的，但把第二条 selector 直接定义成 `exact_all - exact_targetfull_all` 是错误建模，它主要选中的不是 `0004-like speech leak`，而是 `absent-like nonfull` 子集：
+  - 集中日报：
+    - `reports/daily/2026-03-20_v63_dualdecoder_targetfull_basealign_branchprotect_followup.md`
+  - `v63` 定义：
+    - checkpoint：
+      - `baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v63_v32_absent_dualdecoder_v7_wave_targetfullbasealign_branchprotect0002_ft1`
+    - protect A：
+      - `interference_extra_base_align_weight = 0.02`
+      - `focus = exact_targetfull_all`
+    - protect B：
+      - `branch_protect_guard_sisdr_weight = 0.0002`
+      - `focus = exact_nontargetfull_all`
+  - selector 命中：
+    - `interference_extra`
+      - train `4 / 129`
+      - val `1 / 37`
+    - `branch_protect`
+      - train `3 / 129`
+      - val `2 / 37`
+  - relative to `v19`：
+    - default `+0.133461 dB`
+    - exact `target_full = -0.145699 dB`
+    - near-real speech probe overall `-0.100990 dB`
+    - near-real `speech_leak_like (0004) = -0.072646 dB`
+    - `guodegang_anchor_120s = -0.311379 dB`
+    - `guodegang_absent_480s = -0.114641 dB`
+    - `proxy_v7 = +1.460838 dB`
+  - relative to `v32` 的 `friend_speech_leak_followup_gate`：
+    - `overall_judgement = fail`
+    - pass：
+      - `default_stage2_delta_floor`
+      - `exact_target_full_gain_floor`
+    - near-tie：
+      - `speech_probe_overall_floor`
+    - clear fail：
+      - `speech_leak_like_gain_floor`
+      - `guodegang_anchor_floor`
+      - `guodegang_absent_floor`
+  - 额外 metadata 复盘已确认：
+    - `exact_nontargetfull`
+      这 5 个 ids
+      基本全是：
+      - `target_clean_speech`
+      - `target_absent_head / target_absent_tail`
+    - 它不应再被解释成：
+      - `0004-like speech leak`
+      的保守补集
+  - 当前结论：
+    - `v63` 不保留
+    - `target_full`-only `base-align`
+      仍成立
+    - 但第二条 protect selector
+      不能继续用：
+      - `exact_all - exact_targetfull_all`
+    - 下一步若继续这条线，
+      应先重建真正对应
+      `speech_leak_like (0004)`
+      的 selector / proxy，
+      而不是直接起 `v64`
+      扫现有 guard weight
 
 ## 9. 文档入口
 
@@ -3952,5 +4021,6 @@
 - 本轮 `v61 / v62` dual-head `target_full`-only `base-align` follow-up：`reports/daily/2026-03-20_v61_v62_dualdecoder_targetfull_basealign_followup.md`
 - 本轮 `branch_protect` guard selector plumbing：`reports/daily/2026-03-20_branch_protect_guard_plumbing.md`
 - 本轮项目状态重置与方案修正：`reports/daily/2026-03-20_project_state_reset_after_review.md`
+- 本轮 `v63` dual-protect follow-up：`reports/daily/2026-03-20_v63_dualdecoder_targetfull_basealign_branchprotect_followup.md`
 - 本轮仓库与 `.gitignore` 审计：`reports/daily/2026-03-18_repo_gitignore_audit.md`
 - 本轮全仓库评估总结：`reports/daily/2026-03-17_repo_evaluation_summary.md`
