@@ -3649,6 +3649,76 @@
         更能兼顾
         `proxy_v7`
         与 `speech_leak_like (0004)`
+205. 已完成第一条正式 `base-delta-interference projection` 候选：`v59 = dual-head + proxy_v7 reconstruction + base-delta-interference projection(0.005)`；结果说明这条 primitive 不是没接上，而是在当前 exact ids 上几乎没有实际约束量，因此仍会放大 `proxy_v7 / guodegang`，却保不住 friend-side `target_full / 0004`：
+  - 集中日报：
+    - `reports/daily/2026-03-20_v59_v60_dualdecoder_basedeltaproj_followup.md`
+  - `v59` 定义：
+    - checkpoint：
+      - `baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v59_v32_absent_dualdecoder_v7_wave_basedeltaproj_w005_ft1`
+    - friend-side protect：
+      - `interference_extra_base_delta_projection_weight = 0.005`
+      - `focus = v30 exact 10 ids`
+  - selector 与 protect 项量级：
+    - `interference_extra`
+      train `7 / 129`
+      val `3 / 37`
+    - train `interference_extra_base_delta_projection_ratio`
+      = `2.0131949656154081e-07`
+    - val
+      = `1.8925945539649546e-07`
+  - `v59` relative to `v19`：
+    - default `+0.129068 dB`
+    - exact `target_full = -0.983311 dB`
+    - `speech_leak_like (0004) = -0.117378 dB`
+    - `guodegang_anchor_120s = +0.356478 dB`
+    - `guodegang_absent_480s = +0.070337 dB`
+    - `proxy_v7 = +1.597651 dB`
+  - relative to `v32` gate：
+    - `overall_judgement = fail`
+    - `clear_fail_rules`：
+      - `exact_target_full_gain_floor`
+      - `speech_leak_like_gain_floor`
+  - 当前解释应更新为：
+    - 这条 primitive
+      不是没命中；
+    - 而是命中了，
+      但实际惩罚量几乎为 `0`，
+      所以它没有真正约束到当前坏掉的
+      `0004-like speech-leak`
+206. 已完成更强档位 `v60 = base-delta-interference projection(0.02)`；结果与 `v59` 仅是微小扰动，说明这条 primitive 当前已不值得继续扫权重：
+  - 集中日报：
+    - `reports/daily/2026-03-20_v59_v60_dualdecoder_basedeltaproj_followup.md`
+  - `v60` 定义：
+    - checkpoint：
+      - `baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v60_v32_absent_dualdecoder_v7_wave_basedeltaproj_w02_ft1`
+    - 相比 `v59`
+      仅改：
+      - `interference_extra_base_delta_projection_weight = 0.02`
+  - protect 项量级仍极小：
+    - train `1.9598214456009678e-07`
+    - val `1.7825688871653256e-07`
+  - `v60` relative to `v19`：
+    - default `+0.129255 dB`
+    - exact `target_full = -0.950958 dB`
+    - `speech_leak_like (0004) = -0.116784 dB`
+    - `guodegang_anchor_120s = +0.347640 dB`
+    - `guodegang_absent_480s = +0.068271 dB`
+    - `proxy_v7 = +1.562356 dB`
+  - relative to `v32` gate：
+    - `overall_judgement = fail`
+    - `clear_fail_rules`：
+      - `exact_target_full_gain_floor`
+      - `speech_leak_like_gain_floor`
+  - 当前解释应进一步收紧为：
+    - `base-delta-interference projection`
+      这条 protect primitive
+      当前不是值得继续扫权重的方向；
+    - 下一条默认不再继续扫
+      `interference_extra_base_delta_projection_weight`
+      的近邻值，
+      而应改成更直接面向
+      `target_full / speech_leak_like (0004)`
+      的 protect objective
 
 ## 9. 文档入口
 
@@ -3723,5 +3793,6 @@
 - 本轮 `v53 / v54` dual-head follow-up：`reports/daily/2026-03-20_v53_v54_dualdecoder_followup.md`
 - 本轮 `v55 - v58` dual-head protect-objective follow-up：`reports/daily/2026-03-20_v55_v58_dualdecoder_protect_objective_followup.md`
 - 本轮 dual-head `base-delta-interference projection` smoke：`reports/daily/2026-03-20_dualdecoder_base_delta_projection_smoke.md`
+- 本轮 `v59 / v60` dual-head `base-delta-interference projection` follow-up：`reports/daily/2026-03-20_v59_v60_dualdecoder_basedeltaproj_followup.md`
 - 本轮仓库与 `.gitignore` 审计：`reports/daily/2026-03-18_repo_gitignore_audit.md`
 - 本轮全仓库评估总结：`reports/daily/2026-03-17_repo_evaluation_summary.md`

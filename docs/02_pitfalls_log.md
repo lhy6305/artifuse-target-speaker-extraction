@@ -5152,3 +5152,60 @@
    - `proxy_v7`
    - `v32` frozen base anchor
    这三项资产，作为下一条新 protect objective 的底座。
+
+### 122. 即使 protect primitive 看起来更“局部更聪明”，如果它在 exact ids 上的实际 loss 量级几乎为 `0`，继续扫权重也不会自动变成有效约束；`v59 / v60` 证明 `base-delta-interference projection` 当前就属于这种情况
+
+现象：
+
+- 本轮新增并正式测试了：
+  - `interference_extra_base_delta_projection_weight`
+- selector 已真实命中：
+  - train `7 / 129`
+  - val `3 / 37`
+- 但 `v59 / v60`
+  的 train summary 里，
+  新 protect 项量级都极小：
+  - `v59`
+    - train `2.0131949656154081e-07`
+    - val `1.8925945539649546e-07`
+  - `v60`
+    - train `1.9598214456009678e-07`
+    - val `1.7825688871653256e-07`
+- 同时：
+  - `proxy_v7 / guodegang`
+    仍明显变强
+  - 但 friend-side
+    `exact target_full / speech_leak_like (0004)`
+    仍 clear fail
+
+影响：
+
+- 如果只看：
+  - “这是更局部的 protect primitive”
+  很容易主观上觉得它比 `base-align`
+  更有希望。
+- 但当实际 loss 量级已经接近 `0` 时，
+  继续把权重从：
+  - `0.005`
+  调到：
+  - `0.02`
+  往往也只会得到近乎同形态结果，
+  不是新的结构性结论。
+
+处理：
+
+- 已完成：
+  - `v59`
+  - `v60`
+  两个正式点；
+- 并把训练、compare、gate 与结论集中落盘到：
+  - `reports/daily/2026-03-20_v59_v60_dualdecoder_basedeltaproj_followup.md`
+
+后续要求：
+
+1. 对任何新 protect primitive，不能只看 selector 是否命中；还要看该项 loss 的实际量级。
+2. 如果在有效命中样本上，该项 loss 长期只有 `~1e-7` 这种接近零的量级，就不要继续扫近邻权重。
+3. 这类结果应直接判成：
+   - primitive 没真正碰到当前坏掉的行为语义，
+   而不是：
+   - “再多试两档 weight 也许就行”。

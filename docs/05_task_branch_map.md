@@ -627,6 +627,62 @@
 - 入口：
   - `reports/daily/2026-03-20_v55_v58_dualdecoder_protect_objective_followup.md`
 
+### `v59`
+
+- 定义：
+  - 第一条正式
+    `base-delta-interference projection`
+    候选
+  - friend-side protect：
+    - `interference_extra_base_delta_projection_weight = 0.005`
+    - `focus = v30 exact 10 ids`
+- 结论：
+  - `FAIL as keep candidate`
+- 主要原因：
+  - `proxy_v7 / guodegang`
+    明显更强：
+    - `proxy_v7 = +1.597651 dB`
+    - `guodegang_anchor = +0.356478 dB`
+    - `guodegang_absent = +0.070337 dB`
+  - 但 friend-side
+    仍 clear fail：
+    - exact `target_full = -0.983311 dB`
+    - `speech_leak_like (0004) = -0.117378 dB`
+  - 更关键的是：
+    - protect 项虽然命中了 exact ids，
+      但量级几乎为 `0`
+- 解释：
+  - 当前不是：
+    - primitive 没接上
+  - 而是：
+    - 它没有真正碰到
+      现在坏掉的 `0004-like` 行为
+- 入口：
+  - `reports/daily/2026-03-20_v59_v60_dualdecoder_basedeltaproj_followup.md`
+
+### `v60`
+
+- 定义：
+  - `v59`
+    的更强档位
+  - `interference_extra_base_delta_projection_weight = 0.02`
+- 结论：
+  - `FAIL as keep candidate`
+- 主要原因：
+  - 结果与 `v59`
+    仅是微小扰动；
+  - 仍然卡在：
+    - exact `target_full`
+    - `speech_leak_like (0004)`
+  - protect 项量级也仍接近 `0`
+- 解释：
+  - 这条 primitive
+    当前不值得继续扫权重；
+  - `0.005 -> 0.02`
+    没有带来新的结构性变化
+- 入口：
+  - `reports/daily/2026-03-20_v59_v60_dualdecoder_basedeltaproj_followup.md`
+
 ## 4. 当前分支状态
 
 ### 分支 `B1`: `v5 cleancarve` 内继续细粒度 carve-out
@@ -873,6 +929,20 @@
         而是更直接面向
         `speech_leak_like (0004)`
         的 protect objective
+    - `v59 / v60`
+      已证明：
+      - `base-delta-interference projection`
+        不是没接上；
+      - 但它在当前 exact ids 上
+        的实际 loss 量级几乎为 `0`
+      - 所以会继续允许：
+        - `proxy_v7 / guodegang`
+          很强
+        - friend-side
+          `target_full / 0004`
+          继续 clear fail
+      - 因而这条 primitive
+        当前也不值得继续扫权重
 
 ## 5. 下一条默认执行分支
 
@@ -914,6 +984,9 @@
      - 默认也不再继续扫
        `interference_extra_base_align_weight`
        的近邻小变体；
+     - 默认也不再继续扫
+       `interference_extra_base_delta_projection_weight`
+       的近邻小变体；
      - 下一条更合理的默认方向应改成：
        - 更贴近 `keep target_full`
          与尤其直接面向
@@ -922,6 +995,7 @@
        - 而不是继续复用当前这条
          residual extra
          或 exact-family `base-align`
+         或 `base-delta-interference projection`
      - 当前工程上已补好一条可直接试验的候选 primitive：
        - `interference_extra_base_delta_projection_weight`
        - 它只约束：
@@ -951,7 +1025,7 @@
 3. `docs/02_pitfalls_log.md`
 4. 本文档 `docs/05_task_branch_map.md`
 5. 当前活跃分支日报：
-   - 现在是 `reports/daily/2026-03-20_dualdecoder_base_delta_projection_smoke.md`
+   - 现在是 `reports/daily/2026-03-20_v59_v60_dualdecoder_basedeltaproj_followup.md`
 
 每次准备开新分支前，至少回答：
 
