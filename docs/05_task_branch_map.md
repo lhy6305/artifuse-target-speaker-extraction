@@ -1276,6 +1276,503 @@
      - 训练
      - default / exact / near-real / guodegang eval
      - `friend_speech_leak_followup_gate`
+14. 当前 `0004-like speech_leak`
+    已补出第一份公共搜索底座：
+    - `data/synthetic/val_manifest_friend_speech_leak_search_v1.jsonl = 50`
+    - 作用是统一 shared `sample_id`
+      compare 输入，
+      不是直接定义真 proxy
+15. 当前已物化第一份新 candidate family：
+    - `train_manifest_friend_speech_leak_proxy_search_candidate_v1.jsonl = 12`
+    - `val_manifest_friend_speech_leak_proxy_search_candidate_v1.jsonl = 3`
+16. 这份 `candidate_v1`
+    当前只能解释为：
+    - 新的 `0004-like speech_leak` 候选 family
+    - 不是已经确认的真 `branch_protect` proxy
+17. 下一步若继续，
+    默认不是直接训练，
+    而是继续在 shared search manifest 上
+    加负约束，
+    优先避免：
+    - `v65` 仍显著占优
+    - `v20` 仍明显落后
+18. 当前已补第一条 `v65` guard candidate：
+    - `train_manifest_friend_speech_leak_proxy_search_candidate_v2_guardv65.jsonl = 13`
+    - `val_manifest_friend_speech_leak_proxy_search_candidate_v2_guardv65.jsonl = 3`
+19. 这条 `candidate_v2_guardv65`
+    的性质应写成：
+    - 比 `candidate_v1` 更干净
+    - 但辨识度更弱
+    - 不能直接当成正式训练入口
+20. 当前最可继续细化的 working candidate
+    已改成：
+    - `train_manifest_friend_speech_leak_proxy_search_candidate_v3_guardv20.jsonl = 10`
+    - `val_manifest_friend_speech_leak_proxy_search_candidate_v3_guardv20.jsonl = 3`
+21. `candidate_v3_guardv20`
+    当前性质应写成：
+    - 比 `candidate_v2_guardv65` 更有辨识度
+    - 比 `candidate_v1` 更少受 `v65` 伪阳性拖偏
+    - 但仍不是正式训练入口
+22. 下一步若继续，
+    默认优先细化：
+    - `candidate_v3_guardv20`
+    而不是回到：
+    - `candidate_v1`
+    - 或只继续收紧 `candidate_v2_guardv65`
+23. `candidate_v3_guardv20`
+    的标准 selector 资产也已补齐：
+    - `sample_ids_friend_speech_leak_proxy_search_candidate_v3_guardv20_{train,val,all}.txt`
+24. 当前已完成第一条直接使用
+    `candidate_v3_guardv20`
+    做 `branch_protect`
+    的 dual-head follow-up：
+    - `v66 = baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v66_v32_absent_dualdecoder_v7_wave_targetfullbasealign_branchprotect_candv3_0002_ft1`
+    - relative to `v32`
+      的 real gate：
+      - 只剩
+        `speech_leak_like_gain_floor = clear_fail`
+      - `default / speech probe overall / exact target_full / guodegang_anchor / guodegang_absent`
+        均通过
+25. `v66`
+    现已补齐此前缺失的
+    `candidate_v3`
+    synthetic 方向诊断：
+    - `reports/eval/compare_v19_vs_v66_on_friend_speech_leak_search_v1/candidate_v3_guardv20_direction_analysis/summary.json`
+    - aggregate 排名为：
+      - `v66 > v64 > v35 > v20 > v30 > v32 > v29 > v25 > v65 > v24 > v19`
+    - `v66 - v32 = +0.051855 dB`
+    - 说明训练 aggregate 方向
+      已经沿新 `candidate_v3`
+      rows 推正
+    - 但 row-level 仍弱：
+      - strict samplewise order-pass = `0 / 3`
+      - `v66` 单条 rank = `7 / 10 / 1`
+26. 因而当前关于 `v66`
+    的正确解释应固定为：
+    - 不是
+      “branch_protect routing
+       完全没起作用”
+    - 而是
+      `candidate_v3`
+      这条 proxy
+      已能提供 aggregate 正向信号，
+      但 row-level 语义仍不够硬，
+      还不足以闭环 real `0004`
+27. `v66` 诊断之后，
+    已继续补第一轮
+    `v64>v66`
+    导向的 proxy follow-up 搜索：
+    - 若直接放掉
+      `v25 > v24`
+      去找 order-pass family，
+      会回到：
+      - 高 gain
+      - 高 target transient
+      的 strong-transient 家族
+      - 不作为下一条默认 proxy
+28. 当前新物化的 follow-up candidate 为：
+    - `train_manifest_friend_speech_leak_proxy_search_candidate_v4_guardv66_by_v64.jsonl = 33`
+    - `val_manifest_friend_speech_leak_proxy_search_candidate_v4_guardv66_by_v64.jsonl = 10`
+    - `sample_ids_friend_speech_leak_proxy_search_candidate_v4_guardv66_by_v64_{train,val,all}.txt`
+    - 当前 val aggregate 排名：
+      - `v64 > v66 > v65 > v20 > v30 > v32 > v35 > v29 > v25 > v24`
+    - 其中：
+      - `v64 - v66 = +0.003908 dB`
+      - `v66 - v65 = +0.015052 dB`
+    - 且保留了：
+      - `v35 > v25 > v24`
+      - `v20 > v24`
+29. `candidate_v4_guardv66_by_v64`
+    当前性质应写成：
+    - 比 `candidate_v3_guardv20`
+      更适合继续细化
+      `v64 / v66`
+      之间的分界 proxy
+    - 与 `candidate_v1 / v2`
+      完全不重叠，
+      说明不是旧家族重命名
+    - 但 row-level
+      仍不够硬，
+      还不是正式训练入口
+    - `candidate_v3_guardv20`
+      则保留为：
+      - 诊断训练 aggregate
+        是否被推正的旧 working candidate
+30. 已进一步确认：
+    - 直接显式要求
+      `v64 > v66 > v65`
+      并不会产生新的
+      `candidate_v5`
+    - top order-pass family
+      仍然回到：
+      - `candidate_v4_guardv66_by_v64`
+    - strict samplewise
+      仍为：
+      - `0`
+31. 当前更关键的新事实是：
+    - `candidate_v4_guardv66_by_v64`
+      与当前 `v42 / v66`
+      active split
+      几乎不重叠：
+      - vs `v42` base train：
+        - `1 / 33`
+      - vs `v42` base val：
+        - `0 / 10`
+    - 因而若后续继续训练，
+      默认不能只换 selector
+32. 本轮已为后续训练准备好 union split：
+    - `train_manifest_v42_plus_friend_speech_leak_proxy_search_candidate_v4_guardv66_by_v64.jsonl = 161`
+    - `val_manifest_v42_plus_friend_speech_leak_proxy_search_candidate_v4_guardv66_by_v64.jsonl = 47`
+    - 这对 manifest
+      才是后续若继续验证
+      `candidate_v4`
+      训练信号时的默认入口
+33. 已继续把
+    `candidate_v4_guardv66_by_v64`
+    真正 union
+    进 active split，
+    并按 `v66`
+    原 recipe
+    启动：
+    - `v67 = baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v67_v32_absent_dualdecoder_v7_wave_targetfullbasealign_branchprotect_candv4union_0002_ft1`
+34. `v67`
+    已把 coverage 问题排除：
+    - `branch_protect`
+      命中变成：
+      - train `33 / 161`
+      - val `10 / 47`
+    - 说明这轮不是
+      selector 没命中
+35. 但 `v67`
+    结果明确失败：
+    - relative to `v32`
+      的 `friend_speech_leak_followup_gate`：
+      - `overall_judgement = fail`
+      - clear fail：
+        - `speech_leak_like_gain_floor`
+        - `guodegang_absent_floor`
+      - near-tie 但未过：
+        - `speech_probe_overall_floor`
+    - 且在
+      `candidate_v4`
+      那 `10` 条 val rows 上，
+      aggregate 变成：
+      - `v64 > v66 > v65 > v67`
+    - 说明当前更该怀疑的是：
+      - objective / proxy
+        语义仍错，
+      - 而不是 manifest coverage
+36. `v67`
+    之后已补 subgroup 级诊断，
+    当前对 `candidate_v4_guardv66_by_v64`
+    的正确解释应升级为：
+    - 不是单语义 family
+    - 而是混入了一簇
+      低 target transient /
+      高 interference transient share
+      的危险子族
+    - 新入口：
+      - `scripts/eval/analyze_proxy_candidate_subgroups.py`
+      - `reports/daily/2026-03-21_candidate_v4_subgroup_diagnosis.md`
+    - 核心事实：
+      - 对 `v66`
+        而言，
+        `candidate_v4`
+        在：
+        - higher-target-transient half
+          上相对 `v64`
+          仍是小正向
+        - low-target-transient half
+          上则已转负
+      - 对 `v67`
+        而言，
+        当前最明显的系统性回退落在：
+        - high interference transient share half
+          relative to `v66`：
+          - `-0.086806 dB`
+          - improved count `0 / 5`
+        - low target transient half
+          relative to `v66`：
+          - `-0.072390 dB`
+      - 两条危险条件交集
+        当前为 `4` 条 rows：
+        - `val_000165`
+        - `val_000223`
+        - `val_000401`
+        - `val_000469`
+        - 在这 `4` 条上：
+          - `v66 - v64 = -0.000723 dB`
+          - `v67 - v66 = -0.094110 dB`
+    - 当前默认下一步因此改为：
+      - 先做
+        `candidate_v4`
+        semantic split / carve-out
+      - 不直接继续沿
+        现有整包 `candidate_v4`
+        再放大 branch_protect
+37. 本轮已进一步把
+    `v67 negative`
+    top family
+    物化为：
+    - `train_manifest_friend_speech_leak_proxy_search_candidate_v5_guardv67_negative.jsonl = 12`
+    - `val_manifest_friend_speech_leak_proxy_search_candidate_v5_guardv67_negative.jsonl = 3`
+    - `sample_ids_friend_speech_leak_proxy_search_candidate_v5_guardv67_negative_{train,val,all}.txt`
+    - `train_manifest_v42_plus_friend_speech_leak_proxy_search_candidate_v5_guardv67_negative.jsonl = 141`
+    - `val_manifest_v42_plus_friend_speech_leak_proxy_search_candidate_v5_guardv67_negative.jsonl = 40`
+    - 入口：
+      - `reports/daily/2026-03-21_candidate_v5_guardv67_negative_materialization.md`
+  - 这条 `candidate_v5_guardv67_negative`
+    当前性质应固定为：
+    - `v67`
+      负向锚点 family
+    - 不是
+      `candidate_v4`
+      的正式替代品
+  - val `3` 条 rows 为：
+    - `val_000076`
+    - `val_000274`
+    - `val_000469`
+  - aggregate 上明确形成：
+    - `v64 > v35 > v66 > v20 > v29 > v65 > ... > v67`
+    - `v66 - v64 = -0.039333 dB`
+    - `v66 - v65 = +0.026017 dB`
+    - `v66 - v67 = +0.056485 dB`
+  - 更关键的是：
+    - 它并不等于
+      `candidate_v4 carve`
+      或 `candidate_v4 pruned`
+    - 而是横跨了两边：
+      - val vs `candidate_v4 carve`：
+        - `1 / 3`
+        - `val_000469`
+      - val vs `candidate_v4 pruned`：
+        - `2 / 3`
+        - `val_000076`
+        - `val_000274`
+  - 因而当前默认下一步
+    不再只是：
+    - `candidate_v4`
+      单边 carve-out
+  - 而是：
+    - 同时保留
+      `candidate_v4`
+      作为 `v64 / v66`
+      分界 working family
+    - 保留
+      `candidate_v5_guardv67_negative`
+      作为 `v67`
+      负向锚点 family
+    - 若后续继续，
+      默认先做：
+      - `candidate_v4`
+        与 `candidate_v5`
+        的交并分析
+      - 尤其聚焦：
+        - `candidate_v4 carve ∩ candidate_v5`
+        - `candidate_v4 pruned ∩ candidate_v5`
+      - 不直接启动新训练
+38. 已继续把
+    `candidate_v4 / candidate_v5`
+    交并关系
+    拆到 subset 级；
+    当前默认解释必须升级为：
+    - `candidate_v5`
+      在 val 上
+      不是独立新族，
+      而是
+      `candidate_v4`
+      的真子集，
+      且内部也不是单语义
+    - 入口：
+      - `scripts/eval/analyze_proxy_family_overlap.py`
+      - `reports/daily/2026-03-21_candidate_v4_v5_overlap_analysis.md`
+      - `reports/eval/compare_v19_vs_v66_on_friend_speech_leak_search_v1/candidate_v4_v5_overlap_analysis/summary.json`
+      - `reports/eval/compare_v19_vs_v67_on_friend_speech_leak_search_v1/candidate_v4_v5_overlap_analysis/summary.json`
+  - 当前 val 上已固定成四类：
+    - `v4 carve only`：
+      - `val_000165`
+      - `val_000223`
+      - `val_000401`
+    - `v4 carve ∩ v5`：
+      - `val_000469`
+    - `v4 pruned only`：
+      - `val_000034`
+      - `val_000041`
+      - `val_000202`
+      - `val_000365`
+    - `v4 pruned ∩ v5`：
+      - `val_000076`
+      - `val_000274`
+  - 这四类当前应分别解释为：
+    - `v4 carve only`
+      = 纯 `v67` negative rows
+      - `v66 - v64 = +0.007515 dB`
+      - `v67 - v66 = -0.068223 dB`
+    - `v4 carve ∩ v5`
+      = 硬双信号 anchor
+      - 当前只有：
+        - `val_000469`
+      - `v66 - v64 = -0.025435 dB`
+      - `v67 - v66 = -0.171768 dB`
+      - `v66 - v65 = +0.313288 dB`
+    - `v4 pruned only`
+      = 当前最像 keep rows
+      - `v66 - v64 = +0.014094 dB`
+      - `v67 - v66 = +0.007854 dB`
+    - `v4 pruned ∩ v5`
+      = `v64 > v66`
+        boundary-negative tail，
+        不是稳定
+        `v67 negative` core
+      - `v66 - v64 = -0.046281 dB`
+      - `v67 - v66 = +0.001157 dB`
+  - 因而当前默认下一步
+    已进一步收窄为：
+    - 保留
+      `candidate_v4`
+      大框架
+    - 若后续继续做 proxy，
+      默认优先考虑：
+      - `v4 carve only`
+        作为更纯的
+        `v67` negative rows
+      - `val_000469`
+        作为单独的
+        硬双信号 anchor
+    - 不把整包
+        `candidate_v5`
+        或
+        `v4 pruned ∩ v5`
+        直接当成
+        新核心 negative family
+    - 仍不启动新训练
+39. 已继续把
+    当前最值得保留的两条 subset family
+    物化成标准资产；
+    当前默认入口已不再是
+    整包 `candidate_v5`
+    而是：
+    - `v4carve_only_guardv67_negative`
+    - `v4carve_v5_dualanchor`
+  - 入口：
+    - `scripts/data/build_proxy_manifest_setops.py`
+    - `reports/daily/2026-03-21_proxy_subfamily_materialization.md`
+  - 新物化资产：
+    - `train_manifest_friend_speech_leak_proxy_subfamily_v4carve_only_guardv67_negative.jsonl = 4`
+    - `val_manifest_friend_speech_leak_proxy_subfamily_v4carve_only_guardv67_negative.jsonl = 3`
+    - `sample_ids_friend_speech_leak_proxy_subfamily_v4carve_only_guardv67_negative_{train,val,all}.txt`
+    - `train_manifest_v42_plus_friend_speech_leak_proxy_subfamily_v4carve_only_guardv67_negative.jsonl = 133`
+    - `val_manifest_v42_plus_friend_speech_leak_proxy_subfamily_v4carve_only_guardv67_negative.jsonl = 40`
+    - `train_manifest_friend_speech_leak_proxy_subfamily_v4carve_v5_dualanchor.jsonl = 2`
+    - `val_manifest_friend_speech_leak_proxy_subfamily_v4carve_v5_dualanchor.jsonl = 1`
+    - `sample_ids_friend_speech_leak_proxy_subfamily_v4carve_v5_dualanchor_{train,val,all}.txt`
+    - `train_manifest_v42_plus_friend_speech_leak_proxy_subfamily_v4carve_v5_dualanchor.jsonl = 131`
+    - `val_manifest_v42_plus_friend_speech_leak_proxy_subfamily_v4carve_v5_dualanchor.jsonl = 38`
+  - focused direction summary：
+    - pure negative：
+      - `reports/eval/compare_v19_vs_v66_on_friend_speech_leak_search_v1/proxy_subfamily_v4carve_only_guardv67_negative_direction_analysis/summary.json`
+      - `reports/eval/compare_v19_vs_v67_on_friend_speech_leak_search_v1/proxy_subfamily_v4carve_only_guardv67_negative_direction_analysis/summary.json`
+      - 结论：
+        - `v66 - v64 = +0.007515 dB`
+        - `v67 - v66 = -0.068223 dB`
+    - dual anchor：
+      - `reports/eval/compare_v19_vs_v66_on_friend_speech_leak_search_v1/proxy_subfamily_v4carve_v5_dualanchor_direction_analysis/summary.json`
+      - `reports/eval/compare_v19_vs_v67_on_friend_speech_leak_search_v1/proxy_subfamily_v4carve_v5_dualanchor_direction_analysis/summary.json`
+      - 结论：
+        - `v66 - v64 = -0.025435 dB`
+        - `v67 - v66 = -0.171768 dB`
+  - 因而当前分支图上的默认下一步
+    应固定为：
+    - 若继续停在 proxy 侧，
+      优先围绕：
+      - `v4carve_only_guardv67_negative`
+      - `v4carve_v5_dualanchor`
+      做后续 family 解释
+    - 若未来真要开训练，
+      默认不从
+      全量 `candidate_v5`
+      起步
+    - 本轮仍不启动新训练
+40. 已继续沿
+    `v4carve_only`
+    与
+    `dualanchor`
+    两条线做 family expand 搜索；
+    当前结果应固定为：
+    - pure-negative
+      这边已出现一条新的
+      working family
+      `candidate_v6_v4carve_only_expand`
+    - dualanchor
+      这边在
+      `min-count = 3`
+      下没有新 family，
+      top 结果直接回到
+      `candidate_v5`
+  - 入口：
+    - `reports/daily/2026-03-21_candidate_v6_pure_negative_expand.md`
+    - `reports/eval/synthetic_proxy_search_candidate_v6_v4carve_only_expand_on_friend_speech_leak_search_v1/summary.json`
+    - `reports/eval/synthetic_proxy_search_candidate_v6_dualanchor_expand_on_friend_speech_leak_search_v1/summary.json`
+  - 新物化资产：
+    - `train_manifest_friend_speech_leak_proxy_search_candidate_v6_v4carve_only_expand.jsonl = 13`
+    - `val_manifest_friend_speech_leak_proxy_search_candidate_v6_v4carve_only_expand.jsonl = 3`
+    - `sample_ids_friend_speech_leak_proxy_search_candidate_v6_v4carve_only_expand_{train,val,all}.txt`
+    - `train_manifest_v42_plus_friend_speech_leak_proxy_search_candidate_v6_v4carve_only_expand.jsonl = 135`
+    - `val_manifest_v42_plus_friend_speech_leak_proxy_search_candidate_v6_v4carve_only_expand.jsonl = 38`
+  - 这条 `candidate_v6`
+    val rows 为：
+    - `val_000165`
+    - `val_000331`
+    - `val_000430`
+  - focused direction：
+    - `reports/eval/compare_v19_vs_v66_on_friend_speech_leak_search_v1/candidate_v6_v4carve_only_expand_direction_analysis/summary.json`
+    - `reports/eval/compare_v19_vs_v67_on_friend_speech_leak_search_v1/candidate_v6_v4carve_only_expand_direction_analysis/summary.json`
+    - 结论：
+      - `v66 - v64 = +0.013671 dB`
+      - `v66 - v65 = +0.083866 dB`
+      - `v66 - v67 = +0.038650 dB`
+  - 与旧 pure-negative 的关系：
+    - overlap with
+      `v4carve_only_guardv67_negative`
+      val：
+      - `1 / 3`
+      - `val_000165`
+    - overlap with
+      `v4carve_v5_dualanchor`
+      val：
+      - `0`
+  - 当前应解释为：
+    - `candidate_v6`
+      是新的 pure-negative expand family；
+    - `val_000430`
+      是最强核心；
+    - `val_000331`
+      是 partial-support row；
+    - `val_000165`
+      是旧 family
+      留下的 noisy carry-over
+  - 另一边更关键的新事实是：
+    - dualanchor expand 搜索
+      top family
+      仍精确回到：
+      - `val_000076`
+      - `val_000274`
+      - `val_000469`
+      即旧
+      `candidate_v5`
+    - 因而当前不再默认继续追
+      `469` 的
+      `3+ row`
+      扩展 family
+  - 当前默认下一步
+    已进一步固定为：
+    - 保留
+      `candidate_v6_v4carve_only_expand`
+      作为新的 pure-negative working family
+    - 保留
+      `val_000469`
+      作为单独硬 anchor
+    - 不启动新训练
 
 ## 6. 忘线检查表
 
@@ -1286,7 +1783,24 @@
 3. `docs/02_pitfalls_log.md`
 4. 本文档 `docs/05_task_branch_map.md`
 5. 当前活跃分支日报：
-   - 现在是 `reports/daily/2026-03-20_v64_v65_dualprotect_recovery.md`
+   - 现在补到：
+     - `reports/daily/2026-03-21_candidate_v6_pure_negative_expand.md`
+     - `reports/daily/2026-03-21_proxy_subfamily_materialization.md`
+     - `reports/daily/2026-03-21_candidate_v4_v5_overlap_analysis.md`
+     - `reports/daily/2026-03-21_candidate_v5_guardv67_negative_materialization.md`
+     - `reports/daily/2026-03-21_candidate_v4_subgroup_diagnosis.md`
+   - 当前主停点日报仍是：
+     - `reports/daily/2026-03-21_v67_candidate_v4_union_followup.md`
+   - 上一条 `candidate_v4` 搜索日报：
+     - `reports/daily/2026-03-21_candidate_v4_guardv66_by_v64_search_followup.md`
+   - 上一条 `v66` 定向诊断日报：
+     - `reports/daily/2026-03-20_v66_candidate_v3_direction_diagnosis.md`
+   - `candidate_v3` 搜索日报：
+     - `reports/daily/2026-03-20_friend_speech_leak_search_manifest_v1.md`
+   - 上一条 `branch_protect` 资产日报：
+     - `reports/daily/2026-03-20_branch_protect_selector_asset_builder.md`
+   - `v64 / v65` 恢复日报：
+     - `reports/daily/2026-03-20_v64_v65_dualprotect_recovery.md`
    - `v63` 主日报：
      - `reports/daily/2026-03-20_v63_dualdecoder_targetfull_basealign_branchprotect_followup.md`
    - `v63` 旧启动清单：

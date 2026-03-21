@@ -5487,7 +5487,7 @@
    `exact_nontargetfull`
    的 guard weight。
 
-### 104. checkpoint / compare / gate 已落盘但日报未补，会把“当前停点”误导回更早分支；`v64 / v65` 本轮就是这个问题
+### 127. checkpoint / compare / gate 已落盘但日报未补，会把“当前停点”误导回更早分支；`v64 / v65` 本轮就是这个问题
 
 现象：
 
@@ -5559,3 +5559,745 @@
    - 分支图；
    否则先补文档，
    不继续开新实验。
+
+### 128. `branch_protect` selector 如果继续靠手工做集合差和手工 union manifest，后续“到底测的是哪条语义”会再次漂掉
+
+现象：
+
+- `v64 / v65` 使用的
+  `speech_leak_exact_minus_targetfull`
+  资产，
+  在恢复前虽然已经有：
+  - sample-id 文件
+  - merged manifest
+  - checkpoint / compare / gate
+- 但生成过程没有正式脚本入口，
+  实际上仍靠：
+  - 记住源 manifest 名称
+  - 记住要减哪份 targetfull selector
+  - 再手工拼出 merged manifest
+
+影响：
+
+- 一旦后续再重做
+  `0004-like speech_leak`
+  的 selector / proxy，
+  很容易出现两类恢复噪声：
+  - 同名 selector，
+    但减的不是同一份 overlap 集；
+  - 同一批 ids，
+    但 union 回去的 base manifest
+    已经换了版本
+- 这样看起来都叫
+  `speech_leak_exact_minus_targetfull`，
+  实际测到的却可能不是同一条语义。
+
+处理：
+
+- 已新增正式脚本：
+  - `scripts/data/build_branch_protect_selector_assets.py`
+- 已用它实际重建并核对：
+  - `sample_ids_v23_friend_reverse_guardrail_proxy_v4_speech_leak_exact_minus_targetfull_{train,val,all}.txt`
+  - `train_manifest_v65_v42_plus_friend_reverse_guardrail_proxy_v4_speech_leak_exact_minus_targetfull.jsonl`
+  - `val_manifest_v65_v42_plus_friend_reverse_guardrail_proxy_v4_speech_leak_exact_minus_targetfull.jsonl`
+
+后续要求：
+
+1. 以后只要继续改
+   `0004-like speech_leak`
+   的 selector / proxy，
+   默认从脚本入口重建，
+   不再手工改 sample-id 文本。
+2. 任何新的 branch-protect 资产，
+   至少同时登记：
+   - focus proxy manifest
+   - subtract selector
+   - base manifest
+   - 输出 sample-id / merged manifest
+3. 若只是改了集合差或 union 基座，
+   也要视为“实验定义变化”，
+   必须写日报，
+   不能沿用旧名字默认视作同一轮。
+
+### 129. 不能再把历史上“名字都叫 on default”的 compare 报告直接当成 shared-sample 搜索输入；如果没有严格复跑到同一份 manifest，`search_synthetic_proxy_candidates.py` 可能根本找不到共同 speech rows
+
+现象：
+
+- 本轮准备继续重建
+  `speech_leak_like (0004)`
+  proxy 时，
+  直接把历史：
+  - `compare_v19_vs_v20_on_default`
+  - `compare_v19_vs_v25_on_default`
+  - 等多份 report
+  喂给
+  `scripts/eval/search_synthetic_proxy_candidates.py`
+- 结果脚本直接报：
+  - `No shared speech-only rows found across compare inputs.`
+
+原因：
+
+- 这些 report
+  虽然名字都写着：
+  - `on_default`
+- 但并不等价于：
+  - 它们来自严格同一批
+    shared `sample_id`
+- 一旦输入 compare
+  不是同一份 manifest
+  上的新复跑结果，
+  搜索脚本就可能在：
+  - shared ids
+  - 或 samplewise-order-pass 行
+  两层之一直接掉空。
+
+处理：
+
+- 本轮先补了统一搜索底座：
+  - `data/synthetic/val_manifest_friend_speech_leak_search_v1.jsonl = 50`
+- 再在这同一份 manifest 上
+  重跑：
+  - `v19 vs v20 / v24 / v25 / v29 / v30 / v32 / v35 / v64 / v65`
+
+后续要求：
+
+1. 以后凡是要做
+   synthetic proxy 搜索，
+   默认先物化一份公共 manifest。
+2. 搜索输入只接受：
+   - 在该公共 manifest 上
+     新重跑出来的 compare report
+3. 不再把：
+   - 目录名相似
+   - summary 都写 `default`
+   视作“可以直接混用”的证据。
+
+### 130. 即使已经有了 shared-sample 搜索底座，也不能把第一个 order-pass candidate 直接当成真 `0004` proxy；如果它不能同时压住明显错误的旧模型排序，它仍只是 candidate family
+
+现象：
+
+- 在新的 shared search manifest
+  `val_manifest_friend_speech_leak_search_v1.jsonl`
+  上，
+  当前能稳定站住的 working order
+  是：
+  - `v35 > v25 > v24`
+- relaxed 搜索得到的 top candidate
+  进一步收敛成：
+  - 高 overlap
+  - 更高 gain
+  - 低 target transient
+  - 低 interference transient
+  的 clean-speech family
+- 物化后规模为：
+  - train `12`
+  - val `3`
+
+但同一组 `3` 条 val rows
+上的完整排序却是：
+
+- `v35 > v25 > v65 > v24 > v29 > v64 > v32 > v30 > v20`
+
+影响：
+
+- 这说明当前 family
+  虽然已经不是
+  `v23 / v30`
+  的旧 exact rows 重复，
+  也确实抓到了一批新样本；
+- 但它还没有复现
+  near-real `0004`
+  的完整行为，
+  至少：
+  - `v20` 方向仍不对
+  - `v65` 仍然过强
+
+后续要求：
+
+1. 这类新 family
+   先登记成：
+   - `candidate`
+   不登记成：
+   - `proxy_keep`
+2. 下一步若继续搜索，
+   要显式加入负约束，
+   例如至少避免：
+   - `v65` 继续显著占优
+   - `v20` 继续明显落后
+3. 只有当新的 candidate
+   在 shared manifest 与 near-real
+   的关键排序上都更一致时，
+   才考虑升格成正式
+   `branch_protect` proxy。
+
+### 131. 如果“压 `v65` 伪阳性”的约束把候选清得只剩 near-tie，再单独沿这条线继续收紧，往往会把 family 洗得太弱；这时更有效的是同时加入“把 `v20` 拉回前排”的约束，寻找 compromise candidate
+
+现象：
+
+- `candidate_v2_guardv65`
+  已证明：
+  - 单独要求
+    `v24 > v65`
+  确实能把明显的 `v65`
+  伪阳性压掉
+- 但代价是：
+  - top candidate
+    几乎把所有模型都压成 near-tie
+  - proxy 辨识度明显变弱
+
+本轮继续加的约束是：
+
+- `v20 > v24`
+- 并进一步测试：
+  - `v20 > v65`
+
+结果：
+
+- 当前更好的 compromise candidate
+  会收敛到：
+  - 高 overlap
+  - 低 target transient
+  - 高 target/interference similarity
+  - 中高 gain
+  的 clean-speech family
+- 这版已经比单独 `guard_v65`
+  更有辨识度，
+  且重新接回了
+  `v23 speech_leak exact`
+  的旧 val 锚点
+  `val_000165`
+
+后续要求：
+
+1. 如果一个 guard candidate
+   已经被洗成 near-tie，
+   不要继续只沿同一条
+   负约束往死里收紧。
+2. 这时更该补的是：
+   - “哪条旧模型顺序
+      需要被拉回前排”
+   这种正向恢复约束。
+3. 当前 `0004-like` 搜索里，
+   `candidate_v3_guardv20`
+   应优先于
+   `candidate_v2_guardv65` 继续细化。
+
+### 132. 即使 real gate 已经只剩单点 fail，也不能跳过“新 proxy rows 到底有没有被训练推高”这一步；否则会把“proxy 仍 partial / mismatch”与“训练根本没吃到新 rows”混成同一种失败
+
+现象：
+
+- `v66`
+  relative to `v32`
+  的 real gate
+  已经只剩：
+  - `speech_leak_like_gain_floor = clear_fail`
+- 但在补这轮诊断前，
+  磁盘上只有：
+  - real / near-real gate
+  - `v19 vs v66`
+    on `candidate_v3_guardv20`
+    的单 compare
+- 还没有直接回答：
+  - `v66`
+    是否真的把
+    新 `candidate_v3`
+    这批 synthetic rows
+    往想要的方向推
+
+风险：
+
+- 如果缺这一步，
+  后续很容易把
+  `v66` 的失败
+  直接脑补成：
+  - “branch_protect training
+     没起作用”
+- 但实际也可能是：
+  - aggregate synthetic proxy
+    已经转正；
+  - 真正还没闭环的是
+    proxy 本体和 real `0004`
+    的语义对齐
+
+处理：
+
+- 本轮新增：
+  - `scripts/eval/analyze_proxy_candidate_direction.py`
+- 并补跑：
+  - `reports/eval/compare_v19_vs_v66_on_friend_speech_leak_search_v1/summary.json`
+  - `reports/eval/compare_v19_vs_v66_on_friend_speech_leak_search_v1/candidate_v3_guardv20_direction_analysis/summary.json`
+- 现在可以明确看到：
+  - 在 `candidate_v3_guardv20`
+    的 3 条 val rows 上，
+    aggregate 排名已是：
+    - `v66 > v64 > v35 > v20 > v30 > v32 > v29 > v25 > v65 > v24 > v19`
+  - `v66 - v32 = +0.051855 dB`
+  - 说明 aggregate synthetic 方向
+    已经被推正
+- 但同时也能看到：
+  - strict samplewise order-pass
+    仍是 `0 / 3`
+  - `v66`
+    的单条 rank 分布为：
+    - `7 / 10 / 1`
+  - 说明当前 gain
+    主要集中在单个 row，
+    row-level 仍不够硬
+
+后续要求：
+
+1. 以后凡是说
+   “某条新 proxy / selector
+   训练后 real gate 仍 failed”，
+   默认都补一份 focused synthetic direction diagnosis。
+2. 至少同时回答两件事：
+   - aggregate 上，
+     candidate 相对 reference
+     有没有被推高
+   - row-level 上，
+     gain 是不是只靠个别 row 拉动
+3. 若 aggregate 已正向、
+   row-level 仍很散，
+   默认优先怀疑：
+   - proxy coverage / semantic hardness
+   而不是先怀疑
+   - training plumbing 完全无效。
+
+### 133. 给 `v66` 加 `v64` 反向 guard 时，不要先把 `v35 > v25 > v24` 这条结构约束扔掉；更该先检查的是 `v20 > v65` 这种辅助 guard 是否过强。前者一放掉，搜索很容易退回高 gain / 高 transient 的旧 strong-transient 家族
+
+现象：
+
+- 在 `candidate_v3`
+  之后继续加：
+  - `v64 > v66`
+  做 follow-up 搜索时，
+  先出现的是一个
+  `21` 条 rows 的 near-miss：
+  - `v64 > v66`
+    已成立
+  - 缺口只剩：
+    - `v25 > v24`
+- 但如果直接顺着这个 near-miss
+  去放掉：
+  - `v25 > v24`
+  top order-pass family
+  会立刻退回：
+  - 更高 gain
+  - 更高 target transient
+  的家族
+  - `v65`
+    也重新变得很强
+
+影响：
+
+- 这说明当前真正“该先松”的，
+  不一定是
+  `v25 > v24`
+  这种结构性旧排序；
+- 更可能是：
+  - `v20 > v65`
+  这种后来补上的
+  辅助负约束
+  已经开始压掉
+  更像 `v64 / v66`
+  分界面的 family。
+
+处理：
+
+- 本轮对照后保留的是：
+  - `v35 > v25 > v24`
+  - `v20 > v24`
+  - `v64 > v66`
+- 放掉的是：
+  - `v20 > v65`
+- 最终得到：
+  - `candidate_v4_guardv66_by_v64`
+  - train `33`
+  - val `10`
+  - aggregate：
+    - `v64 > v66 > v65 > v20 > v30 > v32 > v35 > v29 > v25 > v24`
+
+后续要求：
+
+1. 以后继续在
+   `speech_leak_like (0004)`
+   搜索里加
+   “新 checkpoint guard”
+   时，
+   不要默认优先删掉
+   `v35 > v25 > v24`
+   这种老排序。
+2. 先检查：
+   - 哪条辅助负约束
+     只是为了压伪阳性，
+     现在却开始把目标 family
+     一起压没。
+3. 一旦发现“放掉结构约束后，
+   family 退回高 gain / 高 transient
+   老家族”，
+   这条路默认直接判错，
+   不继续升格成新 proxy。
+
+### 134. 新 proxy candidate 如果和当前 active train / val split 几乎不重叠，只替换 selector 基本等于没训练到；这时必须先补 union manifest，再谈 objective 是否有效
+
+现象：
+
+- `candidate_v4_guardv66_by_v64`
+  作为搜索结果本身是有信号的：
+  - aggregate 上
+    已形成：
+    - `v64 > v66 > v65`
+- 但实际把它和当前
+  `v66`
+  使用的 active split
+  去做 overlap 后，
+  结果几乎掉空：
+  - vs `v42` base train：
+    - `1 / 33`
+  - vs `v42` base val：
+    - `0 / 10`
+
+影响：
+
+- 这意味着如果下一轮只是把：
+  - `branch_protect_focus_sample_ids`
+  换成 `candidate_v4`
+  但 train / val manifest
+  仍沿用当前 `v42` split，
+  实际上几乎等于：
+  - 新 candidate rows
+    根本没进训练
+- 这种情况下，
+  后续再看到 real gate
+  没改善，
+  很容易误判成：
+  - objective / proxy
+    本身没方向
+  实际却只是：
+  - manifest coverage
+    没补进去
+
+处理：
+
+- 本轮已直接补出：
+  - `train_manifest_v42_plus_friend_speech_leak_proxy_search_candidate_v4_guardv66_by_v64.jsonl`
+  - `val_manifest_v42_plus_friend_speech_leak_proxy_search_candidate_v4_guardv66_by_v64.jsonl`
+
+后续要求：
+
+1. 以后凡是把
+   新 candidate / selector
+   准备接进训练前，
+   默认先算它与当前 active split
+   的 overlap。
+2. 如果 overlap 低到
+   `~0`
+   或只有极少数样本，
+   默认不允许只换 selector
+   就直接启动训练。
+3. 这时应先补：
+   - union manifest
+   - 或新的 focused split
+   再去判断训练方向。
+
+### 135. 如果把新 proxy rows 真正 union 进 active split 后，selector 命中已经从稀命中变成高命中，但 candidate rows 自身的 aggregate 方向仍然继续变差，就不该再把问题归因于 coverage；这时更该怀疑 objective / proxy 语义本身仍是错的
+
+现象：
+
+- `v67`
+  已经把
+  `candidate_v4_guardv66_by_v64`
+  真正 union
+  进 active split
+- `branch_protect`
+  命中显著抬高到：
+  - train `33 / 161`
+  - val `10 / 47`
+- 但在
+  `candidate_v4`
+  那 `10` 条 val rows 上，
+  aggregate 排名反而退成：
+  - `v64 > v66 > v65 > v67`
+- 同时 real gate
+  仍是：
+  - `speech_leak_like_gain_floor = clear_fail`
+  - `guodegang_absent_floor = clear_fail`
+
+影响：
+
+- 这说明当前不能再解释成：
+  - “新 rows 其实没进训练”
+- 更准确的解释应是：
+  - 训练确实吃到了
+    这批 rows，
+  - 但当前
+    `branch_protect_guard_sisdr`
+    或 `candidate_v4`
+    语义本身，
+    仍没有把模型推向
+    想要的 near-real 方向
+
+处理：
+
+- `v67`
+  之后，
+  默认不再继续做：
+  - “只补 union manifest”
+  - “只补 coverage”
+  的同类动作
+- 下一层若继续，
+  默认应直接转向：
+  - 检查 objective
+    是否错语义 / 错号
+  - 或继续做
+    `candidate_v4`
+    的 row-level
+    semantic split / hardness 提升
+
+后续要求：
+
+1. 以后如果新 candidate
+   已经在训练侧
+   有明显命中，
+   仍在自身 rows 上
+   aggregate 退化，
+   默认就不要再把
+   “没训到”
+   当主假设。
+2. 这时优先检查：
+   - loss 方向
+   - selector 语义
+   - 以及 row-level
+     是否仍混入了
+     对 real gate
+     方向相反的子族。
+
+### 136. 即使某条新 proxy 在 aggregate 上能稳定区分 `v64 / v66`，也不能默认它是单语义 family；如果不先做 subgroup 诊断，就会把“部分 rows 真对题、另一部分 rows 在推反”误读成一个模糊的整体 near-tie
+
+现象：
+
+- `candidate_v4_guardv66_by_v64`
+  在 aggregate 上
+  已经能稳定形成：
+  - `v64 > v66 > v65`
+- 但在 `v67`
+  做完 union training 之后，
+  如果只看整体，
+  看到的只是一句：
+  - `v67 - v66 = -0.034271 dB`
+- 这会让人容易停留在：
+  - `objective / proxy mismatch`
+  这种过粗解释，
+  却看不出：
+  - 到底是全部 rows
+    一起反向
+  - 还是某个 subgroup
+    单独拖坏整体。
+
+处理：
+
+- 本轮补了正式脚本：
+  - `scripts/eval/analyze_proxy_candidate_subgroups.py`
+- 并对
+  `candidate_v4`
+  的 `10` 条 val rows
+  做了 subgroup 诊断。
+- 结果表明：
+  - 按
+    `interference_transient_presence_share_mean`
+    中位数切分时，
+    `v67`
+    对 high-share half
+    relative to `v66`
+    为：
+    - `-0.086806 dB`
+    - improved count `0 / 5`
+  - 按
+    `target_transient_presence_minus_mid_db_mean`
+    中位数切分时，
+    `v67`
+    对 low-target-transient half
+    relative to `v66`
+    为：
+    - `-0.072390 dB`
+  - 两条危险条件交集的 `4` 条 rows 上：
+    - `v66 - v64 = -0.000723 dB`
+      近 tie
+    - `v67 - v66 = -0.094110 dB`
+- 这说明：
+  - 当前真正的问题
+    不只是 aggregate 没过；
+  - 更是
+    `candidate_v4`
+    已混入一簇
+    低目标瞬态 /
+    高干扰瞬态占比
+    的危险子族。
+
+后续要求：
+
+1. 以后凡是新 proxy
+   aggregate 上看起来
+   只是 near-tie / 小正负波动，
+   默认都要补 subgroup 诊断。
+2. 至少先按：
+   - target transient
+   - interference transient
+   - target/interference similarity
+   这几类连续字段
+   做 median split。
+3. 如果发现
+   “某一半 rows 明显正向，
+    另一半 rows 系统性负向”，
+   默认先做：
+   - semantic split / carve-out
+   - hardness 提升
+   不要先把它粗暴记成：
+   - 整条 proxy 无效。
+
+### 137. shared-sample 搜索 summary 里的 top candidate 如果仍保留 `all_pools / all_patterns` 默认自由度，不能直接把那组 `builder_filters` 投影到 full manifest；否则很可能在训练资产物化时撞到 search manifest 从未暴露出来的非语音源
+
+现象：
+
+- `synthetic_proxy_search_candidate_v5_guardv67_negative_on_friend_speech_leak_search_v1`
+  的 top order-pass family
+  在 shared compare 上
+  合法且稳定，
+  val rows 为：
+  - `val_000076`
+  - `val_000274`
+  - `val_000469`
+- 但它最顶部那组
+  `builder_filters`
+  只显式写了：
+  - `max_interference_gain_db`
+  - `max_target_transient_presence_minus_mid_db_mean`
+  - `min_interference_transient_presence_minus_mid_db_mean`
+  - `min_target_interference_logspec_cosine`
+- 若直接把这组条件
+  投影到 full train / val manifest，
+  `build_metadata_focused_manifest.py`
+  会读到 search manifest
+  外部的非语音 interference 文件，
+  实际报错包括：
+  - `data_in/pure_music_dataset/无吉他.m4a`
+  - `data_in/pure_music_dataset/Lightmore.m4a`
+
+处理：
+
+- 这次没有继续硬改脚本兜底，
+  而是改用
+  top-equivalent 的
+  clean/full variant
+  去物化：
+  - `target_clean_speech`
+  - `target_full`
+  - `target_present_ratio >= 0.95`
+  - `overlap >= 0.75`
+
+### 138. aggregate 上成立的负向 family 可能只是被单条硬锚点带出来；在做 proxy 解释前，必须先把交并 subset 拆开，不能把整个 family 当单语义
+
+现象：
+
+- `candidate_v5_guardv67_negative`
+  在 val `3` 条上
+  aggregate 明确满足：
+  - `v64 > v66 > v65 > v67`
+- 但继续和
+  `candidate_v4`
+  的 `carve / pruned`
+  交并后，
+  会发现它其实分成：
+  - `v4 carve ∩ v5`
+    只有：
+    - `val_000469`
+  - `v4 pruned ∩ v5`
+    为：
+    - `val_000076`
+    - `val_000274`
+
+真正的问题在于：
+
+- `val_000469`
+  同时满足：
+  - `v66 - v64 = -0.025435 dB`
+  - `v67 - v66 = -0.171768 dB`
+  - `v66 - v65 = +0.313288 dB`
+  是非常强的双信号锚点；
+- 但
+  `val_000076 / 000274`
+  这两条 aggregate 上反而是：
+  - `v66 - v64 = -0.046281 dB`
+  - `v67 - v66 = +0.001157 dB`
+  并不是稳定的
+  `v67 negative` core
+
+教训：
+
+- 以后看到
+  “小 family
+   aggregate order-pass
+   很漂亮”
+  时，
+  不能立刻把整包 rows
+  解释成同一种 proxy 语义；
+- 尤其当 family
+  只有 `3~5` 条时，
+  先做：
+  - 和现有 family
+    的交并分析
+  - membership subset
+    方向 summary
+  再决定是否值得当成
+  新 proxy 资产
+
+处理：
+
+- 这次补了：
+  - `scripts/eval/analyze_proxy_family_overlap.py`
+- 并把当前 family
+  固定拆成：
+  - `v4 carve only`
+  - `v4 carve ∩ v5`
+  - `v4 pruned only`
+  - `v4 pruned ∩ v5`
+- 之后默认不再把
+  全量 `candidate_v5`
+  直接写成
+  “纯 `v67 negative` family”
+  - `speech_interference_clean_pool`
+  - 再叠加原先那组数值 filters
+- 这条更收紧的 variant
+  在 shared search manifest
+  上保留了完全相同的
+  `3` 条 val rows，
+  但可以安全投影到 full manifest，
+  最终得到：
+  - `candidate_v5_guardv67_negative`
+    train `12`
+    / val `3`
+
+后续要求：
+
+1. 以后凡是从 shared-sample
+   搜索 summary
+   物化 full train / val 资产，
+   默认先检查：
+   - top candidate
+     是否仍保留
+     `all_pools`
+     或 `all_patterns`
+     这类默认自由度。
+2. 如果保留了，
+   不要直接套用；
+   先看：
+   - 是否存在 top-equivalent
+     的更收紧 variant
+     仍保持同一批 val rows。
+3. 若存在，
+   默认优先物化
+   那条更收紧 variant，
+   再把它记成正式资产；
+   否则 full manifest
+   与 shared search manifest
+   的语义边界会再次漂掉。

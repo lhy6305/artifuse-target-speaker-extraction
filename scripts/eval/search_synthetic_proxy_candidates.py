@@ -34,6 +34,15 @@ def parse_args() -> argparse.Namespace:
         required=True,
         help="Expected best-to-worst ordering across the provided aliases.",
     )
+    parser.add_argument(
+        "--extra-order-constraint",
+        action="append",
+        default=[],
+        help=(
+            "Additional aggregate ordering constraint in the form higher>lower. "
+            "Useful for excluding subsets where a known-bad model still dominates."
+        ),
+    )
     parser.add_argument("--output-json", type=Path, required=True)
     parser.add_argument("--top-k", type=int, default=20)
     parser.add_argument("--min-count", type=int, default=8)
@@ -85,6 +94,20 @@ def parse_compare_mapping(values: list[str]) -> dict[str, Path]:
             raise ValueError(f"Duplicate alias in --compare values: {alias}")
         mappings[alias] = compare_path
     return mappings
+
+
+def parse_extra_order_constraints(values: list[str]) -> list[tuple[str, str]]:
+    constraints: list[tuple[str, str]] = []
+    for value in values:
+        if ">" not in value:
+            raise ValueError(f"Invalid --extra-order-constraint value: {value!r}")
+        higher_alias, lower_alias = value.split(">", 1)
+        higher_alias = higher_alias.strip()
+        lower_alias = lower_alias.strip()
+        if not higher_alias or not lower_alias:
+            raise ValueError(f"Invalid --extra-order-constraint value: {value!r}")
+        constraints.append((higher_alias, lower_alias))
+    return constraints
 
 
 def compute_overlap_ratio(metadata: dict[str, Any]) -> float | None:
@@ -255,13 +278,39 @@ def strict_order_pass(
     return True, gaps
 
 
+def extra_order_constraints_pass(
+    scores: dict[str, float],
+    constraints: list[tuple[str, str]],
+    *,
+    min_order_gap_db: float,
+) -> tuple[bool, list[float]]:
+    gaps: list[float] = []
+    for higher_alias, lower_alias in constraints:
+        gap = float(scores[higher_alias] - scores[lower_alias])
+        gaps.append(gap)
+        if gap <= min_order_gap_db:
+            return False, gaps
+    return True, gaps
+
+
 def main() -> None:
     args = parse_args()
     compare_map = parse_compare_mapping(args.compare)
     ordered_aliases = list(args.ordered_aliases)
+    extra_order_constraints = parse_extra_order_constraints(args.extra_order_constraint)
     missing_aliases = [alias for alias in ordered_aliases if alias not in compare_map]
+    missing_constraint_aliases = sorted(
+        {
+            alias
+            for higher_alias, lower_alias in extra_order_constraints
+            for alias in [higher_alias, lower_alias]
+            if alias not in compare_map
+        }
+    )
     if missing_aliases:
         raise ValueError(f"Ordered aliases missing compare inputs: {missing_aliases}")
+    if missing_constraint_aliases:
+        raise ValueError(f"Extra order constraints missing compare inputs: {missing_constraint_aliases}")
 
     compare_rows_by_alias: dict[str, dict[str, dict[str, Any]]] = {}
     shared_sample_ids: set[str] | None = None
@@ -530,13 +579,20 @@ def main() -> None:
                                                 alias: float(
                                                     sum(row["alias_deltas"][alias] for row in selected_rows) / len(selected_rows)
                                                 )
-                                                for alias in ordered_aliases
+                                                for alias in compare_map
                                             }
                                             order_pass, pair_gaps = strict_order_pass(
                                                 alias_scores,
                                                 ordered_aliases,
                                                 min_order_gap_db=args.min_order_gap_db,
                                             )
+                                            extra_constraints_pass, extra_constraint_gaps = extra_order_constraints_pass(
+                                                alias_scores,
+                                                extra_order_constraints,
+                                                min_order_gap_db=args.min_order_gap_db,
+                                            )
+                                            total_order_pass = bool(order_pass and extra_constraints_pass)
+                                            all_gaps = pair_gaps + extra_constraint_gaps
                                             builder_filters = {
                                                 **recipe_builder,
                                                 **pattern_builder,
@@ -566,11 +622,16 @@ def main() -> None:
                                                         ]
                                                     ),
                                                     "count": len(selected_rows),
-                                                    "order_pass": order_pass,
+                                                    "order_pass": total_order_pass,
                                                     "ordered_aliases": ordered_aliases,
+                                                    "extra_order_constraints": [
+                                                        f"{higher_alias}>{lower_alias}"
+                                                        for higher_alias, lower_alias in extra_order_constraints
+                                                    ],
                                                     "alias_scores": alias_scores,
                                                     "pair_gaps_db": pair_gaps,
-                                                    "min_pair_gap_db": float(min(pair_gaps)) if pair_gaps else 0.0,
+                                                    "extra_order_constraint_gaps_db": extra_constraint_gaps,
+                                                    "min_pair_gap_db": float(min(all_gaps)) if all_gaps else 0.0,
                                                     "mean_overlap_ratio": float(
                                                         sum((row["overlap_ratio"] or 0.0) for row in selected_rows) / len(selected_rows)
                                                     ),
@@ -632,6 +693,7 @@ def main() -> None:
             for alias, path in compare_map.items()
         },
         "ordered_aliases": ordered_aliases,
+        "extra_order_constraints": [f"{higher_alias}>{lower_alias}" for higher_alias, lower_alias in extra_order_constraints],
         "num_shared_speech_rows": len(enriched_rows),
         "num_samplewise_order_pass_rows_before_optional_filter": samplewise_order_pass_count,
         "require_samplewise_order_pass": bool(args.require_samplewise_order_pass),
@@ -663,6 +725,9 @@ def main() -> None:
                 "num_shared_speech_rows": len(enriched_rows),
                 "num_samplewise_order_pass_rows_before_optional_filter": samplewise_order_pass_count,
                 "require_samplewise_order_pass": bool(args.require_samplewise_order_pass),
+                "extra_order_constraints": [
+                    f"{higher_alias}>{lower_alias}" for higher_alias, lower_alias in extra_order_constraints
+                ],
                 "num_candidates": len(candidates),
                 "top_order_pass_count": len(output["top_order_pass_candidates"]),
             },
