@@ -6301,3 +6301,397 @@
    否则 full manifest
    与 shared search manifest
    的语义边界会再次漂掉。
+
+### 139. `require-samplewise-order-pass` 只会过滤主顺序，不会自动把 extra guard 一起收紧；如果不单独补齐，strict family 仍可能混入 carry-over rows
+
+现象：
+
+- 在继续解释
+  `candidate_v6_v4carve_only_expand`
+  时，
+  已知 aggregate 上满足：
+  - `v66 > v64`
+  - `v66 > v65`
+  - `v66 > v67`
+  - `v64 > v67`
+  - `v20 > v24`
+- 但把
+  `reports/eval/compare_v19_vs_v66_on_friend_speech_leak_search_v1/candidate_v6_v4carve_only_expand_direction_analysis/summary.json`
+  的 `3` 条 row
+  拆开看，
+  只有：
+  - `val_000430`
+    真正逐条满足全部 guard；
+  - `val_000165 / val_000331`
+    至少会在
+    `v66 > v65`
+    或
+    `v66 > v64`
+    上掉线。
+- 追查后确认：
+  `scripts/eval/search_synthetic_proxy_candidates.py`
+  里的
+  `--require-samplewise-order-pass`
+  只检查
+  `ordered_aliases`；
+  它不会把
+  `--extra-order-constraint`
+  一起提升到
+  samplewise 层。
+
+影响：
+
+- 如果把此前的
+  “strict / samplewise”
+  结果直接当成
+  row-level 已经很干净的 family，
+  会高估 proxy 的纯度；
+- 也会误把
+  `candidate_v6`
+  这种 aggregate 过关、
+  但 row-level
+  仍混着 carry-over 的 family
+  写成
+  strict core。
+
+处理：
+
+- 这次已补脚本参数：
+  - `--require-samplewise-all-constraints-pass`
+- 并补出两个统计：
+  - `num_samplewise_extra_constraint_pass_rows_before_optional_filter`
+  - `num_samplewise_all_constraints_pass_rows_before_optional_filter`
+- 在
+  `candidate_v6`
+  那条 pure-negative expand
+  口径下，
+  真正 samplewise
+  全约束过关的 shared rows
+  只有：
+  - `val_000239`
+  - `val_000430`
+- `min-count = 3`
+  时直接掉空，
+  说明当前并不存在
+  `3+ row`
+  的 strict-all clean family。
+
+后续要求：
+
+1. 以后凡是要把某条 proxy family
+   写成
+   “strict / row-level 已收敛”，
+   默认先确认：
+   - 用的是
+     `--require-samplewise-all-constraints-pass`
+     而不是只用
+     `--require-samplewise-order-pass`
+2. 如果 strict-all
+   `min-count = 3`
+   已经掉空，
+   不要再把旧 aggregate family
+   误写成 strict core；
+   应明确区分：
+   - aggregate working family
+   - strict-all diagnostic core
+3. 如果新的 strict-all core
+   只是
+   `1~2` 条 row，
+   默认先把它当：
+   - 诊断锚点
+   而不是：
+   - 立刻投影成新的训练入口
+
+### 140. 行为上 strict-all 过关的 core，不一定会落在单一 metadata 语义里；如果只沿旧语义继续收紧，可能会把真正核心漏掉
+
+现象：
+
+- 在
+  `candidate_v7`
+  这轮 strict-all
+  口径下，
+  当前真正保留下来的 core
+  只有：
+  - `val_000239`
+  - `val_000430`
+- 但这两条的元数据形态并不接近：
+  - `val_000239`
+    - `target_transient_presence_minus_mid_db_mean = +0.631591`
+    - `interference_transient_presence_minus_mid_db_mean = +1.396928`
+  - `val_000430`
+    - `target_transient_presence_minus_mid_db_mean = -17.009609`
+    - `interference_transient_presence_minus_mid_db_mean = -3.319185`
+- 也就是说：
+  - 一个更像
+    旧 reverse-guardrail /
+    anchor 风格；
+  - 一个更像
+    之前
+    `candidate_v6`
+    的 low-transient
+    pure-negative row；
+  - 但它们都能在行为排序上
+    同时满足
+    strict-all guards。
+
+影响：
+
+- 如果后续还把
+  strict core
+  误当成
+  `candidate_v6`
+  那套
+  low-target-transient /
+  low-interference-transient
+  family 的继续收紧版，
+  会把
+  `val_000239`
+  这类真核心
+  直接漏掉；
+- 也会误以为
+  “没找到更大 family”
+  只是阈值没调好，
+  而不是当前 metadata 语义
+  本身还不够。
+
+处理：
+
+- 这次已把
+  strict-core 资产正式物化：
+  - `data/synthetic/val_manifest_friend_speech_leak_proxy_search_candidate_v7_strictall_core.jsonl`
+  - `data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_strictall_core_{train,val,all}.txt`
+- 并补了 overlap summary：
+  - `reports/eval/compare_v19_vs_v66_on_friend_speech_leak_search_v1/candidate_v7_strictcore_v6_dualanchor_overlap_analysis/summary.json`
+  - `reports/eval/compare_v19_vs_v67_on_friend_speech_leak_search_v1/candidate_v7_strictcore_v6_dualanchor_overlap_analysis/summary.json`
+
+后续要求：
+
+1. 以后如果某条 strict core
+   只有 `1~3` 条，
+   默认先检查：
+   - 它们是不是行为上同类、
+     但 metadata 上异质。
+2. 如果是，
+   不要立刻沿旧 metadata family
+   继续缩阈值；
+   否则会把另一类真核心筛掉。
+3. 更合适的下一步应改成：
+   - 以行为 core 为锚，
+     再找新的同向 rows；
+   - 而不是默认把
+     旧 aggregate family
+     当成唯一语义模板。
+
+### 141. strict core 的 near-miss rows 必须按“失败 guard”拆开管理；如果把不同失败签名混成一包，会把两条扩张方向重新搅糊
+
+现象：
+
+- 在 strict core
+  `{val_000239, val_000430}`
+  周围继续看 near-miss 时，
+  最靠前的 rows
+  并不会收敛成一条单语义 family，
+  而是先分成：
+  - `guardv65_only`
+    - `val_000376`
+    - `val_000202`
+  - `guardv20_only`
+    - `val_000223`
+    - `val_000316`
+- 两组都只差一条 guard，
+  但差的不是同一条：
+  - 前者只差
+    `v66 > v65`
+  - 后者只差
+    `v20 > v24`
+
+影响：
+
+- 如果后续把这两组 near-miss
+  继续并成一包去解释，
+  会重新回到：
+  - 行为上都“挺像”
+  - 但到底该扩哪边
+    又说不清
+  的混沌状态；
+- 也会误把
+  `v20`
+  这条 legacy guard
+  仍未对齐的 rows，
+  混进 strict core
+  的直接扩张线上。
+
+处理：
+
+- 这次已补脚本：
+  - `scripts/eval/analyze_proxy_strict_near_miss.py`
+- 并正式物化两条单-fail 前沿：
+  - `data/synthetic/val_manifest_friend_speech_leak_proxy_search_candidate_v7_singlefail_guardv65.jsonl`
+  - `data/synthetic/val_manifest_friend_speech_leak_proxy_search_candidate_v7_singlefail_guardv20.jsonl`
+- 当前默认优先级也已固定成：
+  - 先追
+    `guardv65_only`
+  - 再看
+    `guardv20_only`
+
+后续要求：
+
+1. 以后凡是继续做 strict-core 扩张，
+   默认先按
+   failed-guard signature
+   分组。
+2. 只差一条 guard 的 rows
+   之间，
+   若失败的是不同 guard，
+   默认视作不同前沿，
+   不要直接并包。
+3. 若某组只差
+   `v20 > v24`
+   这类 legacy guard，
+   默认单独保留，
+   不并入 strict core
+   的第一优先扩张线。
+
+### 142. 放松单条 guard 后，搜索最先返回的常常只是“relaxed shell”；必须同时看 `min-count=3` 和 `min-count=2`，否则会把真正的 bridge pair 淹没掉
+
+现象：
+
+- 在 strict core
+  周围继续追
+  `guardv65_only`
+  时，
+  若只放松：
+  - `v66 > v65`
+  并保住其余四条 guards，
+  当前 samplewise row universe
+  会先塌成：
+  - `val_000202`
+  - `val_000239`
+  - `val_000376`
+  - `val_000430`
+- 这个 `4` 条 shell
+  aggregate 上
+  甚至已经恢复成：
+  - `v66 > v65`
+  但 `min-count=3`
+  搜索仍不会进一步 carve，
+  只会不断返回整包 shell。
+
+影响：
+
+- 如果只看
+  `3+ row`
+  结果，
+  很容易误以为：
+  - `guardv65_only`
+    还是只能整体并包解释；
+- 从而看不见更关键的事实：
+  - 真正最先被 metadata
+    稳定挑出来的 bridge
+    其实是：
+    - `{val_000376, val_000430}`
+  - 而不是：
+    - `{val_000202, val_000376}`
+    - 或 `{val_000202, val_000239}`。
+
+处理：
+
+- 这次已补：
+  - `reports/eval/synthetic_proxy_search_candidate_v7_guardv65_relaxed_min3_on_friend_speech_leak_search_v1/summary.json`
+  - `reports/eval/synthetic_proxy_search_candidate_v7_guardv65_relaxed_min2_on_friend_speech_leak_search_v1/summary.json`
+- 并把两层资产分开物化：
+  - relaxed shell：
+    - `data/synthetic/val_manifest_friend_speech_leak_proxy_search_candidate_v7_guardv65_relaxed_shell.jsonl`
+  - bridge pair：
+    - `data/synthetic/val_manifest_friend_speech_leak_proxy_search_candidate_v7_guardv65_relaxed_lowtransient_lowinttrans_bridge.jsonl`
+
+后续要求：
+
+1. 以后凡是做“放松单条 guard”的 frontier 搜索，
+   默认同时检查：
+   - `min-count=3`
+   - `min-count=2`
+2. 若 `min3`
+   只反复返回整包 relaxed shell，
+   不要立刻把该 shell
+   当成新 family。
+3. 应继续看：
+   - `min2`
+     下最先稳定出现的 pair
+   才能判断：
+   - 哪条 row
+     真正在接桥；
+   - 哪条 row
+     只是被 relaxed shell
+     一起裹进来。
+
+### 143. 强 seed pair 会把坏第三条在 aggregate 上洗白；`seed + 1` 过全约束，不等于拿到了 row-level clean family
+
+现象：
+
+- 以 bridge pair
+  `{val_000376, val_000430}`
+  做 seed 时，
+  当前最近的第三条 row
+  是：
+  - `val_000331`
+- 但 `val_000331`
+  自己 row-level
+  仍 fail：
+  - `v66 > v65`
+  - `v66 > v67`
+  - `v64 > v67`
+- 只是把它和 seed pair
+  并成：
+  - `{331,376,430}`
+  后，
+  aggregate gaps
+  会重新全部转正。
+
+影响：
+
+- 如果只盯着
+  `seed + 1`
+  aggregate 是否过关，
+  很容易误把：
+  - 被强 seed pair
+    均值冲淡后的
+    aggregate-pass row
+  当成：
+  - 真正 row-level clean
+    的第三成员；
+- 这会让文档再次把
+  aggregate family
+  和 row-level family
+  写混。
+
+处理：
+
+- 这次已补脚本：
+  - `scripts/eval/analyze_proxy_seed_expansion.py`
+- 并把两层东西分开资产化：
+  - row-level bridge：
+    - `data/synthetic/val_manifest_friend_speech_leak_proxy_search_candidate_v7_guardv65_relaxed_lowtransient_lowinttrans_bridge.jsonl`
+  - aggregate-only bridge trio：
+    - `data/synthetic/val_manifest_friend_speech_leak_proxy_search_candidate_v7_bridgepair_aggregate_plus331.jsonl`
+
+后续要求：
+
+1. 以后凡是做 seed-anchored 扩张，
+   默认同时记录：
+   - candidate 的 row-level failed guards
+   - `seed + 1`
+     的 aggregate 结果
+2. 若某第三条 row
+   只有 aggregate pass，
+   但自身 row-level
+   fail 多条 guards，
+   默认写成：
+   - aggregate-only extension
+   不写成：
+   - clean family member
+3. generic aggregate search
+   若再次塌回旧 family，
+   默认不要拿它
+   覆盖 seed-anchored
+   这层更细的解释。

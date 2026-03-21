@@ -1773,6 +1773,294 @@
       `val_000469`
       作为单独硬 anchor
     - 不启动新训练
+41. 已补上真正的
+    samplewise 全约束 strict 搜索能力，
+    并确认当前不存在
+    `3+ row`
+    的 strict-all clean family；
+    当前更准确的两层状态应固定为：
+    - `candidate_v6`
+      = aggregate pure-negative working family
+    - `{val_000239, val_000430}`
+      = strict-all core
+  - 入口：
+    - `reports/daily/2026-03-21_candidate_v7_strictall_core_search.md`
+    - `scripts/eval/search_synthetic_proxy_candidates.py`
+    - `reports/eval/synthetic_proxy_search_candidate_v7_v4carve_only_expand_strictall_min3_on_friend_speech_leak_search_v1/summary.json`
+    - `reports/eval/synthetic_proxy_search_candidate_v7_v4carve_only_expand_strictall_min2_on_friend_speech_leak_search_v1/summary.json`
+  - 本轮新增工程能力：
+    - `--require-samplewise-all-constraints-pass`
+    - `num_samplewise_extra_constraint_pass_rows_before_optional_filter`
+    - `num_samplewise_all_constraints_pass_rows_before_optional_filter`
+  - strict-all 搜索结果：
+    - 在
+      `v66 > v64`
+      且额外满足：
+      - `v66 > v65`
+      - `v66 > v67`
+      - `v64 > v67`
+      - `v20 > v24`
+      的口径下，
+      真正逐条样本都过关的 shared rows
+      只有：
+      - `val_000239`
+      - `val_000430`
+    - `min-count = 3`
+      直接掉空，
+      说明当前没有
+      `3+ row`
+      strict-all family
+  - 与旧 pure-negative 的关系：
+    - `candidate_v6`
+      val：
+      - `val_000165`
+      - `val_000331`
+      - `val_000430`
+    - strict-all core：
+      - `val_000239`
+      - `val_000430`
+    - 因而当前不能再把
+      `candidate_v6`
+      误写成
+      row-level strict core
+  - 当前默认下一步
+    应进一步收紧为：
+    - 保留
+      `candidate_v6`
+      作为 aggregate working family
+    - 保留
+      `{val_000239, val_000430}`
+      作为 strict-all 诊断核心
+    - 继续保留
+      `val_000469`
+      作为单独硬 anchor
+    - 在没有新的
+      `3+ row`
+      strict-all family
+      之前，
+      不启动新训练
+42. 已把 strict-core 资产与 overlap 关系正式物化；
+    当前更准确的三层结构应固定为：
+    - `candidate_v6`
+      = aggregate pure-negative working family
+    - `strict_core`
+      = row-level strict-all core
+    - `dualanchor`
+      = 单点边界锚点
+  - 入口：
+    - `reports/daily/2026-03-21_candidate_v7_strictcore_asset_and_overlap.md`
+    - `data/synthetic/val_manifest_friend_speech_leak_proxy_search_candidate_v7_strictall_core.jsonl`
+    - `data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_strictall_core_{train,val,all}.txt`
+    - `reports/eval/compare_v19_vs_v66_on_friend_speech_leak_search_v1/candidate_v7_strictcore_v6_dualanchor_overlap_analysis/summary.json`
+    - `reports/eval/compare_v19_vs_v67_on_friend_speech_leak_search_v1/candidate_v7_strictcore_v6_dualanchor_overlap_analysis/summary.json`
+  - 当前正式 membership subset：
+    - `candidate_v6 only`
+      - `val_000165`
+      - `val_000331`
+    - `strict_core only`
+      - `val_000239`
+    - `candidate_v6 ∩ strict_core`
+      - `val_000430`
+    - `dualanchor only`
+      - `val_000469`
+  - 更关键的新事实：
+    - `strict_core only`
+      的
+      `val_000239`
+      行为上严格过关，
+      但 metadata 语义
+      并不落在
+      `candidate_v6`
+      的 low-transient 模板里；
+    - 因而当前不能把
+      strict core
+      继续误写成：
+      - `candidate_v6`
+        的继续收紧版
+  - 当前默认下一步
+    应更新为：
+    - 若继续做 proxy，
+      默认改为：
+      - 用 strict core
+        `{val_000239, val_000430}`
+        继续找新的行为同族
+      - 同时保留
+        `val_000469`
+        作为边界 anchor
+    - 不再默认只沿
+      `candidate_v6`
+      那套
+      low-transient 语义
+      继续缩阈值
+    - 仍不启动新训练
+43. 已继续把 strict-core 周围的 near-miss frontier 正式拆成按失败 guard 分组的两条前沿；
+    当前更准确的扩张顺序应固定为：
+    - 第一优先：
+      `guardv65_only`
+    - 第二优先：
+      `guardv20_only`
+    - 边界锚点：
+      `val_000469`
+  - 入口：
+    - `reports/daily/2026-03-21_candidate_v7_strictcore_nearmiss_frontier.md`
+    - `scripts/eval/analyze_proxy_strict_near_miss.py`
+    - `data/synthetic/val_manifest_friend_speech_leak_search_v1_with_metrics.jsonl`
+    - `reports/eval/compare_v19_vs_v66_on_friend_speech_leak_search_v1/candidate_v7_strictcore_nearmiss_analysis_with_metrics/summary.json`
+  - 当前两条 single-fail 前沿资产：
+    - `guardv65_only`
+      - `val_000202`
+      - `val_000376`
+      - `data/synthetic/val_manifest_friend_speech_leak_proxy_search_candidate_v7_singlefail_guardv65.jsonl`
+      - `data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_singlefail_guardv65_{train,val,all}.txt`
+    - `guardv20_only`
+      - `val_000223`
+      - `val_000316`
+      - `data/synthetic/val_manifest_friend_speech_leak_proxy_search_candidate_v7_singlefail_guardv20.jsonl`
+      - `data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_singlefail_guardv20_{train,val,all}.txt`
+  - 当前判断：
+    - `guardv65_only`
+      是 strict core
+      的默认主扩张前沿，
+      因为它只差：
+      - `v66 > v65`
+      且保住其余四条 guards；
+    - 其中
+      `val_000376`
+      目前最接近 strict core，
+      仅差：
+      - `v66 - v65 = -0.004292 dB`
+    - `guardv20_only`
+      则应解释为：
+      - 与旧
+        `v20`
+        guard
+        不再对齐的第二分支，
+      不与第一优先前沿混写
+  - 当前默认下一步
+    已进一步更新为：
+    - 若继续做 strict-core 扩张，
+      默认先围绕：
+      - `guardv65_only`
+      - 特别是
+        `val_000376`
+      继续找同向 rows
+    - `guardv20_only`
+      保留为第二优先分支
+    - `val_000469`
+      继续单独保留为边界 anchor
+    - 仍不启动新训练
+44. 已继续确认 `guardv65_only` 内部也要再拆一层；当前更准确的结构不是 `{202,376}` 并列前沿，而是一个 `4` 条 relaxed shell 加上一条 `{376,430}` bridge pair：
+  - 入口：
+    - `reports/daily/2026-03-21_candidate_v7_guardv65_relaxed_bridge_search.md`
+    - `reports/eval/synthetic_proxy_search_candidate_v7_guardv65_relaxed_min3_on_friend_speech_leak_search_v1/summary.json`
+    - `reports/eval/synthetic_proxy_search_candidate_v7_guardv65_relaxed_min2_on_friend_speech_leak_search_v1/summary.json`
+  - 当前 relaxed shell：
+    - `val_000202`
+    - `val_000239`
+    - `val_000376`
+    - `val_000430`
+    - `data/synthetic/val_manifest_friend_speech_leak_proxy_search_candidate_v7_guardv65_relaxed_shell.jsonl`
+    - `data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_guardv65_relaxed_shell_{train,val,all}.txt`
+  - 当前第一条稳定 bridge pair：
+    - `val_000376`
+    - `val_000430`
+    - `data/synthetic/val_manifest_friend_speech_leak_proxy_search_candidate_v7_guardv65_relaxed_lowtransient_lowinttrans_bridge.jsonl`
+    - `data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_guardv65_relaxed_lowtransient_lowinttrans_bridge_{train,val,all}.txt`
+  - 当前判断：
+    - 放松
+      `v66 > v65`
+      后，
+      `3+ row`
+      搜索只会回到整包 relaxed shell，
+      还 carve 不出更细 family；
+    - 但 `2` 条口径下，
+      第一条被 metadata
+      稳定挑出来的 bridge
+      不是：
+      - `{202,239}`
+      也不是
+      - `{202,376}`
+      而是：
+      - `{376,430}`
+    - 因此
+      `val_000376`
+      当前更像 strict core 里
+      `430` 这一侧的外扩桥；
+      `val_000202`
+      则继续保留，
+      但不再默认和
+      `376`
+      并写成同一条语义前沿
+  - 当前默认下一步
+    已再次更新为：
+    - 若继续做 strict-core 扩张，
+      默认先围绕：
+      - `{val_000376, val_000430}`
+      继续找同向 rows
+    - `{202,239,376,430}`
+      保留为 relaxed shell，
+      作为 guardv65 放松后的诊断壳层
+    - `guardv20_only`
+      继续保留为第二优先分支
+    - `val_000469`
+      继续单独保留为边界 anchor
+    - 仍不启动新训练
+45. 已继续围绕 `{376,430}` 做 seed-anchored 扩张，并确认 `331` 是当前最近第三条 row；但它只能算 aggregate-only bridge extension，不能当成 row-level clean 第三成员：
+  - 入口：
+    - `reports/daily/2026-03-21_candidate_v7_bridgepair_seed_expansion.md`
+    - `scripts/eval/analyze_proxy_seed_expansion.py`
+    - `reports/eval/compare_v19_vs_v66_on_friend_speech_leak_search_v1/candidate_v7_bridgepair_seed_expansion_analysis/summary.json`
+    - `reports/eval/synthetic_proxy_search_candidate_v7_bridgepair_aggregate_expand_min3_on_friend_speech_leak_search_v1/summary.json`
+  - 当前 row-level bridge：
+    - `val_000376`
+    - `val_000430`
+    - `data/synthetic/val_manifest_friend_speech_leak_proxy_search_candidate_v7_guardv65_relaxed_lowtransient_lowinttrans_bridge.jsonl`
+  - 当前 aggregate-only bridge trio：
+    - `val_000331`
+    - `val_000376`
+    - `val_000430`
+    - `data/synthetic/val_manifest_friend_speech_leak_proxy_search_candidate_v7_bridgepair_aggregate_plus331.jsonl`
+    - `data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_bridgepair_aggregate_plus331_{train,val,all}.txt`
+  - 当前判断：
+    - `val_000331`
+      是 bridge pair
+      最近的第三条 row，
+      但它 row-level
+      仍 fail：
+      - `v66 > v65`
+      - `v66 > v67`
+      - `v64 > v67`
+    - 只有并进 seed pair 后，
+      `{331,376,430}`
+      aggregate 才恢复为 full-pass；
+    - 因而这条 trio
+      当前只能解释为：
+      - aggregate-only bridge extension
+      不能写成：
+      - row-level clean family
+    - 同时 generic aggregate search
+      仍会自动塌回旧：
+      - `candidate_v6`
+      语义；
+      所以 bridge 语义
+      必须靠 seed-anchored 诊断单独保住
+  - 当前默认下一步
+    已再次更新为：
+    - row-level 扩张
+      默认继续围绕：
+      - `{val_000376, val_000430}`
+    - `{val_000331, val_000376, val_000430}`
+      保留为 aggregate-only bridge trio，
+      不混写成 strict clean family
+    - generic aggregate search
+      若再次塌回旧 family，
+      默认不覆盖
+      上述 bridge 解释
+    - `guardv20_only`
+      继续保留为第二优先分支
+    - `val_000469`
+      继续单独保留为边界 anchor
+    - 仍不启动新训练
 
 ## 6. 忘线检查表
 
@@ -1784,12 +2072,27 @@
 4. 本文档 `docs/05_task_branch_map.md`
 5. 当前活跃分支日报：
    - 现在补到：
+     - `reports/daily/2026-03-21_candidate_v7_bridgepair_seed_expansion.md`
+     - `reports/daily/2026-03-21_candidate_v7_guardv65_relaxed_bridge_search.md`
+     - `reports/daily/2026-03-21_candidate_v7_strictcore_nearmiss_frontier.md`
+     - `reports/daily/2026-03-21_candidate_v7_strictcore_asset_and_overlap.md`
+     - `reports/daily/2026-03-21_candidate_v7_strictall_core_search.md`
      - `reports/daily/2026-03-21_candidate_v6_pure_negative_expand.md`
      - `reports/daily/2026-03-21_proxy_subfamily_materialization.md`
      - `reports/daily/2026-03-21_candidate_v4_v5_overlap_analysis.md`
      - `reports/daily/2026-03-21_candidate_v5_guardv67_negative_materialization.md`
      - `reports/daily/2026-03-21_candidate_v4_subgroup_diagnosis.md`
-   - 当前主停点日报仍是：
+   - 当前主停点日报已更新为：
+     - `reports/daily/2026-03-21_candidate_v7_bridgepair_seed_expansion.md`
+   - 上一条主停点日报：
+     - `reports/daily/2026-03-21_candidate_v7_guardv65_relaxed_bridge_search.md`
+   - 再上一条主停点日报：
+     - `reports/daily/2026-03-21_candidate_v7_strictcore_nearmiss_frontier.md`
+   - 更早一条主停点日报：
+     - `reports/daily/2026-03-21_candidate_v7_strictcore_asset_and_overlap.md`
+   - 更更早一条主停点日报：
+     - `reports/daily/2026-03-21_candidate_v7_strictall_core_search.md`
+   - 更更早一条主停点日报：
      - `reports/daily/2026-03-21_v67_candidate_v4_union_followup.md`
    - 上一条 `candidate_v4` 搜索日报：
      - `reports/daily/2026-03-21_candidate_v4_guardv66_by_v64_search_followup.md`

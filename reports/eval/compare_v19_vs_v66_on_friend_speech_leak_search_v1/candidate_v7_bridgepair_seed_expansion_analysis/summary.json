@@ -1,0 +1,1289 @@
+{
+  "manifest_jsonl": "data/synthetic/val_manifest_friend_speech_leak_search_v1_with_metrics.jsonl",
+  "seed_sample_ids_file": "data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_guardv65_relaxed_lowtransient_lowinttrans_bridge_val.txt",
+  "seed_sample_ids": [
+    "val_000376",
+    "val_000430"
+  ],
+  "focus_alias": "v66",
+  "reference_alias": "v64",
+  "compares": {
+    "v20": "reports/eval/compare_v19_vs_v20_on_friend_speech_leak_search_v1/per_sample_metrics.jsonl",
+    "v24": "reports/eval/compare_v19_vs_v24_on_friend_speech_leak_search_v1/per_sample_metrics.jsonl",
+    "v64": "reports/eval/compare_v19_vs_v64_on_friend_speech_leak_search_v1/per_sample_metrics.jsonl",
+    "v65": "reports/eval/compare_v19_vs_v65_on_friend_speech_leak_search_v1/per_sample_metrics.jsonl",
+    "v66": "reports/eval/compare_v19_vs_v66_on_friend_speech_leak_search_v1/per_sample_metrics.jsonl",
+    "v67": "reports/eval/compare_v19_vs_v67_on_friend_speech_leak_search_v1/per_sample_metrics.jsonl"
+  },
+  "ordered_aliases": [
+    "v66",
+    "v64"
+  ],
+  "extra_order_constraints": [
+    "v66>v65",
+    "v66>v67",
+    "v64>v67",
+    "v20>v24"
+  ],
+  "all_constraints": [
+    "v66>v64",
+    "v66>v65",
+    "v66>v67",
+    "v64>v67",
+    "v20>v24"
+  ],
+  "numeric_fields": [
+    "target_transient_presence_minus_mid_db_mean",
+    "target_transient_presence_share_mean",
+    "interference_transient_presence_minus_mid_db_mean",
+    "interference_transient_presence_share_mean",
+    "target_interference_logspec_cosine"
+  ],
+  "num_rows": 50,
+  "num_seed_rows": 2,
+  "seed_summary": {
+    "count": 2,
+    "sample_ids": [
+      "val_000376",
+      "val_000430"
+    ],
+    "focus_vs_reference_avg_db": 0.012678146362304688,
+    "min_constraint_gap_avg_db": 0.00750732421875,
+    "pass_count_avg": 4.5,
+    "numeric_field_stats": {
+      "target_transient_presence_minus_mid_db_mean": {
+        "count": 2,
+        "mean": -14.297387599945068,
+        "min": -17.00960922241211,
+        "max": -11.585165977478027
+      },
+      "target_transient_presence_share_mean": {
+        "count": 2,
+        "mean": 0.003599724033847451,
+        "min": 0.002246658783406019,
+        "max": 0.004952789284288883
+      },
+      "interference_transient_presence_minus_mid_db_mean": {
+        "count": 2,
+        "mean": -1.1512391567230225,
+        "min": -3.319185495376587,
+        "max": 1.016707181930542
+      },
+      "interference_transient_presence_share_mean": {
+        "count": 2,
+        "mean": 0.2604679875075817,
+        "min": 0.09055881947278976,
+        "max": 0.43037715554237366
+      },
+      "target_interference_logspec_cosine": {
+        "count": 2,
+        "mean": 0.7134462550017507,
+        "min": 0.7042160277307205,
+        "max": 0.722676482272781
+      }
+    }
+  },
+  "seed_constraint_center": {
+    "v66>v64": 0.012678146362304688,
+    "v66>v65": 0.2298870086669922,
+    "v66>v67": 0.0700540542602539,
+    "v64>v67": 0.05737590789794922,
+    "v20>v24": 0.06174325942993164
+  },
+  "seed_metadata_center": {
+    "target_transient_presence_minus_mid_db_mean": -14.297387599945068,
+    "target_transient_presence_share_mean": 0.003599724033847451,
+    "interference_transient_presence_minus_mid_db_mean": -1.1512391567230225,
+    "interference_transient_presence_share_mean": 0.2604679875075817,
+    "target_interference_logspec_cosine": 0.7134462550017507
+  },
+  "non_seed_fail_signature_counts": {
+    "": 1,
+    "v20>v24": 2,
+    "v66>v64 | v20>v24": 8,
+    "v66>v64 | v66>v65": 6,
+    "v66>v64 | v66>v65 | v66>v67": 3,
+    "v66>v64 | v66>v65 | v66>v67 | v20>v24": 1,
+    "v66>v64 | v66>v65 | v66>v67 | v64>v67": 4,
+    "v66>v64 | v66>v65 | v66>v67 | v64>v67 | v20>v24": 2,
+    "v66>v65": 1,
+    "v66>v65 | v64>v67 | v20>v24": 2,
+    "v66>v65 | v66>v67 | v64>v67": 6,
+    "v66>v65 | v66>v67 | v64>v67 | v20>v24": 3,
+    "v66>v67 | v64>v67 | v20>v24": 9
+  },
+  "top_nearest_rows_by_joint_distance": [
+    {
+      "sample_id": "val_000331",
+      "focus_minus_reference_db": 0.022857189178466797,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.09688854217529297,
+      "failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -0.09688854217529297,
+        "v66>v67": -0.0656270980834961,
+        "v64>v67": -0.08848428726196289
+      },
+      "metadata_distance_z": 0.8954077959173853,
+      "constraint_distance_z": 0.386674331148945,
+      "joint_distance_z": 0.9753318201305204,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -12.867053031921387,
+        "target_transient_presence_share_mean": 0.012056445702910423,
+        "interference_transient_presence_minus_mid_db_mean": 0.3163948357105255,
+        "interference_transient_presence_share_mean": 0.19142252206802368,
+        "target_interference_logspec_cosine": 0.6322202283335119
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000331/metadata.json"
+    },
+    {
+      "sample_id": "val_000075",
+      "focus_minus_reference_db": -0.08524131774902344,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.32916259765625,
+      "failed_constraints": [
+        "v66>v64",
+        "v66>v65",
+        "v66>v67"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.08524131774902344,
+        "v66>v65": -0.32916259765625,
+        "v66>v67": -0.009967803955078125
+      },
+      "metadata_distance_z": 1.0573696747830152,
+      "constraint_distance_z": 0.6224482322273289,
+      "joint_distance_z": 1.2269769480123358,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -13.607194900512695,
+        "target_transient_presence_share_mean": 0.056039851158857346,
+        "interference_transient_presence_minus_mid_db_mean": -3.36702036857605,
+        "interference_transient_presence_share_mean": 0.2427840381860733,
+        "target_interference_logspec_cosine": 0.7003817459632435
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000075/metadata.json"
+    },
+    {
+      "sample_id": "val_000305",
+      "focus_minus_reference_db": -0.007860183715820312,
+      "pass_count": 1,
+      "fail_count": 4,
+      "min_constraint_gap_db": -0.05888557434082031,
+      "failed_constraints": [
+        "v66>v64",
+        "v66>v65",
+        "v66>v67",
+        "v64>v67"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.007860183715820312,
+        "v66>v65": -0.025430679321289062,
+        "v66>v67": -0.05888557434082031,
+        "v64>v67": -0.051025390625
+      },
+      "metadata_distance_z": 1.4452505329751828,
+      "constraint_distance_z": 0.3115437601994768,
+      "joint_distance_z": 1.478448043586341,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -8.34082317352295,
+        "target_transient_presence_share_mean": 0.04136735945940018,
+        "interference_transient_presence_minus_mid_db_mean": 1.401066541671753,
+        "interference_transient_presence_share_mean": 0.2989298403263092,
+        "target_interference_logspec_cosine": 0.7411429256565719
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000305/metadata.json"
+    },
+    {
+      "sample_id": "val_000269",
+      "focus_minus_reference_db": 0.06261825561523438,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.10155868530273438,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.0389404296875,
+        "v64>v67": -0.10155868530273438,
+        "v20>v24": -0.0970296859741211
+      },
+      "metadata_distance_z": 1.6555884443251194,
+      "constraint_distance_z": 0.2619135346807569,
+      "joint_distance_z": 1.6761777342011908,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -10.569087028503418,
+        "target_transient_presence_share_mean": 0.07097723335027695,
+        "interference_transient_presence_minus_mid_db_mean": -3.9483320713043213,
+        "interference_transient_presence_share_mean": 0.19375403225421906,
+        "target_interference_logspec_cosine": 0.7817942773746055
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000269/metadata.json"
+    },
+    {
+      "sample_id": "val_000065",
+      "focus_minus_reference_db": 0.024827957153320312,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.05198097229003906,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.02715301513671875,
+        "v64>v67": -0.05198097229003906,
+        "v20>v24": -0.0024251937866210938
+      },
+      "metadata_distance_z": 1.793534061984024,
+      "constraint_distance_z": 0.24500312575633734,
+      "joint_distance_z": 1.8101908637288193,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -13.317380905151367,
+        "target_transient_presence_share_mean": 0.05418012663722038,
+        "interference_transient_presence_minus_mid_db_mean": 3.4773809909820557,
+        "interference_transient_presence_share_mean": 0.46156808733940125,
+        "target_interference_logspec_cosine": 0.6638855173876015
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000065/metadata.json"
+    },
+    {
+      "sample_id": "val_000076",
+      "focus_minus_reference_db": -0.015604496002197266,
+      "pass_count": 3,
+      "fail_count": 2,
+      "min_constraint_gap_db": -0.19080686569213867,
+      "failed_constraints": [
+        "v66>v64",
+        "v66>v65"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.015604496002197266,
+        "v66>v65": -0.19080686569213867
+      },
+      "metadata_distance_z": 1.8058287964628095,
+      "constraint_distance_z": 0.45924516799111015,
+      "joint_distance_z": 1.8633098954434557,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -9.813207626342773,
+        "target_transient_presence_share_mean": 0.016725817695260048,
+        "interference_transient_presence_minus_mid_db_mean": 4.2904791831970215,
+        "interference_transient_presence_share_mean": 0.44215553998947144,
+        "target_interference_logspec_cosine": 0.6577434147870588
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000076/metadata.json"
+    },
+    {
+      "sample_id": "val_000153",
+      "focus_minus_reference_db": 0.21747589111328125,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.3704967498779297,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.15302085876464844,
+        "v64>v67": -0.3704967498779297,
+        "v20>v24": -0.16748619079589844
+      },
+      "metadata_distance_z": 2.0684134762829407,
+      "constraint_distance_z": 0.44764549551549193,
+      "joint_distance_z": 2.1162988443327633,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -7.850541114807129,
+        "target_transient_presence_share_mean": 0.05127888172864914,
+        "interference_transient_presence_minus_mid_db_mean": 2.8256027698516846,
+        "interference_transient_presence_share_mean": 0.41113659739494324,
+        "target_interference_logspec_cosine": 0.6147501839193095
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000153/metadata.json"
+    },
+    {
+      "sample_id": "val_000041",
+      "focus_minus_reference_db": 0.015427589416503906,
+      "pass_count": 1,
+      "fail_count": 4,
+      "min_constraint_gap_db": -0.07982349395751953,
+      "failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -0.019849777221679688,
+        "v66>v67": -0.06439590454101562,
+        "v64>v67": -0.07982349395751953,
+        "v20>v24": -0.029010772705078125
+      },
+      "metadata_distance_z": 2.1759262262867844,
+      "constraint_distance_z": 0.313517707810956,
+      "joint_distance_z": 2.1983967556730253,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -8.051219940185547,
+        "target_transient_presence_share_mean": 0.02426496148109436,
+        "interference_transient_presence_minus_mid_db_mean": 5.840137958526611,
+        "interference_transient_presence_share_mean": 0.37222644686698914,
+        "target_interference_logspec_cosine": 0.6037298161131465
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000041/metadata.json"
+    },
+    {
+      "sample_id": "val_000329",
+      "focus_minus_reference_db": 0.06604290008544922,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.06437397003173828,
+      "failed_constraints": [
+        "v66>v65",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -0.006552696228027344,
+        "v64>v67": -0.06437397003173828,
+        "v20>v24": -0.015562057495117188
+      },
+      "metadata_distance_z": 2.3200379198811576,
+      "constraint_distance_z": 0.28238189000377584,
+      "joint_distance_z": 2.3371597038902996,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -23.011409759521484,
+        "target_transient_presence_share_mean": 0.046165186911821365,
+        "interference_transient_presence_minus_mid_db_mean": 3.0813944339752197,
+        "interference_transient_presence_share_mean": 0.1452009081840515,
+        "target_interference_logspec_cosine": 0.598041267387562
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000329/metadata.json"
+    },
+    {
+      "sample_id": "val_000274",
+      "focus_minus_reference_db": -0.07695770263671875,
+      "pass_count": 1,
+      "fail_count": 4,
+      "min_constraint_gap_db": -0.07695770263671875,
+      "failed_constraints": [
+        "v66>v64",
+        "v66>v65",
+        "v66>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.07695770263671875,
+        "v66>v65": -0.04442882537841797,
+        "v66>v67": -0.014490604400634766,
+        "v20>v24": -0.037761688232421875
+      },
+      "metadata_distance_z": 2.3404290463867556,
+      "constraint_distance_z": 0.32982392929432575,
+      "joint_distance_z": 2.3635549381188428,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -16.466354370117188,
+        "target_transient_presence_share_mean": 0.0047722565941512585,
+        "interference_transient_presence_minus_mid_db_mean": 7.217308044433594,
+        "interference_transient_presence_share_mean": 0.4859713912010193,
+        "target_interference_logspec_cosine": 0.6039048465658481
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000274/metadata.json"
+    },
+    {
+      "sample_id": "val_000281",
+      "focus_minus_reference_db": -0.010951995849609375,
+      "pass_count": 1,
+      "fail_count": 4,
+      "min_constraint_gap_db": -0.06453824043273926,
+      "failed_constraints": [
+        "v66>v64",
+        "v66>v65",
+        "v66>v67",
+        "v64>v67"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.010951995849609375,
+        "v66>v65": -0.06453824043273926,
+        "v66>v67": -0.017719745635986328,
+        "v64>v67": -0.006767749786376953
+      },
+      "metadata_distance_z": 2.3541521631634446,
+      "constraint_distance_z": 0.3352657225783421,
+      "joint_distance_z": 2.3779056987322065,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -5.19318962097168,
+        "target_transient_presence_share_mean": 0.07336869835853577,
+        "interference_transient_presence_minus_mid_db_mean": -4.875294208526611,
+        "interference_transient_presence_share_mean": 0.14798828959465027,
+        "target_interference_logspec_cosine": 0.6881072891856665
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000281/metadata.json"
+    },
+    {
+      "sample_id": "val_000396",
+      "focus_minus_reference_db": -0.016195297241210938,
+      "pass_count": 0,
+      "fail_count": 5,
+      "min_constraint_gap_db": -0.15909767150878906,
+      "failed_constraints": [
+        "v66>v64",
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.016195297241210938,
+        "v66>v65": -0.015451431274414062,
+        "v66>v67": -0.15909767150878906,
+        "v64>v67": -0.14290237426757812,
+        "v20>v24": -0.06799983978271484
+      },
+      "metadata_distance_z": 2.389144834869156,
+      "constraint_distance_z": 0.3750423783137394,
+      "joint_distance_z": 2.4184023295376624,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -23.011409759521484,
+        "target_transient_presence_share_mean": 0.046165186911821365,
+        "interference_transient_presence_minus_mid_db_mean": 4.029228687286377,
+        "interference_transient_presence_share_mean": 0.350452721118927,
+        "target_interference_logspec_cosine": 0.5896011044322925
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000396/metadata.json"
+    }
+  ],
+  "top_nearest_rows_by_metadata_distance": [
+    {
+      "sample_id": "val_000331",
+      "focus_minus_reference_db": 0.022857189178466797,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.09688854217529297,
+      "failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -0.09688854217529297,
+        "v66>v67": -0.0656270980834961,
+        "v64>v67": -0.08848428726196289
+      },
+      "metadata_distance_z": 0.8954077959173853,
+      "constraint_distance_z": 0.386674331148945,
+      "joint_distance_z": 0.9753318201305204,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -12.867053031921387,
+        "target_transient_presence_share_mean": 0.012056445702910423,
+        "interference_transient_presence_minus_mid_db_mean": 0.3163948357105255,
+        "interference_transient_presence_share_mean": 0.19142252206802368,
+        "target_interference_logspec_cosine": 0.6322202283335119
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000331/metadata.json"
+    },
+    {
+      "sample_id": "val_000075",
+      "focus_minus_reference_db": -0.08524131774902344,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.32916259765625,
+      "failed_constraints": [
+        "v66>v64",
+        "v66>v65",
+        "v66>v67"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.08524131774902344,
+        "v66>v65": -0.32916259765625,
+        "v66>v67": -0.009967803955078125
+      },
+      "metadata_distance_z": 1.0573696747830152,
+      "constraint_distance_z": 0.6224482322273289,
+      "joint_distance_z": 1.2269769480123358,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -13.607194900512695,
+        "target_transient_presence_share_mean": 0.056039851158857346,
+        "interference_transient_presence_minus_mid_db_mean": -3.36702036857605,
+        "interference_transient_presence_share_mean": 0.2427840381860733,
+        "target_interference_logspec_cosine": 0.7003817459632435
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000075/metadata.json"
+    },
+    {
+      "sample_id": "val_000305",
+      "focus_minus_reference_db": -0.007860183715820312,
+      "pass_count": 1,
+      "fail_count": 4,
+      "min_constraint_gap_db": -0.05888557434082031,
+      "failed_constraints": [
+        "v66>v64",
+        "v66>v65",
+        "v66>v67",
+        "v64>v67"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.007860183715820312,
+        "v66>v65": -0.025430679321289062,
+        "v66>v67": -0.05888557434082031,
+        "v64>v67": -0.051025390625
+      },
+      "metadata_distance_z": 1.4452505329751828,
+      "constraint_distance_z": 0.3115437601994768,
+      "joint_distance_z": 1.478448043586341,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -8.34082317352295,
+        "target_transient_presence_share_mean": 0.04136735945940018,
+        "interference_transient_presence_minus_mid_db_mean": 1.401066541671753,
+        "interference_transient_presence_share_mean": 0.2989298403263092,
+        "target_interference_logspec_cosine": 0.7411429256565719
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000305/metadata.json"
+    },
+    {
+      "sample_id": "val_000269",
+      "focus_minus_reference_db": 0.06261825561523438,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.10155868530273438,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.0389404296875,
+        "v64>v67": -0.10155868530273438,
+        "v20>v24": -0.0970296859741211
+      },
+      "metadata_distance_z": 1.6555884443251194,
+      "constraint_distance_z": 0.2619135346807569,
+      "joint_distance_z": 1.6761777342011908,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -10.569087028503418,
+        "target_transient_presence_share_mean": 0.07097723335027695,
+        "interference_transient_presence_minus_mid_db_mean": -3.9483320713043213,
+        "interference_transient_presence_share_mean": 0.19375403225421906,
+        "target_interference_logspec_cosine": 0.7817942773746055
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000269/metadata.json"
+    },
+    {
+      "sample_id": "val_000338",
+      "focus_minus_reference_db": -0.9293899536132812,
+      "pass_count": 3,
+      "fail_count": 2,
+      "min_constraint_gap_db": -1.055999755859375,
+      "failed_constraints": [
+        "v66>v64",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.9293899536132812,
+        "v20>v24": -1.055999755859375
+      },
+      "metadata_distance_z": 1.736389522250236,
+      "constraint_distance_z": 2.2449727571926634,
+      "joint_distance_z": 2.838124601478524,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -7.850541114807129,
+        "target_transient_presence_share_mean": 0.05127888172864914,
+        "interference_transient_presence_minus_mid_db_mean": -2.4790682792663574,
+        "interference_transient_presence_share_mean": 0.20861676335334778,
+        "target_interference_logspec_cosine": 0.6178988088194538
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000338/metadata.json"
+    },
+    {
+      "sample_id": "val_000182",
+      "focus_minus_reference_db": 4.649478912353516,
+      "pass_count": 1,
+      "fail_count": 4,
+      "min_constraint_gap_db": -14.495071411132812,
+      "failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -4.6157989501953125,
+        "v66>v67": -6.442935943603516,
+        "v64>v67": -11.092414855957031,
+        "v20>v24": -14.495071411132812
+      },
+      "metadata_distance_z": 1.768047816073049,
+      "constraint_distance_z": 13.781918545545455,
+      "joint_distance_z": 13.89486494630194,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -15.896512985229492,
+        "target_transient_presence_share_mean": 0.00042558732093311846,
+        "interference_transient_presence_minus_mid_db_mean": 2.0366358757019043,
+        "interference_transient_presence_share_mean": 0.2909950315952301,
+        "target_interference_logspec_cosine": 0.5209989793817678
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000182/metadata.json"
+    },
+    {
+      "sample_id": "val_000065",
+      "focus_minus_reference_db": 0.024827957153320312,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.05198097229003906,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.02715301513671875,
+        "v64>v67": -0.05198097229003906,
+        "v20>v24": -0.0024251937866210938
+      },
+      "metadata_distance_z": 1.793534061984024,
+      "constraint_distance_z": 0.24500312575633734,
+      "joint_distance_z": 1.8101908637288193,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -13.317380905151367,
+        "target_transient_presence_share_mean": 0.05418012663722038,
+        "interference_transient_presence_minus_mid_db_mean": 3.4773809909820557,
+        "interference_transient_presence_share_mean": 0.46156808733940125,
+        "target_interference_logspec_cosine": 0.6638855173876015
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000065/metadata.json"
+    },
+    {
+      "sample_id": "val_000076",
+      "focus_minus_reference_db": -0.015604496002197266,
+      "pass_count": 3,
+      "fail_count": 2,
+      "min_constraint_gap_db": -0.19080686569213867,
+      "failed_constraints": [
+        "v66>v64",
+        "v66>v65"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.015604496002197266,
+        "v66>v65": -0.19080686569213867
+      },
+      "metadata_distance_z": 1.8058287964628095,
+      "constraint_distance_z": 0.45924516799111015,
+      "joint_distance_z": 1.8633098954434557,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -9.813207626342773,
+        "target_transient_presence_share_mean": 0.016725817695260048,
+        "interference_transient_presence_minus_mid_db_mean": 4.2904791831970215,
+        "interference_transient_presence_share_mean": 0.44215553998947144,
+        "target_interference_logspec_cosine": 0.6577434147870588
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000076/metadata.json"
+    },
+    {
+      "sample_id": "val_000153",
+      "focus_minus_reference_db": 0.21747589111328125,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.3704967498779297,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.15302085876464844,
+        "v64>v67": -0.3704967498779297,
+        "v20>v24": -0.16748619079589844
+      },
+      "metadata_distance_z": 2.0684134762829407,
+      "constraint_distance_z": 0.44764549551549193,
+      "joint_distance_z": 2.1162988443327633,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -7.850541114807129,
+        "target_transient_presence_share_mean": 0.05127888172864914,
+        "interference_transient_presence_minus_mid_db_mean": 2.8256027698516846,
+        "interference_transient_presence_share_mean": 0.41113659739494324,
+        "target_interference_logspec_cosine": 0.6147501839193095
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000153/metadata.json"
+    },
+    {
+      "sample_id": "val_000041",
+      "focus_minus_reference_db": 0.015427589416503906,
+      "pass_count": 1,
+      "fail_count": 4,
+      "min_constraint_gap_db": -0.07982349395751953,
+      "failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -0.019849777221679688,
+        "v66>v67": -0.06439590454101562,
+        "v64>v67": -0.07982349395751953,
+        "v20>v24": -0.029010772705078125
+      },
+      "metadata_distance_z": 2.1759262262867844,
+      "constraint_distance_z": 0.313517707810956,
+      "joint_distance_z": 2.1983967556730253,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -8.051219940185547,
+        "target_transient_presence_share_mean": 0.02426496148109436,
+        "interference_transient_presence_minus_mid_db_mean": 5.840137958526611,
+        "interference_transient_presence_share_mean": 0.37222644686698914,
+        "target_interference_logspec_cosine": 0.6037298161131465
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000041/metadata.json"
+    },
+    {
+      "sample_id": "val_000170",
+      "focus_minus_reference_db": -0.36383819580078125,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.6842174530029297,
+      "failed_constraints": [
+        "v66>v64",
+        "v66>v65",
+        "v66>v67"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.36383819580078125,
+        "v66>v65": -0.6842174530029297,
+        "v66>v67": -0.07144355773925781
+      },
+      "metadata_distance_z": 2.2257010685253364,
+      "constraint_distance_z": 1.1623295449242315,
+      "joint_distance_z": 2.5109271629098675,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -13.625691413879395,
+        "target_transient_presence_share_mean": 0.02859668992459774,
+        "interference_transient_presence_minus_mid_db_mean": 2.9750235080718994,
+        "interference_transient_presence_share_mean": 0.4639713764190674,
+        "target_interference_logspec_cosine": 0.5174919761320766
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000170/metadata.json"
+    },
+    {
+      "sample_id": "val_000329",
+      "focus_minus_reference_db": 0.06604290008544922,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.06437397003173828,
+      "failed_constraints": [
+        "v66>v65",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -0.006552696228027344,
+        "v64>v67": -0.06437397003173828,
+        "v20>v24": -0.015562057495117188
+      },
+      "metadata_distance_z": 2.3200379198811576,
+      "constraint_distance_z": 0.28238189000377584,
+      "joint_distance_z": 2.3371597038902996,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -23.011409759521484,
+        "target_transient_presence_share_mean": 0.046165186911821365,
+        "interference_transient_presence_minus_mid_db_mean": 3.0813944339752197,
+        "interference_transient_presence_share_mean": 0.1452009081840515,
+        "target_interference_logspec_cosine": 0.598041267387562
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000329/metadata.json"
+    }
+  ],
+  "top_seed_plus_one_expansions": [
+    {
+      "candidate_sample_id": "val_000223",
+      "seed_plus_candidate_sample_ids": [
+        "val_000376",
+        "val_000430",
+        "val_000223"
+      ],
+      "candidate_failed_constraints": [
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v20>v24": -0.05127286911010742
+      },
+      "candidate_joint_distance_z": 2.7078080753512213,
+      "candidate_metadata_distance_z": 2.7068091005770087,
+      "candidate_constraint_distance_z": 0.07354635253206972,
+      "candidate_focus_minus_reference_db": 0.03452348709106445,
+      "aggregate_all_constraints_pass": true,
+      "aggregate_failed_constraints": [],
+      "aggregate_failed_constraint_gaps_db": {},
+      "aggregate_alias_scores": {
+        "v20": -10.004899342854818,
+        "v24": -10.02897055943807,
+        "v64": -9.874284267425537,
+        "v65": -10.073038260142008,
+        "v66": -9.854324340820312,
+        "v67": -9.920531113942465
+      },
+      "aggregate_focus_minus_reference_db": 0.01995992660522461,
+      "aggregate_min_constraint_gap_db": 0.01995992660522461
+    },
+    {
+      "candidate_sample_id": "val_000235",
+      "seed_plus_candidate_sample_ids": [
+        "val_000376",
+        "val_000430",
+        "val_000235"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v65": -0.005741715431213379,
+        "v66>v67": -0.008530855178833008,
+        "v64>v67": -0.039343833923339844
+      },
+      "candidate_joint_distance_z": 6.092051370711195,
+      "candidate_metadata_distance_z": 6.085974711405078,
+      "candidate_constraint_distance_z": 0.27203256334862036,
+      "candidate_focus_minus_reference_db": 0.030812978744506836,
+      "aggregate_all_constraints_pass": true,
+      "aggregate_failed_constraints": [],
+      "aggregate_failed_constraint_gaps_db": {},
+      "aggregate_alias_scores": {
+        "v20": -8.019036054611206,
+        "v24": -8.074744780858358,
+        "v64": -7.949082414309184,
+        "v65": -8.081703424453735,
+        "v66": -7.930359323819478,
+        "v67": -7.974218408266704
+      },
+      "aggregate_focus_minus_reference_db": 0.018723090489705996,
+      "aggregate_min_constraint_gap_db": 0.018723090489705996
+    },
+    {
+      "candidate_sample_id": "val_000002",
+      "seed_plus_candidate_sample_ids": [
+        "val_000376",
+        "val_000430",
+        "val_000002"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v65",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v65": -0.0025606155395507812,
+        "v64>v67": -0.01820087432861328,
+        "v20>v24": -0.0017862319946289062
+      },
+      "candidate_joint_distance_z": 4.3647304707922965,
+      "candidate_metadata_distance_z": 4.3567657259612576,
+      "candidate_constraint_distance_z": 0.2635611726943394,
+      "candidate_focus_minus_reference_db": 0.025422096252441406,
+      "aggregate_all_constraints_pass": true,
+      "aggregate_failed_constraints": [],
+      "aggregate_failed_constraint_gaps_db": {},
+      "aggregate_alias_scores": {
+        "v20": -10.407085418701172,
+        "v24": -10.447652180989584,
+        "v64": -10.322323322296143,
+        "v65": -10.457801659901937,
+        "v66": -10.305397192637125,
+        "v67": -10.354506969451904
+      },
+      "aggregate_focus_minus_reference_db": 0.01692612965901752,
+      "aggregate_min_constraint_gap_db": 0.01692612965901752
+    },
+    {
+      "candidate_sample_id": "val_000329",
+      "seed_plus_candidate_sample_ids": [
+        "val_000376",
+        "val_000430",
+        "val_000329"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v65",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v65": -0.006552696228027344,
+        "v64>v67": -0.06437397003173828,
+        "v20>v24": -0.015562057495117188
+      },
+      "candidate_joint_distance_z": 2.3371597038902996,
+      "candidate_metadata_distance_z": 2.3200379198811576,
+      "candidate_constraint_distance_z": 0.28238189000377584,
+      "candidate_focus_minus_reference_db": 0.06604290008544922,
+      "aggregate_all_constraints_pass": true,
+      "aggregate_failed_constraints": [],
+      "aggregate_failed_constraint_gaps_db": {},
+      "aggregate_alias_scores": {
+        "v20": -10.98800532023112,
+        "v24": -11.023980140686035,
+        "v64": -10.90280040105184,
+        "v65": -11.023407777150473,
+        "v66": -10.872334003448486,
+        "v67": -10.919593016306559
+      },
+      "aggregate_focus_minus_reference_db": 0.030466397603353457,
+      "aggregate_min_constraint_gap_db": 0.016792615254718868
+    },
+    {
+      "candidate_sample_id": "val_000065",
+      "seed_plus_candidate_sample_ids": [
+        "val_000376",
+        "val_000430",
+        "val_000065"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v67": -0.02715301513671875,
+        "v64>v67": -0.05198097229003906,
+        "v20>v24": -0.0024251937866210938
+      },
+      "candidate_joint_distance_z": 1.8101908637288193,
+      "candidate_metadata_distance_z": 1.793534061984024,
+      "candidate_constraint_distance_z": 0.24500312575633734,
+      "candidate_focus_minus_reference_db": 0.024827957153320312,
+      "aggregate_all_constraints_pass": true,
+      "aggregate_failed_constraints": [],
+      "aggregate_failed_constraint_gaps_db": {},
+      "aggregate_alias_scores": {
+        "v20": -10.759427388509115,
+        "v24": -10.79978116353353,
+        "v64": -10.671801408131918,
+        "v65": -10.818836053212484,
+        "v66": -10.655073324839273,
+        "v67": -10.692725022633871
+      },
+      "aggregate_focus_minus_reference_db": 0.016728083292644413,
+      "aggregate_min_constraint_gap_db": 0.016728083292644413
+    },
+    {
+      "candidate_sample_id": "val_000202",
+      "seed_plus_candidate_sample_ids": [
+        "val_000376",
+        "val_000430",
+        "val_000202"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v65"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v65": -0.15528202056884766
+      },
+      "candidate_joint_distance_z": 3.4486526361459435,
+      "candidate_metadata_distance_z": 3.421139038962132,
+      "candidate_constraint_distance_z": 0.43475588654511277,
+      "candidate_focus_minus_reference_db": 0.017746925354003906,
+      "aggregate_all_constraints_pass": true,
+      "aggregate_failed_constraints": [],
+      "aggregate_failed_constraint_gaps_db": {},
+      "aggregate_alias_scores": {
+        "v20": -12.550158182779947,
+        "v24": -12.703403155008951,
+        "v64": -12.482177893320719,
+        "v65": -12.569307486216227,
+        "v66": -12.467810153961182,
+        "v67": -12.53371000289917
+      },
+      "aggregate_focus_minus_reference_db": 0.014367739359537168,
+      "aggregate_min_constraint_gap_db": 0.014367739359537168
+    },
+    {
+      "candidate_sample_id": "val_000034",
+      "seed_plus_candidate_sample_ids": [
+        "val_000376",
+        "val_000430",
+        "val_000034"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v67": -0.006060600280761719,
+        "v64>v67": -0.022783279418945312,
+        "v20>v24": -0.0017671585083007812
+      },
+      "candidate_joint_distance_z": 4.698481551721437,
+      "candidate_metadata_distance_z": 4.691316674489627,
+      "candidate_constraint_distance_z": 0.25937762340314086,
+      "candidate_focus_minus_reference_db": 0.016722679138183594,
+      "aggregate_all_constraints_pass": true,
+      "aggregate_failed_constraints": [],
+      "aggregate_failed_constraint_gaps_db": {},
+      "aggregate_alias_scores": {
+        "v20": -10.32440153757731,
+        "v24": -10.364974657694498,
+        "v64": -10.23999579747518,
+        "v65": -10.38093614578247,
+        "v66": -10.225969473520914,
+        "v67": -10.270651976267496
+      },
+      "aggregate_focus_minus_reference_db": 0.014026323954265507,
+      "aggregate_min_constraint_gap_db": 0.014026323954265507
+    },
+    {
+      "candidate_sample_id": "val_000330",
+      "seed_plus_candidate_sample_ids": [
+        "val_000376",
+        "val_000430",
+        "val_000330"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v65": -0.023519515991210938,
+        "v66>v67": -0.020069122314453125,
+        "v64>v67": -0.03112506866455078,
+        "v20>v24": -0.022535324096679688
+      },
+      "candidate_joint_distance_z": 3.526909106158796,
+      "candidate_metadata_distance_z": 3.5146098583565335,
+      "candidate_constraint_distance_z": 0.29428793153798033,
+      "candidate_focus_minus_reference_db": 0.011055946350097656,
+      "aggregate_all_constraints_pass": true,
+      "aggregate_failed_constraints": [],
+      "aggregate_failed_constraint_gaps_db": {},
+      "aggregate_alias_scores": {
+        "v20": -10.314590771993002,
+        "v24": -10.348241170247396,
+        "v64": -10.223472754160563,
+        "v65": -10.356753508249918,
+        "v66": -10.21133534113566,
+        "v67": -10.25134833653768
+      },
+      "aggregate_focus_minus_reference_db": 0.012137413024902344,
+      "aggregate_min_constraint_gap_db": 0.012137413024902344
+    },
+    {
+      "candidate_sample_id": "val_000279",
+      "seed_plus_candidate_sample_ids": [
+        "val_000376",
+        "val_000430",
+        "val_000279"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v65": -0.0585399866104126,
+        "v66>v67": -0.03652536869049072,
+        "v64>v67": -0.046619296073913574
+      },
+      "candidate_joint_distance_z": 2.441525293765466,
+      "candidate_metadata_distance_z": 2.4185944899573317,
+      "candidate_constraint_distance_z": 0.3338359675717692,
+      "candidate_focus_minus_reference_db": 0.010093927383422852,
+      "aggregate_all_constraints_pass": true,
+      "aggregate_failed_constraints": [],
+      "aggregate_failed_constraint_gaps_db": {},
+      "aggregate_alias_scores": {
+        "v20": -7.929287989934285,
+        "v24": -8.002609928448996,
+        "v64": -7.883107860883077,
+        "v65": -8.005035797754923,
+        "v66": -7.871291120847066,
+        "v67": -7.905818700790405
+      },
+      "aggregate_focus_minus_reference_db": 0.011816740036010742,
+      "aggregate_min_constraint_gap_db": 0.011816740036010742
+    },
+    {
+      "candidate_sample_id": "val_000041",
+      "seed_plus_candidate_sample_ids": [
+        "val_000376",
+        "val_000430",
+        "val_000041"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v65": -0.019849777221679688,
+        "v66>v67": -0.06439590454101562,
+        "v64>v67": -0.07982349395751953,
+        "v20>v24": -0.029010772705078125
+      },
+      "candidate_joint_distance_z": 2.1983967556730253,
+      "candidate_metadata_distance_z": 2.1759262262867844,
+      "candidate_constraint_distance_z": 0.313517707810956,
+      "candidate_focus_minus_reference_db": 0.015427589416503906,
+      "aggregate_all_constraints_pass": true,
+      "aggregate_failed_constraints": [],
+      "aggregate_failed_constraint_gaps_db": {},
+      "aggregate_alias_scores": {
+        "v20": -11.894177118937174,
+        "v24": -11.925669034322103,
+        "v64": -11.80531104405721,
+        "v65": -11.938357830047607,
+        "v66": -11.79171641667684,
+        "v67": -11.816953818003336
+      },
+      "aggregate_focus_minus_reference_db": 0.013594627380371094,
+      "aggregate_min_constraint_gap_db": 0.011642773946125118
+    },
+    {
+      "candidate_sample_id": "val_000015",
+      "seed_plus_candidate_sample_ids": [
+        "val_000376",
+        "val_000430",
+        "val_000015"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v65": -0.25580787658691406,
+        "v66>v67": -0.0725564956665039,
+        "v64>v67": -0.08098983764648438
+      },
+      "candidate_joint_distance_z": 3.4321337888708103,
+      "candidate_metadata_distance_z": 3.3882013093230823,
+      "candidate_constraint_distance_z": 0.5473885568862903,
+      "candidate_focus_minus_reference_db": 0.008433341979980469,
+      "aggregate_all_constraints_pass": true,
+      "aggregate_failed_constraints": [],
+      "aggregate_failed_constraint_gaps_db": {},
+      "aggregate_alias_scores": {
+        "v20": -12.019506454467773,
+        "v24": -12.075661977132162,
+        "v64": -11.984584967295328,
+        "v65": -12.041310469309488,
+        "v66": -11.973321755727133,
+        "v67": -11.9958389600118
+      },
+      "aggregate_focus_minus_reference_db": 0.01126321156819543,
+      "aggregate_min_constraint_gap_db": 0.011253992716472538
+    },
+    {
+      "candidate_sample_id": "val_000316",
+      "seed_plus_candidate_sample_ids": [
+        "val_000376",
+        "val_000430",
+        "val_000316"
+      ],
+      "candidate_failed_constraints": [
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v20>v24": -0.06284177303314209
+      },
+      "candidate_joint_distance_z": 2.4711582832069876,
+      "candidate_metadata_distance_z": 2.4700612689898143,
+      "candidate_constraint_distance_z": 0.0736246432856213,
+      "candidate_focus_minus_reference_db": 0.006538182497024536,
+      "aggregate_all_constraints_pass": true,
+      "aggregate_failed_constraints": [],
+      "aggregate_failed_constraint_gaps_db": {},
+      "aggregate_alias_scores": {
+        "v20": -7.70640754699707,
+        "v24": -7.726622462272644,
+        "v64": -7.5781405965487165,
+        "v65": -7.800221125284831,
+        "v66": -7.567509104808171,
+        "v67": -7.6491642991701765
+      },
+      "aggregate_focus_minus_reference_db": 0.01063149174054523,
+      "aggregate_min_constraint_gap_db": 0.01063149174054523
+    }
+  ]
+}

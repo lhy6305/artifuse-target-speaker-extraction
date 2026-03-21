@@ -53,6 +53,14 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Only search over rows whose per-sample alias ordering already satisfies the requested ordering.",
     )
+    parser.add_argument(
+        "--require-samplewise-all-constraints-pass",
+        action="store_true",
+        help=(
+            "Only search over rows whose per-sample alias ordering and every extra order constraint both pass. "
+            "This is stricter than --require-samplewise-order-pass."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -329,6 +337,8 @@ def main() -> None:
     pair_metric_cache: dict[tuple[str, str], dict[str, float]] = {}
     enriched_rows: list[dict[str, Any]] = []
     samplewise_order_pass_count = 0
+    samplewise_extra_constraint_pass_count = 0
+    samplewise_all_constraints_pass_count = 0
     for sample_id in sorted(shared_sample_ids):
         base_row = compare_rows_by_alias[base_alias][sample_id]
         if str(base_row.get("recipe", "")) not in SPEECH_RECIPES:
@@ -365,8 +375,20 @@ def main() -> None:
             ordered_aliases,
             min_order_gap_db=args.min_order_gap_db,
         )
+        samplewise_extra_pass, samplewise_extra_gaps = extra_order_constraints_pass(
+            alias_deltas,
+            extra_order_constraints,
+            min_order_gap_db=args.min_order_gap_db,
+        )
         if samplewise_order_pass:
             samplewise_order_pass_count += 1
+        if samplewise_extra_pass:
+            samplewise_extra_constraint_pass_count += 1
+        samplewise_all_constraints_pass = bool(samplewise_order_pass and samplewise_extra_pass)
+        if samplewise_all_constraints_pass:
+            samplewise_all_constraints_pass_count += 1
+        if args.require_samplewise_all_constraints_pass and not samplewise_all_constraints_pass:
+            continue
         if args.require_samplewise_order_pass and not samplewise_order_pass:
             continue
         enriched_rows.append(
@@ -383,6 +405,9 @@ def main() -> None:
                 "alias_deltas": alias_deltas,
                 "samplewise_order_pass": samplewise_order_pass,
                 "samplewise_pair_gaps_db": samplewise_pair_gaps,
+                "samplewise_extra_constraints_pass": samplewise_extra_pass,
+                "samplewise_extra_constraint_gaps_db": samplewise_extra_gaps,
+                "samplewise_all_constraints_pass": samplewise_all_constraints_pass,
                 **target_transient_metrics,
                 **interference_transient_metrics,
                 **pair_metrics,
@@ -696,7 +721,10 @@ def main() -> None:
         "extra_order_constraints": [f"{higher_alias}>{lower_alias}" for higher_alias, lower_alias in extra_order_constraints],
         "num_shared_speech_rows": len(enriched_rows),
         "num_samplewise_order_pass_rows_before_optional_filter": samplewise_order_pass_count,
+        "num_samplewise_extra_constraint_pass_rows_before_optional_filter": samplewise_extra_constraint_pass_count,
+        "num_samplewise_all_constraints_pass_rows_before_optional_filter": samplewise_all_constraints_pass_count,
         "require_samplewise_order_pass": bool(args.require_samplewise_order_pass),
+        "require_samplewise_all_constraints_pass": bool(args.require_samplewise_all_constraints_pass),
         "thresholds": {
             "gain_thresholds_db": gain_thresholds,
             "transient_thresholds_db": transient_thresholds,
@@ -724,7 +752,10 @@ def main() -> None:
                 "output_json": serialize_repo_path(args.output_json),
                 "num_shared_speech_rows": len(enriched_rows),
                 "num_samplewise_order_pass_rows_before_optional_filter": samplewise_order_pass_count,
+                "num_samplewise_extra_constraint_pass_rows_before_optional_filter": samplewise_extra_constraint_pass_count,
+                "num_samplewise_all_constraints_pass_rows_before_optional_filter": samplewise_all_constraints_pass_count,
                 "require_samplewise_order_pass": bool(args.require_samplewise_order_pass),
+                "require_samplewise_all_constraints_pass": bool(args.require_samplewise_all_constraints_pass),
                 "extra_order_constraints": [
                     f"{higher_alias}>{lower_alias}" for higher_alias, lower_alias in extra_order_constraints
                 ],
