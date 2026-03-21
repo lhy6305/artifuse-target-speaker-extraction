@@ -2272,6 +2272,181 @@
         是否存在可解释的
         单一触发因子
     - 仍不启动新训练
+243. 已继续把 `dual-leak shell` vs `v67-top 34` 做成单字段阈值扫描；当前这条线可以正式定性成多因子共驱动，不存在能一刀切开的单 trigger：
+  - 新日报：
+    - `reports/daily/2026-03-21_candidate_v7_failboth_single_trigger_scan.md`
+  - 新 summary：
+    - `reports/eval/active_targetfull_clean_failboth_single_field_trigger_scan/summary.json`
+  - 当前扫描字段：
+    - `target_transient_presence_minus_mid_db_mean`
+    - `target_transient_presence_share_mean`
+    - `interference_transient_presence_minus_mid_db_mean`
+    - `interference_transient_presence_share_mean`
+    - `target_interference_logspec_cosine`
+  - 当前更关键的新事实是：
+    - 若要求：
+      - `4 / 4`
+        dual-leak shell
+        全部保留
+    - 最强单字段
+      `interference_transient_presence_minus_mid_db_mean <= 2.428970`
+      仍会误收：
+      - `7`
+        条 `v67-top`
+    - 第二强单字段
+      `target_interference_logspec_cosine >= 0.671519`
+      仍会误收：
+      - `8`
+        条 `v67-top`
+    - 其余字段更差：
+      - `interference_transient_presence_share_mean`
+        误收 `12`
+      - `target_transient_presence_share_mean`
+        误收 `20`
+      - `target_transient_presence_minus_mid_db_mean`
+        误收 `24`
+  - 当前解释应正式更新为：
+    - dual-leak shell
+      之所以还能保持：
+      - `v66-top`
+    - 不是因为某一个
+      单字段阈值成立，
+    - 而是因为：
+      - 更低的
+        target transient / share
+      - 更低的
+        interference transient / share
+      - 更高的
+        cosine
+      这组条件
+      共同把它留在
+      train-only inner core
+  - 当前 persistent borderline rows
+    也已固定出来：
+    - `train_001079`
+      命中：
+      - `5 / 5`
+        单字段 full-recall 阈值
+    - `train_001494`
+      命中：
+      - `5 / 5`
+    - `train_000697`
+      命中：
+      - `4 / 5`
+    - `train_001589`
+      命中：
+      - `4 / 5`
+    - `val_000182`
+      命中：
+      - `4 / 5`
+    - 当前应把它们记成：
+      - 外层近内核边界样本
+      不回写成
+      dual-leak shell 成员
+  - 因而当前默认下一步应继续收紧为：
+    - 不再继续找：
+      - 单 trigger threshold
+    - 若还继续推进，
+      默认优先围绕：
+      - `train_001079`
+      - `train_001494`
+      - `train_000697`
+      - `train_001589`
+      - `val_000182`
+      做更细的个例诊断
+    - active bridge
+      主体解释继续保持：
+      - `core trio`
+        = 唯一可保留 active core
+      - dual-leak shell
+        = `fail_both` 大桶里
+          唯一仍是 `v66-top`
+          的 train-only inner core
+      - `v67-top 34`
+        = 外层 mixed frontier
+    - 仍不启动新训练
+244. 已继续把 `5` 条 persistent borderline rows 做成个例拆分；当前应明确判成它们并不是同一种“外层近内核边界带”，而是已经裂成 `4` 条真正贴着 shell 的 train near-shell edge band 和 `1` 条 metadata-only val outlier：
+  - 新日报：
+    - `reports/daily/2026-03-21_candidate_v7_failboth_borderline_case_split.md`
+  - 新 summary：
+    - `reports/eval/active_targetfull_clean_failboth_topv67_vs_dualleak_seed_expansion/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_persistent_borderline_case_analysis/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_persistent_borderline_nearshell_direction_analysis/summary.json`
+  - 新物化资产：
+    - `data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_failboth_persistent_borderline_nearshell_all.txt`
+    - `data/synthetic/train_manifest_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_failboth_persistent_borderline_nearshell.jsonl`
+    - `data/synthetic/manifest_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_failboth_persistent_borderline_nearshell_all.jsonl`
+  - 当前更关键的新事实是：
+    - 真正贴着 dual-leak shell 的
+      只有：
+      - `train_001494`
+      - `train_001079`
+      - `train_001589`
+      - `train_000697`
+    - 它们在 dual-leak shell seed 的
+      joint-distance 排名里分别是：
+      - `#1`
+      - `#2`
+      - `#3`
+      - `#9`
+    - 这 `4` 条 aggregate
+      已可稳定写成：
+      - `v67 > v66 > v64 > v65 > v24 > baseline > v20`
+    - 并且仍保住：
+      - `v66 > v64 = +0.070637`
+      - `v66 > v65 = +0.093171`
+    - 但已经稳定输给：
+      - `v67`
+        即：
+        - `v66 > v67 = -0.095303`
+    - 所以它们当前最准确的身份应更新为：
+      - train-side near-shell edge band
+      不是：
+      - dual-leak shell 扩张成员
+  - `val_000182`
+    当前则必须单独处理：
+    - 虽然它在单字段 full-recall 阈值里
+      仍会被误收：
+      - `4 / 5`
+    - 但它在 dual-leak shell seed 的
+      joint-distance 排名里
+      已直接掉到：
+      - `#39 / 39`
+    - 关键原因不是 metadata 完全脱靶，
+      而是：
+      - `constraint_distance_z = 14.799924`
+        远高于
+        metadata distance
+    - 当前更准确的身份应写成：
+      - metadata-only borderline outlier
+      不再和 train near-shell edge band
+      混写
+  - 因而 active bridge
+    这条线当前应进一步收紧为：
+    - `core trio`
+      = 唯一可保留 active core
+    - dual-leak shell
+      = train-only inner core
+    - near-shell edge band `4`
+      = 最靠近 shell 的外层 train 边界带
+    - `val_000182`
+      = metadata-only false shell
+    - remaining `v67-top`
+      = 更外层 mixed frontier
+  - 当前默认下一步
+    已再次收紧为：
+    - 不再把 `5` 条 persistent borderline rows
+      当成一个整体追
+    - 若还继续推进，
+      默认只围绕：
+      - `train_001079`
+      - `train_001494`
+      - `train_000697`
+      - `train_001589`
+      做更细个例诊断
+    - `val_000182`
+      只保留为 metadata-only outlier
+    - 仍不启动新训练
 
 ## 9. 文档入口
 
@@ -2373,5 +2548,7 @@
 - 本轮 `candidate_v7` bridgepair active dual-leak shell neighbor drift：`reports/daily/2026-03-21_candidate_v7_bridgepair_active_dualleak_shell_neighbor_drift.md`
 - 本轮 `candidate_v7` active guard-pair bucketization：`reports/daily/2026-03-21_candidate_v7_active_guardpair_bucketization.md`
 - 本轮 `candidate_v7` fail-both `v66` vs `v67` split：`reports/daily/2026-03-21_candidate_v7_failboth_v66_vs_v67_split.md`
+- 本轮 `candidate_v7` fail-both borderline case split：`reports/daily/2026-03-21_candidate_v7_failboth_borderline_case_split.md`
+- 本轮 `candidate_v7` fail-both single-trigger scan：`reports/daily/2026-03-21_candidate_v7_failboth_single_trigger_scan.md`
 - 本轮仓库与 `.gitignore` 审计：`reports/daily/2026-03-18_repo_gitignore_audit.md`
 - 本轮全仓库评估总结：`reports/daily/2026-03-17_repo_evaluation_summary.md`

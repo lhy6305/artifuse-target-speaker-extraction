@@ -2488,3 +2488,163 @@
    不写成：
    - stronger `v66 > v64`
    core。
+
+### 153. 当一组内核 rows 与外层 frontier 已明显分层后，不能再执着于寻找“单字段阈值解释”；如果最强单字段仍会误收一串稳定边界样本，就该把这条线正式定性成多因子共驱动
+
+现象：
+
+- 本轮继续把
+  dual-leak shell
+  `v66-top 4`
+  与
+  `v67-top 34`
+  做成单字段阈值扫描；
+- 结果即便要求：
+  - `4 / 4`
+    dual-leak shell
+    全覆盖，
+  当前最强单字段：
+  - `interference_transient_presence_minus_mid_db_mean <= 2.428970`
+  仍会误收：
+  - `7`
+    条 `v67-top`
+- 第二强单字段：
+  - `target_interference_logspec_cosine >= 0.671519`
+  也仍会误收：
+  - `8`
+    条 `v67-top`
+- 并且：
+  - `train_001079`
+  - `train_001494`
+  会在
+    `5 / 5`
+    个字段阈值下
+    全部伪装成
+    `v66-top`
+
+影响：
+
+- 如果这种时候还继续追问：
+  - “到底有没有一个单字段阈值”
+  很容易把精力继续耗在
+  不存在的简单解释上；
+- 当前更准确的现实是：
+  - 内核与外层的分界
+    已经不是单 trigger，
+  - 而是一组字段
+    同时变化后，
+    才把排序彻底推向：
+    - `v67-top`
+
+处理：
+
+- 本轮已把这条 stop-rule
+  证据落盘到：
+  - `reports/daily/2026-03-21_candidate_v7_failboth_single_trigger_scan.md`
+- 并新增：
+  - `reports/eval/active_targetfull_clean_failboth_single_field_trigger_scan/summary.json`
+
+后续要求：
+
+1. 当最强单字段在 full-recall 口径下仍会误收一串稳定边界样本时，默认停止继续找“单字段解释”。
+2. 这时应把问题正式改写成：
+   - multi-factor co-driven split
+   而不是：
+   - hidden single trigger
+3. 对当前这条线，
+   默认把：
+   - `train_001079`
+   - `train_001494`
+   - `train_000697`
+   - `train_001589`
+   - `val_000182`
+   记成：
+   - persistent borderline rows
+   用于后续个例诊断；
+   不再把它们误写成：
+   - 即将并入 dual-leak shell
+   的新成员。
+
+### 154. 当一串 persistent borderline rows 已经被挑出来后，不能默认把它们当成同一种“近内核边界带”；必须继续用 joint-distance 和 constraint-distance 把 metadata-only 假边界样本剔出去
+
+现象：
+
+- 上一轮单字段 full-recall 阈值
+  共挑出了：
+  - `train_001079`
+  - `train_001494`
+  - `train_000697`
+  - `train_001589`
+  - `val_000182`
+  这 `5` 条 persistent borderline rows；
+- 但本轮继续把 dual-leak shell
+  当 seed 对 `fail_both`
+  全量外层做
+  joint-distance 排序后发现：
+  - `train_001494`
+    `#1`
+  - `train_001079`
+    `#2`
+  - `train_001589`
+    `#3`
+  - `train_000697`
+    `#9`
+  的确都贴着 shell；
+- 唯独：
+  - `val_000182`
+  已直接掉到：
+  - `#39 / 39`
+  而且：
+  - `metadata_distance_z = 2.616320`
+  - `constraint_distance_z = 14.799924`
+
+影响：
+
+- 如果这时候还把这 `5` 条
+  当成一个同质组，
+  会把：
+  - 真正贴着 shell 的
+    train-side edge band
+  和：
+  - 只是 metadata 外观相似、
+    但方向上完全不是
+    near-shell 的 val outlier
+  混在一起；
+- 这会把后续个例诊断
+  再次带回
+  “metadata 看起来像，
+  所以应该是一类”
+  的假解释。
+
+处理：
+
+- 本轮已把这条拆分证据
+  落盘到：
+  - `reports/daily/2026-03-21_candidate_v7_failboth_borderline_case_split.md`
+- 并新增：
+  - `reports/eval/active_targetfull_clean_failboth_topv67_vs_dualleak_seed_expansion/summary.json`
+  - `reports/eval/active_targetfull_clean_failboth_persistent_borderline_case_analysis/summary.json`
+  - `reports/eval/active_targetfull_clean_failboth_persistent_borderline_nearshell_direction_analysis/summary.json`
+
+后续要求：
+
+1. 以后遇到 persistent borderline rows，默认先再补一层：
+   - joint-distance
+   - metadata-distance
+   - constraint-distance
+   三向拆分，
+   不直接把单字段误收名单
+   当成最终边界带。
+2. 对当前这条线，
+   默认只把：
+   - `train_001079`
+   - `train_001494`
+   - `train_000697`
+   - `train_001589`
+   写成：
+   - train near-shell edge band
+3. `val_000182`
+   默认单独写成：
+   - metadata-only borderline outlier
+   不再和上面 `4` 条
+   混写。

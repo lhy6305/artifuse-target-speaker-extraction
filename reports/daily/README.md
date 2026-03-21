@@ -7,9 +7,11 @@
   - 通过本目录 `README.md` 和 `index_YYYY-MM.md` 做月度索引与跳读入口。
 
 - 月度索引：
-  - `index_2026-03.md` | `113` 份日报 | 日期 `2026-03-16` 至 `2026-03-21`
+  - `index_2026-03.md` | `115` 份日报 | 日期 `2026-03-16` 至 `2026-03-21`
 
 - 最近新增日报：
+  - `2026-03-21_candidate_v7_failboth_borderline_case_split.md` | `312` 行
+  - `2026-03-21_candidate_v7_failboth_single_trigger_scan.md` | `307` 行
   - `2026-03-21_candidate_v7_failboth_v66_vs_v67_split.md` | `325` 行
   - `2026-03-21_candidate_v7_active_guardpair_bucketization.md` | `319` 行
   - `2026-03-21_candidate_v7_bridgepair_active_dualleak_shell_neighbor_drift.md` | `298` 行

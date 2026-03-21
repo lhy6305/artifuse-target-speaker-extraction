@@ -1,0 +1,4340 @@
+{
+  "manifest_jsonl": "data/synthetic/manifest_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_guardpair_v64gtv67_v20gtv24_fail_both_all.jsonl",
+  "seed_sample_ids_file": "data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_failboth_topv66_all.txt",
+  "seed_sample_ids": [
+    "train_000597",
+    "train_000865",
+    "train_001477",
+    "train_001599"
+  ],
+  "focus_alias": "v66",
+  "reference_alias": "v64",
+  "compares": {
+    "v20": "reports/eval/compare_v19_vs_v20_on_active_targetfull_clean/per_sample_metrics.jsonl",
+    "v24": "reports/eval/compare_v19_vs_v24_on_active_targetfull_clean/per_sample_metrics.jsonl",
+    "v64": "reports/eval/compare_v19_vs_v64_on_active_targetfull_clean/per_sample_metrics.jsonl",
+    "v65": "reports/eval/compare_v19_vs_v65_on_active_targetfull_clean/per_sample_metrics.jsonl",
+    "v66": "reports/eval/compare_v19_vs_v66_on_active_targetfull_clean/per_sample_metrics.jsonl",
+    "v67": "reports/eval/compare_v19_vs_v67_on_active_targetfull_clean/per_sample_metrics.jsonl"
+  },
+  "ordered_aliases": [
+    "v66",
+    "v64"
+  ],
+  "extra_order_constraints": [
+    "v66>v65",
+    "v66>v67",
+    "v64>v67",
+    "v20>v24"
+  ],
+  "all_constraints": [
+    "v66>v64",
+    "v66>v65",
+    "v66>v67",
+    "v64>v67",
+    "v20>v24"
+  ],
+  "numeric_fields": [
+    "target_transient_presence_minus_mid_db_mean",
+    "target_transient_presence_share_mean",
+    "interference_transient_presence_minus_mid_db_mean",
+    "interference_transient_presence_share_mean",
+    "target_interference_logspec_cosine"
+  ],
+  "num_rows": 43,
+  "num_seed_rows": 4,
+  "seed_summary": {
+    "count": 4,
+    "sample_ids": [
+      "train_000597",
+      "train_000865",
+      "train_001477",
+      "train_001599"
+    ],
+    "focus_vs_reference_avg_db": 0.12952932715415955,
+    "min_constraint_gap_avg_db": -0.10664500296115875,
+    "pass_count_avg": 3.0,
+    "numeric_field_stats": {
+      "target_transient_presence_minus_mid_db_mean": {
+        "count": 4,
+        "mean": -13.018489360809326,
+        "min": -15.837160110473633,
+        "max": -7.944914817810059
+      },
+      "target_transient_presence_share_mean": {
+        "count": 4,
+        "mean": 0.014221593053662218,
+        "min": 0.0008788435370661318,
+        "max": 0.04183926805853844
+      },
+      "interference_transient_presence_minus_mid_db_mean": {
+        "count": 4,
+        "mean": 0.187193363904953,
+        "min": -1.7672992944717407,
+        "max": 2.4289700984954834
+      },
+      "interference_transient_presence_share_mean": {
+        "count": 4,
+        "mean": 0.31537972390651703,
+        "min": 0.21414470672607422,
+        "max": 0.3952785134315491
+      },
+      "target_interference_logspec_cosine": {
+        "count": 4,
+        "mean": 0.7384104986167704,
+        "min": 0.671518643572849,
+        "max": 0.8634568140535076
+      }
+    }
+  },
+  "seed_constraint_center": {
+    "v66>v64": 0.12952932715415955,
+    "v66>v65": 0.17524389922618866,
+    "v66>v67": 0.05000479519367218,
+    "v64>v67": -0.07952453196048737,
+    "v20>v24": -0.10550738871097565
+  },
+  "seed_metadata_center": {
+    "target_transient_presence_minus_mid_db_mean": -13.018489360809326,
+    "target_transient_presence_share_mean": 0.014221593053662218,
+    "interference_transient_presence_minus_mid_db_mean": 0.187193363904953,
+    "interference_transient_presence_share_mean": 0.31537972390651703,
+    "target_interference_logspec_cosine": 0.7384104986167704
+  },
+  "non_seed_fail_signature_counts": {
+    "v66>v64 | v66>v65 | v66>v67 | v64>v67 | v20>v24": 4,
+    "v66>v64 | v66>v67 | v64>v67 | v20>v24": 2,
+    "v66>v65 | v64>v67 | v20>v24": 1,
+    "v66>v65 | v66>v67 | v64>v67 | v20>v24": 9,
+    "v66>v67 | v64>v67 | v20>v24": 23
+  },
+  "top_nearest_rows_by_joint_distance": [
+    {
+      "sample_id": "train_001494",
+      "focus_minus_reference_db": 0.1462545394897461,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.2922859191894531,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.14603137969970703,
+        "v64>v67": -0.2922859191894531,
+        "v20>v24": -0.09604072570800781
+      },
+      "metadata_distance_z": 1.0940466038826981,
+      "constraint_distance_z": 0.24591579443203926,
+      "joint_distance_z": 1.121344081635252,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -16.104869842529297,
+        "target_transient_presence_share_mean": 0.03959091380238533,
+        "interference_transient_presence_minus_mid_db_mean": -0.08767668902873993,
+        "interference_transient_presence_share_mean": 0.30371609330177307,
+        "target_interference_logspec_cosine": 0.6736035112342141
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_001494/metadata.json"
+    },
+    {
+      "sample_id": "train_001079",
+      "focus_minus_reference_db": 0.06959342956542969,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.1622467041015625,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.08596420288085938,
+        "v64>v67": -0.15555763244628906,
+        "v20>v24": -0.1622467041015625
+      },
+      "metadata_distance_z": 1.1585609218877069,
+      "constraint_distance_z": 0.1746835845807245,
+      "joint_distance_z": 1.1716559923660461,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -11.535072326660156,
+        "target_transient_presence_share_mean": 0.01910426840186119,
+        "interference_transient_presence_minus_mid_db_mean": -1.9568299055099487,
+        "interference_transient_presence_share_mean": 0.20442937314510345,
+        "target_interference_logspec_cosine": 0.6773144362811483
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_001079/metadata.json"
+    },
+    {
+      "sample_id": "train_001589",
+      "focus_minus_reference_db": 0.03919792175292969,
+      "pass_count": 1,
+      "fail_count": 4,
+      "min_constraint_gap_db": -0.1707744598388672,
+      "failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -0.05361175537109375,
+        "v66>v67": -0.1315765380859375,
+        "v64>v67": -0.1707744598388672,
+        "v20>v24": -0.09822654724121094
+      },
+      "metadata_distance_z": 1.2501461308898978,
+      "constraint_distance_z": 0.39546533641348836,
+      "joint_distance_z": 1.3112048584731582,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -14.352710723876953,
+        "target_transient_presence_share_mean": 0.0017694917041808367,
+        "interference_transient_presence_minus_mid_db_mean": 5.697815418243408,
+        "interference_transient_presence_share_mean": 0.37717947363853455,
+        "target_interference_logspec_cosine": 0.7148532996430778
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_001589/metadata.json"
+    },
+    {
+      "sample_id": "train_001639",
+      "focus_minus_reference_db": 0.06099891662597656,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.36070919036865234,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.2997102737426758,
+        "v64>v67": -0.36070919036865234,
+        "v20>v24": -0.2807340621948242
+      },
+      "metadata_distance_z": 1.579097423528789,
+      "constraint_distance_z": 0.4998125345804378,
+      "joint_distance_z": 1.656309525034189,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -16.466354370117188,
+        "target_transient_presence_share_mean": 0.0047722565941512585,
+        "interference_transient_presence_minus_mid_db_mean": 5.172550678253174,
+        "interference_transient_presence_share_mean": 0.46158871054649353,
+        "target_interference_logspec_cosine": 0.7296510700332058
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_001639/metadata.json"
+    },
+    {
+      "sample_id": "train_000219",
+      "focus_minus_reference_db": 0.010793685913085938,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.03289651870727539,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.022102832794189453,
+        "v64>v67": -0.03289651870727539,
+        "v20>v24": -0.027788162231445312
+      },
+      "metadata_distance_z": 1.7664042409464096,
+      "constraint_distance_z": 0.2882947146150163,
+      "joint_distance_z": 1.7897759035444676,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -11.264667510986328,
+        "target_transient_presence_share_mean": 0.03900248929858208,
+        "interference_transient_presence_minus_mid_db_mean": 7.444797515869141,
+        "interference_transient_presence_share_mean": 0.41857823729515076,
+        "target_interference_logspec_cosine": 0.6969824846526914
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000219/metadata.json"
+    },
+    {
+      "sample_id": "train_000664",
+      "focus_minus_reference_db": -0.009173393249511719,
+      "pass_count": 1,
+      "fail_count": 4,
+      "min_constraint_gap_db": -0.023729324340820312,
+      "failed_constraints": [
+        "v66>v64",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.009173393249511719,
+        "v66>v67": -0.023729324340820312,
+        "v64>v67": -0.014555931091308594,
+        "v20>v24": -0.009160995483398438
+      },
+      "metadata_distance_z": 1.8159104738422285,
+      "constraint_distance_z": 0.3240338537732006,
+      "joint_distance_z": 1.844594477764969,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -12.862117767333984,
+        "target_transient_presence_share_mean": 0.0014157189289107919,
+        "interference_transient_presence_minus_mid_db_mean": 6.1856536865234375,
+        "interference_transient_presence_share_mean": 0.39585036039352417,
+        "target_interference_logspec_cosine": 0.6307447199215056
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000664/metadata.json"
+    },
+    {
+      "sample_id": "train_001006",
+      "focus_minus_reference_db": 0.04480171203613281,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.2967548370361328,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.251953125,
+        "v64>v67": -0.2967548370361328,
+        "v20>v24": -0.01251220703125
+      },
+      "metadata_distance_z": 1.8321262889946879,
+      "constraint_distance_z": 0.37390703113744483,
+      "joint_distance_z": 1.8698912285904399,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -8.495460510253906,
+        "target_transient_presence_share_mean": 0.07431317865848541,
+        "interference_transient_presence_minus_mid_db_mean": 4.4964189529418945,
+        "interference_transient_presence_share_mean": 0.2905155122280121,
+        "target_interference_logspec_cosine": 0.6803152637095102
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_001006/metadata.json"
+    },
+    {
+      "sample_id": "train_001610",
+      "focus_minus_reference_db": 0.0011539459228515625,
+      "pass_count": 1,
+      "fail_count": 4,
+      "min_constraint_gap_db": -0.112518310546875,
+      "failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -0.051219940185546875,
+        "v66>v67": -0.07691574096679688,
+        "v64>v67": -0.07806968688964844,
+        "v20>v24": -0.112518310546875
+      },
+      "metadata_distance_z": 1.9664074610497448,
+      "constraint_distance_z": 0.38749761895828927,
+      "joint_distance_z": 2.004223716946401,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -17.00960922241211,
+        "target_transient_presence_share_mean": 0.002246658783406019,
+        "interference_transient_presence_minus_mid_db_mean": 3.3211374282836914,
+        "interference_transient_presence_share_mean": 0.43168750405311584,
+        "target_interference_logspec_cosine": 0.6113264348469399
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_001610/metadata.json"
+    },
+    {
+      "sample_id": "train_000697",
+      "focus_minus_reference_db": 0.02750396728515625,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.04514503479003906,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.017641067504882812,
+        "v64>v67": -0.04514503479003906,
+        "v20>v24": -0.011548042297363281
+      },
+      "metadata_distance_z": 2.0691112062099535,
+      "constraint_distance_z": 0.2040281325367712,
+      "joint_distance_z": 2.079146137848432,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -13.136429786682129,
+        "target_transient_presence_share_mean": 0.008533641695976257,
+        "interference_transient_presence_minus_mid_db_mean": 0.927656888961792,
+        "interference_transient_presence_share_mean": 0.35832324624061584,
+        "target_interference_logspec_cosine": 0.5612513565695104
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000697/metadata.json"
+    },
+    {
+      "sample_id": "val_000153",
+      "focus_minus_reference_db": 0.21747589111328125,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.3704967498779297,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.15302085876464844,
+        "v64>v67": -0.3704967498779297,
+        "v20>v24": -0.16748619079589844
+      },
+      "metadata_distance_z": 2.0820435104726136,
+      "constraint_distance_z": 0.3161473444343021,
+      "joint_distance_z": 2.1059093814535292,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -7.850541114807129,
+        "target_transient_presence_share_mean": 0.05127888172864914,
+        "interference_transient_presence_minus_mid_db_mean": 2.8256027698516846,
+        "interference_transient_presence_share_mean": 0.41113659739494324,
+        "target_interference_logspec_cosine": 0.6147501839193095
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000153/metadata.json"
+    },
+    {
+      "sample_id": "train_000216",
+      "focus_minus_reference_db": 0.09464645385742188,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.2670106887817383,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.1723642349243164,
+        "v64>v67": -0.2670106887817383,
+        "v20>v24": -0.08658790588378906
+      },
+      "metadata_distance_z": 2.084309762049265,
+      "constraint_distance_z": 0.32179716067922454,
+      "joint_distance_z": 2.109004645987077,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -13.607194900512695,
+        "target_transient_presence_share_mean": 0.056039851158857346,
+        "interference_transient_presence_minus_mid_db_mean": 7.081784248352051,
+        "interference_transient_presence_share_mean": 0.4401053190231323,
+        "target_interference_logspec_cosine": 0.6460522059942554
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000216/metadata.json"
+    },
+    {
+      "sample_id": "train_000117",
+      "focus_minus_reference_db": 0.023734092712402344,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.09293174743652344,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.0691976547241211,
+        "v64>v67": -0.09293174743652344,
+        "v20>v24": -0.054576873779296875
+      },
+      "metadata_distance_z": 2.106405312566349,
+      "constraint_distance_z": 0.29033118873227126,
+      "joint_distance_z": 2.126319717248192,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -8.104802131652832,
+        "target_transient_presence_share_mean": 0.004364256747066975,
+        "interference_transient_presence_minus_mid_db_mean": 6.796285629272461,
+        "interference_transient_presence_share_mean": 0.46664515137672424,
+        "target_interference_logspec_cosine": 0.6692237907975012
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000117/metadata.json"
+    },
+    {
+      "sample_id": "train_000266",
+      "focus_minus_reference_db": 0.015989303588867188,
+      "pass_count": 1,
+      "fail_count": 4,
+      "min_constraint_gap_db": -0.16811084747314453,
+      "failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -0.03984546661376953,
+        "v66>v67": -0.15212154388427734,
+        "v64>v67": -0.16811084747314453,
+        "v20>v24": -0.029547691345214844
+      },
+      "metadata_distance_z": 2.1182152234035474,
+      "constraint_distance_z": 0.4046058739752689,
+      "joint_distance_z": 2.156511452766674,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -16.872926712036133,
+        "target_transient_presence_share_mean": 0.002226924989372492,
+        "interference_transient_presence_minus_mid_db_mean": 8.026921272277832,
+        "interference_transient_presence_share_mean": 0.4796588122844696,
+        "target_interference_logspec_cosine": 0.7020899927989038
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000266/metadata.json"
+    },
+    {
+      "sample_id": "train_000759",
+      "focus_minus_reference_db": 0.06226539611816406,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.08360099792480469,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.021335601806640625,
+        "v64>v67": -0.08360099792480469,
+        "v20>v24": -0.06826210021972656
+      },
+      "metadata_distance_z": 2.1819433524749217,
+      "constraint_distance_z": 0.12339474290512449,
+      "joint_distance_z": 2.185429718839323,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -12.124565124511719,
+        "target_transient_presence_share_mean": 0.013862771913409233,
+        "interference_transient_presence_minus_mid_db_mean": 7.037574291229248,
+        "interference_transient_presence_share_mean": 0.5290168523788452,
+        "target_interference_logspec_cosine": 0.6609534070752215
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000759/metadata.json"
+    },
+    {
+      "sample_id": "val_000041",
+      "focus_minus_reference_db": 0.015427589416503906,
+      "pass_count": 1,
+      "fail_count": 4,
+      "min_constraint_gap_db": -0.07982349395751953,
+      "failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -0.019849777221679688,
+        "v66>v67": -0.06439590454101562,
+        "v64>v67": -0.07982349395751953,
+        "v20>v24": -0.029010772705078125
+      },
+      "metadata_distance_z": 2.2065642950309847,
+      "constraint_distance_z": 0.33983585722485904,
+      "joint_distance_z": 2.232580210868434,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -8.051219940185547,
+        "target_transient_presence_share_mean": 0.02426496148109436,
+        "interference_transient_presence_minus_mid_db_mean": 5.840137958526611,
+        "interference_transient_presence_share_mean": 0.37222644686698914,
+        "target_interference_logspec_cosine": 0.6037298161131465
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000041/metadata.json"
+    },
+    {
+      "sample_id": "train_000210",
+      "focus_minus_reference_db": -0.008782386779785156,
+      "pass_count": 1,
+      "fail_count": 4,
+      "min_constraint_gap_db": -0.03711986541748047,
+      "failed_constraints": [
+        "v66>v64",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.008782386779785156,
+        "v66>v67": -0.015096664428710938,
+        "v64>v67": -0.006314277648925781,
+        "v20>v24": -0.03711986541748047
+      },
+      "metadata_distance_z": 2.231169082484653,
+      "constraint_distance_z": 0.32209260144831436,
+      "joint_distance_z": 2.25429792142546,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -13.317380905151367,
+        "target_transient_presence_share_mean": 0.05418012663722038,
+        "interference_transient_presence_minus_mid_db_mean": -5.49757719039917,
+        "interference_transient_presence_share_mean": 0.19508635997772217,
+        "target_interference_logspec_cosine": 0.6018465480130498
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000210/metadata.json"
+    },
+    {
+      "sample_id": "train_001675",
+      "focus_minus_reference_db": 0.02032160758972168,
+      "pass_count": 1,
+      "fail_count": 4,
+      "min_constraint_gap_db": -0.09377264976501465,
+      "failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -0.030508041381835938,
+        "v66>v67": -0.07345104217529297,
+        "v64>v67": -0.09377264976501465,
+        "v20>v24": -0.09253668785095215
+      },
+      "metadata_distance_z": 2.2299038122605244,
+      "constraint_distance_z": 0.3502983319932108,
+      "joint_distance_z": 2.257250525159147,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -9.686620712280273,
+        "target_transient_presence_share_mean": 0.019920365884900093,
+        "interference_transient_presence_minus_mid_db_mean": 8.840856552124023,
+        "interference_transient_presence_share_mean": 0.4760359227657318,
+        "target_interference_logspec_cosine": 0.6842308709202601
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_001675/metadata.json"
+    },
+    {
+      "sample_id": "train_000799",
+      "focus_minus_reference_db": 0.06561470031738281,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.18846511840820312,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.12285041809082031,
+        "v64>v67": -0.18846511840820312,
+        "v20>v24": -0.07155990600585938
+      },
+      "metadata_distance_z": 2.3074980709396273,
+      "constraint_distance_z": 0.226775647726601,
+      "joint_distance_z": 2.3186147894361238,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -16.073034286499023,
+        "target_transient_presence_share_mean": 0.000569595955312252,
+        "interference_transient_presence_minus_mid_db_mean": 2.6843791007995605,
+        "interference_transient_presence_share_mean": 0.3948422074317932,
+        "target_interference_logspec_cosine": 0.5576666868680021
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000799/metadata.json"
+    },
+    {
+      "sample_id": "train_000634",
+      "focus_minus_reference_db": 0.06331777572631836,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.12960529327392578,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.06628751754760742,
+        "v64>v67": -0.12960529327392578,
+        "v20>v24": -0.0054931640625
+      },
+      "metadata_distance_z": 2.314391890386598,
+      "constraint_distance_z": 0.28423149763685457,
+      "joint_distance_z": 2.3317798709432545,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -10.617523193359375,
+        "target_transient_presence_share_mean": 0.0322795994579792,
+        "interference_transient_presence_minus_mid_db_mean": 6.6168999671936035,
+        "interference_transient_presence_share_mean": 0.41467785835266113,
+        "target_interference_logspec_cosine": 0.5897072213344573
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000634/metadata.json"
+    },
+    {
+      "sample_id": "train_000539",
+      "focus_minus_reference_db": -0.0030546188354492188,
+      "pass_count": 0,
+      "fail_count": 5,
+      "min_constraint_gap_db": -0.0240018367767334,
+      "failed_constraints": [
+        "v66>v64",
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.0030546188354492188,
+        "v66>v65": -0.0240018367767334,
+        "v66>v67": -0.019982337951660156,
+        "v64>v67": -0.016927719116210938,
+        "v20>v24": -0.007464170455932617
+      },
+      "metadata_distance_z": 2.3444527875132946,
+      "constraint_distance_z": 0.34840863994810745,
+      "joint_distance_z": 2.3701998762276033,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -9.813207626342773,
+        "target_transient_presence_share_mean": 0.016725817695260048,
+        "interference_transient_presence_minus_mid_db_mean": 8.442323684692383,
+        "interference_transient_presence_share_mean": 0.5254933834075928,
+        "target_interference_logspec_cosine": 0.6852616709105114
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000539/metadata.json"
+    },
+    {
+      "sample_id": "train_001543",
+      "focus_minus_reference_db": -0.008828163146972656,
+      "pass_count": 0,
+      "fail_count": 5,
+      "min_constraint_gap_db": -0.1287708282470703,
+      "failed_constraints": [
+        "v66>v64",
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.008828163146972656,
+        "v66>v65": -0.1139841079711914,
+        "v66>v67": -0.1287708282470703,
+        "v64>v67": -0.11994266510009766,
+        "v20>v24": -0.06874561309814453
+      },
+      "metadata_distance_z": 2.454317128954895,
+      "constraint_distance_z": 0.48589295435111585,
+      "joint_distance_z": 2.5019521443403856,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -10.960589408874512,
+        "target_transient_presence_share_mean": 0.05876623094081879,
+        "interference_transient_presence_minus_mid_db_mean": 7.649031639099121,
+        "interference_transient_presence_share_mean": 0.4371807277202606,
+        "target_interference_logspec_cosine": 0.607323987428546
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_001543/metadata.json"
+    },
+    {
+      "sample_id": "train_000207",
+      "focus_minus_reference_db": 0.034099578857421875,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.09470367431640625,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.060604095458984375,
+        "v64>v67": -0.09470367431640625,
+        "v20>v24": -0.04343986511230469
+      },
+      "metadata_distance_z": 2.5006753955300423,
+      "constraint_distance_z": 0.2920004176462851,
+      "joint_distance_z": 2.517665918606942,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -17.00960922241211,
+        "target_transient_presence_share_mean": 0.002246658783406019,
+        "interference_transient_presence_minus_mid_db_mean": 5.85136079788208,
+        "interference_transient_presence_share_mean": 0.5722601413726807,
+        "target_interference_logspec_cosine": 0.6415835964800831
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000207/metadata.json"
+    },
+    {
+      "sample_id": "train_000999",
+      "focus_minus_reference_db": 0.022006988525390625,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.12224102020263672,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.09378337860107422,
+        "v64>v67": -0.11579036712646484,
+        "v20>v24": -0.12224102020263672
+      },
+      "metadata_distance_z": 2.64207773746298,
+      "constraint_distance_z": 0.27009590970019676,
+      "joint_distance_z": 2.6558476182255406,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -13.949101448059082,
+        "target_transient_presence_share_mean": 0.003472010139375925,
+        "interference_transient_presence_minus_mid_db_mean": 8.646728515625,
+        "interference_transient_presence_share_mean": 0.6141756772994995,
+        "target_interference_logspec_cosine": 0.7383649193662051
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000999/metadata.json"
+    },
+    {
+      "sample_id": "train_001745",
+      "focus_minus_reference_db": -0.027469635009765625,
+      "pass_count": 0,
+      "fail_count": 5,
+      "min_constraint_gap_db": -0.1739063262939453,
+      "failed_constraints": [
+        "v66>v64",
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.027469635009765625,
+        "v66>v65": -0.0019073486328125,
+        "v66>v67": -0.1739063262939453,
+        "v64>v67": -0.1464366912841797,
+        "v20>v24": -0.17357444763183594
+      },
+      "metadata_distance_z": 2.6575246968129127,
+      "constraint_distance_z": 0.40912042603276444,
+      "joint_distance_z": 2.6888319094297795,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -12.309966087341309,
+        "target_transient_presence_share_mean": 0.08671987056732178,
+        "interference_transient_presence_minus_mid_db_mean": 7.583262920379639,
+        "interference_transient_presence_share_mean": 0.48254162073135376,
+        "target_interference_logspec_cosine": 0.624214530568081
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_001745/metadata.json"
+    },
+    {
+      "sample_id": "val_000396",
+      "focus_minus_reference_db": -0.016195297241210938,
+      "pass_count": 0,
+      "fail_count": 5,
+      "min_constraint_gap_db": -0.15909767150878906,
+      "failed_constraints": [
+        "v66>v64",
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.016195297241210938,
+        "v66>v65": -0.015451431274414062,
+        "v66>v67": -0.15909767150878906,
+        "v64>v67": -0.14290237426757812,
+        "v20>v24": -0.06799983978271484
+      },
+      "metadata_distance_z": 2.8491339445653954,
+      "constraint_distance_z": 0.4029070740065748,
+      "joint_distance_z": 2.877481250044787,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -23.011409759521484,
+        "target_transient_presence_share_mean": 0.046165186911821365,
+        "interference_transient_presence_minus_mid_db_mean": 4.029228687286377,
+        "interference_transient_presence_share_mean": 0.350452721118927,
+        "target_interference_logspec_cosine": 0.5896011044322925
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000396/metadata.json"
+    },
+    {
+      "sample_id": "train_000788",
+      "focus_minus_reference_db": 0.049414634704589844,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.10162067413330078,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.05220603942871094,
+        "v64>v67": -0.10162067413330078,
+        "v20>v24": -0.09419727325439453
+      },
+      "metadata_distance_z": 3.006312149239828,
+      "constraint_distance_z": 0.19409366490655558,
+      "joint_distance_z": 3.0125711758270297,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -7.256917476654053,
+        "target_transient_presence_share_mean": 0.002538196509703994,
+        "interference_transient_presence_minus_mid_db_mean": 8.618302345275879,
+        "interference_transient_presence_share_mean": 0.5879872441291809,
+        "target_interference_logspec_cosine": 0.6355044206084285
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000788/metadata.json"
+    },
+    {
+      "sample_id": "train_000681",
+      "focus_minus_reference_db": 0.5382671356201172,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -1.1937885284423828,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.6555213928222656,
+        "v64>v67": -1.1937885284423828,
+        "v20>v24": -0.73516845703125
+      },
+      "metadata_distance_z": 2.76470954858416,
+      "constraint_distance_z": 1.2535897565902197,
+      "joint_distance_z": 3.0356393339559227,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -22.602506637573242,
+        "target_transient_presence_share_mean": 0.0001831499394029379,
+        "interference_transient_presence_minus_mid_db_mean": 7.1319098472595215,
+        "interference_transient_presence_share_mean": 0.44032931327819824,
+        "target_interference_logspec_cosine": 0.6461792202835885
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000681/metadata.json"
+    },
+    {
+      "sample_id": "train_000805",
+      "focus_minus_reference_db": 0.009233474731445312,
+      "pass_count": 1,
+      "fail_count": 4,
+      "min_constraint_gap_db": -0.07317829132080078,
+      "failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -0.07317829132080078,
+        "v66>v67": -0.024239540100097656,
+        "v64>v67": -0.03347301483154297,
+        "v20>v24": -0.01970672607421875
+      },
+      "metadata_distance_z": 3.099138912217896,
+      "constraint_distance_z": 0.39646830304624564,
+      "joint_distance_z": 3.124395799597658,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -16.168481826782227,
+        "target_transient_presence_share_mean": 0.05721049755811691,
+        "interference_transient_presence_minus_mid_db_mean": 9.774702072143555,
+        "interference_transient_presence_share_mean": 0.6293967366218567,
+        "target_interference_logspec_cosine": 0.6836312519468343
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000805/metadata.json"
+    },
+    {
+      "sample_id": "train_000826",
+      "focus_minus_reference_db": 0.013381004333496094,
+      "pass_count": 1,
+      "fail_count": 4,
+      "min_constraint_gap_db": -0.04675579071044922,
+      "failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -0.03694438934326172,
+        "v66>v67": -0.033374786376953125,
+        "v64>v67": -0.04675579071044922,
+        "v20>v24": -0.01810741424560547
+      },
+      "metadata_distance_z": 3.2459044999321764,
+      "constraint_distance_z": 0.3522936241773697,
+      "joint_distance_z": 3.2649665879325593,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -8.495460510253906,
+        "target_transient_presence_share_mean": 0.07431317865848541,
+        "interference_transient_presence_minus_mid_db_mean": 9.817081451416016,
+        "interference_transient_presence_share_mean": 0.5886871814727783,
+        "target_interference_logspec_cosine": 0.6385178007220315
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000826/metadata.json"
+    },
+    {
+      "sample_id": "train_000951",
+      "focus_minus_reference_db": 0.0272979736328125,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.08787155151367188,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.060573577880859375,
+        "v64>v67": -0.08787155151367188,
+        "v20>v24": -0.08232307434082031
+      },
+      "metadata_distance_z": 3.3399346209428886,
+      "constraint_distance_z": 0.21255550490003008,
+      "joint_distance_z": 3.3466913683272654,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -6.375518798828125,
+        "target_transient_presence_share_mean": 0.1557837873697281,
+        "interference_transient_presence_minus_mid_db_mean": 0.7970060706138611,
+        "interference_transient_presence_share_mean": 0.3677087426185608,
+        "target_interference_logspec_cosine": 0.6171993511364816
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000951/metadata.json"
+    },
+    {
+      "sample_id": "train_001725",
+      "focus_minus_reference_db": 0.013107776641845703,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.027107954025268555,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.013130903244018555,
+        "v64>v67": -0.026238679885864258,
+        "v20>v24": -0.027107954025268555
+      },
+      "metadata_distance_z": 3.388671386601554,
+      "constraint_distance_z": 0.2879229816621984,
+      "joint_distance_z": 3.400881269574307,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -5.19318962097168,
+        "target_transient_presence_share_mean": 0.07336869835853577,
+        "interference_transient_presence_minus_mid_db_mean": 7.796044826507568,
+        "interference_transient_presence_share_mean": 0.5826805830001831,
+        "target_interference_logspec_cosine": 0.6122654967169683
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_001725/metadata.json"
+    },
+    {
+      "sample_id": "train_000578",
+      "focus_minus_reference_db": 0.005391359329223633,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.011675596237182617,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.006284236907958984,
+        "v64>v67": -0.011675596237182617,
+        "v20>v24": -0.006955146789550781
+      },
+      "metadata_distance_z": 3.39730718754949,
+      "constraint_distance_z": 0.30652485907213645,
+      "joint_distance_z": 3.4111073884890546,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -3.449131488800049,
+        "target_transient_presence_share_mean": 0.1126728504896164,
+        "interference_transient_presence_minus_mid_db_mean": 2.9893202781677246,
+        "interference_transient_presence_share_mean": 0.3979531526565552,
+        "target_interference_logspec_cosine": 0.5737497371133488
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000578/metadata.json"
+    },
+    {
+      "sample_id": "train_001495",
+      "focus_minus_reference_db": 0.07036876678466797,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.3230857849121094,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.22459030151367188,
+        "v64>v67": -0.29495906829833984,
+        "v20>v24": -0.3230857849121094
+      },
+      "metadata_distance_z": 3.672731188062708,
+      "constraint_distance_z": 0.3957630205702725,
+      "joint_distance_z": 3.6939927921179567,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -4.958980560302734,
+        "target_transient_presence_share_mean": 0.06954998522996902,
+        "interference_transient_presence_minus_mid_db_mean": 9.670926094055176,
+        "interference_transient_presence_share_mean": 0.6270498037338257,
+        "target_interference_logspec_cosine": 0.6256733726358694
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_001495/metadata.json"
+    },
+    {
+      "sample_id": "train_001705",
+      "focus_minus_reference_db": 0.020572662353515625,
+      "pass_count": 1,
+      "fail_count": 4,
+      "min_constraint_gap_db": -0.07341575622558594,
+      "failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -0.0008335113525390625,
+        "v66>v67": -0.05284309387207031,
+        "v64>v67": -0.07341575622558594,
+        "v20>v24": -0.027814865112304688
+      },
+      "metadata_distance_z": 4.615143551802271,
+      "constraint_distance_z": 0.3112049068191079,
+      "joint_distance_z": 4.625624119810253,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -6.375518798828125,
+        "target_transient_presence_share_mean": 0.1557837873697281,
+        "interference_transient_presence_minus_mid_db_mean": 9.609395027160645,
+        "interference_transient_presence_share_mean": 0.7195932865142822,
+        "target_interference_logspec_cosine": 0.6415421646007746
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_001705/metadata.json"
+    },
+    {
+      "sample_id": "val_000034",
+      "focus_minus_reference_db": 0.016722679138183594,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.022783279418945312,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.006060600280761719,
+        "v64>v67": -0.022783279418945312,
+        "v20>v24": -0.0017671585083007812
+      },
+      "metadata_distance_z": 4.737797905517549,
+      "constraint_distance_z": 0.297953753680116,
+      "joint_distance_z": 4.747157616180291,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -6.05042839050293,
+        "target_transient_presence_share_mean": 0.21500328183174133,
+        "interference_transient_presence_minus_mid_db_mean": 6.287598133087158,
+        "interference_transient_presence_share_mean": 0.5091933608055115,
+        "target_interference_logspec_cosine": 0.5954029662393526
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000034/metadata.json"
+    },
+    {
+      "sample_id": "train_001533",
+      "focus_minus_reference_db": 0.04356575012207031,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.03333473205566406,
+      "failed_constraints": [
+        "v66>v65",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -0.008869171142578125,
+        "v64>v67": -0.03333473205566406,
+        "v20>v24": -0.011058807373046875
+      },
+      "metadata_distance_z": 4.78309528489889,
+      "constraint_distance_z": 0.2916002829015695,
+      "joint_distance_z": 4.791975712522995,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -13.136429786682129,
+        "target_transient_presence_share_mean": 0.008533641695976257,
+        "interference_transient_presence_minus_mid_db_mean": -14.321331024169922,
+        "interference_transient_presence_share_mean": 0.00075577013194561,
+        "target_interference_logspec_cosine": 0.4624008847437495
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_001533/metadata.json"
+    },
+    {
+      "sample_id": "val_000478",
+      "focus_minus_reference_db": 0.006512641906738281,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.09898662567138672,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.028054237365722656,
+        "v64>v67": -0.03456687927246094,
+        "v20>v24": -0.09898662567138672
+      },
+      "metadata_distance_z": 5.404431945855641,
+      "constraint_distance_z": 0.2590266338188078,
+      "joint_distance_z": 5.410635771738151,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": 0.1561417579650879,
+        "target_transient_presence_share_mean": 0.015391316264867783,
+        "interference_transient_presence_minus_mid_db_mean": 2.7667629718780518,
+        "interference_transient_presence_share_mean": 0.4292445480823517,
+        "target_interference_logspec_cosine": 0.33971409247214923
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000478/metadata.json"
+    },
+    {
+      "sample_id": "train_000904",
+      "focus_minus_reference_db": 0.047607421875,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.087615966796875,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.040008544921875,
+        "v64>v67": -0.087615966796875,
+        "v20>v24": -0.05433464050292969
+      },
+      "metadata_distance_z": 6.133051266880025,
+      "constraint_distance_z": 0.27868058827953995,
+      "joint_distance_z": 6.139379505492596,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -4.244626522064209,
+        "target_transient_presence_share_mean": 0.19311948120594025,
+        "interference_transient_presence_minus_mid_db_mean": -9.254424095153809,
+        "interference_transient_presence_share_mean": 0.010711930692195892,
+        "target_interference_logspec_cosine": 0.40085146998863364
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000904/metadata.json"
+    },
+    {
+      "sample_id": "val_000182",
+      "focus_minus_reference_db": 4.649478912353516,
+      "pass_count": 1,
+      "fail_count": 4,
+      "min_constraint_gap_db": -14.495071411132812,
+      "failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -4.6157989501953125,
+        "v66>v67": -6.442935943603516,
+        "v64>v67": -11.092414855957031,
+        "v20>v24": -14.495071411132812
+      },
+      "metadata_distance_z": 2.6163200310797365,
+      "constraint_distance_z": 14.799923903749116,
+      "joint_distance_z": 15.029400455833011,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -15.896512985229492,
+        "target_transient_presence_share_mean": 0.00042558732093311846,
+        "interference_transient_presence_minus_mid_db_mean": 2.0366358757019043,
+        "interference_transient_presence_share_mean": 0.2909950315952301,
+        "target_interference_logspec_cosine": 0.5209989793817678
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000182/metadata.json"
+    }
+  ],
+  "top_nearest_aggregate_pass_expansions_by_joint_distance": [],
+  "top_nearest_rows_by_metadata_distance": [
+    {
+      "sample_id": "train_001494",
+      "focus_minus_reference_db": 0.1462545394897461,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.2922859191894531,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.14603137969970703,
+        "v64>v67": -0.2922859191894531,
+        "v20>v24": -0.09604072570800781
+      },
+      "metadata_distance_z": 1.0940466038826981,
+      "constraint_distance_z": 0.24591579443203926,
+      "joint_distance_z": 1.121344081635252,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -16.104869842529297,
+        "target_transient_presence_share_mean": 0.03959091380238533,
+        "interference_transient_presence_minus_mid_db_mean": -0.08767668902873993,
+        "interference_transient_presence_share_mean": 0.30371609330177307,
+        "target_interference_logspec_cosine": 0.6736035112342141
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_001494/metadata.json"
+    },
+    {
+      "sample_id": "train_001079",
+      "focus_minus_reference_db": 0.06959342956542969,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.1622467041015625,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.08596420288085938,
+        "v64>v67": -0.15555763244628906,
+        "v20>v24": -0.1622467041015625
+      },
+      "metadata_distance_z": 1.1585609218877069,
+      "constraint_distance_z": 0.1746835845807245,
+      "joint_distance_z": 1.1716559923660461,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -11.535072326660156,
+        "target_transient_presence_share_mean": 0.01910426840186119,
+        "interference_transient_presence_minus_mid_db_mean": -1.9568299055099487,
+        "interference_transient_presence_share_mean": 0.20442937314510345,
+        "target_interference_logspec_cosine": 0.6773144362811483
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_001079/metadata.json"
+    },
+    {
+      "sample_id": "train_001589",
+      "focus_minus_reference_db": 0.03919792175292969,
+      "pass_count": 1,
+      "fail_count": 4,
+      "min_constraint_gap_db": -0.1707744598388672,
+      "failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -0.05361175537109375,
+        "v66>v67": -0.1315765380859375,
+        "v64>v67": -0.1707744598388672,
+        "v20>v24": -0.09822654724121094
+      },
+      "metadata_distance_z": 1.2501461308898978,
+      "constraint_distance_z": 0.39546533641348836,
+      "joint_distance_z": 1.3112048584731582,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -14.352710723876953,
+        "target_transient_presence_share_mean": 0.0017694917041808367,
+        "interference_transient_presence_minus_mid_db_mean": 5.697815418243408,
+        "interference_transient_presence_share_mean": 0.37717947363853455,
+        "target_interference_logspec_cosine": 0.7148532996430778
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_001589/metadata.json"
+    },
+    {
+      "sample_id": "train_001639",
+      "focus_minus_reference_db": 0.06099891662597656,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.36070919036865234,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.2997102737426758,
+        "v64>v67": -0.36070919036865234,
+        "v20>v24": -0.2807340621948242
+      },
+      "metadata_distance_z": 1.579097423528789,
+      "constraint_distance_z": 0.4998125345804378,
+      "joint_distance_z": 1.656309525034189,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -16.466354370117188,
+        "target_transient_presence_share_mean": 0.0047722565941512585,
+        "interference_transient_presence_minus_mid_db_mean": 5.172550678253174,
+        "interference_transient_presence_share_mean": 0.46158871054649353,
+        "target_interference_logspec_cosine": 0.7296510700332058
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_001639/metadata.json"
+    },
+    {
+      "sample_id": "train_000219",
+      "focus_minus_reference_db": 0.010793685913085938,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.03289651870727539,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.022102832794189453,
+        "v64>v67": -0.03289651870727539,
+        "v20>v24": -0.027788162231445312
+      },
+      "metadata_distance_z": 1.7664042409464096,
+      "constraint_distance_z": 0.2882947146150163,
+      "joint_distance_z": 1.7897759035444676,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -11.264667510986328,
+        "target_transient_presence_share_mean": 0.03900248929858208,
+        "interference_transient_presence_minus_mid_db_mean": 7.444797515869141,
+        "interference_transient_presence_share_mean": 0.41857823729515076,
+        "target_interference_logspec_cosine": 0.6969824846526914
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000219/metadata.json"
+    },
+    {
+      "sample_id": "train_000664",
+      "focus_minus_reference_db": -0.009173393249511719,
+      "pass_count": 1,
+      "fail_count": 4,
+      "min_constraint_gap_db": -0.023729324340820312,
+      "failed_constraints": [
+        "v66>v64",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.009173393249511719,
+        "v66>v67": -0.023729324340820312,
+        "v64>v67": -0.014555931091308594,
+        "v20>v24": -0.009160995483398438
+      },
+      "metadata_distance_z": 1.8159104738422285,
+      "constraint_distance_z": 0.3240338537732006,
+      "joint_distance_z": 1.844594477764969,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -12.862117767333984,
+        "target_transient_presence_share_mean": 0.0014157189289107919,
+        "interference_transient_presence_minus_mid_db_mean": 6.1856536865234375,
+        "interference_transient_presence_share_mean": 0.39585036039352417,
+        "target_interference_logspec_cosine": 0.6307447199215056
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000664/metadata.json"
+    },
+    {
+      "sample_id": "train_001006",
+      "focus_minus_reference_db": 0.04480171203613281,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.2967548370361328,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.251953125,
+        "v64>v67": -0.2967548370361328,
+        "v20>v24": -0.01251220703125
+      },
+      "metadata_distance_z": 1.8321262889946879,
+      "constraint_distance_z": 0.37390703113744483,
+      "joint_distance_z": 1.8698912285904399,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -8.495460510253906,
+        "target_transient_presence_share_mean": 0.07431317865848541,
+        "interference_transient_presence_minus_mid_db_mean": 4.4964189529418945,
+        "interference_transient_presence_share_mean": 0.2905155122280121,
+        "target_interference_logspec_cosine": 0.6803152637095102
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_001006/metadata.json"
+    },
+    {
+      "sample_id": "train_001610",
+      "focus_minus_reference_db": 0.0011539459228515625,
+      "pass_count": 1,
+      "fail_count": 4,
+      "min_constraint_gap_db": -0.112518310546875,
+      "failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -0.051219940185546875,
+        "v66>v67": -0.07691574096679688,
+        "v64>v67": -0.07806968688964844,
+        "v20>v24": -0.112518310546875
+      },
+      "metadata_distance_z": 1.9664074610497448,
+      "constraint_distance_z": 0.38749761895828927,
+      "joint_distance_z": 2.004223716946401,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -17.00960922241211,
+        "target_transient_presence_share_mean": 0.002246658783406019,
+        "interference_transient_presence_minus_mid_db_mean": 3.3211374282836914,
+        "interference_transient_presence_share_mean": 0.43168750405311584,
+        "target_interference_logspec_cosine": 0.6113264348469399
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_001610/metadata.json"
+    },
+    {
+      "sample_id": "train_000697",
+      "focus_minus_reference_db": 0.02750396728515625,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.04514503479003906,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.017641067504882812,
+        "v64>v67": -0.04514503479003906,
+        "v20>v24": -0.011548042297363281
+      },
+      "metadata_distance_z": 2.0691112062099535,
+      "constraint_distance_z": 0.2040281325367712,
+      "joint_distance_z": 2.079146137848432,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -13.136429786682129,
+        "target_transient_presence_share_mean": 0.008533641695976257,
+        "interference_transient_presence_minus_mid_db_mean": 0.927656888961792,
+        "interference_transient_presence_share_mean": 0.35832324624061584,
+        "target_interference_logspec_cosine": 0.5612513565695104
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000697/metadata.json"
+    },
+    {
+      "sample_id": "val_000153",
+      "focus_minus_reference_db": 0.21747589111328125,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.3704967498779297,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.15302085876464844,
+        "v64>v67": -0.3704967498779297,
+        "v20>v24": -0.16748619079589844
+      },
+      "metadata_distance_z": 2.0820435104726136,
+      "constraint_distance_z": 0.3161473444343021,
+      "joint_distance_z": 2.1059093814535292,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -7.850541114807129,
+        "target_transient_presence_share_mean": 0.05127888172864914,
+        "interference_transient_presence_minus_mid_db_mean": 2.8256027698516846,
+        "interference_transient_presence_share_mean": 0.41113659739494324,
+        "target_interference_logspec_cosine": 0.6147501839193095
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000153/metadata.json"
+    },
+    {
+      "sample_id": "train_000216",
+      "focus_minus_reference_db": 0.09464645385742188,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.2670106887817383,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.1723642349243164,
+        "v64>v67": -0.2670106887817383,
+        "v20>v24": -0.08658790588378906
+      },
+      "metadata_distance_z": 2.084309762049265,
+      "constraint_distance_z": 0.32179716067922454,
+      "joint_distance_z": 2.109004645987077,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -13.607194900512695,
+        "target_transient_presence_share_mean": 0.056039851158857346,
+        "interference_transient_presence_minus_mid_db_mean": 7.081784248352051,
+        "interference_transient_presence_share_mean": 0.4401053190231323,
+        "target_interference_logspec_cosine": 0.6460522059942554
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000216/metadata.json"
+    },
+    {
+      "sample_id": "train_000117",
+      "focus_minus_reference_db": 0.023734092712402344,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.09293174743652344,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.0691976547241211,
+        "v64>v67": -0.09293174743652344,
+        "v20>v24": -0.054576873779296875
+      },
+      "metadata_distance_z": 2.106405312566349,
+      "constraint_distance_z": 0.29033118873227126,
+      "joint_distance_z": 2.126319717248192,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -8.104802131652832,
+        "target_transient_presence_share_mean": 0.004364256747066975,
+        "interference_transient_presence_minus_mid_db_mean": 6.796285629272461,
+        "interference_transient_presence_share_mean": 0.46664515137672424,
+        "target_interference_logspec_cosine": 0.6692237907975012
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000117/metadata.json"
+    },
+    {
+      "sample_id": "train_000266",
+      "focus_minus_reference_db": 0.015989303588867188,
+      "pass_count": 1,
+      "fail_count": 4,
+      "min_constraint_gap_db": -0.16811084747314453,
+      "failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -0.03984546661376953,
+        "v66>v67": -0.15212154388427734,
+        "v64>v67": -0.16811084747314453,
+        "v20>v24": -0.029547691345214844
+      },
+      "metadata_distance_z": 2.1182152234035474,
+      "constraint_distance_z": 0.4046058739752689,
+      "joint_distance_z": 2.156511452766674,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -16.872926712036133,
+        "target_transient_presence_share_mean": 0.002226924989372492,
+        "interference_transient_presence_minus_mid_db_mean": 8.026921272277832,
+        "interference_transient_presence_share_mean": 0.4796588122844696,
+        "target_interference_logspec_cosine": 0.7020899927989038
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000266/metadata.json"
+    },
+    {
+      "sample_id": "train_000759",
+      "focus_minus_reference_db": 0.06226539611816406,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.08360099792480469,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.021335601806640625,
+        "v64>v67": -0.08360099792480469,
+        "v20>v24": -0.06826210021972656
+      },
+      "metadata_distance_z": 2.1819433524749217,
+      "constraint_distance_z": 0.12339474290512449,
+      "joint_distance_z": 2.185429718839323,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -12.124565124511719,
+        "target_transient_presence_share_mean": 0.013862771913409233,
+        "interference_transient_presence_minus_mid_db_mean": 7.037574291229248,
+        "interference_transient_presence_share_mean": 0.5290168523788452,
+        "target_interference_logspec_cosine": 0.6609534070752215
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000759/metadata.json"
+    },
+    {
+      "sample_id": "val_000041",
+      "focus_minus_reference_db": 0.015427589416503906,
+      "pass_count": 1,
+      "fail_count": 4,
+      "min_constraint_gap_db": -0.07982349395751953,
+      "failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -0.019849777221679688,
+        "v66>v67": -0.06439590454101562,
+        "v64>v67": -0.07982349395751953,
+        "v20>v24": -0.029010772705078125
+      },
+      "metadata_distance_z": 2.2065642950309847,
+      "constraint_distance_z": 0.33983585722485904,
+      "joint_distance_z": 2.232580210868434,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -8.051219940185547,
+        "target_transient_presence_share_mean": 0.02426496148109436,
+        "interference_transient_presence_minus_mid_db_mean": 5.840137958526611,
+        "interference_transient_presence_share_mean": 0.37222644686698914,
+        "target_interference_logspec_cosine": 0.6037298161131465
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000041/metadata.json"
+    },
+    {
+      "sample_id": "train_001675",
+      "focus_minus_reference_db": 0.02032160758972168,
+      "pass_count": 1,
+      "fail_count": 4,
+      "min_constraint_gap_db": -0.09377264976501465,
+      "failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -0.030508041381835938,
+        "v66>v67": -0.07345104217529297,
+        "v64>v67": -0.09377264976501465,
+        "v20>v24": -0.09253668785095215
+      },
+      "metadata_distance_z": 2.2299038122605244,
+      "constraint_distance_z": 0.3502983319932108,
+      "joint_distance_z": 2.257250525159147,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -9.686620712280273,
+        "target_transient_presence_share_mean": 0.019920365884900093,
+        "interference_transient_presence_minus_mid_db_mean": 8.840856552124023,
+        "interference_transient_presence_share_mean": 0.4760359227657318,
+        "target_interference_logspec_cosine": 0.6842308709202601
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_001675/metadata.json"
+    },
+    {
+      "sample_id": "train_000210",
+      "focus_minus_reference_db": -0.008782386779785156,
+      "pass_count": 1,
+      "fail_count": 4,
+      "min_constraint_gap_db": -0.03711986541748047,
+      "failed_constraints": [
+        "v66>v64",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.008782386779785156,
+        "v66>v67": -0.015096664428710938,
+        "v64>v67": -0.006314277648925781,
+        "v20>v24": -0.03711986541748047
+      },
+      "metadata_distance_z": 2.231169082484653,
+      "constraint_distance_z": 0.32209260144831436,
+      "joint_distance_z": 2.25429792142546,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -13.317380905151367,
+        "target_transient_presence_share_mean": 0.05418012663722038,
+        "interference_transient_presence_minus_mid_db_mean": -5.49757719039917,
+        "interference_transient_presence_share_mean": 0.19508635997772217,
+        "target_interference_logspec_cosine": 0.6018465480130498
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000210/metadata.json"
+    },
+    {
+      "sample_id": "train_000799",
+      "focus_minus_reference_db": 0.06561470031738281,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.18846511840820312,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.12285041809082031,
+        "v64>v67": -0.18846511840820312,
+        "v20>v24": -0.07155990600585938
+      },
+      "metadata_distance_z": 2.3074980709396273,
+      "constraint_distance_z": 0.226775647726601,
+      "joint_distance_z": 2.3186147894361238,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -16.073034286499023,
+        "target_transient_presence_share_mean": 0.000569595955312252,
+        "interference_transient_presence_minus_mid_db_mean": 2.6843791007995605,
+        "interference_transient_presence_share_mean": 0.3948422074317932,
+        "target_interference_logspec_cosine": 0.5576666868680021
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000799/metadata.json"
+    },
+    {
+      "sample_id": "train_000634",
+      "focus_minus_reference_db": 0.06331777572631836,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.12960529327392578,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.06628751754760742,
+        "v64>v67": -0.12960529327392578,
+        "v20>v24": -0.0054931640625
+      },
+      "metadata_distance_z": 2.314391890386598,
+      "constraint_distance_z": 0.28423149763685457,
+      "joint_distance_z": 2.3317798709432545,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -10.617523193359375,
+        "target_transient_presence_share_mean": 0.0322795994579792,
+        "interference_transient_presence_minus_mid_db_mean": 6.6168999671936035,
+        "interference_transient_presence_share_mean": 0.41467785835266113,
+        "target_interference_logspec_cosine": 0.5897072213344573
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000634/metadata.json"
+    },
+    {
+      "sample_id": "train_000539",
+      "focus_minus_reference_db": -0.0030546188354492188,
+      "pass_count": 0,
+      "fail_count": 5,
+      "min_constraint_gap_db": -0.0240018367767334,
+      "failed_constraints": [
+        "v66>v64",
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.0030546188354492188,
+        "v66>v65": -0.0240018367767334,
+        "v66>v67": -0.019982337951660156,
+        "v64>v67": -0.016927719116210938,
+        "v20>v24": -0.007464170455932617
+      },
+      "metadata_distance_z": 2.3444527875132946,
+      "constraint_distance_z": 0.34840863994810745,
+      "joint_distance_z": 2.3701998762276033,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -9.813207626342773,
+        "target_transient_presence_share_mean": 0.016725817695260048,
+        "interference_transient_presence_minus_mid_db_mean": 8.442323684692383,
+        "interference_transient_presence_share_mean": 0.5254933834075928,
+        "target_interference_logspec_cosine": 0.6852616709105114
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000539/metadata.json"
+    },
+    {
+      "sample_id": "train_001543",
+      "focus_minus_reference_db": -0.008828163146972656,
+      "pass_count": 0,
+      "fail_count": 5,
+      "min_constraint_gap_db": -0.1287708282470703,
+      "failed_constraints": [
+        "v66>v64",
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.008828163146972656,
+        "v66>v65": -0.1139841079711914,
+        "v66>v67": -0.1287708282470703,
+        "v64>v67": -0.11994266510009766,
+        "v20>v24": -0.06874561309814453
+      },
+      "metadata_distance_z": 2.454317128954895,
+      "constraint_distance_z": 0.48589295435111585,
+      "joint_distance_z": 2.5019521443403856,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -10.960589408874512,
+        "target_transient_presence_share_mean": 0.05876623094081879,
+        "interference_transient_presence_minus_mid_db_mean": 7.649031639099121,
+        "interference_transient_presence_share_mean": 0.4371807277202606,
+        "target_interference_logspec_cosine": 0.607323987428546
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_001543/metadata.json"
+    },
+    {
+      "sample_id": "train_000207",
+      "focus_minus_reference_db": 0.034099578857421875,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.09470367431640625,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.060604095458984375,
+        "v64>v67": -0.09470367431640625,
+        "v20>v24": -0.04343986511230469
+      },
+      "metadata_distance_z": 2.5006753955300423,
+      "constraint_distance_z": 0.2920004176462851,
+      "joint_distance_z": 2.517665918606942,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -17.00960922241211,
+        "target_transient_presence_share_mean": 0.002246658783406019,
+        "interference_transient_presence_minus_mid_db_mean": 5.85136079788208,
+        "interference_transient_presence_share_mean": 0.5722601413726807,
+        "target_interference_logspec_cosine": 0.6415835964800831
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000207/metadata.json"
+    },
+    {
+      "sample_id": "val_000182",
+      "focus_minus_reference_db": 4.649478912353516,
+      "pass_count": 1,
+      "fail_count": 4,
+      "min_constraint_gap_db": -14.495071411132812,
+      "failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -4.6157989501953125,
+        "v66>v67": -6.442935943603516,
+        "v64>v67": -11.092414855957031,
+        "v20>v24": -14.495071411132812
+      },
+      "metadata_distance_z": 2.6163200310797365,
+      "constraint_distance_z": 14.799923903749116,
+      "joint_distance_z": 15.029400455833011,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -15.896512985229492,
+        "target_transient_presence_share_mean": 0.00042558732093311846,
+        "interference_transient_presence_minus_mid_db_mean": 2.0366358757019043,
+        "interference_transient_presence_share_mean": 0.2909950315952301,
+        "target_interference_logspec_cosine": 0.5209989793817678
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000182/metadata.json"
+    },
+    {
+      "sample_id": "train_000999",
+      "focus_minus_reference_db": 0.022006988525390625,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.12224102020263672,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.09378337860107422,
+        "v64>v67": -0.11579036712646484,
+        "v20>v24": -0.12224102020263672
+      },
+      "metadata_distance_z": 2.64207773746298,
+      "constraint_distance_z": 0.27009590970019676,
+      "joint_distance_z": 2.6558476182255406,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -13.949101448059082,
+        "target_transient_presence_share_mean": 0.003472010139375925,
+        "interference_transient_presence_minus_mid_db_mean": 8.646728515625,
+        "interference_transient_presence_share_mean": 0.6141756772994995,
+        "target_interference_logspec_cosine": 0.7383649193662051
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000999/metadata.json"
+    },
+    {
+      "sample_id": "train_001745",
+      "focus_minus_reference_db": -0.027469635009765625,
+      "pass_count": 0,
+      "fail_count": 5,
+      "min_constraint_gap_db": -0.1739063262939453,
+      "failed_constraints": [
+        "v66>v64",
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.027469635009765625,
+        "v66>v65": -0.0019073486328125,
+        "v66>v67": -0.1739063262939453,
+        "v64>v67": -0.1464366912841797,
+        "v20>v24": -0.17357444763183594
+      },
+      "metadata_distance_z": 2.6575246968129127,
+      "constraint_distance_z": 0.40912042603276444,
+      "joint_distance_z": 2.6888319094297795,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -12.309966087341309,
+        "target_transient_presence_share_mean": 0.08671987056732178,
+        "interference_transient_presence_minus_mid_db_mean": 7.583262920379639,
+        "interference_transient_presence_share_mean": 0.48254162073135376,
+        "target_interference_logspec_cosine": 0.624214530568081
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_001745/metadata.json"
+    },
+    {
+      "sample_id": "train_000681",
+      "focus_minus_reference_db": 0.5382671356201172,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -1.1937885284423828,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.6555213928222656,
+        "v64>v67": -1.1937885284423828,
+        "v20>v24": -0.73516845703125
+      },
+      "metadata_distance_z": 2.76470954858416,
+      "constraint_distance_z": 1.2535897565902197,
+      "joint_distance_z": 3.0356393339559227,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -22.602506637573242,
+        "target_transient_presence_share_mean": 0.0001831499394029379,
+        "interference_transient_presence_minus_mid_db_mean": 7.1319098472595215,
+        "interference_transient_presence_share_mean": 0.44032931327819824,
+        "target_interference_logspec_cosine": 0.6461792202835885
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000681/metadata.json"
+    },
+    {
+      "sample_id": "val_000396",
+      "focus_minus_reference_db": -0.016195297241210938,
+      "pass_count": 0,
+      "fail_count": 5,
+      "min_constraint_gap_db": -0.15909767150878906,
+      "failed_constraints": [
+        "v66>v64",
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.016195297241210938,
+        "v66>v65": -0.015451431274414062,
+        "v66>v67": -0.15909767150878906,
+        "v64>v67": -0.14290237426757812,
+        "v20>v24": -0.06799983978271484
+      },
+      "metadata_distance_z": 2.8491339445653954,
+      "constraint_distance_z": 0.4029070740065748,
+      "joint_distance_z": 2.877481250044787,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -23.011409759521484,
+        "target_transient_presence_share_mean": 0.046165186911821365,
+        "interference_transient_presence_minus_mid_db_mean": 4.029228687286377,
+        "interference_transient_presence_share_mean": 0.350452721118927,
+        "target_interference_logspec_cosine": 0.5896011044322925
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000396/metadata.json"
+    },
+    {
+      "sample_id": "train_000788",
+      "focus_minus_reference_db": 0.049414634704589844,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.10162067413330078,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.05220603942871094,
+        "v64>v67": -0.10162067413330078,
+        "v20>v24": -0.09419727325439453
+      },
+      "metadata_distance_z": 3.006312149239828,
+      "constraint_distance_z": 0.19409366490655558,
+      "joint_distance_z": 3.0125711758270297,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -7.256917476654053,
+        "target_transient_presence_share_mean": 0.002538196509703994,
+        "interference_transient_presence_minus_mid_db_mean": 8.618302345275879,
+        "interference_transient_presence_share_mean": 0.5879872441291809,
+        "target_interference_logspec_cosine": 0.6355044206084285
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000788/metadata.json"
+    },
+    {
+      "sample_id": "train_000805",
+      "focus_minus_reference_db": 0.009233474731445312,
+      "pass_count": 1,
+      "fail_count": 4,
+      "min_constraint_gap_db": -0.07317829132080078,
+      "failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -0.07317829132080078,
+        "v66>v67": -0.024239540100097656,
+        "v64>v67": -0.03347301483154297,
+        "v20>v24": -0.01970672607421875
+      },
+      "metadata_distance_z": 3.099138912217896,
+      "constraint_distance_z": 0.39646830304624564,
+      "joint_distance_z": 3.124395799597658,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -16.168481826782227,
+        "target_transient_presence_share_mean": 0.05721049755811691,
+        "interference_transient_presence_minus_mid_db_mean": 9.774702072143555,
+        "interference_transient_presence_share_mean": 0.6293967366218567,
+        "target_interference_logspec_cosine": 0.6836312519468343
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000805/metadata.json"
+    },
+    {
+      "sample_id": "train_000826",
+      "focus_minus_reference_db": 0.013381004333496094,
+      "pass_count": 1,
+      "fail_count": 4,
+      "min_constraint_gap_db": -0.04675579071044922,
+      "failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -0.03694438934326172,
+        "v66>v67": -0.033374786376953125,
+        "v64>v67": -0.04675579071044922,
+        "v20>v24": -0.01810741424560547
+      },
+      "metadata_distance_z": 3.2459044999321764,
+      "constraint_distance_z": 0.3522936241773697,
+      "joint_distance_z": 3.2649665879325593,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -8.495460510253906,
+        "target_transient_presence_share_mean": 0.07431317865848541,
+        "interference_transient_presence_minus_mid_db_mean": 9.817081451416016,
+        "interference_transient_presence_share_mean": 0.5886871814727783,
+        "target_interference_logspec_cosine": 0.6385178007220315
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000826/metadata.json"
+    },
+    {
+      "sample_id": "train_000951",
+      "focus_minus_reference_db": 0.0272979736328125,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.08787155151367188,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.060573577880859375,
+        "v64>v67": -0.08787155151367188,
+        "v20>v24": -0.08232307434082031
+      },
+      "metadata_distance_z": 3.3399346209428886,
+      "constraint_distance_z": 0.21255550490003008,
+      "joint_distance_z": 3.3466913683272654,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -6.375518798828125,
+        "target_transient_presence_share_mean": 0.1557837873697281,
+        "interference_transient_presence_minus_mid_db_mean": 0.7970060706138611,
+        "interference_transient_presence_share_mean": 0.3677087426185608,
+        "target_interference_logspec_cosine": 0.6171993511364816
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000951/metadata.json"
+    },
+    {
+      "sample_id": "train_001725",
+      "focus_minus_reference_db": 0.013107776641845703,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.027107954025268555,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.013130903244018555,
+        "v64>v67": -0.026238679885864258,
+        "v20>v24": -0.027107954025268555
+      },
+      "metadata_distance_z": 3.388671386601554,
+      "constraint_distance_z": 0.2879229816621984,
+      "joint_distance_z": 3.400881269574307,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -5.19318962097168,
+        "target_transient_presence_share_mean": 0.07336869835853577,
+        "interference_transient_presence_minus_mid_db_mean": 7.796044826507568,
+        "interference_transient_presence_share_mean": 0.5826805830001831,
+        "target_interference_logspec_cosine": 0.6122654967169683
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_001725/metadata.json"
+    },
+    {
+      "sample_id": "train_000578",
+      "focus_minus_reference_db": 0.005391359329223633,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.011675596237182617,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.006284236907958984,
+        "v64>v67": -0.011675596237182617,
+        "v20>v24": -0.006955146789550781
+      },
+      "metadata_distance_z": 3.39730718754949,
+      "constraint_distance_z": 0.30652485907213645,
+      "joint_distance_z": 3.4111073884890546,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -3.449131488800049,
+        "target_transient_presence_share_mean": 0.1126728504896164,
+        "interference_transient_presence_minus_mid_db_mean": 2.9893202781677246,
+        "interference_transient_presence_share_mean": 0.3979531526565552,
+        "target_interference_logspec_cosine": 0.5737497371133488
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000578/metadata.json"
+    },
+    {
+      "sample_id": "train_001495",
+      "focus_minus_reference_db": 0.07036876678466797,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.3230857849121094,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.22459030151367188,
+        "v64>v67": -0.29495906829833984,
+        "v20>v24": -0.3230857849121094
+      },
+      "metadata_distance_z": 3.672731188062708,
+      "constraint_distance_z": 0.3957630205702725,
+      "joint_distance_z": 3.6939927921179567,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -4.958980560302734,
+        "target_transient_presence_share_mean": 0.06954998522996902,
+        "interference_transient_presence_minus_mid_db_mean": 9.670926094055176,
+        "interference_transient_presence_share_mean": 0.6270498037338257,
+        "target_interference_logspec_cosine": 0.6256733726358694
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_001495/metadata.json"
+    },
+    {
+      "sample_id": "train_001705",
+      "focus_minus_reference_db": 0.020572662353515625,
+      "pass_count": 1,
+      "fail_count": 4,
+      "min_constraint_gap_db": -0.07341575622558594,
+      "failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -0.0008335113525390625,
+        "v66>v67": -0.05284309387207031,
+        "v64>v67": -0.07341575622558594,
+        "v20>v24": -0.027814865112304688
+      },
+      "metadata_distance_z": 4.615143551802271,
+      "constraint_distance_z": 0.3112049068191079,
+      "joint_distance_z": 4.625624119810253,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -6.375518798828125,
+        "target_transient_presence_share_mean": 0.1557837873697281,
+        "interference_transient_presence_minus_mid_db_mean": 9.609395027160645,
+        "interference_transient_presence_share_mean": 0.7195932865142822,
+        "target_interference_logspec_cosine": 0.6415421646007746
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_001705/metadata.json"
+    },
+    {
+      "sample_id": "val_000034",
+      "focus_minus_reference_db": 0.016722679138183594,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.022783279418945312,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.006060600280761719,
+        "v64>v67": -0.022783279418945312,
+        "v20>v24": -0.0017671585083007812
+      },
+      "metadata_distance_z": 4.737797905517549,
+      "constraint_distance_z": 0.297953753680116,
+      "joint_distance_z": 4.747157616180291,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -6.05042839050293,
+        "target_transient_presence_share_mean": 0.21500328183174133,
+        "interference_transient_presence_minus_mid_db_mean": 6.287598133087158,
+        "interference_transient_presence_share_mean": 0.5091933608055115,
+        "target_interference_logspec_cosine": 0.5954029662393526
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000034/metadata.json"
+    },
+    {
+      "sample_id": "train_001533",
+      "focus_minus_reference_db": 0.04356575012207031,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.03333473205566406,
+      "failed_constraints": [
+        "v66>v65",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -0.008869171142578125,
+        "v64>v67": -0.03333473205566406,
+        "v20>v24": -0.011058807373046875
+      },
+      "metadata_distance_z": 4.78309528489889,
+      "constraint_distance_z": 0.2916002829015695,
+      "joint_distance_z": 4.791975712522995,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -13.136429786682129,
+        "target_transient_presence_share_mean": 0.008533641695976257,
+        "interference_transient_presence_minus_mid_db_mean": -14.321331024169922,
+        "interference_transient_presence_share_mean": 0.00075577013194561,
+        "target_interference_logspec_cosine": 0.4624008847437495
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_001533/metadata.json"
+    },
+    {
+      "sample_id": "val_000478",
+      "focus_minus_reference_db": 0.006512641906738281,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.09898662567138672,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.028054237365722656,
+        "v64>v67": -0.03456687927246094,
+        "v20>v24": -0.09898662567138672
+      },
+      "metadata_distance_z": 5.404431945855641,
+      "constraint_distance_z": 0.2590266338188078,
+      "joint_distance_z": 5.410635771738151,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": 0.1561417579650879,
+        "target_transient_presence_share_mean": 0.015391316264867783,
+        "interference_transient_presence_minus_mid_db_mean": 2.7667629718780518,
+        "interference_transient_presence_share_mean": 0.4292445480823517,
+        "target_interference_logspec_cosine": 0.33971409247214923
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000478/metadata.json"
+    },
+    {
+      "sample_id": "train_000904",
+      "focus_minus_reference_db": 0.047607421875,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.087615966796875,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.040008544921875,
+        "v64>v67": -0.087615966796875,
+        "v20>v24": -0.05433464050292969
+      },
+      "metadata_distance_z": 6.133051266880025,
+      "constraint_distance_z": 0.27868058827953995,
+      "joint_distance_z": 6.139379505492596,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -4.244626522064209,
+        "target_transient_presence_share_mean": 0.19311948120594025,
+        "interference_transient_presence_minus_mid_db_mean": -9.254424095153809,
+        "interference_transient_presence_share_mean": 0.010711930692195892,
+        "target_interference_logspec_cosine": 0.40085146998863364
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000904/metadata.json"
+    }
+  ],
+  "top_seed_plus_one_expansions": [
+    {
+      "candidate_sample_id": "val_000034",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "val_000034"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v67": -0.006060600280761719,
+        "v64>v67": -0.022783279418945312,
+        "v20>v24": -0.0017671585083007812
+      },
+      "candidate_joint_distance_z": 4.747157616180291,
+      "candidate_metadata_distance_z": 4.737797905517549,
+      "candidate_constraint_distance_z": 0.297953753680116,
+      "candidate_focus_minus_reference_db": 0.016722679138183594,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v64>v67": -0.06817628145218002,
+        "v20>v24": -0.08475934267044138
+      },
+      "aggregate_alias_scores": {
+        "v20": -8.15488713979721,
+        "v24": -8.07012779712677,
+        "v64": -8.086040961742402,
+        "v65": -8.120293283462525,
+        "v66": -7.979072964191436,
+        "v67": -8.017864680290222
+      },
+      "aggregate_focus_minus_reference_db": 0.10696799755096542,
+      "aggregate_min_constraint_gap_db": -0.08475934267044138
+    },
+    {
+      "candidate_sample_id": "train_000578",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "train_000578"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v67": -0.006284236907958984,
+        "v64>v67": -0.011675596237182617,
+        "v20>v24": -0.006955146789550781
+      },
+      "candidate_joint_distance_z": 3.4111073884890546,
+      "candidate_metadata_distance_z": 3.39730718754949,
+      "candidate_constraint_distance_z": 0.30652485907213645,
+      "candidate_focus_minus_reference_db": 0.005391359329223633,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v64>v67": -0.06595474481582642,
+        "v20>v24": -0.0857969403266905
+      },
+      "aggregate_alias_scores": {
+        "v20": -6.841748583316803,
+        "v24": -6.755951642990112,
+        "v64": -6.775206077098846,
+        "v65": -6.811907839775086,
+        "v66": -6.670504343509674,
+        "v67": -6.70925133228302
+      },
+      "aggregate_focus_minus_reference_db": 0.10470173358917201,
+      "aggregate_min_constraint_gap_db": -0.0857969403266905
+    },
+    {
+      "candidate_sample_id": "train_000539",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "train_000539"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v64",
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v64": -0.0030546188354492188,
+        "v66>v65": -0.0240018367767334,
+        "v66>v67": -0.019982337951660156,
+        "v64>v67": -0.016927719116210938,
+        "v20>v24": -0.007464170455932617
+      },
+      "candidate_joint_distance_z": 2.3701998762276033,
+      "candidate_metadata_distance_z": 2.3444527875132946,
+      "candidate_constraint_distance_z": 0.34840863994810745,
+      "candidate_focus_minus_reference_db": -0.0030546188354492188,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v64>v67": -0.06700516939163226,
+        "v20>v24": -0.08589874505996686
+      },
+      "aggregate_alias_scores": {
+        "v20": -6.984604012966156,
+        "v24": -6.898705267906189,
+        "v64": -6.914916217327118,
+        "v65": -6.947298431396485,
+        "v66": -6.8119036793708805,
+        "v67": -6.847911047935486
+      },
+      "aggregate_focus_minus_reference_db": 0.10301253795623744,
+      "aggregate_min_constraint_gap_db": -0.08589874505996686
+    },
+    {
+      "candidate_sample_id": "train_000664",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "train_000664"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v64",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v64": -0.009173393249511719,
+        "v66>v67": -0.023729324340820312,
+        "v64>v67": -0.014555931091308594,
+        "v20>v24": -0.009160995483398438
+      },
+      "candidate_joint_distance_z": 1.844594477764969,
+      "candidate_metadata_distance_z": 1.8159104738422285,
+      "candidate_constraint_distance_z": 0.3240338537732006,
+      "candidate_focus_minus_reference_db": -0.009173393249511719,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v64>v67": -0.06653081178665232,
+        "v20>v24": -0.08623811006546056
+      },
+      "aggregate_alias_scores": {
+        "v20": -9.466487443447113,
+        "v24": -9.380249333381652,
+        "v64": -9.388230407238007,
+        "v65": -9.427532243728638,
+        "v66": -9.286441624164581,
+        "v67": -9.321699595451355
+      },
+      "aggregate_focus_minus_reference_db": 0.10178878307342565,
+      "aggregate_min_constraint_gap_db": -0.08623811006546056
+    },
+    {
+      "candidate_sample_id": "train_001533",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "train_001533"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v65",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v65": -0.008869171142578125,
+        "v64>v67": -0.03333473205566406,
+        "v20>v24": -0.011058807373046875
+      },
+      "candidate_joint_distance_z": 4.791975712522995,
+      "candidate_metadata_distance_z": 4.78309528489889,
+      "candidate_constraint_distance_z": 0.2916002829015695,
+      "candidate_focus_minus_reference_db": 0.04356575012207031,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v64>v67": -0.0702865719795227,
+        "v20>v24": -0.08661767244339025
+      },
+      "aggregate_alias_scores": {
+        "v20": -9.976663148403167,
+        "v24": -9.890045475959777,
+        "v64": -9.906586349010468,
+        "v65": -9.93267102241516,
+        "v66": -9.794249737262726,
+        "v67": -9.836299777030945
+      },
+      "aggregate_focus_minus_reference_db": 0.11233661174774134,
+      "aggregate_min_constraint_gap_db": -0.08661767244339025
+    },
+    {
+      "candidate_sample_id": "train_000697",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "train_000697"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v67": -0.017641067504882812,
+        "v64>v67": -0.04514503479003906,
+        "v20>v24": -0.011548042297363281
+      },
+      "candidate_joint_distance_z": 2.079146137848432,
+      "candidate_metadata_distance_z": 2.0691112062099535,
+      "candidate_constraint_distance_z": 0.2040281325367712,
+      "candidate_focus_minus_reference_db": 0.02750396728515625,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v64>v67": -0.07264863252639842,
+        "v20>v24": -0.08671551942825317
+      },
+      "aggregate_alias_scores": {
+        "v20": -8.80971177816391,
+        "v24": -8.722996258735657,
+        "v64": -8.731657683849335,
+        "v65": -8.781263780593871,
+        "v66": -8.622533428668977,
+        "v67": -8.659009051322936
+      },
+      "aggregate_focus_minus_reference_db": 0.10912425518035818,
+      "aggregate_min_constraint_gap_db": -0.08671551942825317
+    },
+    {
+      "candidate_sample_id": "train_000826",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "train_000826"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v65": -0.03694438934326172,
+        "v66>v67": -0.033374786376953125,
+        "v64>v67": -0.04675579071044922,
+        "v20>v24": -0.01810741424560547
+      },
+      "candidate_joint_distance_z": 3.2649665879325593,
+      "candidate_metadata_distance_z": 3.2459044999321764,
+      "candidate_constraint_distance_z": 0.3522936241773697,
+      "candidate_focus_minus_reference_db": 0.013381004333496094,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v64>v67": -0.07297078371047938,
+        "v20>v24": -0.08802739381790303
+      },
+      "aggregate_alias_scores": {
+        "v20": -8.276761758327485,
+        "v24": -8.188734364509582,
+        "v64": -8.209265792369843,
+        "v65": -8.235772371292114,
+        "v66": -8.102966129779816,
+        "v67": -8.136295008659364
+      },
+      "aggregate_focus_minus_reference_db": 0.10629966259002721,
+      "aggregate_min_constraint_gap_db": -0.08802739381790303
+    },
+    {
+      "candidate_sample_id": "train_000805",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "train_000805"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v65": -0.07317829132080078,
+        "v66>v67": -0.024239540100097656,
+        "v64>v67": -0.03347301483154297,
+        "v20>v24": -0.01970672607421875
+      },
+      "candidate_joint_distance_z": 3.124395799597658,
+      "candidate_metadata_distance_z": 3.099138912217896,
+      "candidate_constraint_distance_z": 0.39646830304624564,
+      "candidate_focus_minus_reference_db": 0.009233474731445312,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v64>v67": -0.07031422853469849,
+        "v20>v24": -0.08834725618362427
+      },
+      "aggregate_alias_scores": {
+        "v20": -9.21216939687729,
+        "v24": -9.123822140693665,
+        "v64": -9.147050368785859,
+        "v65": -9.167139673233033,
+        "v66": -9.04158021211624,
+        "v67": -9.07673614025116
+      },
+      "aggregate_focus_minus_reference_db": 0.10547015666961812,
+      "aggregate_min_constraint_gap_db": -0.08834725618362427
+    },
+    {
+      "candidate_sample_id": "train_000634",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "train_000634"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v67": -0.06628751754760742,
+        "v64>v67": -0.12960529327392578,
+        "v20>v24": -0.0054931640625
+      },
+      "candidate_joint_distance_z": 2.3317798709432545,
+      "candidate_metadata_distance_z": 2.314391890386598,
+      "candidate_constraint_distance_z": 0.28423149763685457,
+      "candidate_focus_minus_reference_db": 0.06331777572631836,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v64>v67": -0.08954068422317452,
+        "v20>v24": -0.0855045437812807
+      },
+      "aggregate_alias_scores": {
+        "v20": -7.495531976222992,
+        "v24": -7.410027432441711,
+        "v64": -7.438102233409881,
+        "v65": -7.463552808761596,
+        "v66": -7.321815216541291,
+        "v67": -7.348561549186707
+      },
+      "aggregate_focus_minus_reference_db": 0.11628701686859078,
+      "aggregate_min_constraint_gap_db": -0.08954068422317452
+    },
+    {
+      "candidate_sample_id": "train_001725",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "train_001725"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v67": -0.013130903244018555,
+        "v64>v67": -0.026238679885864258,
+        "v20>v24": -0.027107954025268555
+      },
+      "candidate_joint_distance_z": 3.400881269574307,
+      "candidate_metadata_distance_z": 3.388671386601554,
+      "candidate_constraint_distance_z": 0.2879229816621984,
+      "candidate_focus_minus_reference_db": 0.013107776641845703,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v64>v67": -0.06886736154556328,
+        "v20>v24": -0.0898275017738337
+      },
+      "aggregate_alias_scores": {
+        "v20": -7.090731370449066,
+        "v24": -7.000903868675232,
+        "v64": -7.022509706020355,
+        "v65": -7.0597981929779055,
+        "v66": -6.916264688968658,
+        "v67": -6.953642344474792
+      },
+      "aggregate_focus_minus_reference_db": 0.10624501705169731,
+      "aggregate_min_constraint_gap_db": -0.0898275017738337
+    },
+    {
+      "candidate_sample_id": "train_000219",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "train_000219"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v67": -0.022102832794189453,
+        "v64>v67": -0.03289651870727539,
+        "v20>v24": -0.027788162231445312
+      },
+      "candidate_joint_distance_z": 1.7897759035444676,
+      "candidate_metadata_distance_z": 1.7664042409464096,
+      "candidate_constraint_distance_z": 0.2882947146150163,
+      "candidate_focus_minus_reference_db": 0.010793685913085938,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v64>v67": -0.07019892930984462,
+        "v20>v24": -0.08996354341507029
+      },
+      "aggregate_alias_scores": {
+        "v20": -7.717303597927094,
+        "v24": -7.627340054512024,
+        "v64": -7.643156516551971,
+        "v65": -7.681544351577759,
+        "v66": -7.537374317646027,
+        "v67": -7.572957587242127
+      },
+      "aggregate_focus_minus_reference_db": 0.10578219890594465,
+      "aggregate_min_constraint_gap_db": -0.08996354341507029
+    },
+    {
+      "candidate_sample_id": "train_001705",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "train_001705"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v65": -0.0008335113525390625,
+        "v66>v67": -0.05284309387207031,
+        "v64>v67": -0.07341575622558594,
+        "v20>v24": -0.027814865112304688
+      },
+      "candidate_joint_distance_z": 4.625624119810253,
+      "candidate_metadata_distance_z": 4.615143551802271,
+      "candidate_constraint_distance_z": 0.3112049068191079,
+      "candidate_focus_minus_reference_db": 0.020572662353515625,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v64>v67": -0.07830277681350672,
+        "v20>v24": -0.08996888399124181
+      },
+      "aggregate_alias_scores": {
+        "v20": -9.83656724691391,
+        "v24": -9.746598362922668,
+        "v64": -9.758452117443085,
+        "v65": -9.790742540359497,
+        "v66": -9.650714123249054,
+        "v67": -9.680149340629578
+      },
+      "aggregate_focus_minus_reference_db": 0.1077379941940304,
+      "aggregate_min_constraint_gap_db": -0.08996888399124181
+    },
+    {
+      "candidate_sample_id": "val_000041",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "val_000041"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v65": -0.019849777221679688,
+        "v66>v67": -0.06439590454101562,
+        "v64>v67": -0.07982349395751953,
+        "v20>v24": -0.029010772705078125
+      },
+      "candidate_joint_distance_z": 2.232580210868434,
+      "candidate_metadata_distance_z": 2.2065642950309847,
+      "candidate_constraint_distance_z": 0.33983585722485904,
+      "candidate_focus_minus_reference_db": 0.015427589416503906,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v64>v67": -0.07958432435989415,
+        "v20>v24": -0.09020806550979721
+      },
+      "aggregate_alias_scores": {
+        "v20": -9.096752488613129,
+        "v24": -9.006544423103332,
+        "v64": -9.02523010969162,
+        "v65": -9.054746294021607,
+        "v66": -8.918521130084992,
+        "v67": -8.945645785331726
+      },
+      "aggregate_focus_minus_reference_db": 0.10670897960662806,
+      "aggregate_min_constraint_gap_db": -0.09020806550979721
+    },
+    {
+      "candidate_sample_id": "train_000210",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "train_000210"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v64",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v64": -0.008782386779785156,
+        "v66>v67": -0.015096664428710938,
+        "v64>v67": -0.006314277648925781,
+        "v20>v24": -0.03711986541748047
+      },
+      "candidate_joint_distance_z": 2.25429792142546,
+      "candidate_metadata_distance_z": 2.231169082484653,
+      "candidate_constraint_distance_z": 0.32209260144831436,
+      "candidate_focus_minus_reference_db": -0.008782386779785156,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v64>v67": -0.06488248109817363,
+        "v20>v24": -0.09182988405227732
+      },
+      "aggregate_alias_scores": {
+        "v20": -8.288648545742035,
+        "v24": -8.196818661689758,
+        "v64": -8.204813849925994,
+        "v65": -8.243792200088501,
+        "v66": -8.102946865558625,
+        "v67": -8.13993136882782
+      },
+      "aggregate_focus_minus_reference_db": 0.10186698436736918,
+      "aggregate_min_constraint_gap_db": -0.09182988405227732
+    },
+    {
+      "candidate_sample_id": "train_000207",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "train_000207"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v67": -0.060604095458984375,
+        "v64>v67": -0.09470367431640625,
+        "v20>v24": -0.04343986511230469
+      },
+      "candidate_joint_distance_z": 2.517665918606942,
+      "candidate_metadata_distance_z": 2.5006753955300423,
+      "candidate_constraint_distance_z": 0.2920004176462851,
+      "candidate_focus_minus_reference_db": 0.034099578857421875,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v64>v67": -0.08256036043167114,
+        "v20>v24": -0.09309388399124252
+      },
+      "aggregate_alias_scores": {
+        "v20": -9.164516770839692,
+        "v24": -9.071422886848449,
+        "v64": -9.07769535779953,
+        "v65": -9.109501504898072,
+        "v66": -8.967251980304718,
+        "v67": -8.99513499736786
+      },
+      "aggregate_focus_minus_reference_db": 0.11044337749481237,
+      "aggregate_min_constraint_gap_db": -0.09309388399124252
+    },
+    {
+      "candidate_sample_id": "train_000904",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "train_000904"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v67": -0.040008544921875,
+        "v64>v67": -0.087615966796875,
+        "v20>v24": -0.05433464050292969
+      },
+      "candidate_joint_distance_z": 6.139379505492596,
+      "candidate_metadata_distance_z": 6.133051266880025,
+      "candidate_constraint_distance_z": 0.27868058827953995,
+      "candidate_focus_minus_reference_db": 0.047607421875,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v64>v67": -0.08114281892776631,
+        "v20>v24": -0.09527283906936646
+      },
+      "aggregate_alias_scores": {
+        "v20": -10.283585298061372,
+        "v24": -10.188312458992005,
+        "v64": -10.190980422496796,
+        "v65": -10.21945309638977,
+        "v66": -10.077835476398468,
+        "v67": -10.10983760356903
+      },
+      "aggregate_focus_minus_reference_db": 0.1131449460983287,
+      "aggregate_min_constraint_gap_db": -0.09527283906936646
+    },
+    {
+      "candidate_sample_id": "train_000117",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "train_000117"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v67": -0.0691976547241211,
+        "v64>v67": -0.09293174743652344,
+        "v20>v24": -0.054576873779296875
+      },
+      "candidate_joint_distance_z": 2.126319717248192,
+      "candidate_metadata_distance_z": 2.106405312566349,
+      "candidate_constraint_distance_z": 0.29033118873227126,
+      "candidate_focus_minus_reference_db": 0.023734092712402344,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v64>v67": -0.08220597505569316,
+        "v20>v24": -0.0953212857246406
+      },
+      "aggregate_alias_scores": {
+        "v20": -8.866251313686371,
+        "v24": -8.77093002796173,
+        "v64": -8.78395355939865,
+        "v65": -8.820123529434204,
+        "v66": -8.675583279132843,
+        "v67": -8.701747584342957
+      },
+      "aggregate_focus_minus_reference_db": 0.10837028026580775,
+      "aggregate_min_constraint_gap_db": -0.0953212857246406
+    },
+    {
+      "candidate_sample_id": "train_000266",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "train_000266"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v65": -0.03984546661376953,
+        "v66>v67": -0.15212154388427734,
+        "v64>v67": -0.16811084747314453,
+        "v20>v24": -0.029547691345214844
+      },
+      "candidate_joint_distance_z": 2.156511452766674,
+      "candidate_metadata_distance_z": 2.1182152234035474,
+      "candidate_constraint_distance_z": 0.4046058739752689,
+      "candidate_focus_minus_reference_db": 0.015989303588867188,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v64>v67": -0.09724179506301844,
+        "v20>v24": -0.09031544923782242
+      },
+      "aggregate_alias_scores": {
+        "v20": -9.389323365688323,
+        "v24": -9.2990079164505,
+        "v64": -9.321634185314178,
+        "v65": -9.347038888931275,
+        "v66": -9.214812862873078,
+        "v67": -9.22439239025116
+      },
+      "aggregate_focus_minus_reference_db": 0.10682132244109965,
+      "aggregate_min_constraint_gap_db": -0.09724179506301844
+    },
+    {
+      "candidate_sample_id": "val_000396",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "val_000396"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v64",
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v64": -0.016195297241210938,
+        "v66>v65": -0.015451431274414062,
+        "v66>v67": -0.15909767150878906,
+        "v64>v67": -0.14290237426757812,
+        "v20>v24": -0.06799983978271484
+      },
+      "candidate_joint_distance_z": 2.877481250044787,
+      "candidate_metadata_distance_z": 2.8491339445653954,
+      "candidate_constraint_distance_z": 0.4029070740065748,
+      "candidate_focus_minus_reference_db": -0.016195297241210938,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v64>v67": -0.09220010042190552,
+        "v20>v24": -0.09800587892532242
+      },
+      "aggregate_alias_scores": {
+        "v20": -9.563810861110687,
+        "v24": -9.465804982185364,
+        "v64": -9.477193343639374,
+        "v65": -9.513913774490357,
+        "v66": -9.376808941364288,
+        "v67": -9.384993243217469
+      },
+      "aggregate_focus_minus_reference_db": 0.10038440227508616,
+      "aggregate_min_constraint_gap_db": -0.09800587892532242
+    },
+    {
+      "candidate_sample_id": "train_000759",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "train_000759"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v67": -0.021335601806640625,
+        "v64>v67": -0.08360099792480469,
+        "v20>v24": -0.06826210021972656
+      },
+      "candidate_joint_distance_z": 2.185429718839323,
+      "candidate_metadata_distance_z": 2.1819433524749217,
+      "candidate_constraint_distance_z": 0.12339474290512449,
+      "candidate_focus_minus_reference_db": 0.06226539611816406,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v64>v67": -0.08033982515335047,
+        "v20>v24": -0.09805833101272654
+      },
+      "aggregate_alias_scores": {
+        "v20": -10.01056512594223,
+        "v24": -9.912506794929504,
+        "v64": -9.897426497936248,
+        "v65": -9.958823442459106,
+        "v66": -9.781349956989288,
+        "v67": -9.817086672782898
+      },
+      "aggregate_focus_minus_reference_db": 0.11607654094695974,
+      "aggregate_min_constraint_gap_db": -0.09805833101272654
+    },
+    {
+      "candidate_sample_id": "train_001543",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "train_001543"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v64",
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v64": -0.008828163146972656,
+        "v66>v65": -0.1139841079711914,
+        "v66>v67": -0.1287708282470703,
+        "v64>v67": -0.11994266510009766,
+        "v20>v24": -0.06874561309814453
+      },
+      "candidate_joint_distance_z": 2.5019521443403856,
+      "candidate_metadata_distance_z": 2.454317128954895,
+      "candidate_constraint_distance_z": 0.48589295435111585,
+      "candidate_focus_minus_reference_db": -0.008828163146972656,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v64>v67": -0.08760815858840942,
+        "v20>v24": -0.09815503358840871
+      },
+      "aggregate_alias_scores": {
+        "v20": -9.520564019680023,
+        "v24": -9.422408986091614,
+        "v64": -9.421552169322968,
+        "v65": -9.437092638015747,
+        "v66": -9.319694340229034,
+        "v67": -9.333944010734559
+      },
+      "aggregate_focus_minus_reference_db": 0.10185782909393382,
+      "aggregate_min_constraint_gap_db": -0.09815503358840871
+    },
+    {
+      "candidate_sample_id": "train_000951",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "train_000951"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v67": -0.060573577880859375,
+        "v64>v67": -0.08787155151367188,
+        "v20>v24": -0.08232307434082031
+      },
+      "candidate_joint_distance_z": 3.3466913683272654,
+      "candidate_metadata_distance_z": 3.3399346209428886,
+      "candidate_constraint_distance_z": 0.21255550490003008,
+      "candidate_focus_minus_reference_db": 0.0272979736328125,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v64>v67": -0.08119393587112356,
+        "v20>v24": -0.100870525836946
+      },
+      "aggregate_alias_scores": {
+        "v20": -9.77263139486313,
+        "v24": -9.671760869026183,
+        "v64": -9.674856460094452,
+        "v65": -9.726208162307739,
+        "v66": -9.565773403644561,
+        "v67": -9.593662524223328
+      },
+      "aggregate_focus_minus_reference_db": 0.10908305644989014,
+      "aggregate_min_constraint_gap_db": -0.100870525836946
+    },
+    {
+      "candidate_sample_id": "train_000799",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "train_000799"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v67": -0.12285041809082031,
+        "v64>v67": -0.18846511840820312,
+        "v20>v24": -0.07155990600585938
+      },
+      "candidate_joint_distance_z": 2.3186147894361238,
+      "candidate_metadata_distance_z": 2.3074980709396273,
+      "candidate_constraint_distance_z": 0.226775647726601,
+      "candidate_focus_minus_reference_db": 0.06561470031738281,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v64>v67": -0.10131264925003158,
+        "v20>v24": -0.09871789216995275
+      },
+      "aggregate_alias_scores": {
+        "v20": -10.169802033901215,
+        "v24": -10.071084141731262,
+        "v64": -10.06915615797043,
+        "v65": -10.116055727005005,
+        "v66": -9.952409756183624,
+        "v67": -9.967843508720398
+      },
+      "aggregate_focus_minus_reference_db": 0.11674640178680562,
+      "aggregate_min_constraint_gap_db": -0.10131264925003158
+    },
+    {
+      "candidate_sample_id": "train_001675",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "train_001675"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v65": -0.030508041381835938,
+        "v66>v67": -0.07345104217529297,
+        "v64>v67": -0.09377264976501465,
+        "v20>v24": -0.09253668785095215
+      },
+      "candidate_joint_distance_z": 2.257250525159147,
+      "candidate_metadata_distance_z": 2.2299038122605244,
+      "candidate_constraint_distance_z": 0.3502983319932108,
+      "candidate_focus_minus_reference_db": 0.02032160758972168,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v64>v67": -0.08237415552139282,
+        "v20>v24": -0.10291324853897077
+      },
+      "aggregate_alias_scores": {
+        "v20": -7.261445796489715,
+        "v24": -7.1585325479507445,
+        "v64": -7.199247586727142,
+        "v65": -7.2256533145904545,
+        "v66": -7.09155980348587,
+        "v67": -7.116873431205749
+      },
+      "aggregate_focus_minus_reference_db": 0.10768778324127215,
+      "aggregate_min_constraint_gap_db": -0.10291324853897077
+    },
+    {
+      "candidate_sample_id": "train_000788",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "train_000788"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v67": -0.05220603942871094,
+        "v64>v67": -0.10162067413330078,
+        "v20>v24": -0.09419727325439453
+      },
+      "candidate_joint_distance_z": 3.0125711758270297,
+      "candidate_metadata_distance_z": 3.006312149239828,
+      "candidate_constraint_distance_z": 0.19409366490655558,
+      "candidate_focus_minus_reference_db": 0.049414634704589844,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v64>v67": -0.0839437603950497,
+        "v20>v24": -0.10324536561965836
+      },
+      "aggregate_alias_scores": {
+        "v20": -8.736644303798675,
+        "v24": -8.633398938179017,
+        "v64": -8.640698325634002,
+        "v65": -8.685935068130494,
+        "v66": -8.527191936969757,
+        "v67": -8.556754565238952
+      },
+      "aggregate_focus_minus_reference_db": 0.1135063886642449,
+      "aggregate_min_constraint_gap_db": -0.10324536561965836
+    },
+    {
+      "candidate_sample_id": "train_001589",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "train_001589"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v65": -0.05361175537109375,
+        "v66>v67": -0.1315765380859375,
+        "v64>v67": -0.1707744598388672,
+        "v20>v24": -0.09822654724121094
+      },
+      "candidate_joint_distance_z": 1.3112048584731582,
+      "candidate_metadata_distance_z": 1.2501461308898978,
+      "candidate_constraint_distance_z": 0.39546533641348836,
+      "candidate_focus_minus_reference_db": 0.03919792175292969,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v64>v67": -0.09777451753616262,
+        "v20>v24": -0.10405122041702164
+      },
+      "aggregate_alias_scores": {
+        "v20": -11.38942254781723,
+        "v24": -11.285371327400208,
+        "v64": -11.302935302257538,
+        "v65": -11.320945024490356,
+        "v66": -11.191472256183625,
+        "v67": -11.205160784721375
+      },
+      "aggregate_focus_minus_reference_db": 0.11146304607391322,
+      "aggregate_min_constraint_gap_db": -0.10405122041702164
+    },
+    {
+      "candidate_sample_id": "val_000478",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "val_000478"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v67": -0.028054237365722656,
+        "v64>v67": -0.03456687927246094,
+        "v20>v24": -0.09898662567138672
+      },
+      "candidate_joint_distance_z": 5.410635771738151,
+      "candidate_metadata_distance_z": 5.404431945855641,
+      "candidate_constraint_distance_z": 0.2590266338188078,
+      "candidate_focus_minus_reference_db": 0.006512641906738281,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v64>v67": -0.07053300142288066,
+        "v20>v24": -0.10420323610305715
+      },
+      "aggregate_alias_scores": {
+        "v20": -8.291766679286956,
+        "v24": -8.1875634431839,
+        "v64": -8.21414555311203,
+        "v65": -8.260000848770142,
+        "v66": -8.109219563007354,
+        "v67": -8.143612551689149
+      },
+      "aggregate_focus_minus_reference_db": 0.10492599010467529,
+      "aggregate_min_constraint_gap_db": -0.10420323610305715
+    },
+    {
+      "candidate_sample_id": "train_001610",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "train_001610"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v65": -0.051219940185546875,
+        "v66>v67": -0.07691574096679688,
+        "v64>v67": -0.07806968688964844,
+        "v20>v24": -0.112518310546875
+      },
+      "candidate_joint_distance_z": 2.004223716946401,
+      "candidate_metadata_distance_z": 1.9664074610497448,
+      "candidate_constraint_distance_z": 0.38749761895828927,
+      "candidate_focus_minus_reference_db": 0.0011539459228515625,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v64>v67": -0.07923356294631922,
+        "v20>v24": -0.10690957307815552
+      },
+      "aggregate_alias_scores": {
+        "v20": -8.77985566854477,
+        "v24": -8.672946095466614,
+        "v64": -8.687185943126678,
+        "v65": -8.713282823562622,
+        "v66": -8.583331692218781,
+        "v67": -8.60795238018036
+      },
+      "aggregate_focus_minus_reference_db": 0.10385425090789724,
+      "aggregate_min_constraint_gap_db": -0.10690957307815552
+    },
+    {
+      "candidate_sample_id": "train_000999",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "train_000999"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v67": -0.09378337860107422,
+        "v64>v67": -0.11579036712646484,
+        "v20>v24": -0.12224102020263672
+      },
+      "candidate_joint_distance_z": 2.6558476182255406,
+      "candidate_metadata_distance_z": 2.64207773746298,
+      "candidate_constraint_distance_z": 0.27009590970019676,
+      "candidate_focus_minus_reference_db": 0.022006988525390625,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v64>v67": -0.08677769899368215,
+        "v20>v24": -0.10885411500930786
+      },
+      "aggregate_alias_scores": {
+        "v20": -8.754414117336273,
+        "v24": -8.645560002326965,
+        "v64": -8.665133368968963,
+        "v65": -8.708877229690552,
+        "v66": -8.557108509540559,
+        "v67": -8.57835566997528
+      },
+      "aggregate_focus_minus_reference_db": 0.10802485942840434,
+      "aggregate_min_constraint_gap_db": -0.10885411500930786
+    },
+    {
+      "candidate_sample_id": "train_001079",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "train_001079"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v67": -0.08596420288085938,
+        "v64>v67": -0.15555763244628906,
+        "v20>v24": -0.1622467041015625
+      },
+      "candidate_joint_distance_z": 1.1716559923660461,
+      "candidate_metadata_distance_z": 1.1585609218877069,
+      "candidate_constraint_distance_z": 0.1746835845807245,
+      "candidate_focus_minus_reference_db": 0.06959342956542969,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v64>v67": -0.0947311520576477,
+        "v20>v24": -0.11685525178909195
+      },
+      "aggregate_alias_scores": {
+        "v20": -9.95667222738266,
+        "v24": -9.839816975593568,
+        "v64": -9.855795180797577,
+        "v65": -9.916974306106567,
+        "v66": -9.738253033161163,
+        "v67": -9.761064028739929
+      },
+      "aggregate_focus_minus_reference_db": 0.11754214763641357,
+      "aggregate_min_constraint_gap_db": -0.11685525178909195
+    },
+    {
+      "candidate_sample_id": "train_000216",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "train_000216"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v67": -0.1723642349243164,
+        "v64>v67": -0.2670106887817383,
+        "v20>v24": -0.08658790588378906
+      },
+      "candidate_joint_distance_z": 2.109004645987077,
+      "candidate_metadata_distance_z": 2.084309762049265,
+      "candidate_constraint_distance_z": 0.32179716067922454,
+      "candidate_focus_minus_reference_db": 0.09464645385742188,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v64>v67": -0.1170217633247379,
+        "v20>v24": -0.10172349214553833
+      },
+      "aggregate_alias_scores": {
+        "v20": -8.125929963588714,
+        "v24": -8.024206471443176,
+        "v64": -8.060769164562226,
+        "v65": -8.086475801467895,
+        "v66": -7.938216412067414,
+        "v67": -7.943747401237488
+      },
+      "aggregate_focus_minus_reference_db": 0.12255275249481201,
+      "aggregate_min_constraint_gap_db": -0.1170217633247379
+    },
+    {
+      "candidate_sample_id": "train_001745",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "train_001745"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v64",
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v64": -0.027469635009765625,
+        "v66>v65": -0.0019073486328125,
+        "v66>v67": -0.1739063262939453,
+        "v64>v67": -0.1464366912841797,
+        "v20>v24": -0.17357444763183594
+      },
+      "candidate_joint_distance_z": 2.6888319094297795,
+      "candidate_metadata_distance_z": 2.6575246968129127,
+      "candidate_constraint_distance_z": 0.40912042603276444,
+      "candidate_focus_minus_reference_db": -0.027469635009765625,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v64>v67": -0.09290696382522512,
+        "v20>v24": -0.11912080049514806
+      },
+      "aggregate_alias_scores": {
+        "v20": -10.66215089559555,
+        "v24": -10.543030095100402,
+        "v64": -10.524191176891327,
+        "v65": -10.56587529182434,
+        "v66": -10.426061642169952,
+        "v67": -10.431284213066101
+      },
+      "aggregate_focus_minus_reference_db": 0.09812953472137487,
+      "aggregate_min_constraint_gap_db": -0.11912080049514806
+    },
+    {
+      "candidate_sample_id": "train_001494",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "train_001494"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v67": -0.14603137969970703,
+        "v64>v67": -0.2922859191894531,
+        "v20>v24": -0.09604072570800781
+      },
+      "candidate_joint_distance_z": 1.121344081635252,
+      "candidate_metadata_distance_z": 1.0940466038826981,
+      "candidate_constraint_distance_z": 0.24591579443203926,
+      "candidate_focus_minus_reference_db": 0.1462545394897461,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v64>v67": -0.12207680940628052,
+        "v20>v24": -0.10361405611038244
+      },
+      "aggregate_alias_scores": {
+        "v20": -9.36546357870102,
+        "v24": -9.261849522590637,
+        "v64": -9.269442069530488,
+        "v65": -9.304960680007934,
+        "v66": -9.136567699909211,
+        "v67": -9.147365260124207
+      },
+      "aggregate_focus_minus_reference_db": 0.13287436962127686,
+      "aggregate_min_constraint_gap_db": -0.12207680940628052
+    },
+    {
+      "candidate_sample_id": "train_001006",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "train_001006"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v67": -0.251953125,
+        "v64>v67": -0.2967548370361328,
+        "v20>v24": -0.01251220703125
+      },
+      "candidate_joint_distance_z": 1.8698912285904399,
+      "candidate_metadata_distance_z": 1.8321262889946879,
+      "candidate_constraint_distance_z": 0.37390703113744483,
+      "candidate_focus_minus_reference_db": 0.04480171203613281,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v66>v67": -0.010386788845062611,
+        "v64>v67": -0.12297059297561752,
+        "v20>v24": -0.08690835237502981
+      },
+      "aggregate_alias_scores": {
+        "v20": -9.952498948574066,
+        "v24": -9.865590596199036,
+        "v64": -9.888040053844453,
+        "v65": -9.937480974197388,
+        "v66": -9.775456249713898,
+        "v67": -9.765069460868835
+      },
+      "aggregate_focus_minus_reference_db": 0.11258380413055491,
+      "aggregate_min_constraint_gap_db": -0.12297059297561752
+    },
+    {
+      "candidate_sample_id": "val_000153",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "val_000153"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v67": -0.15302085876464844,
+        "v64>v67": -0.3704967498779297,
+        "v20>v24": -0.16748619079589844
+      },
+      "candidate_joint_distance_z": 2.1059093814535292,
+      "candidate_metadata_distance_z": 2.0820435104726136,
+      "candidate_constraint_distance_z": 0.3161473444343021,
+      "candidate_focus_minus_reference_db": 0.21747589111328125,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v64>v67": -0.13771897554397583,
+        "v20>v24": -0.11790314912795985
+      },
+      "aggregate_alias_scores": {
+        "v20": -10.667508256435394,
+        "v24": -10.549605107307434,
+        "v64": -10.583949172496796,
+        "v65": -10.598833513259887,
+        "v66": -10.436830532550811,
+        "v67": -10.44623019695282
+      },
+      "aggregate_focus_minus_reference_db": 0.14711863994598495,
+      "aggregate_min_constraint_gap_db": -0.13771897554397583
+    },
+    {
+      "candidate_sample_id": "train_001639",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "train_001639"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v67": -0.2997102737426758,
+        "v64>v67": -0.36070919036865234,
+        "v20>v24": -0.2807340621948242
+      },
+      "candidate_joint_distance_z": 1.656309525034189,
+      "candidate_metadata_distance_z": 1.579097423528789,
+      "candidate_constraint_distance_z": 0.4998125345804378,
+      "candidate_focus_minus_reference_db": 0.06099891662597656,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v66>v67": -0.019938218593598123,
+        "v64>v67": -0.13576146364212072,
+        "v20>v24": -0.14055272340774572
+      },
+      "aggregate_alias_scores": {
+        "v20": -9.036192452907562,
+        "v24": -8.895639729499816,
+        "v64": -8.914351165294647,
+        "v65": -9.012862825393677,
+        "v66": -8.798527920246125,
+        "v67": -8.778589701652527
+      },
+      "aggregate_focus_minus_reference_db": 0.1158232450485226,
+      "aggregate_min_constraint_gap_db": -0.14055272340774572
+    },
+    {
+      "candidate_sample_id": "train_001495",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "train_001495"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v67": -0.22459030151367188,
+        "v64>v67": -0.29495906829833984,
+        "v20>v24": -0.3230857849121094
+      },
+      "candidate_joint_distance_z": 3.6939927921179567,
+      "candidate_metadata_distance_z": 3.672731188062708,
+      "candidate_constraint_distance_z": 0.3957630205702725,
+      "candidate_focus_minus_reference_db": 0.07036876678466797,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v66>v67": -0.004914224147796631,
+        "v64>v67": -0.1226114392280575,
+        "v20>v24": -0.14902306795120346
+      },
+      "aggregate_alias_scores": {
+        "v20": -9.390375459194184,
+        "v24": -9.24135239124298,
+        "v64": -9.265902411937713,
+        "v65": -9.35284104347229,
+        "v66": -9.148205196857452,
+        "v67": -9.143290972709655
+      },
+      "aggregate_focus_minus_reference_db": 0.11769721508026088,
+      "aggregate_min_constraint_gap_db": -0.14902306795120346
+    },
+    {
+      "candidate_sample_id": "train_000681",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "train_000681"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v67": -0.6555213928222656,
+        "v64>v67": -1.1937885284423828,
+        "v20>v24": -0.73516845703125
+      },
+      "candidate_joint_distance_z": 3.0356393339559227,
+      "candidate_metadata_distance_z": 2.76470954858416,
+      "candidate_constraint_distance_z": 1.2535897565902197,
+      "candidate_focus_minus_reference_db": 0.5382671356201172,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v66>v67": -0.09110044240951432,
+        "v64>v67": -0.3023773312568654,
+        "v20>v24": -0.23143960237503158
+      },
+      "aggregate_alias_scores": {
+        "v20": -11.797161424160004,
+        "v24": -11.565721821784972,
+        "v64": -11.703913009166717,
+        "v65": -11.725966310501098,
+        "v66": -11.492636120319366,
+        "v67": -11.401535677909852
+      },
+      "aggregate_focus_minus_reference_db": 0.21127688884735107,
+      "aggregate_min_constraint_gap_db": -0.3023773312568654
+    },
+    {
+      "candidate_sample_id": "val_000182",
+      "seed_plus_candidate_sample_ids": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599",
+        "val_000182"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v65": -4.6157989501953125,
+        "v66>v67": -6.442935943603516,
+        "v64>v67": -11.092414855957031,
+        "v20>v24": -14.495071411132812
+      },
+      "candidate_joint_distance_z": 15.029400455833011,
+      "candidate_metadata_distance_z": 2.6163200310797365,
+      "candidate_constraint_distance_z": 14.799923903749116,
+      "candidate_focus_minus_reference_db": 4.649478912353516,
+      "aggregate_all_constraints_pass": false,
+      "aggregate_failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "aggregate_failed_constraint_gaps_db": {
+        "v66>v65": -0.7829646706581137,
+        "v66>v67": -1.2485833525657668,
+        "v64>v67": -2.2821025967597954,
+        "v20>v24": -2.983420193195343
+      },
+      "aggregate_alias_scores": {
+        "v20": -20.58493150472641,
+        "v24": -17.601511311531066,
+        "v64": -18.73500927686691,
+        "v65": -16.91852536201477,
+        "v66": -17.701490032672883,
+        "v67": -16.452906680107116
+      },
+      "aggregate_focus_minus_reference_db": 1.0335192441940286,
+      "aggregate_min_constraint_gap_db": -2.983420193195343
+    }
+  ],
+  "aggregate_pass_signature_summaries": {}
+}
