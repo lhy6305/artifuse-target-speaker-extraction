@@ -1672,6 +1672,87 @@
       - remaining `v67-top`
         = 更外层 mixed frontier
     - 仍不启动新训练
+57. 已继续把 near-shell edge band `4` 深拆到 pure `v67` takeover 个例层；当前默认解释必须再收紧一层：真正代表第一层 `v67` 接管的只有 `3` 条 pure edge，而 `train_001589` 不能继续和它们并写：
+  - 入口：
+    - `reports/daily/2026-03-21_candidate_v7_failboth_nearshell_case_diagnosis.md`
+    - `reports/daily/2026-03-21_candidate_v7_failboth_pure_v67_takeover_case_diagnosis.md`
+    - `reports/eval/active_targetfull_clean_failboth_nearshell_case_diagnosis/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_pure_v67_takeover_case_diagnosis/summary.json`
+  - 当前 pure `v67` takeover edge `3`：
+    - `train_001079`
+    - `train_001494`
+    - `train_000697`
+  - 这 `3` 条当前共同签名已固定为：
+    - 保住：
+      - `v66 > v64`
+      - `v66 > v65`
+    - 失败：
+      - `v66 > v67`
+      - `v64 > v67`
+      - `v20 > v24`
+    - aggregate：
+      - `v67 > v66 > v64 > v24 > v65 > baseline > v20`
+  - 当前更关键的新事实是：
+    - pure `3`
+      相对 shell `4`
+      不是：
+      - 更高 interference transient
+        的 takeover
+    - 而更接近：
+      - 更长一点的 target
+      - 更弱的 interference gain
+      - 更早的 interference start
+      - 更低的 cosine
+      共同把 rows
+      推向：
+      - pure `v67` takeover
+    - `train_001589`
+      则必须单独降格为：
+      - `v67 + v65`
+        takeover singleton
+      因为它已经额外失败：
+      - `v66 > v65`
+  - 当前判断：
+    - shell 外第一层稳定接管
+      应固定写成：
+      - pure `v67` takeover edge `3`
+    - `train_001589`
+      不再算：
+      - pure edge 成员
+    - `edge 4`
+      的混合均值
+      不能再直接当成：
+      - pure takeover 机制
+      的解释
+  - 当前默认下一步
+    已再次收紧为：
+    - 若还继续推进，
+      默认只围绕：
+      - `train_001079`
+      - `train_001494`
+      - `train_000697`
+      做更细 case diagnosis
+    - `train_001589`
+      只保留为：
+      - edge-to-outer drift singleton
+    - `val_000182`
+      继续只保留为：
+      - metadata-only outlier
+    - active bridge
+      主体解释更新为：
+      - `core trio`
+        = 唯一可保留 active core
+      - dual-leak shell
+        = train-only inner core
+      - pure `v67` takeover edge `3`
+        = 第一层 `v67`
+          takeover 过渡带
+      - `train_001589`
+        = `v67 + v65`
+          drift singleton
+      - remaining `v67-top`
+        = 更外层 mixed frontier
+    - 仍不启动新训练
 
 ## 6. 忘线检查表
 
@@ -1683,6 +1764,8 @@
 4. 本文档 `docs/05_task_branch_map.md`
 5. 当前活跃分支日报：
    - 现在补到：
+     - `reports/daily/2026-03-21_candidate_v7_failboth_pure_v67_takeover_case_diagnosis.md`
+     - `reports/daily/2026-03-21_candidate_v7_failboth_nearshell_case_diagnosis.md`
      - `reports/daily/2026-03-21_candidate_v7_failboth_borderline_case_split.md`
      - `reports/daily/2026-03-21_candidate_v7_failboth_single_trigger_scan.md`
      - `reports/daily/2026-03-21_candidate_v7_failboth_v66_vs_v67_split.md`
@@ -1705,8 +1788,12 @@
      - `reports/daily/2026-03-21_candidate_v5_guardv67_negative_materialization.md`
      - `reports/daily/2026-03-21_candidate_v4_subgroup_diagnosis.md`
    - 当前主停点日报已更新为：
-     - `reports/daily/2026-03-21_candidate_v7_failboth_borderline_case_split.md`
+     - `reports/daily/2026-03-21_candidate_v7_failboth_pure_v67_takeover_case_diagnosis.md`
    - 上一条主停点日报：
+     - `reports/daily/2026-03-21_candidate_v7_failboth_nearshell_case_diagnosis.md`
+   - 再上一条主停点日报：
+     - `reports/daily/2026-03-21_candidate_v7_failboth_borderline_case_split.md`
+   - 再上一条主停点日报：
      - `reports/daily/2026-03-21_candidate_v7_failboth_single_trigger_scan.md`
    - 再上一条主停点日报：
      - `reports/daily/2026-03-21_candidate_v7_failboth_v66_vs_v67_split.md`

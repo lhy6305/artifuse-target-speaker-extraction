@@ -2648,3 +2648,92 @@
    - metadata-only borderline outlier
    不再和上面 `4` 条
    混写。
+
+### 155. 如果 near-shell edge band 里已经混入了额外失败签名的 singleton，直接看整包均值会把真正的首发 takeover 机制看反；先按 failed-constraint signature 拆开，再解释字段漂移
+
+现象：
+
+- 上一轮把：
+  - `train_001079`
+  - `train_001494`
+  - `train_000697`
+  - `train_001589`
+  合写成：
+  - near-shell edge band `4`
+- 用整包 `4`
+  去看均值时，
+  很容易得出：
+  - `interference_transient_presence_minus_mid_db_mean`
+    相对 shell 变高
+  - 因而像是
+    “更高 interference transient
+       把 row 推到
+       `v67-top`”
+- 但本轮把其中
+  `train_001589`
+  单独拆出去后发现：
+  - 真正的 pure `v67` takeover edge `3`
+    相对 shell
+    其实是：
+    - 更弱 gain
+    - 更早 overlap
+    - 更低 cosine
+    - 更低的
+      `interference_transient_presence_minus_mid_db_mean`
+  - 整包 `4`
+    均值里那条
+    “interference transient 变高”
+    主要就是被
+    `train_001589`
+    这条
+    `v67 + v65`
+    singleton
+    拖上去的
+
+影响：
+
+- 如果不先拆签名，
+  会把：
+  - pure `v67` takeover
+    的首发机制
+  误写成：
+  - 更高 interference transient
+    takeover
+- 这样会把：
+  - `v67`
+    第一步先接管什么样的 row
+  和：
+  - `v65`
+    什么时候也一起进场
+  两个阶段重新混成一句话
+
+处理：
+
+- 已把：
+  - `train_001079`
+  - `train_001494`
+  - `train_000697`
+  单列成：
+  - pure `v67` takeover edge `3`
+- 并把：
+  - `train_001589`
+  单列成：
+  - `v67 + v65`
+    takeover singleton
+- 对应落盘到：
+  - `reports/daily/2026-03-21_candidate_v7_failboth_nearshell_case_diagnosis.md`
+  - `reports/daily/2026-03-21_candidate_v7_failboth_pure_v67_takeover_case_diagnosis.md`
+
+后续要求：
+
+1. 以后只要某个 small edge band 内部已经出现额外 failed constraint，就不要直接用整包均值解释“首发漂移机制”。
+2. 默认先按 failed-constraint signature 拆成：
+   - pure takeover 主型
+   - 额外 frontier 进入的 singleton / tail
+   再看字段漂移。
+3. 尤其当某条 singleton 会额外翻掉：
+   - `v66 > v65`
+   这类关键 guard 时，
+   它必须单独写，
+   不能再和 pure `v67` takeover
+   并写成同一个边界带。

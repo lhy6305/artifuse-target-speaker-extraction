@@ -1,0 +1,176 @@
+{
+  "source_summary": "reports/eval/active_targetfull_clean_failboth_nearshell_case_diagnosis/summary.json",
+  "pure_v67_takeover_edge_ids": [
+    "train_001079",
+    "train_001494",
+    "train_000697"
+  ],
+  "comparison_group_ids": {
+    "dualleak_shell": [
+      "train_000597",
+      "train_000865",
+      "train_001477",
+      "train_001599"
+    ],
+    "pure_v67_takeover_edge": [
+      "train_001079",
+      "train_001494",
+      "train_000697"
+    ],
+    "v67_plus_v65_takeover_singleton": [
+      "train_001589"
+    ],
+    "outer_compare_band": [
+      "train_001639",
+      "train_000219",
+      "train_000664",
+      "train_001006"
+    ]
+  },
+  "pure_v67_takeover_signature": {
+    "shared_kept_constraints": [
+      "v66>v64",
+      "v66>v65"
+    ],
+    "shared_failed_constraints": [
+      "v66>v67",
+      "v64>v67",
+      "v20>v24"
+    ],
+    "candidate_rank_histogram": {
+      "2": 3
+    },
+    "aggregate_ranking": [
+      "v67",
+      "v66",
+      "v64",
+      "v24",
+      "v65",
+      "baseline",
+      "v20"
+    ],
+    "aggregate_candidate_gap_vs_aliases_db": {
+      "baseline": 0.19869136810302734,
+      "v20": 0.21775436401367188,
+      "v24": 0.12780920664469342,
+      "v64": 0.08111731211344342,
+      "v65": 0.14209874471028527,
+      "v67": -0.08321221669515033
+    }
+  },
+  "pure_minus_shell": {
+    "case_composition_deltas": {
+      "mean_target_duration_sec": 0.24250000000000016,
+      "mean_reference_duration_sec": -0.13250000000000028,
+      "mean_interference_gain_db": -3.5023333333333335,
+      "mean_interference_start_offset_sec": -0.04325000000000001
+    },
+    "metadata_deltas": {
+      "target_transient_presence_minus_mid_db_mean": -0.5736346244812012,
+      "target_transient_presence_share_mean": 0.008188014913078707,
+      "interference_transient_presence_minus_mid_db_mean": -0.5594765990972519,
+      "interference_transient_presence_share_mean": -0.026556819677352905,
+      "target_interference_logspec_cosine": -0.10102073058847949
+    },
+    "direction_gap_deltas_db": {
+      "baseline": 0.04908116161823273,
+      "v20": 0.007820695638656616,
+      "v24": 0.02338292698065439,
+      "v64": -0.04841201504071553,
+      "v65": -0.03314515451590219,
+      "v67": -0.1332170118888219
+    }
+  },
+  "pure_minus_outer": {
+    "case_composition_deltas": {
+      "mean_target_duration_sec": -0.34999999999999987,
+      "mean_reference_duration_sec": 0.28749999999999964,
+      "mean_interference_gain_db": -2.7298333333333336,
+      "mean_interference_start_offset_sec": -0.1285
+    },
+    "metadata_deltas": {
+      "target_transient_presence_minus_mid_db_mean": -1.3199739456176758,
+      "target_transient_presence_share_mean": -0.00746630290329146,
+      "interference_transient_presence_minus_mid_db_mean": -6.1971384435892105,
+      "interference_transient_presence_share_mean": -0.10281030088663101,
+      "target_interference_logspec_cosine": -0.047033616550937296
+    },
+    "direction_gap_deltas_db": {
+      "baseline": 0.14232099056243896,
+      "v20": 0.08913612365722656,
+      "v24": 0.08173982302347818,
+      "v64": 0.05426208178202312,
+      "v65": 0.016048987706502288,
+      "v67": 0.06616167227427165
+    }
+  },
+  "singleton_minus_pure": {
+    "case_composition_deltas": {
+      "mean_target_duration_sec": 0.8599999999999997,
+      "mean_reference_duration_sec": 0.8300000000000001,
+      "mean_interference_gain_db": -1.3826666666666663,
+      "mean_interference_start_offset_sec": -0.023999999999999994
+    },
+    "metadata_deltas": {
+      "target_transient_presence_minus_mid_db_mean": -0.7605867385864258,
+      "target_transient_presence_share_mean": -0.02064011626256009,
+      "interference_transient_presence_minus_mid_db_mean": 6.070098653435707,
+      "interference_transient_presence_share_mean": 0.08835656940937042,
+      "target_interference_logspec_cosine": 0.0774635316147868
+    },
+    "direction_gap_deltas_db": {
+      "baseline": -0.08150005340576172,
+      "v20": -0.06773757934570312,
+      "v24": -0.07601896921793619,
+      "v64": -0.04191939036051433,
+      "v65": -0.19571050008138022,
+      "v67": -0.048364321390787765
+    }
+  },
+  "per_case_notes": [
+    {
+      "sample_id": "train_001079",
+      "target_duration_sec": 1.02,
+      "interference_gain_db": -2.78,
+      "interference_start_offset_sec": 0.006,
+      "target_interference_logspec_cosine": 0.6773144362811483,
+      "candidate_gap_vs_aliases_db": {
+        "v64": 0.06959342956542969,
+        "v65": 0.19263076782226562,
+        "v67": -0.08596420288085938
+      },
+      "note": "最早混入的 low-gain short-target case；v67 先接管，但 v65 仍未进入。"
+    },
+    {
+      "sample_id": "train_001494",
+      "target_duration_sec": 1.02,
+      "interference_gain_db": -4.393,
+      "interference_start_offset_sec": 0.068,
+      "target_interference_logspec_cosine": 0.6736035112342141,
+      "candidate_gap_vs_aliases_db": {
+        "v64": 0.1462545394897461,
+        "v65": 0.1409893035888672,
+        "v67": -0.14603137969970703
+      },
+      "note": "对 v64 的保留最强，但 v67 超车也最明显，说明 takeover 已经稳定。"
+    },
+    {
+      "sample_id": "train_000697",
+      "target_duration_sec": 2.22,
+      "interference_gain_db": -4.993,
+      "interference_start_offset_sec": 0.205,
+      "target_interference_logspec_cosine": 0.5612513565695104,
+      "candidate_gap_vs_aliases_db": {
+        "v64": 0.02750396728515625,
+        "v65": 0.09267616271972656,
+        "v67": -0.017641067504882812
+      },
+      "note": "pure trio 里最长、cosine 最低、v67 超车幅度最窄的一条，最像 shell 向 outer 过渡的末端。"
+    }
+  ],
+  "conclusion": [
+    "pure v67 takeover edge 的第一阶段不是更强 interference 压制，而是更弱 gain、更早 overlap、同时 cosine 下滑后的 takeover。",
+    "这 3 条都还保住了 v66>v64 与 v66>v65，所以它们是 v67 首先接管的过渡带，不是 v65 已经进入的更外层。",
+    "train_001589 之所以要单独拆开，是因为它额外出现了高 interference transient 与 v66>v65 反转；这不是 pure v67 takeover 的主导形态。"
+  ]
+}

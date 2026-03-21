@@ -2447,6 +2447,76 @@
     - `val_000182`
       只保留为 metadata-only outlier
     - 仍不启动新训练
+245. 已继续把 near-shell edge band `4` 深拆到 pure `v67` takeover 个例层；当前应明确判成真正代表第一层 takeover 的其实只有 `3` 条 pure `v67` edge，而 `train_001589` 必须单独降格成 `v67 + v65` drift singleton：
+  - 新日报：
+    - `reports/daily/2026-03-21_candidate_v7_failboth_nearshell_case_diagnosis.md`
+    - `reports/daily/2026-03-21_candidate_v7_failboth_pure_v67_takeover_case_diagnosis.md`
+  - 新 summary：
+    - `reports/eval/active_targetfull_clean_failboth_nearshell_case_diagnosis/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_pure_v67_takeover_case_diagnosis/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_edgeband_pure_v67_takeover_direction_analysis/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_edgeband_v67_plus_v65_takeover_singleton_direction_analysis/summary.json`
+  - 当前更关键的新事实是：
+    - pure `v67` takeover edge `3`
+      为：
+      - `train_001079`
+      - `train_001494`
+      - `train_000697`
+    - 它们共同保住：
+      - `v66 > v64`
+      - `v66 > v65`
+    - 但共同失败：
+      - `v66 > v67`
+      - `v64 > v67`
+      - `v20 > v24`
+    - aggregate 已固定为：
+      - `v67 > v66 > v64 > v24 > v65 > baseline > v20`
+    - 相对 dual-leak shell `4`，
+      pure `3`
+      当前更偏：
+      - 更长一点的 target
+      - 更弱的 interference gain
+      - 更早的 interference start
+      - 更低的 `target_interference_logspec_cosine`
+    - 但并不是：
+      - 更高 interference transient
+      的 takeover
+    - `train_001589`
+      则必须单列：
+      - 它额外失败：
+        - `v66 > v65`
+      - 并且相对 pure `3`
+        出现明显更高的
+        `interference_transient_presence_minus_mid_db_mean`
+      - 当前更准确的身份应写成：
+        - `v67 + v65`
+          takeover singleton
+  - 当前解释应进一步更新为：
+    - shell 外第一层真正稳定发生的
+      是：
+      - pure `v67` takeover
+    - 不是：
+      - `v67 / v65`
+        同时进场
+    - 因而 `edge 4`
+      的混合均值
+      不能再直接拿来解释
+      pure takeover 的首发机制
+  - 当前默认下一步
+    已继续收紧为：
+    - 若还继续推进，
+      默认只围绕：
+      - `train_001079`
+      - `train_001494`
+      - `train_000697`
+      做更细 case diagnosis
+    - `train_001589`
+      只保留为：
+      - edge-to-outer drift singleton
+    - `val_000182`
+      继续只保留为：
+      - metadata-only outlier
+    - 仍不启动新训练
 
 ## 9. 文档入口
 
@@ -2550,5 +2620,7 @@
 - 本轮 `candidate_v7` fail-both `v66` vs `v67` split：`reports/daily/2026-03-21_candidate_v7_failboth_v66_vs_v67_split.md`
 - 本轮 `candidate_v7` fail-both borderline case split：`reports/daily/2026-03-21_candidate_v7_failboth_borderline_case_split.md`
 - 本轮 `candidate_v7` fail-both single-trigger scan：`reports/daily/2026-03-21_candidate_v7_failboth_single_trigger_scan.md`
+- 本轮 `candidate_v7` fail-both near-shell case diagnosis：`reports/daily/2026-03-21_candidate_v7_failboth_nearshell_case_diagnosis.md`
+- 本轮 `candidate_v7` fail-both pure `v67` takeover case diagnosis：`reports/daily/2026-03-21_candidate_v7_failboth_pure_v67_takeover_case_diagnosis.md`
 - 本轮仓库与 `.gitignore` 审计：`reports/daily/2026-03-18_repo_gitignore_audit.md`
 - 本轮全仓库评估总结：`reports/daily/2026-03-17_repo_evaluation_summary.md`
