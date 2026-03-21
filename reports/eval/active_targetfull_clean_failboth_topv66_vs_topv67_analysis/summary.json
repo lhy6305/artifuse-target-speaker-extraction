@@ -1,0 +1,84 @@
+{
+  "source_fail_both_top_alias_split": "reports/eval/active_targetfull_clean_guardpair_v64gtv67_v20gtv24_fail_both_top_alias_split/summary.json",
+  "groups": {
+    "v66_top": {
+      "count": 4,
+      "split_counts": {
+        "train": 4,
+        "val": 0
+      },
+      "numeric_field_means": {
+        "target_transient_presence_minus_mid_db_mean": -13.018489360809326,
+        "target_transient_presence_share_mean": 0.014221593053662218,
+        "interference_transient_presence_minus_mid_db_mean": 0.187193363904953,
+        "interference_transient_presence_share_mean": 0.31537972390651703,
+        "target_interference_logspec_cosine": 0.7384104986167704
+      },
+      "direction": {
+        "aggregate_ranking": [
+          "v66",
+          "v67",
+          "v24",
+          "v64",
+          "baseline",
+          "v65",
+          "v20"
+        ],
+        "candidate_vs_reference_avg_db": 0.12952932715415955,
+        "candidate_gap_vs_aliases_db": {
+          "baseline": 0.14961020648479462,
+          "v20": 0.20993366837501526,
+          "v24": 0.10442627966403961,
+          "v64": 0.12952932715415955,
+          "v65": 0.17524389922618866,
+          "v67": 0.05000479519367218
+        },
+        "samplewise_order_pass_count": 4,
+        "samplewise_extra_constraint_pass_count": 0
+      }
+    },
+    "v67_top": {
+      "count": 34,
+      "split_counts": {
+        "train": 28,
+        "val": 6
+      },
+      "numeric_field_means": {
+        "target_transient_presence_minus_mid_db_mean": -11.392186641693115,
+        "target_transient_presence_share_mean": 0.04767663726970033,
+        "interference_transient_presence_minus_mid_db_mean": 4.553606528131401,
+        "interference_transient_presence_share_mean": 0.4225094706258353,
+        "target_interference_logspec_cosine": 0.61859505409583
+      },
+      "direction": {
+        "aggregate_ranking": [
+          "v67",
+          "v65",
+          "v66",
+          "v24",
+          "baseline",
+          "v64",
+          "v20"
+        ],
+        "candidate_vs_reference_avg_db": 0.18791673463933556,
+        "candidate_gap_vs_aliases_db": {
+          "baseline": 0.09240754562265607,
+          "v20": 0.5620492801946746,
+          "v24": 0.03901300360174709,
+          "v64": 0.18791673463933556,
+          "v65": -0.06936619912876907,
+          "v67": -0.2967842957552751
+        },
+        "samplewise_order_pass_count": 29,
+        "samplewise_extra_constraint_pass_count": 0
+      }
+    }
+  },
+  "mean_deltas_v66_minus_v67": {
+    "target_transient_presence_minus_mid_db_mean": -1.626302719116211,
+    "target_transient_presence_share_mean": -0.033455044216038114,
+    "interference_transient_presence_minus_mid_db_mean": -4.366413164226448,
+    "interference_transient_presence_share_mean": -0.1071297467193183,
+    "target_interference_logspec_cosine": 0.1198154445209404
+  }
+}

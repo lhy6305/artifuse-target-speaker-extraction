@@ -1,0 +1,86 @@
+{
+  "source_fail_both_top_alias_split": "reports/eval/active_targetfull_clean_guardpair_v64gtv67_v20gtv24_fail_both_top_alias_split/summary.json",
+  "group_counts": {
+    "v66_top": 4,
+    "v67_top": 34
+  },
+  "field_threshold_scans": {
+    "target_transient_presence_minus_mid_db_mean": {
+      "threshold": -23.011409759521484,
+      "orientation": "le",
+      "accuracy": 0.868421052631579,
+      "correct_count": 33,
+      "total_count": 38,
+      "v66_missed": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599"
+      ],
+      "v67_false_positive": [
+        "val_000396"
+      ]
+    },
+    "target_transient_presence_share_mean": {
+      "threshold": 0.0001831499394029379,
+      "orientation": "le",
+      "accuracy": 0.868421052631579,
+      "correct_count": 33,
+      "total_count": 38,
+      "v66_missed": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599"
+      ],
+      "v67_false_positive": [
+        "train_000681"
+      ]
+    },
+    "interference_transient_presence_minus_mid_db_mean": {
+      "threshold": -1.420312523841858,
+      "orientation": "le",
+      "accuracy": 0.868421052631579,
+      "correct_count": 33,
+      "total_count": 38,
+      "v66_missed": [
+        "train_000865",
+        "train_001477"
+      ],
+      "v67_false_positive": [
+        "train_000210",
+        "train_000904",
+        "train_001079"
+      ]
+    },
+    "interference_transient_presence_share_mean": {
+      "threshold": 0.010711930692195892,
+      "orientation": "le",
+      "accuracy": 0.868421052631579,
+      "correct_count": 33,
+      "total_count": 38,
+      "v66_missed": [
+        "train_000597",
+        "train_000865",
+        "train_001477",
+        "train_001599"
+      ],
+      "v67_false_positive": [
+        "train_000904"
+      ]
+    },
+    "target_interference_logspec_cosine": {
+      "threshold": 0.8634568140535076,
+      "orientation": "ge",
+      "accuracy": 0.9210526315789473,
+      "correct_count": 35,
+      "total_count": 38,
+      "v66_missed": [
+        "train_000597",
+        "train_000865",
+        "train_001599"
+      ],
+      "v67_false_positive": []
+    }
+  }
+}

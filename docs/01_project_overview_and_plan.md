@@ -1589,6 +1589,689 @@
     - 默认不再从 trio soft-seed
       往外推第四条；
     - 仍不启动新训练
+236. 已把 `{val_000376, val_000430}` 的 metadata 邻域正式投影到当前 active split，并补出行为 compare；结果说明 active split 里不是没有 bridge coverage，而是这簇近邻会行为上裂成 `v66top / v67top_v66near / v65top_tail` 三层混合区，不能整包当 bridge family：
+  - 新日报：
+    - `reports/daily/2026-03-21_candidate_v7_bridgepair_active_neighbor_behavior_probe.md`
+  - 新脚本：
+    - `scripts/eval/analyze_manifest_seed_neighbors.py`
+  - 新输出：
+    - `reports/eval/active_split_bridgepair_neighbor_analysis/summary.json`
+    - `reports/eval/bridgepair_active_metadata_neighbor_top10_direction_analysis/summary.json`
+  - 本轮新物化资产：
+    - active-neighbor top10：
+      - `data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_bridgepair_active_metadata_neighbor_top10_{train,val,all}.txt`
+      - `data/synthetic/train_manifest_friend_speech_leak_proxy_search_candidate_v7_bridgepair_active_metadata_neighbor_top10.jsonl`
+      - `data/synthetic/val_manifest_friend_speech_leak_proxy_search_candidate_v7_bridgepair_active_metadata_neighbor_top10.jsonl`
+      - `data/synthetic/manifest_friend_speech_leak_proxy_search_candidate_v7_bridgepair_active_metadata_neighbor_top10_all.jsonl`
+    - 行为分层子集：
+      - `..._v66top_*`
+      - `..._v67top_v66near_*`
+      - `..._v65top_tail_*`
+  - 当前 active-neighbor top10
+    最近邻为：
+    - `train_000597`
+    - `train_001978`
+    - `train_001279`
+    - `train_001599`
+    - `train_001219`
+    - `train_001991`
+    - `train_000737`
+    - `train_000432`
+    - `train_001079`
+    - `val_000331`
+  - 当前更关键的新事实是：
+    - top10 里有：
+      - `9` 条 train
+      - `1` 条 val
+      - 全部是 `target_clean_speech`
+      - temporal pattern 为：
+        - `target_full = 6`
+        - `target_absent_head = 3`
+        - `target_absent_tail = 1`
+    - 其中：
+      - `train_001279`
+      命中此前已知的
+      `exact_nontargetfull`
+      absent-like 旧资产；
+      说明 metadata-near
+      不能直接当成语义对题
+    - 在 top10 上实际 compare 后，
+      aggregate 排序塌成：
+      - `v67 > v65 > v66 > v64 > v20 > v24`
+      - `v66 > v64 = +0.010333 dB`
+      - `v66 > v65 = -0.033064 dB`
+      - `samplewise_extra_constraint_pass = 0 / 10`
+    - 行为分层当前稳定拆成：
+      - `v66top`：
+        - `train_000597`
+        - `train_001599`
+      - `v67top_v66near`：
+        - `train_001978`
+        - `train_001991`
+        - `train_000737`
+        - `train_001079`
+      - `v65top_tail`：
+        - `train_001279`
+        - `train_001219`
+        - `train_000432`
+        - `val_000331`
+  - 当前解释应进一步更新为：
+    - active split 对 bridge pair
+      不是没有 coverage，
+      而是：
+      - 有 metadata coverage
+      - 但行为上是混合区
+    - `val_000331`
+      虽仍可保留为 shared-val 上的
+      aggregate-only 第三条，
+      但在 active split 投影里
+      已明确落到：
+      - `v65top_tail`
+      不再属于：
+      - `v66` 领先带
+  - 因而当前默认下一步应继续收紧为：
+    - 若继续做 bridge 方向扩张，
+      默认只保留：
+      - `{val_000376, val_000430}`
+      为 row-level bridge
+    - active-neighbor top10
+      默认改记为：
+      - behavior-mixed diagnostic buffer
+      不作为新 proxy / 新训练入口
+    - 若还要在 active split
+      继续追这条线，
+      默认优先看：
+      - `v66top`
+      这 `2` 条
+      是否能和 row-level bridge
+      建立更直接联系；
+      不继续沿：
+      - `val_000331`
+      或整包 top10
+      往外推
+    - 仍不启动新训练
+237. 已继续把 active split 里 `v66top` 两条向外拉成一个更宽的 active microbuffer，并确认这条线只有在先剥掉 nonfull / absent 污染后，才会恢复成 aggregate-pass 的 `v66` 小缓冲：
+  - 新日报：
+    - `reports/daily/2026-03-21_candidate_v7_bridgepair_active_microbuffer_targetfull_split.md`
+  - 本轮新增宽版资产：
+    - `data/synthetic/train_manifest_friend_speech_leak_proxy_search_candidate_v7_bridgepair_active_microbuffer_v66top_v1.jsonl = 7`
+    - `data/synthetic/val_manifest_friend_speech_leak_proxy_search_candidate_v7_bridgepair_active_microbuffer_v66top_v1.jsonl = 2`
+    - `data/synthetic/manifest_friend_speech_leak_proxy_search_candidate_v7_bridgepair_active_microbuffer_v66top_v1_all.jsonl = 9`
+  - 宽版过滤条件：
+    - `recipe = target_clean_speech`
+    - `target_transient_presence_share_mean <= 0.008`
+    - `interference_transient_presence_minus_mid_db_mean <= -1.0`
+  - 当前更关键的新事实是：
+    - 宽版 `v66top_v1`
+      一混入：
+      - `target_absent_head`
+      - `target_absent_tail`
+      - `target_intermittent`
+      就会整体塌成：
+      - `v65 > v64 > v66`
+      - `v66 > v64 = -0.049224 dB`
+      - `v66 > v65 = -0.055437 dB`
+    - 宽版里已直接混入：
+      - `train_000405`
+      - `train_001491`
+      这类 absent-like
+      `exact_nontargetfull`
+      旧资产
+  - 当前 target_full-only
+    收窄版资产为：
+    - `data/synthetic/train_manifest_friend_speech_leak_proxy_search_candidate_v7_bridgepair_active_microbuffer_v66top_v1_targetfull.jsonl = 3`
+    - `data/synthetic/val_manifest_friend_speech_leak_proxy_search_candidate_v7_bridgepair_active_microbuffer_v66top_v1_targetfull.jsonl = 1`
+    - `data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_bridgepair_active_microbuffer_v66top_v1_targetfull_{train,val,all}.txt`
+  - target_full-only
+    当前固定为：
+    - `train_000597`
+    - `train_001599`
+    - `train_001843`
+    - `val_000430`
+  - 当前 target_full-only
+    aggregate 排序恢复成：
+    - `v66 > v64 > v67 > v20 > v65`
+    - 并且 full extra constraints
+      全部 aggregate pass：
+      - `v66 > v65 = +0.114106 dB`
+      - `v66 > v67 = +0.062182 dB`
+      - `v64 > v67 = +0.047513 dB`
+      - `v20 > v24 = +0.036113 dB`
+  - 但当前仍不能把它误写成 row-level clean family，
+    因为：
+    - `samplewise extra pass = 1 / 4`
+    - `train_001843`
+      当前仍是 noisy carry-over
+  - 因而当前解释应继续收紧为：
+    - 宽版 `v66top_v1`
+      = contaminated active microbuffer
+    - `target_full` 版
+      = aggregate-pass `v66` microbuffer
+      with noisy carry-over
+  - 当前默认下一步应继续更新为：
+    - 若继续在 active split
+      追 bridge 方向，
+      默认只保留：
+      - `target_full` 版 `v66` microbuffer
+      作为可讨论的小缓冲；
+    - 宽版 `v66top_v1`
+      只保留为：
+      - nonfull / absent 污染会把 aggregate
+        拉回 `v65`
+        的反例资产；
+    - `train_001843`
+      继续保留为 noisy carry-over，
+      不和：
+      - `train_000597`
+      - `train_001599`
+      - `val_000430`
+      写成同纯度成员；
+    - 仍不启动新训练
+238. 已继续把 `target_full` 微缓冲里的 noisy carry-over 拆掉；当前 active split 上最小可保留的 bridge-like core 已进一步收窄为 `{train_000597, train_001599, val_000430}`：
+  - 新日报：
+    - `reports/daily/2026-03-21_candidate_v7_bridgepair_active_microbuffer_core_trio.md`
+  - 新 core 资产：
+    - `data/synthetic/train_manifest_friend_speech_leak_proxy_search_candidate_v7_bridgepair_active_microbuffer_v66top_v1_targetfull_core.jsonl = 2`
+    - `data/synthetic/val_manifest_friend_speech_leak_proxy_search_candidate_v7_bridgepair_active_microbuffer_v66top_v1_targetfull_core.jsonl = 1`
+    - `data/synthetic/manifest_friend_speech_leak_proxy_search_candidate_v7_bridgepair_active_microbuffer_v66top_v1_targetfull_core_all.jsonl = 3`
+    - `data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_bridgepair_active_microbuffer_v66top_v1_targetfull_core_{train,val,all}.txt`
+  - 新方向汇总：
+    - `reports/eval/bridgepair_active_microbuffer_v66top_v1_targetfull_core_direction_analysis/summary.json`
+  - 当前更关键的新事实是：
+    - 去掉 `train_001843`
+      之后，
+      core trio aggregate
+      继续保持：
+      - `v66 > v64 > v67 > v20 > v24 > baseline > v65`
+      且 full extra constraints
+      全部 aggregate pass：
+      - `v66 > v64 = +0.030334 dB`
+      - `v66 > v65 = +0.181224 dB`
+      - `v66 > v67 = +0.052351 dB`
+      - `v64 > v67 = +0.022017 dB`
+      - `v20 > v24 = +0.009617 dB`
+    - 相比上一轮 `4` 条 target_full 微缓冲，
+      当前：
+      - `v66 > v64`
+        从 `+0.014670`
+        抬到：
+        - `+0.030334 dB`
+      - `v66 > v65`
+        从 `+0.114106`
+        抬到：
+        - `+0.181224 dB`
+      说明：
+      - `train_001843`
+        的确就是主要 noisy carry-over
+  - 当前 samplewise 状态为：
+    - `ordered pass = 3 / 3`
+    - `extra pass = 1 / 3`
+    - train 侧两条：
+      - `train_000597`
+      - `train_001599`
+      当前都只差同一条：
+      - `v64 > v67`
+  - 当前解释应继续收紧为：
+    - core trio
+      = aggregate-pass active microbuffer core
+      with shared train-side
+      `v64 > v67` leak
+    - `train_001843`
+      = target_full 微缓冲里的
+      noisy carry-over
+  - 因而当前默认下一步应继续更新为：
+    - 若继续在 active split
+      保留 bridge 方向资产，
+      默认核心改成：
+      - `{train_000597, train_001599, val_000430}`
+    - `train_001843`
+      继续单独保留为 carry-over，
+      不再并入 core
+    - 后续若还要继续追 train-side 镜像，
+      默认优先围绕：
+      - 为什么两条 train row
+        都只差：
+        - `v64 > v67`
+      这一条 shared leak
+      去看；
+    - 仍不启动新训练
+239. 已在 `active_targetfull_clean` 这 `88` 条 `target_full clean` workspace 上把 `core trio` 的 shared leak 重新核对到全约束口径；当前必须把 train-side 外壳正式修正为更窄的 dual-leak shell，而不是继续写成单 `v64 > v67` 漏点：
+  - 新日报：
+    - `reports/daily/2026-03-21_candidate_v7_bridgepair_active_targetfull_clean_dualleak_shell.md`
+  - 本轮脚本修正：
+    - `scripts/eval/analyze_proxy_candidate_direction.py`
+    - 当前 `order_pass(...)`
+      与 `extra_constraints_pass(...)`
+      已改为：
+      - 先记录全部 constraint gaps
+      - 再统一返回 overall pass / fail
+    - 已重跑：
+      - `reports/eval/bridgepair_active_microbuffer_v66top_v1_targetfull_core_direction_analysis/summary.json`
+    - 当前两条 train rows
+      不再被 summary 误写成：
+      - 只差 `v64 > v67`
+      而是明确同时差：
+      - `v64 > v67`
+      - `v20 > v24`
+  - 当前 `active_targetfull_clean strict-near-miss`
+    更关键的新事实是：
+    - 当前单-fail rows
+      只有：
+      - `v66>v65`
+        - `3`
+      - `v20>v24`
+        - `1`
+      - `v66>v64`
+        - `1`
+    - 并不存在
+      - 纯 `v64>v67`
+        单漏 shell
+  - 当前真正包住：
+    - `train_000597`
+    - `train_001599`
+    的最小 train-side 壳层为：
+    - `train_000597`
+    - `train_001477`
+    - `train_001599`
+    - `train_000865`
+    - `data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_core_dualleak_shell_all.txt`
+  - focused direction：
+    - `reports/eval/bridgepair_active_targetfull_clean_core_dualleak_shell_direction_analysis/summary.json`
+    - aggregate 排序：
+      - `v66 > v67 > v24 > v64 > baseline > v65 > v20`
+    - 关键 gaps：
+      - `v66 > v64 = +0.129529 dB`
+      - `v66 > v65 = +0.175244 dB`
+      - `v66 > v67 = +0.050005 dB`
+      - `v64 > v67 = -0.079525 dB`
+      - `v20 > v24 = -0.105507 dB`
+    - samplewise：
+      - `candidate rank = 1`
+        在 `4 / 4`
+      - `extra pass = 0 / 4`
+  - metadata 邻域复盘：
+    - `reports/eval/active_targetfull_clean_core_trio_neighbor_analysis/summary.json`
+    - 在相对 `core trio`
+      的最近邻排序里：
+      - `train_000865`
+        rank `8`
+      - `train_001477`
+        rank `34`
+      - `train_001827`
+        rank `67`
+      - `val_000239`
+        rank `69`
+      - `train_000588`
+        rank `79`
+    - 当前解释应更新为：
+      - dual-leak shell
+        是 behavior 同签名 train shell，
+        不是 metadata 紧邻的 mirror 外环
+      - 其它 all-pass rows
+        属于别的 fully-pass frontier，
+        不是 bridge 扩张入口
+  - 因而当前默认下一步应继续收紧为：
+    - `core trio`
+      `{train_000597, train_001599, val_000430}`
+      仍是当前最小可保留的
+      bridge-like active core
+    - `{train_000597, train_001477, train_001599, train_000865}`
+      只保留为：
+      - train-only dual-leak shell
+      不升级成：
+      - 新的 active microbuffer
+      - 或 train-side mirror core
+    - 后续若还继续追 train-side 漏点，
+      默认优先围绕：
+      - 为什么
+        `v64 > v67`
+        与
+        `v20 > v24`
+        会一起漏
+      去看；
+      不再把问题缩写成：
+      - 单 `v64 > v67` leak
+    - 仍不启动新训练
+240. 已继续验证 dual-leak shell 能否作为新的 train-side seed 往外扩；结果当前应明确判成不能，它不是可扩张 family，而是 `core trio` 外侧一层 train-only diagnostic ring：
+  - 新日报：
+    - `reports/daily/2026-03-21_candidate_v7_bridgepair_active_dualleak_shell_neighbor_drift.md`
+  - 本轮新增物化资产：
+    - `data/synthetic/train_manifest_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_core_dualleak_shell.jsonl = 4`
+    - `data/synthetic/val_manifest_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_core_dualleak_shell.jsonl = 0`
+    - `data/synthetic/manifest_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_core_dualleak_shell_all.jsonl = 4`
+    - `data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_core_dualleak_shell_{train,val,all}.txt`
+  - dual-leak shell 当前固定为：
+    - `train_000597`
+    - `train_001477`
+    - `train_001599`
+    - `train_000865`
+  - 邻域分析输出：
+    - `reports/eval/active_targetfull_clean_dualleak_shell_neighbor_analysis/summary.json`
+  - 当前更关键的新事实是：
+    - 以 dual-leak shell 为 seed
+      重排 `active_targetfull_clean`
+      metadata 邻域后，
+      最近邻 top10 立刻变成：
+      - `val_000376`
+      - `val_000305`
+      - `train_001181`
+      - `val_000075`
+      - `train_001494`
+      - `train_001589`
+      - `train_001079`
+      - `train_000432`
+      - `train_001219`
+      - `train_001404`
+    - 也就是：
+      - 最近邻前 `4`
+        已有 `3` 条 val
+      - 但没有任何一条
+        继续停在：
+        - `v64>v67 | v20>v24`
+        这条同签名上
+  - 当前最近邻 failed-signature
+    已明确裂成三种更坏方向：
+    - bridge / guardv65：
+      - `val_000376`
+        只 fail：
+        - `v66 > v65`
+    - `v67` 插队：
+      - `train_001494`
+      - `train_001079`
+      - `train_001589`
+      都会额外 fail：
+      - `v66 > v67`
+    - `v64 / v65` 回顶：
+      - `train_001181`
+      - `val_000075`
+      - `train_000432`
+      会直接连：
+      - `v66 > v64`
+      或：
+      - `v66 > v65`
+      一起丢掉
+  - 当前 metadata / signature
+    的更准确解释是：
+    - `core trio`
+      是最干净的 active core
+    - dual-leak shell
+      是：
+      - `core trio`
+        外侧一层
+        train-only 中间带
+    - 再往外一层，
+      就会迅速滑成：
+      - bridge / guardv65
+      - `v67`
+      - `v64 / v65`
+      混合前沿
+  - 因而当前默认下一步应继续收紧为：
+    - `core trio`
+      `{train_000597, train_001599, val_000430}`
+      仍是唯一可保留的
+      bridge-like active core
+    - dual-leak shell
+      只保留为：
+      - train-only diagnostic ring
+      不再作为：
+      - 新 family seed
+      - 新 mirror core
+      - 新 active microbuffer
+    - 后续若还继续追 train-side 漏点，
+      默认只看：
+      - 为什么
+        `v64 > v67`
+        与
+        `v20 > v24`
+        会在这层 train rows
+        一起漏
+      不再继续找
+      shell 的外层扩张
+    - 仍不启动新训练
+241. 已把 `active_targetfull_clean` 上的 `v64>v67 / v20>v24` 组合正式切成四个标准桶并补齐 focused direction；结果当前应明确判成：guard-pair bucketization 只是在全量 workspace 上重现了 `core trio / dual-leak shell / mixed frontier` 三层结构，并没有长出新的 bridge family：
+  - 新日报：
+    - `reports/daily/2026-03-21_candidate_v7_active_guardpair_bucketization.md`
+  - 新增脚本：
+    - `scripts/eval/analyze_proxy_constraint_pair_buckets.py`
+  - 新 summary：
+    - `reports/eval/active_targetfull_clean_guardpair_v64gtv67_v20gtv24_bucket_analysis/summary.json`
+  - 当前两条 guard：
+    - A：
+      - `v64 > v67`
+    - B：
+      - `v20 > v24`
+  - 当前四桶数量为：
+    - `pass_both = 18`
+    - `fail_a_only = 20`
+    - `fail_b_only = 7`
+    - `fail_both = 43`
+  - 当前 focused direction：
+    - `pass_both`：
+      - `reports/eval/active_targetfull_clean_guardpair_v64gtv67_v20gtv24_pass_both_direction_analysis/summary.json`
+      - aggregate：
+        - `v65 > v64 > v20 > v66`
+      - `v66 > v64 = -0.037591 dB`
+      - `v66 > v65 = -0.059018 dB`
+    - `fail_a_only`：
+      - `reports/eval/active_targetfull_clean_guardpair_v64gtv67_v20gtv24_fail_a_only_direction_analysis/summary.json`
+      - aggregate：
+        - `v67 > v65 > v66 > v64`
+      - `v66 > v67 = -0.169243 dB`
+    - `fail_b_only`：
+      - `reports/eval/active_targetfull_clean_guardpair_v64gtv67_v20gtv24_fail_b_only_direction_analysis/summary.json`
+      - aggregate：
+        - `v64 > v66 > v67`
+      - `v66 > v64 = -0.066802 dB`
+    - `fail_both`：
+      - `reports/eval/active_targetfull_clean_guardpair_v64gtv67_v20gtv24_fail_both_direction_analysis/summary.json`
+      - aggregate：
+        - `v67 > v65 > v66 > v24 > baseline > v64 > v20`
+      - `v66 > v64 = +0.162575 dB`
+      - `v66 > v67 = -0.233290 dB`
+      - `v64 > v67 = -0.395865 dB`
+      - `v20 > v24 = -0.426840 dB`
+  - 当前 overlap 事实：
+    - `core trio`
+      只有：
+      - `val_000430`
+      落在：
+      - `pass_both`
+    - `train_000597`
+      与
+      `train_001599`
+      落在：
+      - `fail_both`
+    - dual-leak shell
+      `4` 条
+      也全部落在：
+      - `fail_both`
+  - 更关键的新事实是：
+    - `fail_both`
+      这 `43` 条
+      再按 top alias
+      拆开后：
+      - `v67` top：
+        - `34`
+      - `v65` top：
+        - `4`
+      - `v66` top：
+        - `4`
+      - `v24` top：
+        - `1`
+    - 而唯一这 `4` 条
+      `v66-top`
+      rows，
+      恰好就是：
+      - `train_000597`
+      - `train_001477`
+      - `train_001599`
+      - `train_000865`
+      即当前 dual-leak shell 本身
+    - 对应 summary：
+      - `reports/eval/active_targetfull_clean_guardpair_v64gtv67_v20gtv24_fail_both_top_alias_split/summary.json`
+  - 当前解释应更新为：
+    - `pass_both`
+      不能再被误写成
+      更干净的 bridge 候选；
+      它整体更像：
+      - `v65 / v64`
+        一侧的别的 fully-pass frontier
+    - `fail_a_only`
+      更像：
+      - `v67` 插队层
+    - `fail_b_only`
+      更像：
+      - legacy `guardv20`
+        分支
+    - 真正包住 train-side bridge
+      诊断层的，
+      只有：
+      - `fail_both`
+      这一大桶；
+      但它内部唯一仍然
+      `v66-top`
+      的，
+      还是当前
+      dual-leak shell
+  - 因而当前默认下一步应继续收紧为：
+    - active bridge
+      仍只保留：
+      - `core trio`
+      - dual-leak shell
+    - 不再继续从四个 guard-pair buckets
+      直接找新 family
+    - 若还继续推进，
+      默认优先看：
+      - 为什么
+        `fail_both`
+        里只有这 `4` 条
+        还能保持 `v66-top`
+      - 以及它们和
+        那 `34` 条
+        `v67-top`
+        rows
+        的差异
+    - 仍不启动新训练
+242. 已继续把 `fail_both` 大桶内部真正的 `v66-top` 小核和外层 `v67-top` 大层正式拆开；当前 bridge active 这条线的内外边界已经基本钉死：
+  - 新日报：
+    - `reports/daily/2026-03-21_candidate_v7_failboth_v66_vs_v67_split.md`
+  - 本轮新增资产：
+    - `data/synthetic/train_manifest_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_failboth_topv66.jsonl = 4`
+    - `data/synthetic/val_manifest_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_failboth_topv66.jsonl = 0`
+    - `data/synthetic/manifest_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_failboth_topv66_all.jsonl = 4`
+    - `data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_failboth_topv66_{train,val,all}.txt`
+    - `data/synthetic/train_manifest_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_failboth_topv67.jsonl = 28`
+    - `data/synthetic/val_manifest_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_failboth_topv67.jsonl = 6`
+    - `data/synthetic/manifest_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_failboth_topv67_all.jsonl = 34`
+    - `data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_failboth_topv67_{train,val,all}.txt`
+  - 当前 `v66-top 4`：
+    - `train_000597`
+    - `train_000865`
+    - `train_001477`
+    - `train_001599`
+  - focused direction：
+    - `reports/eval/active_targetfull_clean_failboth_topv66_direction_analysis/summary.json`
+    - aggregate：
+      - `v66 > v67 > v24 > v64 > baseline > v65 > v20`
+    - `v66 > v64 = +0.129529 dB`
+    - `v66 > v67 = +0.050005 dB`
+  - 当前 `v67-top 34`
+    focused direction：
+    - `reports/eval/active_targetfull_clean_failboth_topv67_direction_analysis/summary.json`
+    - aggregate：
+      - `v67 > v65 > v66 > v24 > baseline > v64 > v20`
+    - `v66 > v64 = +0.187917 dB`
+    - `v66 > v67 = -0.296784 dB`
+  - 当前更关键的新事实是：
+    - 两边真正的分界
+      不是：
+      - `v66` 能不能压住
+        `v64`
+    - 而是：
+      - `v67`
+        有没有把
+        `v66`
+        彻底反超
+    - `v67-top 34`
+      的
+      `v66 > v64`
+      反而更强正，
+      但排序已经整体切换成：
+      - `v67`
+        主导
+  - 直接均值对照：
+    - `reports/eval/active_targetfull_clean_failboth_topv66_vs_topv67_analysis/summary.json`
+    - `v66-top 4`
+      相对 `v67-top 34`
+      当前固定更偏：
+      - 更低的
+        `target_transient_presence_minus_mid_db_mean`
+      - 更低的
+        `target_transient_presence_share_mean`
+      - 更低的
+        `interference_transient_presence_minus_mid_db_mean`
+      - 更低的
+        `interference_transient_presence_share_mean`
+      - 更高的
+        `target_interference_logspec_cosine`
+    - 当前均值差
+      `v66-top - v67-top`
+      为：
+      - `target_transient_presence_minus_mid_db_mean = -1.626303`
+      - `target_transient_presence_share_mean = -0.033455`
+      - `interference_transient_presence_minus_mid_db_mean = -4.366413`
+      - `interference_transient_presence_share_mean = -0.107130`
+      - `target_interference_logspec_cosine = +0.119815`
+  - subgroup split：
+    - `reports/eval/active_targetfull_clean_failboth_subgroup_analysis/summary.json`
+    - 当前进一步说明：
+      - 在 `fail_both`
+        大桶内部，
+        `v66-v67`
+        的崩塌不是由单一字段决定，
+        而是一组：
+        - target transient
+        - target share
+        - interference transient
+        - interference share
+        - cosine
+        共同把 rows
+        推向更外层
+        `v67-top`
+        frontier
+  - 当前解释应进一步更新为：
+    - dual-leak shell
+      不只是：
+      - `train-only diagnostic ring`
+    - 还应固定写成：
+      - `fail_both`
+        大桶里唯一仍是
+        `v66-top`
+        的 train-only inner core
+    - `v67-top 34`
+      不是它的外环 family，
+      而是：
+      - `v67`
+        主导的外层 mixed frontier
+  - 因而当前默认下一步应继续收紧为：
+    - active bridge
+      当前只保留：
+      - `core trio`
+      - dual-leak shell
+    - 不再把：
+      - `v67-top 34`
+      写成：
+      - bridge family 外环
+    - 若还继续推进，
+      默认优先看：
+      - dual-leak shell
+        和
+        `v67-top 34`
+        在更细 metadata /
+        音频案例上
+        是否存在可解释的
+        单一触发因子
+    - 仍不启动新训练
 
 ## 9. 文档入口
 
@@ -1683,5 +2366,12 @@
 - 本轮 `candidate_v7` bridgepair seed 扩张：`reports/daily/2026-03-21_candidate_v7_bridgepair_seed_expansion.md`
 - 本轮 `candidate_v7` bridgepair `seed+1` 签名拆分：`reports/daily/2026-03-21_candidate_v7_bridgepair_seedplusone_signature_split.md`
 - 本轮 `candidate_v7` bridgepair trio soft-seed probe：`reports/daily/2026-03-21_candidate_v7_bridgepair_trio_softseed_probe.md`
+- 本轮 `candidate_v7` bridgepair active-neighbor behavior probe：`reports/daily/2026-03-21_candidate_v7_bridgepair_active_neighbor_behavior_probe.md`
+- 本轮 `candidate_v7` bridgepair active microbuffer targetfull split：`reports/daily/2026-03-21_candidate_v7_bridgepair_active_microbuffer_targetfull_split.md`
+- 本轮 `candidate_v7` bridgepair active microbuffer core trio：`reports/daily/2026-03-21_candidate_v7_bridgepair_active_microbuffer_core_trio.md`
+- 本轮 `candidate_v7` bridgepair active targetfull clean dual-leak shell：`reports/daily/2026-03-21_candidate_v7_bridgepair_active_targetfull_clean_dualleak_shell.md`
+- 本轮 `candidate_v7` bridgepair active dual-leak shell neighbor drift：`reports/daily/2026-03-21_candidate_v7_bridgepair_active_dualleak_shell_neighbor_drift.md`
+- 本轮 `candidate_v7` active guard-pair bucketization：`reports/daily/2026-03-21_candidate_v7_active_guardpair_bucketization.md`
+- 本轮 `candidate_v7` fail-both `v66` vs `v67` split：`reports/daily/2026-03-21_candidate_v7_failboth_v66_vs_v67_split.md`
 - 本轮仓库与 `.gitignore` 审计：`reports/daily/2026-03-18_repo_gitignore_audit.md`
 - 本轮全仓库评估总结：`reports/daily/2026-03-17_repo_evaluation_summary.md`

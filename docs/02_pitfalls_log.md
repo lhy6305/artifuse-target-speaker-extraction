@@ -1873,3 +1873,618 @@
    应回到更干净的
    row-level pair
    继续看边界扩张。
+
+### 146. metadata-near bridge coverage 与 behavior-near bridge family 不是一回事；active split 里即使出现大量贴近 `{376,430}` 的 train rows，也可能整体塌成 `v67 / v65` 主导的混合区
+
+现象：
+
+- 用 `{val_000376, val_000430}`
+  做 seed，
+  投影到当前 active split 后，
+  最近的 top10 rows
+  并不是：
+  - `331`
+  加若干同签名 val row；
+  而是：
+  - `9` 条 train
+  - `1` 条 val
+    `val_000331`
+- 这批 top10
+  metadata 上很贴近 bridge pair，
+  但实际 compare 后，
+  aggregate 排序却是：
+  - `v67 > v65 > v66 > v64 > v20 > v24`
+- 关键失败点是：
+  - `v66 > v64 = +0.010333 dB`
+    只弱正；
+  - `v66 > v65 = -0.033064 dB`
+    直接失败；
+  - `samplewise_extra_constraint_pass = 0 / 10`
+
+更关键的新事实：
+
+- 这批 top10
+  会稳定裂成三组：
+  - `v66top`
+    - `train_000597`
+    - `train_001599`
+  - `v67top_v66near`
+    - `train_001978`
+    - `train_001991`
+    - `train_000737`
+    - `train_001079`
+  - `v65top_tail`
+    - `train_001279`
+    - `train_001219`
+    - `train_000432`
+    - `val_000331`
+
+影响：
+
+- 如果只因为：
+  - “active split 上有很多 metadata-near rows”
+  就把它整包当成
+  bridge family
+  或 bridge projection proxy，
+  会立刻把：
+  - `v67` 中间带
+  - `v65` 负向尾部
+  - 甚至已知 absent-like 旧资产
+  一起混进去；
+- 其中最危险的信号是：
+  - `train_001279`
+    这类已知 absent-like row
+    就在 top10 里；
+  - `val_000331`
+    也并没有落在
+    `v66` 领先带，
+    而是掉进：
+    - `v65top_tail`
+
+处理：
+
+- 已新增：
+  - `scripts/eval/analyze_manifest_seed_neighbors.py`
+- 已补输出：
+  - `reports/eval/active_split_bridgepair_neighbor_analysis/summary.json`
+  - `reports/eval/bridgepair_active_metadata_neighbor_top10_direction_analysis/summary.json`
+- 并把 top10 与三条行为分层资产
+  正式物化并记录到：
+  - `reports/daily/2026-03-21_candidate_v7_bridgepair_active_neighbor_behavior_probe.md`
+
+后续要求：
+
+1. 以后凡是把某条 seed family
+   从 shared val
+   投影到 active split / full train 时，
+   不能把：
+   - metadata-near coverage
+   自动解释成：
+   - behavior-near family
+2. 只要 active-neighbor
+   一做 compare
+   就裂成多组，
+   默认先把它记成：
+   - behavior-mixed diagnostic buffer
+   不记成：
+   - 新 proxy
+   或：
+   - 新训练入口
+3. 若某个 aggregate-only row
+   例如：
+   - `val_000331`
+   在 active-split 投影里
+   掉进：
+   - `v65top_tail`
+   这类负向尾部，
+   默认要下调其“可外推性”解释，
+   不能再把它沿 train 侧
+   继续当成第三条中心。
+
+### 147. 从少量正例 metadata 往 active split 拉宽缓冲时，如果不先显式拆掉 nonfull / absent pattern，宽版 carve 很容易立刻被 absent-like 资产劫持；同一条 carve 在 `target_full` 与 nonfull 混合口径下可能会给出相反 aggregate 结论
+
+现象：
+
+- 以 active-neighbor 里的
+  `v66top`
+  两条：
+  - `train_000597`
+  - `train_001599`
+  为起点，
+  用：
+  - `target_transient_presence_share_mean <= 0.008`
+  - `interference_transient_presence_minus_mid_db_mean <= -1.0`
+  拉出宽版 active microbuffer：
+  - train `7`
+  - val `2`
+- 但这条宽版 `v66top_v1`
+  一混入：
+  - `target_absent_head`
+  - `target_absent_tail`
+  - `target_intermittent`
+  aggregate 就立刻塌成：
+  - `v65 > v64 > v66`
+- 而同一条 carve
+  一旦先收窄到：
+  - `target_full`
+  aggregate 又会恢复成：
+  - `v66 > v64 > v67 > v20 > v65`
+  且 full extra constraints
+  全部 aggregate pass
+
+更关键的是：
+
+- 宽版里直接混入了：
+  - `train_000405`
+  - `train_001491`
+  这类已知 absent-like
+  `exact_nontargetfull`
+  旧资产；
+- 也就是：
+  - 宽版坏掉
+    不是因为正例本身没信号，
+  - 而是因为 nonfull / absent
+    污染直接把 aggregate
+    拖向了：
+    - `v65`
+      一侧
+
+影响：
+
+- 如果只看到宽版 carve
+  aggregate 失败，
+  很容易误判成：
+  - 这条 metadata carve
+    整体没信号；
+- 但当前更准确的解释是：
+  - carve 对于
+    `target_full`
+    仍有局部信号；
+  - 真正必须先显式拆掉的
+    是：
+    - nonfull / absent pattern
+    污染；
+- 这类情况如果不写清，
+  后面很容易把：
+  - “宽版失败”
+  与：
+  - “full-only 小缓冲成立”
+  写成互相矛盾的两句结论。
+
+处理：
+
+- 已补宽版与 `target_full` 版
+  两层资产、compare 与方向汇总到：
+  - `reports/daily/2026-03-21_candidate_v7_bridgepair_active_microbuffer_targetfull_split.md`
+
+后续要求：
+
+1. 以后凡是从少量正例 rows
+   反推 metadata carve
+   到 active split，
+   默认至少同时给出：
+   - 宽版
+   - `target_full` 版
+   两层诊断；
+   不要只看混合口径 aggregate。
+2. 若宽版里混入：
+   - absent-like 旧资产
+   或：
+   - nonfull pattern
+   后 aggregate 方向翻转，
+   默认先把问题归因到：
+   - pattern 污染
+   而不是：
+   - 正例 carve 本身完全无效。
+3. `target_full` 版即便 aggregate 全过，
+   若 samplewise 仍明显不足，
+   也只能写成：
+   - aggregate-pass microbuffer
+   with noisy carry-over
+   不写成：
+   - row-level clean family。
+
+### 148. `target_full` 微缓冲里若存在单条 carry-over，会显著稀释 aggregate gap；先剥掉 carry-over 再看 core，可能会直接把“勉强可保留的小缓冲”收紧成明确的 core trio
+
+现象：
+
+- 在上一轮
+  `target_full` 微缓冲里，
+  当前样本为：
+  - `train_000597`
+  - `train_001599`
+  - `train_001843`
+  - `val_000430`
+- aggregate 上虽然已经是：
+  - `v66 > v64 > v67 > v20 > v65`
+  且 full extra constraints
+  全过，
+  但：
+  - `samplewise extra pass = 1 / 4`
+- 逐条拆开后发现：
+  - `train_001843`
+    是唯一 rank 掉到：
+    - `4`
+    的 row；
+  - 去掉它后，
+    core trio
+    `{train_000597, train_001599, val_000430}`
+    aggregate 立即进一步变硬：
+    - `v66 > v64`
+      从：
+      - `+0.014670 dB`
+      提升到：
+      - `+0.030334 dB`
+    - `v66 > v65`
+      从：
+      - `+0.114106 dB`
+      提升到：
+      - `+0.181224 dB`
+
+影响：
+
+- 如果只停在
+  `4` 条 target_full 微缓冲
+  这一层，
+  很容易把：
+  - 真正 core 的三条
+  和：
+  - 单条 carry-over
+  混写成同纯度成员；
+- 这会让后续判断显得总像：
+  - 有点信号
+  但又不够硬；
+  实际上更准确的解释可能是：
+  - core 已经成形；
+  - 只是被一条 carry-over
+    在 aggregate 上稀释了 margin。
+
+处理：
+
+- 已把 core 进一步收窄并落盘到：
+  - `reports/daily/2026-03-21_candidate_v7_bridgepair_active_microbuffer_core_trio.md`
+
+后续要求：
+
+1. 以后只要出现：
+   - `target_full` 微缓冲
+     aggregate 成立，
+   但 samplewise 仍偏弱，
+   默认先查：
+   - 是否只有 `1` 条
+     明显掉队的 carry-over
+2. 若去掉该 carry-over 后，
+   aggregate gap
+   明显变硬，
+   默认把剩余集合升级成：
+   - core trio / core subset
+   单独管理；
+   而不是一直停在
+   “带 carry-over 的小缓冲”。
+3. 但即使 core trio
+   aggregate 全过，
+   只要 train 侧
+   还共享同一条 row-level 漏点，
+   当前仍只能写成：
+   - aggregate-pass core
+   不写成：
+   - row-level clean family。
+
+### 149. direction summary 如果在第一条 failed guard 就提前返回，会把同一 row 后面的 fail 静默吞掉；这会把 shared leak 误写得比真实更窄
+
+现象：
+
+- 本轮继续复盘
+  `core trio`
+  `{train_000597, train_001599, val_000430}`
+  时，
+  先前 summary 里
+  两条 train rows
+  都只显示：
+  - `v64 > v67`
+    fail
+- 但回到 raw compare
+  再核对后发现，
+  它们实际上还同时 fail：
+  - `v20 > v24`
+
+原因：
+
+- `scripts/eval/analyze_proxy_candidate_direction.py`
+  里的：
+  - `order_pass(...)`
+  - `extra_constraints_pass(...)`
+  原先都会在遇到第一条
+  `gap <= 0`
+  后立刻返回；
+- 结果就是：
+  - overall pass / fail
+    虽然没错；
+  - 但 summary 里
+    `extra_constraint_gaps_db`
+    只保留了
+    “失败前缀”，
+    后面的 failed guards
+    会被静默吞掉
+
+影响：
+
+- 如果直接用这种 summary
+  去判断
+  family / shell
+  的 shared leak，
+  很容易把：
+  - 多条旧 guard
+    共同失败
+  误写成：
+  - 只差最先出现的
+    那一条
+- 本轮就出现了这个问题：
+  - `core trio`
+    train 侧
+    原本被写成：
+    - shared `v64 > v67` leak
+  - 但更准确的真实口径应是：
+    - shared
+      `v64 > v67`
+      `+`
+      `v20 > v24`
+      dual leak
+
+处理：
+
+- 本轮已修正：
+  - `scripts/eval/analyze_proxy_candidate_direction.py`
+- 当前做法改成：
+  - 先把所有 constraint gaps
+    全部记录下来；
+  - 最后再统一返回：
+    - overall pass / fail
+- 并已重跑：
+  - `reports/eval/bridgepair_active_microbuffer_v66top_v1_targetfull_core_direction_analysis/summary.json`
+
+后续要求：
+
+1. 以后任何 direction / overlap / family summary，只要要给出 failed constraints 细节，就不能再用“首个 fail 即返回”的 helper。
+2. 若某条 row 的 per-sample fail 解释和 raw compare 直读不一致，默认优先检查 summary helper 是否把后续 guards 截断了。
+3. 只要涉及 shared leak 归因，默认至少核对一次：
+   - raw compare gap
+   - summary 里的 full constraint list
+   两边是否一致；
+   确认之后再下 family 级结论。
+
+### 150. 某条 train-side 壳层就算内部签名很整齐，也不能默认把它当成可扩张 family；如果一做邻域扩张就立刻漂进多种更坏签名，它更可能只是 train-only diagnostic ring
+
+现象：
+
+- 本轮把
+  dual-leak shell
+  `{train_000597, train_001477, train_001599, train_000865}`
+  单独物化后，
+  它内部确实很整齐：
+  - 全部共同 fail：
+    - `v64 > v67`
+    - `v20 > v24`
+- 但继续拿它做 seed
+  去排
+  `active_targetfull_clean`
+  邻域时，
+  最近邻并没有继续留在
+  同一条 dual-leak signature 上，
+  而是立刻裂成：
+  - `val_000376`
+    这种：
+    - `v66 > v65`
+      单漏
+  - `train_001494`
+    / `train_001079`
+    这种：
+    - `v66 > v67`
+      插队
+  - `train_001181`
+    / `val_000075`
+    这种：
+    - `v66 > v64`
+      或
+      `v66 > v65`
+      反向回顶
+
+影响：
+
+- 如果只因为：
+  - “shell 内部签名一致”
+  就继续把它当成
+  family seed，
+  很容易误以为：
+  - 再往外扩几条
+    也许就能长成新 family
+- 但当前更准确的现实是：
+  - 这类壳层
+    可能只是
+    `core`
+    与更外层 mixed frontier
+    之间的一层
+    局部诊断带；
+  - 它的意义在于说明：
+    - 哪几条旧 guard
+      会一起漏
+  - 而不是说明：
+    - 这里存在一个
+      可继续扩张的稳定家族
+
+处理：
+
+- 本轮已把这条结论落盘到：
+  - `reports/daily/2026-03-21_candidate_v7_bridgepair_active_dualleak_shell_neighbor_drift.md`
+- 并已明确把 dual-leak shell
+  从“可能的 mirror 外环”
+  下调成：
+  - train-only diagnostic ring
+
+后续要求：
+
+1. 以后凡是发现某条 train-only shell 时，默认还要再做一次 seed-neighbor 扩张，确认最近邻是否继续停在同签名上。
+2. 若最近邻立刻漂到：
+   - bridge / guardv65
+   - `v67`
+   - `v64 / v65`
+   等多种更坏前沿，
+   默认把该 shell 写成：
+   - diagnostic ring
+   不写成：
+   - expandable family
+3. 这种壳层的默认作用应是：
+   - 帮助解释旧 guard 为什么一起漏；
+   而不是：
+   - 继续向外找第 `5 / 6 / 7` 条成员。
+
+### 151. 对两条旧 guard 做 pair bucketization 时，`pass_both` 也不能默认解释成“更接近目标核心”；在本项目里它反而可能整体塌向别的 fully-pass frontier
+
+现象：
+
+- 本轮把
+  `active_targetfull_clean`
+  按：
+  - `v64 > v67`
+  - `v20 > v24`
+  切成四桶后，
+  直觉上很容易先盯：
+  - `pass_both`
+  这桶，
+  觉得：
+  - “两条旧 guard 都过了，
+     应该更接近 bridge active core”
+- 但实际 focused direction
+  完全相反：
+  - `pass_both`
+    aggregate 排序是：
+    - `v65 > v64 > v20 > v66`
+  - `v66 > v64 = -0.037591 dB`
+  - `v66 > v65 = -0.059018 dB`
+- 更关键的是：
+  - `core trio`
+    与这桶 overlap
+    只有：
+    - `val_000430`
+  - dual-leak shell
+    与这桶 overlap
+    为：
+    - `0`
+
+影响：
+
+- 如果只看到：
+  - “这两条 guard 都过”
+  就把该桶当成：
+  - 更干净的候选 family
+  或：
+  - 下一步训练入口
+  会把解释重新带偏；
+- 因为这类 pair bucket
+  表达的只是：
+  - 两条指定旧 guard
+    的 pass/fail 状态
+  不是：
+  - 完整行为排序
+  也不是：
+  - 相对当前核心的语义接近度
+
+处理：
+
+- 本轮已把这条反例正式落盘到：
+  - `reports/daily/2026-03-21_candidate_v7_active_guardpair_bucketization.md`
+- 并把四桶 focused direction
+  全部补齐，
+  作为以后复用的 stop-rule 证据
+
+后续要求：
+
+1. 以后做 guard-pair bucketization 时，不能把 `pass_both` 自动解释成“最好的一桶”。
+2. pair bucket 必须再配 focused direction，至少确认 aggregate top alias 是谁，再决定它到底属于哪条 frontier。
+3. 若 `pass_both` 整体已经塌向：
+   - `v65`
+   - `v64`
+   - 或别的 fully-pass frontier，
+   默认要把它从当前 family 扩张线里剥掉，
+   不再继续沿这桶往下找成员。
+
+### 152. 在同一条 `fail_both` 大桶里，`v66-top` 和 `v67-top` 的真正分界不一定是 `v66>v64`；更常见的是两边都能压住 `v64`，但只有一边还能挡住 `v67`
+
+现象：
+
+- 本轮把
+  `fail_both`
+  大桶
+  按 top alias
+  拆开后，
+  得到：
+  - `v66-top = 4`
+  - `v67-top = 34`
+- 直觉上很容易先把分界
+  解释成：
+  - `v66-top`
+    是因为
+    `v66 > v64`
+    更强
+- 但实际 focused direction
+  正好相反：
+  - `v66-top 4`
+    的
+    `v66 > v64 = +0.129529 dB`
+  - `v67-top 34`
+    的
+    `v66 > v64 = +0.187917 dB`
+- 真正拉开两边的是：
+  - `v66-top 4`
+    仍有：
+    - `v66 > v67 = +0.050005 dB`
+  - `v67-top 34`
+    已变成：
+    - `v66 > v67 = -0.296784 dB`
+
+影响：
+
+- 如果后续还把这类大桶
+  内部分界
+  简化写成：
+  - `v66` 有没有压住
+    `v64`
+  会错过真正关键的行为变化；
+- 因为这里更核心的问题是：
+  - 两边都还可能保留
+    `v66 > v64`
+  - 但只有内核那几条
+    还没有让
+    `v67`
+    接管排序
+
+处理：
+
+- 本轮已把这条结论落盘到：
+  - `reports/daily/2026-03-21_candidate_v7_failboth_v66_vs_v67_split.md`
+- 并补了：
+  - `reports/eval/active_targetfull_clean_failboth_topv66_direction_analysis/summary.json`
+  - `reports/eval/active_targetfull_clean_failboth_topv67_direction_analysis/summary.json`
+  - `reports/eval/active_targetfull_clean_failboth_topv66_vs_topv67_analysis/summary.json`
+
+后续要求：
+
+1. 以后凡是某条大桶内部还要继续拆内核 vs 外层，默认至少同时看：
+   - `focus vs reference`
+   - `focus vs strongest competitor`
+   不要只看前者。
+2. 如果外层 rows 仍然保有：
+   - `focus > reference`
+   但 top alias 已切到：
+   - competing alias
+   默认应把这层解释成：
+   - competitor takeover frontier
+   而不是：
+   - 参考轴回退。
+3. 对当前这条线，
+   默认把 dual-leak shell
+   的特殊性固定写成：
+   - still blocks `v67`
+   不写成：
+   - stronger `v66 > v64`
+   core。

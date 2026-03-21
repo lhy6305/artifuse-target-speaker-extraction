@@ -1,0 +1,1793 @@
+{
+  "manifest_jsonl": "data/synthetic/manifest_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_with_metrics_all.jsonl",
+  "anchor_sample_ids_file": "data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_bridgepair_active_microbuffer_v66top_v1_targetfull_core_all.txt",
+  "anchor_sample_ids": [
+    "train_000597",
+    "train_001599",
+    "val_000430"
+  ],
+  "focus_alias": "v66",
+  "reference_alias": "v64",
+  "compares": {
+    "v20": "reports/eval/compare_v19_vs_v20_on_active_targetfull_clean/per_sample_metrics.jsonl",
+    "v24": "reports/eval/compare_v19_vs_v24_on_active_targetfull_clean/per_sample_metrics.jsonl",
+    "v64": "reports/eval/compare_v19_vs_v64_on_active_targetfull_clean/per_sample_metrics.jsonl",
+    "v65": "reports/eval/compare_v19_vs_v65_on_active_targetfull_clean/per_sample_metrics.jsonl",
+    "v66": "reports/eval/compare_v19_vs_v66_on_active_targetfull_clean/per_sample_metrics.jsonl",
+    "v67": "reports/eval/compare_v19_vs_v67_on_active_targetfull_clean/per_sample_metrics.jsonl"
+  },
+  "ordered_aliases": [
+    "v66",
+    "v64"
+  ],
+  "extra_order_constraints": [
+    "v66>v65",
+    "v66>v67",
+    "v64>v67",
+    "v20>v24"
+  ],
+  "all_constraints": [
+    "v66>v64",
+    "v66>v65",
+    "v66>v67",
+    "v64>v67",
+    "v20>v24"
+  ],
+  "numeric_fields": [
+    "target_transient_presence_minus_mid_db_mean",
+    "target_transient_presence_share_mean",
+    "interference_transient_presence_minus_mid_db_mean",
+    "interference_transient_presence_share_mean",
+    "target_interference_logspec_cosine"
+  ],
+  "num_rows": 88,
+  "num_all_constraints_pass_rows": 4,
+  "num_near_miss_rows": 84,
+  "constraint_fail_counts": {
+    "v20>v24": 50,
+    "v64>v67": 63,
+    "v66>v64": 29,
+    "v66>v65": 46,
+    "v66>v67": 60
+  },
+  "anchor_summary": {
+    "count": 3,
+    "sample_ids": [
+      "val_000430",
+      "train_000597",
+      "train_001599"
+    ],
+    "focus_vs_reference_avg_db": 0.03033427397410075,
+    "min_constraint_gap_avg_db": -0.017852167288462322,
+    "pass_count_avg": 3.6666666666666665,
+    "numeric_field_stats": {
+      "target_transient_presence_minus_mid_db_mean": {
+        "count": 3,
+        "mean": -15.63755734761556,
+        "min": -17.00960922241211,
+        "max": -14.065902709960938
+      },
+      "target_transient_presence_share_mean": {
+        "count": 3,
+        "mean": 0.003705786405286441,
+        "min": 0.0008788435370661318,
+        "max": 0.007991856895387173
+      },
+      "interference_transient_presence_minus_mid_db_mean": {
+        "count": 3,
+        "mean": -2.1689324378967285,
+        "min": -3.319185495376587,
+        "max": -1.420312523841858
+      },
+      "interference_transient_presence_share_mean": {
+        "count": 3,
+        "mean": 0.21908666441837946,
+        "min": 0.09055881947278976,
+        "max": 0.3525564670562744
+      },
+      "target_interference_logspec_cosine": {
+        "count": 3,
+        "mean": 0.7137810063711687,
+        "min": 0.692904830824947,
+        "max": 0.725761706015778
+      }
+    }
+  },
+  "all_constraints_pass_summary": {
+    "count": 4,
+    "sample_ids": [
+      "val_000430",
+      "train_001827",
+      "val_000239",
+      "train_000588"
+    ],
+    "focus_vs_reference_avg_db": 0.014388561248779297,
+    "min_constraint_gap_avg_db": 0.00624394416809082,
+    "pass_count_avg": 5.0,
+    "numeric_field_stats": {
+      "target_transient_presence_minus_mid_db_mean": {
+        "count": 4,
+        "mean": -6.086020290851593,
+        "min": -17.00960922241211,
+        "max": 0.6315910816192627
+      },
+      "target_transient_presence_share_mean": {
+        "count": 4,
+        "mean": 0.10123293555807322,
+        "min": 0.002246658783406019,
+        "max": 0.19311948120594025
+      },
+      "interference_transient_presence_minus_mid_db_mean": {
+        "count": 4,
+        "mean": 3.847296804189682,
+        "min": -3.319185495376587,
+        "max": 10.705248832702637
+      },
+      "interference_transient_presence_share_mean": {
+        "count": 4,
+        "mean": 0.3728098850697279,
+        "min": 0.09055881947278976,
+        "max": 0.5873816013336182
+      },
+      "target_interference_logspec_cosine": {
+        "count": 4,
+        "mean": 0.6637805340706345,
+        "min": 0.5313386178996097,
+        "max": 0.722676482272781
+      }
+    }
+  },
+  "all_constraints_pass_rows": [
+    {
+      "sample_id": "val_000430",
+      "focus_minus_reference_db": 0.019306182861328125,
+      "pass_count": 5,
+      "fail_count": 0,
+      "min_constraint_gap_db": 0.019306182861328125,
+      "failed_constraints": [],
+      "failed_constraint_gaps_db": {},
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -17.00960922241211,
+        "target_transient_presence_share_mean": 0.002246658783406019,
+        "interference_transient_presence_minus_mid_db_mean": -3.319185495376587,
+        "interference_transient_presence_share_mean": 0.09055881947278976,
+        "target_interference_logspec_cosine": 0.722676482272781
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000430/metadata.json"
+    },
+    {
+      "sample_id": "train_001827",
+      "focus_minus_reference_db": 0.024074554443359375,
+      "pass_count": 5,
+      "fail_count": 0,
+      "min_constraint_gap_db": 0.003665924072265625,
+      "failed_constraints": [],
+      "failed_constraint_gaps_db": {},
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -4.244626522064209,
+        "target_transient_presence_share_mean": 0.19311948120594025,
+        "interference_transient_presence_minus_mid_db_mean": 6.606195449829102,
+        "interference_transient_presence_share_mean": 0.39640340209007263,
+        "target_interference_logspec_cosine": 0.6948971025284729
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_001827/metadata.json"
+    },
+    {
+      "sample_id": "val_000239",
+      "focus_minus_reference_db": 0.00174713134765625,
+      "pass_count": 5,
+      "fail_count": 0,
+      "min_constraint_gap_db": 0.00174713134765625,
+      "failed_constraints": [],
+      "failed_constraint_gaps_db": {},
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": 0.6315910816192627,
+        "target_transient_presence_share_mean": 0.1468493938446045,
+        "interference_transient_presence_minus_mid_db_mean": 1.3969284296035767,
+        "interference_transient_presence_share_mean": 0.41689571738243103,
+        "target_interference_logspec_cosine": 0.7062099335816746
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000239/metadata.json"
+    },
+    {
+      "sample_id": "train_000588",
+      "focus_minus_reference_db": 0.012426376342773438,
+      "pass_count": 5,
+      "fail_count": 0,
+      "min_constraint_gap_db": 0.00025653839111328125,
+      "failed_constraints": [],
+      "failed_constraint_gaps_db": {},
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -3.7214365005493164,
+        "target_transient_presence_share_mean": 0.06271620839834213,
+        "interference_transient_presence_minus_mid_db_mean": 10.705248832702637,
+        "interference_transient_presence_share_mean": 0.5873816013336182,
+        "target_interference_logspec_cosine": 0.5313386178996097
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000588/metadata.json"
+    }
+  ],
+  "top_near_miss_rows": [
+    {
+      "sample_id": "val_000376",
+      "focus_minus_reference_db": 0.00605010986328125,
+      "pass_count": 4,
+      "fail_count": 1,
+      "min_constraint_gap_db": -0.004291534423828125,
+      "failed_constraints": [
+        "v66>v65"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -0.004291534423828125
+      },
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -11.585165977478027,
+        "target_transient_presence_share_mean": 0.004952789284288883,
+        "interference_transient_presence_minus_mid_db_mean": 1.016707181930542,
+        "interference_transient_presence_share_mean": 0.43037715554237366,
+        "target_interference_logspec_cosine": 0.7042160277307205
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000376/metadata.json"
+    },
+    {
+      "sample_id": "train_000676",
+      "focus_minus_reference_db": -0.026250839233398438,
+      "pass_count": 4,
+      "fail_count": 1,
+      "min_constraint_gap_db": -0.026250839233398438,
+      "failed_constraints": [
+        "v66>v64"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.026250839233398438
+      },
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -14.225979804992676,
+        "target_transient_presence_share_mean": 0.04183926805853844,
+        "interference_transient_presence_minus_mid_db_mean": 6.925860404968262,
+        "interference_transient_presence_share_mean": 0.5087127089500427,
+        "target_interference_logspec_cosine": 0.6649254888852864
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000676/metadata.json"
+    },
+    {
+      "sample_id": "train_001225",
+      "focus_minus_reference_db": 0.05280637741088867,
+      "pass_count": 4,
+      "fail_count": 1,
+      "min_constraint_gap_db": -0.04639291763305664,
+      "failed_constraints": [
+        "v66>v65"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -0.04639291763305664
+      },
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -15.801290512084961,
+        "target_transient_presence_share_mean": 0.0011574620148167014,
+        "interference_transient_presence_minus_mid_db_mean": 2.4314239025115967,
+        "interference_transient_presence_share_mean": 0.39097097516059875,
+        "target_interference_logspec_cosine": 0.6591335662027615
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_001225/metadata.json"
+    },
+    {
+      "sample_id": "val_000223",
+      "focus_minus_reference_db": 0.03452348709106445,
+      "pass_count": 4,
+      "fail_count": 1,
+      "min_constraint_gap_db": -0.05127286911010742,
+      "failed_constraints": [
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v20>v24": -0.05127286911010742
+      },
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -12.489642143249512,
+        "target_transient_presence_share_mean": 0.029327886179089546,
+        "interference_transient_presence_minus_mid_db_mean": 7.55759859085083,
+        "interference_transient_presence_share_mean": 0.5591194033622742,
+        "target_interference_logspec_cosine": 0.5921095336506113
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000223/metadata.json"
+    },
+    {
+      "sample_id": "val_000202",
+      "focus_minus_reference_db": 0.017746925354003906,
+      "pass_count": 4,
+      "fail_count": 1,
+      "min_constraint_gap_db": -0.15528202056884766,
+      "failed_constraints": [
+        "v66>v65"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -0.15528202056884766
+      },
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -5.756160259246826,
+        "target_transient_presence_share_mean": 0.0019287283066660166,
+        "interference_transient_presence_minus_mid_db_mean": 8.708885192871094,
+        "interference_transient_presence_share_mean": 0.6244537234306335,
+        "target_interference_logspec_cosine": 0.6034222976181426
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000202/metadata.json"
+    },
+    {
+      "sample_id": "train_000032",
+      "focus_minus_reference_db": 0.0501708984375,
+      "pass_count": 3,
+      "fail_count": 2,
+      "min_constraint_gap_db": -0.011953353881835938,
+      "failed_constraints": [
+        "v66>v65",
+        "v64>v67"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -0.011953353881835938,
+        "v64>v67": -0.0096588134765625
+      },
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": 1.0115692615509033,
+        "target_transient_presence_share_mean": 0.415688157081604,
+        "interference_transient_presence_minus_mid_db_mean": 0.6776692271232605,
+        "interference_transient_presence_share_mean": 0.32382678985595703,
+        "target_interference_logspec_cosine": 0.6974120186328938
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000032/metadata.json"
+    },
+    {
+      "sample_id": "train_000597",
+      "focus_minus_reference_db": 0.02632272243499756,
+      "pass_count": 3,
+      "fail_count": 2,
+      "min_constraint_gap_db": -0.016609251499176025,
+      "failed_constraints": [
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v64>v67": -0.016609251499176025,
+        "v20>v24": -0.012058794498443604
+      },
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -15.837160110473633,
+        "target_transient_presence_share_mean": 0.0008788435370661318,
+        "interference_transient_presence_minus_mid_db_mean": -1.7672992944717407,
+        "interference_transient_presence_share_mean": 0.21414470672607422,
+        "target_interference_logspec_cosine": 0.725761706015778
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000597/metadata.json"
+    },
+    {
+      "sample_id": "train_000001",
+      "focus_minus_reference_db": 0.03582620620727539,
+      "pass_count": 3,
+      "fail_count": 2,
+      "min_constraint_gap_db": -0.023962020874023438,
+      "failed_constraints": [
+        "v66>v65",
+        "v64>v67"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -0.016747474670410156,
+        "v64>v67": -0.023962020874023438
+      },
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -15.801290512084961,
+        "target_transient_presence_share_mean": 0.0011574620148167014,
+        "interference_transient_presence_minus_mid_db_mean": 1.5745446681976318,
+        "interference_transient_presence_share_mean": 0.36649569869041443,
+        "target_interference_logspec_cosine": 0.6322248794808207
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000001/metadata.json"
+    },
+    {
+      "sample_id": "val_000469",
+      "focus_minus_reference_db": -0.025435447692871094,
+      "pass_count": 3,
+      "fail_count": 2,
+      "min_constraint_gap_db": -0.025435447692871094,
+      "failed_constraints": [
+        "v66>v64",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.025435447692871094,
+        "v20>v24": -0.0038700103759765625
+      },
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -13.607194900512695,
+        "target_transient_presence_share_mean": 0.056039851158857346,
+        "interference_transient_presence_minus_mid_db_mean": 7.182019233703613,
+        "interference_transient_presence_share_mean": 0.5731554627418518,
+        "target_interference_logspec_cosine": 0.6607356176524388
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000469/metadata.json"
+    },
+    {
+      "sample_id": "train_000407",
+      "focus_minus_reference_db": 0.024281978607177734,
+      "pass_count": 3,
+      "fail_count": 2,
+      "min_constraint_gap_db": -0.026943206787109375,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.0026612281799316406,
+        "v64>v67": -0.026943206787109375
+      },
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -1.2201260328292847,
+        "target_transient_presence_share_mean": 0.2930928170681,
+        "interference_transient_presence_minus_mid_db_mean": -2.3968517780303955,
+        "interference_transient_presence_share_mean": 0.2632676362991333,
+        "target_interference_logspec_cosine": 0.6143112941261434
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000407/metadata.json"
+    },
+    {
+      "sample_id": "train_001477",
+      "focus_minus_reference_db": 0.012958526611328125,
+      "pass_count": 3,
+      "fail_count": 2,
+      "min_constraint_gap_db": -0.036730289459228516,
+      "failed_constraints": [
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v64>v67": -0.0012607574462890625,
+        "v20>v24": -0.036730289459228516
+      },
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -7.944914817810059,
+        "target_transient_presence_share_mean": 0.006176403723657131,
+        "interference_transient_presence_minus_mid_db_mean": 2.4289700984954834,
+        "interference_transient_presence_share_mean": 0.2995392084121704,
+        "target_interference_logspec_cosine": 0.8634568140535076
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_001477/metadata.json"
+    },
+    {
+      "sample_id": "train_001360",
+      "focus_minus_reference_db": -0.021436691284179688,
+      "pass_count": 3,
+      "fail_count": 2,
+      "min_constraint_gap_db": -0.03807330131530762,
+      "failed_constraints": [
+        "v66>v64",
+        "v66>v65"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.021436691284179688,
+        "v66>v65": -0.03807330131530762
+      },
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -8.592035293579102,
+        "target_transient_presence_share_mean": 0.0133522879332304,
+        "interference_transient_presence_minus_mid_db_mean": 7.668686866760254,
+        "interference_transient_presence_share_mean": 0.6894361972808838,
+        "target_interference_logspec_cosine": 0.6040781617925355
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_001360/metadata.json"
+    },
+    {
+      "sample_id": "train_001657",
+      "focus_minus_reference_db": 0.016175270080566406,
+      "pass_count": 3,
+      "fail_count": 2,
+      "min_constraint_gap_db": -0.04670143127441406,
+      "failed_constraints": [
+        "v66>v65",
+        "v64>v67"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -0.04670143127441406,
+        "v64>v67": -0.0008211135864257812
+      },
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -6.05042839050293,
+        "target_transient_presence_share_mean": 0.21500328183174133,
+        "interference_transient_presence_minus_mid_db_mean": 8.085721969604492,
+        "interference_transient_presence_share_mean": 0.4449196755886078,
+        "target_interference_logspec_cosine": 0.6365979399757653
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_001657/metadata.json"
+    },
+    {
+      "sample_id": "train_001599",
+      "focus_minus_reference_db": 0.04537391662597656,
+      "pass_count": 3,
+      "fail_count": 2,
+      "min_constraint_gap_db": -0.05625343322753906,
+      "failed_constraints": [
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v64>v67": -0.03142356872558594,
+        "v20>v24": -0.05625343322753906
+      },
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -14.065902709960938,
+        "target_transient_presence_share_mean": 0.007991856895387173,
+        "interference_transient_presence_minus_mid_db_mean": -1.420312523841858,
+        "interference_transient_presence_share_mean": 0.3525564670562744,
+        "target_interference_logspec_cosine": 0.692904830824947
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_001599/metadata.json"
+    },
+    {
+      "sample_id": "val_000401",
+      "focus_minus_reference_db": -0.010829448699951172,
+      "pass_count": 3,
+      "fail_count": 2,
+      "min_constraint_gap_db": -0.06453704833984375,
+      "failed_constraints": [
+        "v66>v64",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.010829448699951172,
+        "v20>v24": -0.06453704833984375
+      },
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -13.607194900512695,
+        "target_transient_presence_share_mean": 0.056039851158857346,
+        "interference_transient_presence_minus_mid_db_mean": 7.038460731506348,
+        "interference_transient_presence_share_mean": 0.5167131423950195,
+        "target_interference_logspec_cosine": 0.6142369772240558
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000401/metadata.json"
+    },
+    {
+      "sample_id": "train_001843",
+      "focus_minus_reference_db": -0.03232383728027344,
+      "pass_count": 3,
+      "fail_count": 2,
+      "min_constraint_gap_db": -0.08724594116210938,
+      "failed_constraints": [
+        "v66>v64",
+        "v66>v65"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.03232383728027344,
+        "v66>v65": -0.08724594116210938
+      },
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -24.603052139282227,
+        "target_transient_presence_share_mean": 0.00012101364700356498,
+        "interference_transient_presence_minus_mid_db_mean": -7.063508987426758,
+        "interference_transient_presence_share_mean": 0.1587509661912918,
+        "target_interference_logspec_cosine": 0.5770877029475661
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_001843/metadata.json"
+    },
+    {
+      "sample_id": "train_001086",
+      "focus_minus_reference_db": 0.08399200439453125,
+      "pass_count": 3,
+      "fail_count": 2,
+      "min_constraint_gap_db": -0.09220123291015625,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.008209228515625,
+        "v64>v67": -0.09220123291015625
+      },
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -12.309966087341309,
+        "target_transient_presence_share_mean": 0.08671987056732178,
+        "interference_transient_presence_minus_mid_db_mean": -5.912603855133057,
+        "interference_transient_presence_share_mean": 0.16852182149887085,
+        "target_interference_logspec_cosine": 0.7760956402513901
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_001086/metadata.json"
+    },
+    {
+      "sample_id": "val_000165",
+      "focus_minus_reference_db": -0.0011494159698486328,
+      "pass_count": 3,
+      "fail_count": 2,
+      "min_constraint_gap_db": -0.11557984352111816,
+      "failed_constraints": [
+        "v66>v64",
+        "v66>v65"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.0011494159698486328,
+        "v66>v65": -0.11557984352111816
+      },
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -13.277629852294922,
+        "target_transient_presence_share_mean": 0.004780683200806379,
+        "interference_transient_presence_minus_mid_db_mean": 9.554654121398926,
+        "interference_transient_presence_share_mean": 0.6310726404190063,
+        "target_interference_logspec_cosine": 0.7267021180722237
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000165/metadata.json"
+    },
+    {
+      "sample_id": "train_000245",
+      "focus_minus_reference_db": -0.05421257019042969,
+      "pass_count": 3,
+      "fail_count": 2,
+      "min_constraint_gap_db": -0.11713600158691406,
+      "failed_constraints": [
+        "v66>v64",
+        "v66>v65"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.05421257019042969,
+        "v66>v65": -0.11713600158691406
+      },
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -6.375518798828125,
+        "target_transient_presence_share_mean": 0.1557837873697281,
+        "interference_transient_presence_minus_mid_db_mean": 11.075905799865723,
+        "interference_transient_presence_share_mean": 0.546990156173706,
+        "target_interference_logspec_cosine": 0.5483544519988433
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000245/metadata.json"
+    },
+    {
+      "sample_id": "train_000694",
+      "focus_minus_reference_db": -0.1463150978088379,
+      "pass_count": 3,
+      "fail_count": 2,
+      "min_constraint_gap_db": -0.1463150978088379,
+      "failed_constraints": [
+        "v66>v64",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.1463150978088379,
+        "v20>v24": -0.12880611419677734
+      },
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -7.944914817810059,
+        "target_transient_presence_share_mean": 0.006176403723657131,
+        "interference_transient_presence_minus_mid_db_mean": 10.021759033203125,
+        "interference_transient_presence_share_mean": 0.5717105865478516,
+        "target_interference_logspec_cosine": 0.6682581675187343
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/train/train_000694/metadata.json"
+    }
+  ],
+  "single_fail_constraint_summaries": {
+    "v66>v65": {
+      "count": 3,
+      "sample_ids": [
+        "val_000376",
+        "train_001225",
+        "val_000202"
+      ],
+      "focus_vs_reference_avg_db": 0.02553447087605794,
+      "min_constraint_gap_avg_db": -0.06865549087524414,
+      "pass_count_avg": 4.0,
+      "numeric_field_stats": {
+        "target_transient_presence_minus_mid_db_mean": {
+          "count": 3,
+          "mean": -11.047538916269938,
+          "min": -15.801290512084961,
+          "max": -5.756160259246826
+        },
+        "target_transient_presence_share_mean": {
+          "count": 3,
+          "mean": 0.0026796598685905337,
+          "min": 0.0011574620148167014,
+          "max": 0.004952789284288883
+        },
+        "interference_transient_presence_minus_mid_db_mean": {
+          "count": 3,
+          "mean": 4.052338759104411,
+          "min": 1.016707181930542,
+          "max": 8.708885192871094
+        },
+        "interference_transient_presence_share_mean": {
+          "count": 3,
+          "mean": 0.48193395137786865,
+          "min": 0.39097097516059875,
+          "max": 0.6244537234306335
+        },
+        "target_interference_logspec_cosine": {
+          "count": 3,
+          "mean": 0.6555906305172082,
+          "min": 0.6034222976181426,
+          "max": 0.7042160277307205
+        }
+      },
+      "top_rows": [
+        {
+          "sample_id": "val_000376",
+          "focus_minus_reference_db": 0.00605010986328125,
+          "pass_count": 4,
+          "fail_count": 1,
+          "min_constraint_gap_db": -0.004291534423828125,
+          "failed_constraints": [
+            "v66>v65"
+          ],
+          "failed_constraint_gaps_db": {
+            "v66>v65": -0.004291534423828125
+          },
+          "manifest_fields": {
+            "target_transient_presence_minus_mid_db_mean": -11.585165977478027,
+            "target_transient_presence_share_mean": 0.004952789284288883,
+            "interference_transient_presence_minus_mid_db_mean": 1.016707181930542,
+            "interference_transient_presence_share_mean": 0.43037715554237366,
+            "target_interference_logspec_cosine": 0.7042160277307205
+          },
+          "recipe": "target_clean_speech",
+          "temporal_pattern": "target_full",
+          "target_present_ratio": 1.0,
+          "metadata_path": "data/synthetic/val/val_000376/metadata.json"
+        },
+        {
+          "sample_id": "train_001225",
+          "focus_minus_reference_db": 0.05280637741088867,
+          "pass_count": 4,
+          "fail_count": 1,
+          "min_constraint_gap_db": -0.04639291763305664,
+          "failed_constraints": [
+            "v66>v65"
+          ],
+          "failed_constraint_gaps_db": {
+            "v66>v65": -0.04639291763305664
+          },
+          "manifest_fields": {
+            "target_transient_presence_minus_mid_db_mean": -15.801290512084961,
+            "target_transient_presence_share_mean": 0.0011574620148167014,
+            "interference_transient_presence_minus_mid_db_mean": 2.4314239025115967,
+            "interference_transient_presence_share_mean": 0.39097097516059875,
+            "target_interference_logspec_cosine": 0.6591335662027615
+          },
+          "recipe": "target_clean_speech",
+          "temporal_pattern": "target_full",
+          "target_present_ratio": 1.0,
+          "metadata_path": "data/synthetic/train/train_001225/metadata.json"
+        },
+        {
+          "sample_id": "val_000202",
+          "focus_minus_reference_db": 0.017746925354003906,
+          "pass_count": 4,
+          "fail_count": 1,
+          "min_constraint_gap_db": -0.15528202056884766,
+          "failed_constraints": [
+            "v66>v65"
+          ],
+          "failed_constraint_gaps_db": {
+            "v66>v65": -0.15528202056884766
+          },
+          "manifest_fields": {
+            "target_transient_presence_minus_mid_db_mean": -5.756160259246826,
+            "target_transient_presence_share_mean": 0.0019287283066660166,
+            "interference_transient_presence_minus_mid_db_mean": 8.708885192871094,
+            "interference_transient_presence_share_mean": 0.6244537234306335,
+            "target_interference_logspec_cosine": 0.6034222976181426
+          },
+          "recipe": "target_clean_speech",
+          "temporal_pattern": "target_full",
+          "target_present_ratio": 1.0,
+          "metadata_path": "data/synthetic/val/val_000202/metadata.json"
+        }
+      ]
+    },
+    "v20>v24": {
+      "count": 1,
+      "sample_ids": [
+        "val_000223"
+      ],
+      "focus_vs_reference_avg_db": 0.03452348709106445,
+      "min_constraint_gap_avg_db": -0.05127286911010742,
+      "pass_count_avg": 4.0,
+      "numeric_field_stats": {
+        "target_transient_presence_minus_mid_db_mean": {
+          "count": 1,
+          "mean": -12.489642143249512,
+          "min": -12.489642143249512,
+          "max": -12.489642143249512
+        },
+        "target_transient_presence_share_mean": {
+          "count": 1,
+          "mean": 0.029327886179089546,
+          "min": 0.029327886179089546,
+          "max": 0.029327886179089546
+        },
+        "interference_transient_presence_minus_mid_db_mean": {
+          "count": 1,
+          "mean": 7.55759859085083,
+          "min": 7.55759859085083,
+          "max": 7.55759859085083
+        },
+        "interference_transient_presence_share_mean": {
+          "count": 1,
+          "mean": 0.5591194033622742,
+          "min": 0.5591194033622742,
+          "max": 0.5591194033622742
+        },
+        "target_interference_logspec_cosine": {
+          "count": 1,
+          "mean": 0.5921095336506113,
+          "min": 0.5921095336506113,
+          "max": 0.5921095336506113
+        }
+      },
+      "top_rows": [
+        {
+          "sample_id": "val_000223",
+          "focus_minus_reference_db": 0.03452348709106445,
+          "pass_count": 4,
+          "fail_count": 1,
+          "min_constraint_gap_db": -0.05127286911010742,
+          "failed_constraints": [
+            "v20>v24"
+          ],
+          "failed_constraint_gaps_db": {
+            "v20>v24": -0.05127286911010742
+          },
+          "manifest_fields": {
+            "target_transient_presence_minus_mid_db_mean": -12.489642143249512,
+            "target_transient_presence_share_mean": 0.029327886179089546,
+            "interference_transient_presence_minus_mid_db_mean": 7.55759859085083,
+            "interference_transient_presence_share_mean": 0.5591194033622742,
+            "target_interference_logspec_cosine": 0.5921095336506113
+          },
+          "recipe": "target_clean_speech",
+          "temporal_pattern": "target_full",
+          "target_present_ratio": 1.0,
+          "metadata_path": "data/synthetic/val/val_000223/metadata.json"
+        }
+      ]
+    },
+    "v66>v64": {
+      "count": 1,
+      "sample_ids": [
+        "train_000676"
+      ],
+      "focus_vs_reference_avg_db": -0.026250839233398438,
+      "min_constraint_gap_avg_db": -0.026250839233398438,
+      "pass_count_avg": 4.0,
+      "numeric_field_stats": {
+        "target_transient_presence_minus_mid_db_mean": {
+          "count": 1,
+          "mean": -14.225979804992676,
+          "min": -14.225979804992676,
+          "max": -14.225979804992676
+        },
+        "target_transient_presence_share_mean": {
+          "count": 1,
+          "mean": 0.04183926805853844,
+          "min": 0.04183926805853844,
+          "max": 0.04183926805853844
+        },
+        "interference_transient_presence_minus_mid_db_mean": {
+          "count": 1,
+          "mean": 6.925860404968262,
+          "min": 6.925860404968262,
+          "max": 6.925860404968262
+        },
+        "interference_transient_presence_share_mean": {
+          "count": 1,
+          "mean": 0.5087127089500427,
+          "min": 0.5087127089500427,
+          "max": 0.5087127089500427
+        },
+        "target_interference_logspec_cosine": {
+          "count": 1,
+          "mean": 0.6649254888852864,
+          "min": 0.6649254888852864,
+          "max": 0.6649254888852864
+        }
+      },
+      "top_rows": [
+        {
+          "sample_id": "train_000676",
+          "focus_minus_reference_db": -0.026250839233398438,
+          "pass_count": 4,
+          "fail_count": 1,
+          "min_constraint_gap_db": -0.026250839233398438,
+          "failed_constraints": [
+            "v66>v64"
+          ],
+          "failed_constraint_gaps_db": {
+            "v66>v64": -0.026250839233398438
+          },
+          "manifest_fields": {
+            "target_transient_presence_minus_mid_db_mean": -14.225979804992676,
+            "target_transient_presence_share_mean": 0.04183926805853844,
+            "interference_transient_presence_minus_mid_db_mean": 6.925860404968262,
+            "interference_transient_presence_share_mean": 0.5087127089500427,
+            "target_interference_logspec_cosine": 0.6649254888852864
+          },
+          "recipe": "target_clean_speech",
+          "temporal_pattern": "target_full",
+          "target_present_ratio": 1.0,
+          "metadata_path": "data/synthetic/train/train_000676/metadata.json"
+        }
+      ]
+    }
+  },
+  "failed_signature_summaries": {
+    "v66>v67 | v64>v67 | v20>v24": {
+      "count": 23,
+      "sample_ids": [
+        "train_000578",
+        "val_000034",
+        "train_001725",
+        "train_000219",
+        "train_000697",
+        "train_000759",
+        "train_000904",
+        "train_000951",
+        "train_000117",
+        "train_000207",
+        "val_000478",
+        "train_000788",
+        "train_000999",
+        "train_000634",
+        "train_001079",
+        "train_000799",
+        "train_000216",
+        "train_001494",
+        "train_001006",
+        "train_001495",
+        "train_001639",
+        "val_000153",
+        "train_000681"
+      ],
+      "focus_vs_reference_avg_db": 0.0746868485989778,
+      "min_constraint_gap_avg_db": -0.19537519372027853,
+      "pass_count_avg": 2.0,
+      "numeric_field_stats": {
+        "target_transient_presence_minus_mid_db_mean": {
+          "count": 23,
+          "mean": -10.274538413338039,
+          "min": -22.602506637573242,
+          "max": 0.1561417579650879
+        },
+        "target_transient_presence_share_mean": {
+          "count": 23,
+          "mean": 0.05161048354500014,
+          "min": 0.0001831499394029379,
+          "max": 0.21500328183174133
+        },
+        "interference_transient_presence_minus_mid_db_mean": {
+          "count": 23,
+          "mean": 4.362651271016701,
+          "min": -9.254424095153809,
+          "max": 9.670926094055176
+        },
+        "interference_transient_presence_share_mean": {
+          "count": 23,
+          "mean": 0.4275160720166953,
+          "min": 0.010711930692195892,
+          "max": 0.6270498037338257
+        },
+        "target_interference_logspec_cosine": {
+          "count": 23,
+          "mean": 0.6166939244134841,
+          "min": 0.33971409247214923,
+          "max": 0.7383649193662051
+        }
+      }
+    },
+    "v66>v65 | v66>v67 | v64>v67 | v20>v24": {
+      "count": 9,
+      "sample_ids": [
+        "train_000826",
+        "train_000805",
+        "train_001705",
+        "val_000041",
+        "train_001675",
+        "train_001610",
+        "train_000266",
+        "train_001589",
+        "val_000182"
+      ],
+      "focus_vs_reference_avg_db": 0.5316396024492052,
+      "min_constraint_gap_avg_db": -1.7014912234412298,
+      "pass_count_avg": 1.0,
+      "numeric_field_stats": {
+        "target_transient_presence_minus_mid_db_mean": {
+          "count": 9,
+          "mean": -12.54545127020942,
+          "min": -17.00960922241211,
+          "max": -6.375518798828125
+        },
+        "target_transient_presence_share_mean": {
+          "count": 9,
+          "mean": 0.03757349486113526,
+          "min": 0.00042558732093311846,
+          "max": 0.1557837873697281
+        },
+        "interference_transient_presence_minus_mid_db_mean": {
+          "count": 9,
+          "mean": 6.996075895097521,
+          "min": 2.0366358757019043,
+          "max": 9.817081451416016
+        },
+        "interference_transient_presence_share_mean": {
+          "count": 9,
+          "mean": 0.48505115509033203,
+          "min": 0.2909950315952301,
+          "max": 0.7195932865142822
+        },
+        "target_interference_logspec_cosine": {
+          "count": 9,
+          "mean": 0.6445467345526373,
+          "min": 0.5209989793817678,
+          "max": 0.7148532996430778
+        }
+      }
+    },
+    "v66>v64 | v66>v65": {
+      "count": 8,
+      "sample_ids": [
+        "train_001360",
+        "train_001843",
+        "val_000165",
+        "train_000245",
+        "train_000854",
+        "val_000076",
+        "train_000432",
+        "train_002042"
+      ],
+      "focus_vs_reference_avg_db": -0.0636192262172699,
+      "min_constraint_gap_avg_db": -0.1520429253578186,
+      "pass_count_avg": 3.0,
+      "numeric_field_stats": {
+        "target_transient_presence_minus_mid_db_mean": {
+          "count": 8,
+          "mean": -11.856899440288544,
+          "min": -24.603052139282227,
+          "max": -5.705942630767822
+        },
+        "target_transient_presence_share_mean": {
+          "count": 8,
+          "mean": 0.02779044209910353,
+          "min": 0.00012101364700356498,
+          "max": 0.1557837873697281
+        },
+        "interference_transient_presence_minus_mid_db_mean": {
+          "count": 8,
+          "mean": 3.4881697595119476,
+          "min": -7.063508987426758,
+          "max": 11.075905799865723
+        },
+        "interference_transient_presence_share_mean": {
+          "count": 8,
+          "mean": 0.42450251802802086,
+          "min": 0.1587509661912918,
+          "max": 0.6894361972808838
+        },
+        "target_interference_logspec_cosine": {
+          "count": 8,
+          "mean": 0.6404428535672628,
+          "min": 0.5483544519988433,
+          "max": 0.7267021180722237
+        }
+      }
+    },
+    "v66>v65 | v66>v67 | v64>v67": {
+      "count": 8,
+      "sample_ids": [
+        "train_000257",
+        "train_000370",
+        "train_001451",
+        "val_000279",
+        "val_000331",
+        "val_000365",
+        "train_000700",
+        "train_001832"
+      ],
+      "focus_vs_reference_avg_db": 0.008177131414413452,
+      "min_constraint_gap_avg_db": -0.14136768877506256,
+      "pass_count_avg": 2.0,
+      "numeric_field_stats": {
+        "target_transient_presence_minus_mid_db_mean": {
+          "count": 8,
+          "mean": -8.467537760734558,
+          "min": -13.625691413879395,
+          "max": -1.6452794075012207
+        },
+        "target_transient_presence_share_mean": {
+          "count": 8,
+          "mean": 0.1004050865303725,
+          "min": 0.012056445702910423,
+          "max": 0.2935054898262024
+        },
+        "interference_transient_presence_minus_mid_db_mean": {
+          "count": 8,
+          "mean": 1.835986915975809,
+          "min": -22.663339614868164,
+          "max": 9.157169342041016
+        },
+        "interference_transient_presence_share_mean": {
+          "count": 8,
+          "mean": 0.36070348834618926,
+          "min": 0.0021316222846508026,
+          "max": 0.6279014945030212
+        },
+        "target_interference_logspec_cosine": {
+          "count": 8,
+          "mean": 0.6187458691412336,
+          "min": 0.5187767252524704,
+          "max": 0.7564425320180137
+        }
+      }
+    },
+    "v66>v64 | v66>v65 | v66>v67 | v64>v67": {
+      "count": 5,
+      "sample_ids": [
+        "val_000305",
+        "train_000965",
+        "train_001219",
+        "train_001204",
+        "train_001989"
+      ],
+      "focus_vs_reference_avg_db": -0.044152450561523435,
+      "min_constraint_gap_avg_db": -0.19483909606933594,
+      "pass_count_avg": 1.0,
+      "numeric_field_stats": {
+        "target_transient_presence_minus_mid_db_mean": {
+          "count": 5,
+          "mean": -11.76990795135498,
+          "min": -16.466354370117188,
+          "max": -6.375518798828125
+        },
+        "target_transient_presence_share_mean": {
+          "count": 5,
+          "mean": 0.05274384133517742,
+          "min": 0.0047722565941512585,
+          "max": 0.1557837873697281
+        },
+        "interference_transient_presence_minus_mid_db_mean": {
+          "count": 5,
+          "mean": 3.3630243241786957,
+          "min": -0.3931286633014679,
+          "max": 6.323331832885742
+        },
+        "interference_transient_presence_share_mean": {
+          "count": 5,
+          "mean": 0.33659736514091493,
+          "min": 0.25494304299354553,
+          "max": 0.49183741211891174
+        },
+        "target_interference_logspec_cosine": {
+          "count": 5,
+          "mean": 0.6423478478906621,
+          "min": 0.5897107962724518,
+          "max": 0.7411429256565719
+        }
+      }
+    },
+    "v64>v67 | v20>v24": {
+      "count": 4,
+      "sample_ids": [
+        "train_000597",
+        "train_001477",
+        "train_001599",
+        "train_000865"
+      ],
+      "focus_vs_reference_avg_db": 0.12952932715415955,
+      "min_constraint_gap_avg_db": -0.10664500296115875,
+      "pass_count_avg": 3.0,
+      "numeric_field_stats": {
+        "target_transient_presence_minus_mid_db_mean": {
+          "count": 4,
+          "mean": -13.018489360809326,
+          "min": -15.837160110473633,
+          "max": -7.944914817810059
+        },
+        "target_transient_presence_share_mean": {
+          "count": 4,
+          "mean": 0.014221593053662218,
+          "min": 0.0008788435370661318,
+          "max": 0.04183926805853844
+        },
+        "interference_transient_presence_minus_mid_db_mean": {
+          "count": 4,
+          "mean": 0.187193363904953,
+          "min": -1.7672992944717407,
+          "max": 2.4289700984954834
+        },
+        "interference_transient_presence_share_mean": {
+          "count": 4,
+          "mean": 0.31537972390651703,
+          "min": 0.21414470672607422,
+          "max": 0.3952785134315491
+        },
+        "target_interference_logspec_cosine": {
+          "count": 4,
+          "mean": 0.7384104986167704,
+          "min": 0.671518643572849,
+          "max": 0.8634568140535076
+        }
+      }
+    },
+    "v66>v64 | v66>v65 | v66>v67 | v64>v67 | v20>v24": {
+      "count": 4,
+      "sample_ids": [
+        "train_000539",
+        "train_001543",
+        "val_000396",
+        "train_001745"
+      ],
+      "focus_vs_reference_avg_db": -0.01388692855834961,
+      "min_constraint_gap_avg_db": -0.12144416570663452,
+      "pass_count_avg": 0.0,
+      "numeric_field_stats": {
+        "target_transient_presence_minus_mid_db_mean": {
+          "count": 4,
+          "mean": -14.02379322052002,
+          "min": -23.011409759521484,
+          "max": -9.813207626342773
+        },
+        "target_transient_presence_share_mean": {
+          "count": 4,
+          "mean": 0.052094276528805494,
+          "min": 0.016725817695260048,
+          "max": 0.08671987056732178
+        },
+        "interference_transient_presence_minus_mid_db_mean": {
+          "count": 4,
+          "mean": 6.92596173286438,
+          "min": 4.029228687286377,
+          "max": 8.442323684692383
+        },
+        "interference_transient_presence_share_mean": {
+          "count": 4,
+          "mean": 0.44891711324453354,
+          "min": 0.350452721118927,
+          "max": 0.5254933834075928
+        },
+        "target_interference_logspec_cosine": {
+          "count": 4,
+          "mean": 0.6266003233348577,
+          "min": 0.5896011044322925,
+          "max": 0.6852616709105114
+        }
+      }
+    },
+    "v66>v64 | v20>v24": {
+      "count": 3,
+      "sample_ids": [
+        "val_000469",
+        "val_000401",
+        "train_000694"
+      ],
+      "focus_vs_reference_avg_db": -0.060859998067220054,
+      "min_constraint_gap_avg_db": -0.07876253128051758,
+      "pass_count_avg": 3.0,
+      "numeric_field_stats": {
+        "target_transient_presence_minus_mid_db_mean": {
+          "count": 3,
+          "mean": -11.719768206278482,
+          "min": -13.607194900512695,
+          "max": -7.944914817810059
+        },
+        "target_transient_presence_share_mean": {
+          "count": 3,
+          "mean": 0.03941870201379061,
+          "min": 0.006176403723657131,
+          "max": 0.056039851158857346
+        },
+        "interference_transient_presence_minus_mid_db_mean": {
+          "count": 3,
+          "mean": 8.080746332804361,
+          "min": 7.038460731506348,
+          "max": 10.021759033203125
+        },
+        "interference_transient_presence_share_mean": {
+          "count": 3,
+          "mean": 0.5538597305615743,
+          "min": 0.5167131423950195,
+          "max": 0.5731554627418518
+        },
+        "target_interference_logspec_cosine": {
+          "count": 3,
+          "mean": 0.6477435874650763,
+          "min": 0.6142369772240558,
+          "max": 0.6682581675187343
+        }
+      }
+    },
+    "v66>v64 | v66>v65 | v66>v67 | v20>v24": {
+      "count": 3,
+      "sample_ids": [
+        "val_000274",
+        "train_001750",
+        "train_001404"
+      ],
+      "focus_vs_reference_avg_db": -0.10651810963948567,
+      "min_constraint_gap_avg_db": -0.16016006469726562,
+      "pass_count_avg": 1.0,
+      "numeric_field_stats": {
+        "target_transient_presence_minus_mid_db_mean": {
+          "count": 3,
+          "mean": -15.109498659769693,
+          "min": -17.046661376953125,
+          "max": -11.81548023223877
+        },
+        "target_transient_presence_share_mean": {
+          "count": 3,
+          "mean": 0.0056678800998876495,
+          "min": 0.0016862212214618921,
+          "max": 0.010545162484049797
+        },
+        "interference_transient_presence_minus_mid_db_mean": {
+          "count": 3,
+          "mean": 5.5146238803863525,
+          "min": 2.1992251873016357,
+          "max": 7.217308044433594
+        },
+        "interference_transient_presence_share_mean": {
+          "count": 3,
+          "mean": 0.4144742985566457,
+          "min": 0.36984938383102417,
+          "max": 0.4859713912010193
+        },
+        "target_interference_logspec_cosine": {
+          "count": 3,
+          "mean": 0.6230680300767909,
+          "min": 0.5365877379632821,
+          "max": 0.7287115057012424
+        }
+      }
+    },
+    "v66>v65": {
+      "count": 3,
+      "sample_ids": [
+        "val_000376",
+        "train_001225",
+        "val_000202"
+      ],
+      "focus_vs_reference_avg_db": 0.02553447087605794,
+      "min_constraint_gap_avg_db": -0.06865549087524414,
+      "pass_count_avg": 4.0,
+      "numeric_field_stats": {
+        "target_transient_presence_minus_mid_db_mean": {
+          "count": 3,
+          "mean": -11.047538916269938,
+          "min": -15.801290512084961,
+          "max": -5.756160259246826
+        },
+        "target_transient_presence_share_mean": {
+          "count": 3,
+          "mean": 0.0026796598685905337,
+          "min": 0.0011574620148167014,
+          "max": 0.004952789284288883
+        },
+        "interference_transient_presence_minus_mid_db_mean": {
+          "count": 3,
+          "mean": 4.052338759104411,
+          "min": 1.016707181930542,
+          "max": 8.708885192871094
+        },
+        "interference_transient_presence_share_mean": {
+          "count": 3,
+          "mean": 0.48193395137786865,
+          "min": 0.39097097516059875,
+          "max": 0.6244537234306335
+        },
+        "target_interference_logspec_cosine": {
+          "count": 3,
+          "mean": 0.6555906305172082,
+          "min": 0.6034222976181426,
+          "max": 0.7042160277307205
+        }
+      }
+    },
+    "v66>v65 | v64>v67": {
+      "count": 3,
+      "sample_ids": [
+        "train_000032",
+        "train_000001",
+        "train_001657"
+      ],
+      "focus_vs_reference_avg_db": 0.0340574582417806,
+      "min_constraint_gap_avg_db": -0.02753893534342448,
+      "pass_count_avg": 3.0,
+      "numeric_field_stats": {
+        "target_transient_presence_minus_mid_db_mean": {
+          "count": 3,
+          "mean": -6.946716547012329,
+          "min": -15.801290512084961,
+          "max": 1.0115692615509033
+        },
+        "target_transient_presence_share_mean": {
+          "count": 3,
+          "mean": 0.21061630030938736,
+          "min": 0.0011574620148167014,
+          "max": 0.415688157081604
+        },
+        "interference_transient_presence_minus_mid_db_mean": {
+          "count": 3,
+          "mean": 3.4459786216417947,
+          "min": 0.6776692271232605,
+          "max": 8.085721969604492
+        },
+        "interference_transient_presence_share_mean": {
+          "count": 3,
+          "mean": 0.37841405471165973,
+          "min": 0.32382678985595703,
+          "max": 0.4449196755886078
+        },
+        "target_interference_logspec_cosine": {
+          "count": 3,
+          "mean": 0.6554116126964933,
+          "min": 0.6322248794808207,
+          "max": 0.6974120186328938
+        }
+      }
+    },
+    "v66>v67 | v64>v67": {
+      "count": 3,
+      "sample_ids": [
+        "train_000407",
+        "train_001086",
+        "train_000416"
+      ],
+      "focus_vs_reference_avg_db": 0.2799178759256999,
+      "min_constraint_gap_avg_db": -0.8471221923828125,
+      "pass_count_avg": 3.0,
+      "numeric_field_stats": {
+        "target_transient_presence_minus_mid_db_mean": {
+          "count": 3,
+          "mean": -7.126877744992574,
+          "min": -12.309966087341309,
+          "max": -1.2201260328292847
+        },
+        "target_transient_presence_share_mean": {
+          "count": 3,
+          "mean": 0.14369718978802362,
+          "min": 0.05127888172864914,
+          "max": 0.2930928170681
+        },
+        "interference_transient_presence_minus_mid_db_mean": {
+          "count": 3,
+          "mean": -0.0800316333770752,
+          "min": -5.912603855133057,
+          "max": 8.069360733032227
+        },
+        "interference_transient_presence_share_mean": {
+          "count": 3,
+          "mean": 0.31130558252334595,
+          "min": 0.16852182149887085,
+          "max": 0.5021272897720337
+        },
+        "target_interference_logspec_cosine": {
+          "count": 3,
+          "mean": 0.6702447500634899,
+          "min": 0.6143112941261434,
+          "max": 0.7760956402513901
+        }
+      }
+    },
+    "v66>v64 | v66>v65 | v66>v67": {
+      "count": 2,
+      "sample_ids": [
+        "train_001181",
+        "val_000075"
+      ],
+      "focus_vs_reference_avg_db": -0.13779640197753906,
+      "min_constraint_gap_avg_db": -0.25975704193115234,
+      "pass_count_avg": 2.0,
+      "numeric_field_stats": {
+        "target_transient_presence_minus_mid_db_mean": {
+          "count": 2,
+          "mean": -14.076876640319824,
+          "min": -14.546558380126953,
+          "max": -13.607194900512695
+        },
+        "target_transient_presence_share_mean": {
+          "count": 2,
+          "mean": 0.043377396650612354,
+          "min": 0.030714942142367363,
+          "max": 0.056039851158857346
+        },
+        "interference_transient_presence_minus_mid_db_mean": {
+          "count": 2,
+          "mean": -0.614952802658081,
+          "min": -3.36702036857605,
+          "max": 2.1371147632598877
+        },
+        "interference_transient_presence_share_mean": {
+          "count": 2,
+          "mean": 0.277099184691906,
+          "min": 0.2427840381860733,
+          "max": 0.31141433119773865
+        },
+        "target_interference_logspec_cosine": {
+          "count": 2,
+          "mean": 0.6857528850520571,
+          "min": 0.6711240241408706,
+          "max": 0.7003817459632435
+        }
+      }
+    },
+    "v66>v64 | v66>v67 | v64>v67 | v20>v24": {
+      "count": 2,
+      "sample_ids": [
+        "train_000664",
+        "train_000210"
+      ],
+      "focus_vs_reference_avg_db": -0.008977890014648438,
+      "min_constraint_gap_avg_db": -0.03042459487915039,
+      "pass_count_avg": 1.0,
+      "numeric_field_stats": {
+        "target_transient_presence_minus_mid_db_mean": {
+          "count": 2,
+          "mean": -13.089749336242676,
+          "min": -13.317380905151367,
+          "max": -12.862117767333984
+        },
+        "target_transient_presence_share_mean": {
+          "count": 2,
+          "mean": 0.027797922783065587,
+          "min": 0.0014157189289107919,
+          "max": 0.05418012663722038
+        },
+        "interference_transient_presence_minus_mid_db_mean": {
+          "count": 2,
+          "mean": 0.3440382480621338,
+          "min": -5.49757719039917,
+          "max": 6.1856536865234375
+        },
+        "interference_transient_presence_share_mean": {
+          "count": 2,
+          "mean": 0.29546836018562317,
+          "min": 0.19508635997772217,
+          "max": 0.39585036039352417
+        },
+        "target_interference_logspec_cosine": {
+          "count": 2,
+          "mean": 0.6162956339672777,
+          "min": 0.6018465480130498,
+          "max": 0.6307447199215056
+        }
+      }
+    },
+    "v20>v24": {
+      "count": 1,
+      "sample_ids": [
+        "val_000223"
+      ],
+      "focus_vs_reference_avg_db": 0.03452348709106445,
+      "min_constraint_gap_avg_db": -0.05127286911010742,
+      "pass_count_avg": 4.0,
+      "numeric_field_stats": {
+        "target_transient_presence_minus_mid_db_mean": {
+          "count": 1,
+          "mean": -12.489642143249512,
+          "min": -12.489642143249512,
+          "max": -12.489642143249512
+        },
+        "target_transient_presence_share_mean": {
+          "count": 1,
+          "mean": 0.029327886179089546,
+          "min": 0.029327886179089546,
+          "max": 0.029327886179089546
+        },
+        "interference_transient_presence_minus_mid_db_mean": {
+          "count": 1,
+          "mean": 7.55759859085083,
+          "min": 7.55759859085083,
+          "max": 7.55759859085083
+        },
+        "interference_transient_presence_share_mean": {
+          "count": 1,
+          "mean": 0.5591194033622742,
+          "min": 0.5591194033622742,
+          "max": 0.5591194033622742
+        },
+        "target_interference_logspec_cosine": {
+          "count": 1,
+          "mean": 0.5921095336506113,
+          "min": 0.5921095336506113,
+          "max": 0.5921095336506113
+        }
+      }
+    },
+    "v66>v64": {
+      "count": 1,
+      "sample_ids": [
+        "train_000676"
+      ],
+      "focus_vs_reference_avg_db": -0.026250839233398438,
+      "min_constraint_gap_avg_db": -0.026250839233398438,
+      "pass_count_avg": 4.0,
+      "numeric_field_stats": {
+        "target_transient_presence_minus_mid_db_mean": {
+          "count": 1,
+          "mean": -14.225979804992676,
+          "min": -14.225979804992676,
+          "max": -14.225979804992676
+        },
+        "target_transient_presence_share_mean": {
+          "count": 1,
+          "mean": 0.04183926805853844,
+          "min": 0.04183926805853844,
+          "max": 0.04183926805853844
+        },
+        "interference_transient_presence_minus_mid_db_mean": {
+          "count": 1,
+          "mean": 6.925860404968262,
+          "min": 6.925860404968262,
+          "max": 6.925860404968262
+        },
+        "interference_transient_presence_share_mean": {
+          "count": 1,
+          "mean": 0.5087127089500427,
+          "min": 0.5087127089500427,
+          "max": 0.5087127089500427
+        },
+        "target_interference_logspec_cosine": {
+          "count": 1,
+          "mean": 0.6649254888852864,
+          "min": 0.6649254888852864,
+          "max": 0.6649254888852864
+        }
+      }
+    },
+    "v66>v64 | v66>v67 | v64>v67": {
+      "count": 1,
+      "sample_ids": [
+        "train_001748"
+      ],
+      "focus_vs_reference_avg_db": -0.023553848266601562,
+      "min_constraint_gap_avg_db": -0.08922767639160156,
+      "pass_count_avg": 2.0,
+      "numeric_field_stats": {
+        "target_transient_presence_minus_mid_db_mean": {
+          "count": 1,
+          "mean": -12.862117767333984,
+          "min": -12.862117767333984,
+          "max": -12.862117767333984
+        },
+        "target_transient_presence_share_mean": {
+          "count": 1,
+          "mean": 0.0014157189289107919,
+          "min": 0.0014157189289107919,
+          "max": 0.0014157189289107919
+        },
+        "interference_transient_presence_minus_mid_db_mean": {
+          "count": 1,
+          "mean": 10.706215858459473,
+          "min": 10.706215858459473,
+          "max": 10.706215858459473
+        },
+        "interference_transient_presence_share_mean": {
+          "count": 1,
+          "mean": 0.6000825762748718,
+          "min": 0.6000825762748718,
+          "max": 0.6000825762748718
+        },
+        "target_interference_logspec_cosine": {
+          "count": 1,
+          "mean": 0.6061614887589823,
+          "min": 0.6061614887589823,
+          "max": 0.6061614887589823
+        }
+      }
+    },
+    "v66>v65 | v64>v67 | v20>v24": {
+      "count": 1,
+      "sample_ids": [
+        "train_001533"
+      ],
+      "focus_vs_reference_avg_db": 0.04356575012207031,
+      "min_constraint_gap_avg_db": -0.03333473205566406,
+      "pass_count_avg": 2.0,
+      "numeric_field_stats": {
+        "target_transient_presence_minus_mid_db_mean": {
+          "count": 1,
+          "mean": -13.136429786682129,
+          "min": -13.136429786682129,
+          "max": -13.136429786682129
+        },
+        "target_transient_presence_share_mean": {
+          "count": 1,
+          "mean": 0.008533641695976257,
+          "min": 0.008533641695976257,
+          "max": 0.008533641695976257
+        },
+        "interference_transient_presence_minus_mid_db_mean": {
+          "count": 1,
+          "mean": -14.321331024169922,
+          "min": -14.321331024169922,
+          "max": -14.321331024169922
+        },
+        "interference_transient_presence_share_mean": {
+          "count": 1,
+          "mean": 0.00075577013194561,
+          "min": 0.00075577013194561,
+          "max": 0.00075577013194561
+        },
+        "target_interference_logspec_cosine": {
+          "count": 1,
+          "mean": 0.4624008847437495,
+          "min": 0.4624008847437495,
+          "max": 0.4624008847437495
+        }
+      }
+    }
+  }
+}

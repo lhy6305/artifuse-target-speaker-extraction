@@ -145,6 +145,7 @@ def ranking_aliases(scores: dict[str, float]) -> list[str]:
 
 def order_pass(scores: dict[str, float], ordered_aliases: list[str]) -> tuple[bool, list[dict[str, Any]]]:
     gaps: list[dict[str, Any]] = []
+    passed = True
     for index in range(len(ordered_aliases) - 1):
         higher_alias = ordered_aliases[index]
         lower_alias = ordered_aliases[index + 1]
@@ -157,8 +158,8 @@ def order_pass(scores: dict[str, float], ordered_aliases: list[str]) -> tuple[bo
             }
         )
         if gap <= 0.0:
-            return False, gaps
-    return True, gaps
+            passed = False
+    return passed, gaps
 
 
 def extra_constraints_pass(
@@ -166,6 +167,7 @@ def extra_constraints_pass(
     constraints: list[tuple[str, str]],
 ) -> tuple[bool, list[dict[str, Any]]]:
     gaps: list[dict[str, Any]] = []
+    passed = True
     for higher_alias, lower_alias in constraints:
         gap = float(scores[higher_alias] - scores[lower_alias])
         gaps.append(
@@ -176,8 +178,8 @@ def extra_constraints_pass(
             }
         )
         if gap <= 0.0:
-            return False, gaps
-    return True, gaps
+            passed = False
+    return passed, gaps
 
 
 def main() -> None:

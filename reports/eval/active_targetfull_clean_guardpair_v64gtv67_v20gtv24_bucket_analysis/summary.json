@@ -1,0 +1,343 @@
+{
+  "manifest_jsonl": "data/synthetic/manifest_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_with_metrics_all.jsonl",
+  "compares": {
+    "v20": "reports/eval/compare_v19_vs_v20_on_active_targetfull_clean/per_sample_metrics.jsonl",
+    "v24": "reports/eval/compare_v19_vs_v24_on_active_targetfull_clean/per_sample_metrics.jsonl",
+    "v64": "reports/eval/compare_v19_vs_v64_on_active_targetfull_clean/per_sample_metrics.jsonl",
+    "v65": "reports/eval/compare_v19_vs_v65_on_active_targetfull_clean/per_sample_metrics.jsonl",
+    "v66": "reports/eval/compare_v19_vs_v66_on_active_targetfull_clean/per_sample_metrics.jsonl",
+    "v67": "reports/eval/compare_v19_vs_v67_on_active_targetfull_clean/per_sample_metrics.jsonl"
+  },
+  "constraint_a": "v64>v67",
+  "constraint_b": "v20>v24",
+  "numeric_fields": [
+    "target_transient_presence_minus_mid_db_mean",
+    "target_transient_presence_share_mean",
+    "interference_transient_presence_minus_mid_db_mean",
+    "interference_transient_presence_share_mean",
+    "target_interference_logspec_cosine"
+  ],
+  "output_name_prefix": "friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_guardpair_v64gtv67_v20gtv24",
+  "num_manifest_rows": 88,
+  "num_shared_compare_rows": 88,
+  "bucket_summaries": {
+    "pass_both": {
+      "count": 18,
+      "sample_ids": [
+        "train_000245",
+        "train_000432",
+        "train_000588",
+        "train_000676",
+        "train_000854",
+        "train_001181",
+        "train_001225",
+        "train_001360",
+        "train_001827",
+        "train_001843",
+        "train_002042",
+        "val_000075",
+        "val_000076",
+        "val_000165",
+        "val_000202",
+        "val_000239",
+        "val_000376",
+        "val_000430"
+      ],
+      "split_counts": {
+        "train": 11,
+        "val": 7
+      },
+      "recipe_counts": {
+        "target_clean_speech": 18
+      },
+      "pattern_counts": {
+        "target_full": 18
+      },
+      "constraint_a_gap_avg_db": 0.08628867732153998,
+      "constraint_b_gap_avg_db": 0.10350207487742107,
+      "numeric_field_stats": {
+        "target_transient_presence_minus_mid_db_mean": {
+          "count": 18,
+          "mean": -10.817868140008715,
+          "min": -24.603052139282227,
+          "max": 0.6315910816192627
+        },
+        "target_transient_presence_share_mean": {
+          "count": 18,
+          "mean": 0.04243823999948088,
+          "min": 0.00012101364700356498,
+          "max": 0.19311948120594025
+        },
+        "interference_transient_presence_minus_mid_db_mean": {
+          "count": 18,
+          "mean": 3.397084242767758,
+          "min": -7.063508987426758,
+          "max": 11.075905799865723
+        },
+        "interference_transient_presence_share_mean": {
+          "count": 18,
+          "mean": 0.4108873676094744,
+          "min": 0.09055881947278976,
+          "max": 0.6894361972808838
+        },
+        "target_interference_logspec_cosine": {
+          "count": 18,
+          "mean": 0.6545482286312037,
+          "min": 0.5313386178996097,
+          "max": 0.7267021180722237
+        }
+      }
+    },
+    "fail_a_only": {
+      "count": 20,
+      "sample_ids": [
+        "train_000001",
+        "train_000032",
+        "train_000257",
+        "train_000370",
+        "train_000407",
+        "train_000416",
+        "train_000700",
+        "train_000965",
+        "train_001086",
+        "train_001204",
+        "train_001219",
+        "train_001451",
+        "train_001657",
+        "train_001748",
+        "train_001832",
+        "train_001989",
+        "val_000279",
+        "val_000305",
+        "val_000331",
+        "val_000365"
+      ],
+      "split_counts": {
+        "train": 16,
+        "val": 4
+      },
+      "recipe_counts": {
+        "target_clean_speech": 20
+      },
+      "pattern_counts": {
+        "target_full": 20
+      },
+      "constraint_a_gap_avg_db": -0.20739391446113586,
+      "constraint_b_gap_avg_db": 0.0431845486164093,
+      "numeric_field_stats": {
+        "target_transient_presence_minus_mid_db_mean": {
+          "count": 20,
+          "mean": -9.083637124300003,
+          "min": -16.466354370117188,
+          "max": 1.0115692615509033
+        },
+        "target_transient_presence_share_mean": {
+          "count": 20,
+          "mean": 0.10656580440700054,
+          "min": 0.0011574620148167014,
+          "max": 0.415688157081604
+        },
+        "interference_transient_presence_minus_mid_db_mean": {
+          "count": 20,
+          "mean": 2.615353688597679,
+          "min": -22.663339614868164,
+          "max": 10.706215858459473
+        },
+        "interference_transient_presence_share_mean": {
+          "count": 20,
+          "mean": 0.3618928110226989,
+          "min": 0.0021316222846508026,
+          "max": 0.6279014945030212
+        },
+        "target_interference_logspec_cosine": {
+          "count": 20,
+          "mean": 0.6372418384811056,
+          "min": 0.5187767252524704,
+          "max": 0.7760956402513901
+        }
+      }
+    },
+    "fail_b_only": {
+      "count": 7,
+      "sample_ids": [
+        "train_000694",
+        "train_001404",
+        "train_001750",
+        "val_000223",
+        "val_000274",
+        "val_000401",
+        "val_000469"
+      ],
+      "split_counts": {
+        "train": 3,
+        "val": 4
+      },
+      "recipe_counts": {
+        "target_clean_speech": 7
+      },
+      "pattern_counts": {
+        "target_full": 7
+      },
+      "constraint_a_gap_avg_db": 0.10278585978916713,
+      "constraint_b_gap_avg_db": -0.06101397105625698,
+      "numeric_field_stats": {
+        "target_transient_presence_minus_mid_db_mean": {
+          "count": 7,
+          "mean": -13.28249182019915,
+          "min": -17.046661376953125,
+          "max": -7.944914817810059
+        },
+        "target_transient_presence_share_mean": {
+          "count": 7,
+          "mean": 0.02351251893144633,
+          "min": 0.0016862212214618921,
+          "max": 0.056039851158857346
+        },
+        "interference_transient_presence_minus_mid_db_mean": {
+          "count": 7,
+          "mean": 6.90624417577471,
+          "min": 2.1992251873016357,
+          "max": 10.021759033203125
+        },
+        "interference_transient_presence_share_mean": {
+          "count": 7,
+          "mean": 0.49487449867384775,
+          "min": 0.36984938383102417,
+          "max": 0.5731554627418518
+        },
+        "target_interference_logspec_cosine": {
+          "count": 7,
+          "mean": 0.6292206266108875,
+          "min": 0.5365877379632821,
+          "max": 0.7287115057012424
+        }
+      }
+    },
+    "fail_both": {
+      "count": 43,
+      "sample_ids": [
+        "train_000117",
+        "train_000207",
+        "train_000210",
+        "train_000216",
+        "train_000219",
+        "train_000266",
+        "train_000539",
+        "train_000578",
+        "train_000597",
+        "train_000634",
+        "train_000664",
+        "train_000681",
+        "train_000697",
+        "train_000759",
+        "train_000788",
+        "train_000799",
+        "train_000805",
+        "train_000826",
+        "train_000865",
+        "train_000904",
+        "train_000951",
+        "train_000999",
+        "train_001006",
+        "train_001079",
+        "train_001477",
+        "train_001494",
+        "train_001495",
+        "train_001533",
+        "train_001543",
+        "train_001589",
+        "train_001599",
+        "train_001610",
+        "train_001639",
+        "train_001675",
+        "train_001705",
+        "train_001725",
+        "train_001745",
+        "val_000034",
+        "val_000041",
+        "val_000153",
+        "val_000182",
+        "val_000396",
+        "val_000478"
+      ],
+      "split_counts": {
+        "train": 37,
+        "val": 6
+      },
+      "recipe_counts": {
+        "target_clean_speech": 43
+      },
+      "pattern_counts": {
+        "target_full": 43
+      },
+      "constraint_a_gap_avg_db": -0.39586504808692047,
+      "constraint_b_gap_avg_db": -0.42684038988379547,
+      "numeric_field_stats": {
+        "target_transient_presence_minus_mid_db_mean": {
+          "count": 43,
+          "mean": -11.551360551701036,
+          "min": -23.011409759521484,
+          "max": 0.1561417579650879
+        },
+        "target_transient_presence_share_mean": {
+          "count": 43,
+          "mean": 0.04313012885760927,
+          "min": 0.0001831499394029379,
+          "max": 0.21500328183174133
+        },
+        "interference_transient_presence_minus_mid_db_mean": {
+          "count": 43,
+          "mean": 4.142442515076593,
+          "min": -14.321331024169922,
+          "max": 9.817081451416016
+        },
+        "interference_transient_presence_share_mean": {
+          "count": 43,
+          "mean": 0.41505139282103193,
+          "min": 0.00075577013194561,
+          "max": 0.7195932865142822
+        },
+        "target_interference_logspec_cosine": {
+          "count": 43,
+          "mean": 0.631160844487644,
+          "min": 0.33971409247214923,
+          "max": 0.8634568140535076
+        }
+      }
+    }
+  },
+  "materialized_paths": {
+    "pass_both": {
+      "train_manifest": "data/synthetic/train_manifest_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_guardpair_v64gtv67_v20gtv24_pass_both.jsonl",
+      "val_manifest": "data/synthetic/val_manifest_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_guardpair_v64gtv67_v20gtv24_pass_both.jsonl",
+      "all_manifest": "data/synthetic/manifest_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_guardpair_v64gtv67_v20gtv24_pass_both_all.jsonl",
+      "train_sample_ids": "data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_guardpair_v64gtv67_v20gtv24_pass_both_train.txt",
+      "val_sample_ids": "data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_guardpair_v64gtv67_v20gtv24_pass_both_val.txt",
+      "all_sample_ids": "data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_guardpair_v64gtv67_v20gtv24_pass_both_all.txt"
+    },
+    "fail_a_only": {
+      "train_manifest": "data/synthetic/train_manifest_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_guardpair_v64gtv67_v20gtv24_fail_a_only.jsonl",
+      "val_manifest": "data/synthetic/val_manifest_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_guardpair_v64gtv67_v20gtv24_fail_a_only.jsonl",
+      "all_manifest": "data/synthetic/manifest_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_guardpair_v64gtv67_v20gtv24_fail_a_only_all.jsonl",
+      "train_sample_ids": "data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_guardpair_v64gtv67_v20gtv24_fail_a_only_train.txt",
+      "val_sample_ids": "data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_guardpair_v64gtv67_v20gtv24_fail_a_only_val.txt",
+      "all_sample_ids": "data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_guardpair_v64gtv67_v20gtv24_fail_a_only_all.txt"
+    },
+    "fail_b_only": {
+      "train_manifest": "data/synthetic/train_manifest_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_guardpair_v64gtv67_v20gtv24_fail_b_only.jsonl",
+      "val_manifest": "data/synthetic/val_manifest_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_guardpair_v64gtv67_v20gtv24_fail_b_only.jsonl",
+      "all_manifest": "data/synthetic/manifest_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_guardpair_v64gtv67_v20gtv24_fail_b_only_all.jsonl",
+      "train_sample_ids": "data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_guardpair_v64gtv67_v20gtv24_fail_b_only_train.txt",
+      "val_sample_ids": "data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_guardpair_v64gtv67_v20gtv24_fail_b_only_val.txt",
+      "all_sample_ids": "data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_guardpair_v64gtv67_v20gtv24_fail_b_only_all.txt"
+    },
+    "fail_both": {
+      "train_manifest": "data/synthetic/train_manifest_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_guardpair_v64gtv67_v20gtv24_fail_both.jsonl",
+      "val_manifest": "data/synthetic/val_manifest_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_guardpair_v64gtv67_v20gtv24_fail_both.jsonl",
+      "all_manifest": "data/synthetic/manifest_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_guardpair_v64gtv67_v20gtv24_fail_both_all.jsonl",
+      "train_sample_ids": "data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_guardpair_v64gtv67_v20gtv24_fail_both_train.txt",
+      "val_sample_ids": "data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_guardpair_v64gtv67_v20gtv24_fail_both_val.txt",
+      "all_sample_ids": "data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_guardpair_v64gtv67_v20gtv24_fail_both_all.txt"
+    }
+  }
+}

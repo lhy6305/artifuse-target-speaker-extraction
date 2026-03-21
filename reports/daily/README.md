@@ -7,10 +7,17 @@
   - 通过本目录 `README.md` 和 `index_YYYY-MM.md` 做月度索引与跳读入口。
 
 - 月度索引：
-  - `index_2026-03.md` | `106` 份日报 | 日期 `2026-03-16` 至 `2026-03-21`
+  - `index_2026-03.md` | `113` 份日报 | 日期 `2026-03-16` 至 `2026-03-21`
 
 - 最近新增日报：
-  - `2026-03-21_candidate_v7_bridgepair_trio_softseed_probe.md` | `175` 行
+  - `2026-03-21_candidate_v7_failboth_v66_vs_v67_split.md` | `325` 行
+  - `2026-03-21_candidate_v7_active_guardpair_bucketization.md` | `319` 行
+  - `2026-03-21_candidate_v7_bridgepair_active_dualleak_shell_neighbor_drift.md` | `298` 行
+  - `2026-03-21_candidate_v7_bridgepair_active_targetfull_clean_dualleak_shell.md` | `333` 行
+  - `2026-03-21_candidate_v7_bridgepair_active_microbuffer_core_trio.md` | `174` 行
+  - `2026-03-21_candidate_v7_bridgepair_active_microbuffer_targetfull_split.md` | `232` 行
+  - `2026-03-21_candidate_v7_bridgepair_active_neighbor_behavior_probe.md` | `321` 行
+  - `2026-03-21_candidate_v7_bridgepair_trio_softseed_probe.md` | `190` 行
   - `2026-03-21_candidate_v7_bridgepair_seedplusone_signature_split.md` | `243` 行
   - `2026-03-21_candidate_v7_bridgepair_seed_expansion.md` | `232` 行
   - `2026-03-21_candidate_v7_guardv65_relaxed_bridge_search.md` | `218` 行
