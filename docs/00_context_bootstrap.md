@@ -6,8 +6,22 @@
 1. 本文档 `docs/00_context_bootstrap.md`
 2. `docs/01_project_overview_and_plan.md`
 3. `docs/02_pitfalls_log.md`
-4. `initial_design.md`
-5. `initial_design_judg.md`
+4. `docs/05_task_branch_map.md`
+5. `initial_design.md`
+6. `initial_design_judg.md`
+
+如果当前活跃文档仍不足以恢复更早背景，再按下面顺序补读：
+
+1. `docs/archive/README.md`
+2. 对应主题的归档索引：
+   - `docs/archive/project_overview/README.md`
+   - `docs/archive/pitfalls/README.md`
+   - `docs/archive/task_branch_map/README.md`
+3. 再进入对应分卷文件，而不是直接回到超长主文档里全量查找
+4. 如果需要补实验推进时间线，再读：
+   - `reports/daily/README.md`
+   - 对应月份索引 `reports/daily/index_YYYY-MM.md`
+   - 最后才进入具体日报
 
 ## 强制规范
 ### 1. 编码规范
@@ -35,6 +49,10 @@
   - 下一阶段任务
   - 开发踩坑点
 - 旧文档若过时，必须修改说明或移入归档目录，禁止直接删除。
+- 当主文档增长到明显不利于接班阅读时，应优先采用：
+  - 活跃摘要留在 `docs/`
+  - 历史记录拆分到 `docs/archive/`
+  的方式整理，而不是继续把所有历史堆在单文件里。
 
 ### 5. 恢复与交接要求
 - 应假设历史对话随时会丢失，所有关键判断、阶段结论、阻塞项都要落盘。

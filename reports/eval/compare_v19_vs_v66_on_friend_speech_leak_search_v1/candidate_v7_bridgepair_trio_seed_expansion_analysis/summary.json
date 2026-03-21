@@ -1,0 +1,2644 @@
+{
+  "manifest_jsonl": "data/synthetic/val_manifest_friend_speech_leak_search_v1_with_metrics.jsonl",
+  "seed_sample_ids_file": "data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_bridgepair_aggregate_plus331_val.txt",
+  "seed_sample_ids": [
+    "val_000331",
+    "val_000376",
+    "val_000430"
+  ],
+  "focus_alias": "v66",
+  "reference_alias": "v64",
+  "compares": {
+    "v20": "reports/eval/compare_v19_vs_v20_on_friend_speech_leak_search_v1/per_sample_metrics.jsonl",
+    "v24": "reports/eval/compare_v19_vs_v24_on_friend_speech_leak_search_v1/per_sample_metrics.jsonl",
+    "v64": "reports/eval/compare_v19_vs_v64_on_friend_speech_leak_search_v1/per_sample_metrics.jsonl",
+    "v65": "reports/eval/compare_v19_vs_v65_on_friend_speech_leak_search_v1/per_sample_metrics.jsonl",
+    "v66": "reports/eval/compare_v19_vs_v66_on_friend_speech_leak_search_v1/per_sample_metrics.jsonl",
+    "v67": "reports/eval/compare_v19_vs_v67_on_friend_speech_leak_search_v1/per_sample_metrics.jsonl"
+  },
+  "ordered_aliases": [
+    "v66",
+    "v64"
+  ],
+  "extra_order_constraints": [
+    "v66>v65",
+    "v66>v67",
+    "v64>v67",
+    "v20>v24"
+  ],
+  "all_constraints": [
+    "v66>v64",
+    "v66>v65",
+    "v66>v67",
+    "v64>v67",
+    "v20>v24"
+  ],
+  "numeric_fields": [
+    "target_transient_presence_minus_mid_db_mean",
+    "target_transient_presence_share_mean",
+    "interference_transient_presence_minus_mid_db_mean",
+    "interference_transient_presence_share_mean",
+    "target_interference_logspec_cosine"
+  ],
+  "num_rows": 50,
+  "num_seed_rows": 3,
+  "seed_summary": {
+    "count": 3,
+    "sample_ids": [
+      "val_000331",
+      "val_000376",
+      "val_000430"
+    ],
+    "focus_vs_reference_avg_db": 0.016071160634358723,
+    "min_constraint_gap_avg_db": -0.027291297912597656,
+    "pass_count_avg": 3.6666666666666665,
+    "numeric_field_stats": {
+      "target_transient_presence_minus_mid_db_mean": {
+        "count": 3,
+        "mean": -13.820609410603842,
+        "min": -17.00960922241211,
+        "max": -11.585165977478027
+      },
+      "target_transient_presence_share_mean": {
+        "count": 3,
+        "mean": 0.006418631256868442,
+        "min": 0.002246658783406019,
+        "max": 0.012056445702910423
+      },
+      "interference_transient_presence_minus_mid_db_mean": {
+        "count": 3,
+        "mean": -0.6620278259118398,
+        "min": -3.319185495376587,
+        "max": 1.016707181930542
+      },
+      "interference_transient_presence_share_mean": {
+        "count": 3,
+        "mean": 0.23745283236106238,
+        "min": 0.09055881947278976,
+        "max": 0.43037715554237366
+      },
+      "target_interference_logspec_cosine": {
+        "count": 3,
+        "mean": 0.6863709127790044,
+        "min": 0.6322202283335119,
+        "max": 0.722676482272781
+      }
+    }
+  },
+  "seed_constraint_center": {
+    "v66>v64": 0.016071160634358723,
+    "v66>v65": 0.12096182505289714,
+    "v66>v67": 0.024827003479003906,
+    "v64>v67": 0.008755842844645182,
+    "v20>v24": 0.04660526911417643
+  },
+  "seed_metadata_center": {
+    "target_transient_presence_minus_mid_db_mean": -13.820609410603842,
+    "target_transient_presence_share_mean": 0.006418631256868442,
+    "interference_transient_presence_minus_mid_db_mean": -0.6620278259118398,
+    "interference_transient_presence_share_mean": 0.23745283236106238,
+    "target_interference_logspec_cosine": 0.6863709127790044
+  },
+  "non_seed_fail_signature_counts": {
+    "": 1,
+    "v20>v24": 2,
+    "v66>v64 | v20>v24": 8,
+    "v66>v64 | v66>v65": 6,
+    "v66>v64 | v66>v65 | v66>v67": 3,
+    "v66>v64 | v66>v65 | v66>v67 | v20>v24": 1,
+    "v66>v64 | v66>v65 | v66>v67 | v64>v67": 4,
+    "v66>v64 | v66>v65 | v66>v67 | v64>v67 | v20>v24": 2,
+    "v66>v65": 1,
+    "v66>v65 | v64>v67 | v20>v24": 2,
+    "v66>v65 | v66>v67 | v64>v67": 5,
+    "v66>v65 | v66>v67 | v64>v67 | v20>v24": 3,
+    "v66>v67 | v64>v67 | v20>v24": 9
+  },
+  "top_nearest_rows_by_joint_distance": [
+    {
+      "sample_id": "val_000075",
+      "focus_minus_reference_db": -0.08524131774902344,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.32916259765625,
+      "failed_constraints": [
+        "v66>v64",
+        "v66>v65",
+        "v66>v67"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.08524131774902344,
+        "v66>v65": -0.32916259765625,
+        "v66>v67": -0.009967803955078125
+      },
+      "metadata_distance_z": 1.0480881166444391,
+      "constraint_distance_z": 0.5082904253360356,
+      "joint_distance_z": 1.1648381246935453,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -13.607194900512695,
+        "target_transient_presence_share_mean": 0.056039851158857346,
+        "interference_transient_presence_minus_mid_db_mean": -3.36702036857605,
+        "interference_transient_presence_share_mean": 0.2427840381860733,
+        "target_interference_logspec_cosine": 0.7003817459632435
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000075/metadata.json"
+    },
+    {
+      "sample_id": "val_000305",
+      "focus_minus_reference_db": -0.007860183715820312,
+      "pass_count": 1,
+      "fail_count": 4,
+      "min_constraint_gap_db": -0.05888557434082031,
+      "failed_constraints": [
+        "v66>v64",
+        "v66>v65",
+        "v66>v67",
+        "v64>v67"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.007860183715820312,
+        "v66>v65": -0.025430679321289062,
+        "v66>v67": -0.05888557434082031,
+        "v64>v67": -0.051025390625
+      },
+      "metadata_distance_z": 1.4037482335228293,
+      "constraint_distance_z": 0.18463221179104108,
+      "joint_distance_z": 1.415838322955455,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -8.34082317352295,
+        "target_transient_presence_share_mean": 0.04136735945940018,
+        "interference_transient_presence_minus_mid_db_mean": 1.401066541671753,
+        "interference_transient_presence_share_mean": 0.2989298403263092,
+        "target_interference_logspec_cosine": 0.7411429256565719
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000305/metadata.json"
+    },
+    {
+      "sample_id": "val_000269",
+      "focus_minus_reference_db": 0.06261825561523438,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.10155868530273438,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.0389404296875,
+        "v64>v67": -0.10155868530273438,
+        "v20>v24": -0.0970296859741211
+      },
+      "metadata_distance_z": 1.6875777548753697,
+      "constraint_distance_z": 0.14971103928842752,
+      "joint_distance_z": 1.6942054403274163,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -10.569087028503418,
+        "target_transient_presence_share_mean": 0.07097723335027695,
+        "interference_transient_presence_minus_mid_db_mean": -3.9483320713043213,
+        "interference_transient_presence_share_mean": 0.19375403225421906,
+        "target_interference_logspec_cosine": 0.7817942773746055
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000269/metadata.json"
+    },
+    {
+      "sample_id": "val_000065",
+      "focus_minus_reference_db": 0.024827957153320312,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.05198097229003906,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.02715301513671875,
+        "v64>v67": -0.05198097229003906,
+        "v20>v24": -0.0024251937866210938
+      },
+      "metadata_distance_z": 1.7658138651165336,
+      "constraint_distance_z": 0.11755037077262612,
+      "joint_distance_z": 1.7697222086832083,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -13.317380905151367,
+        "target_transient_presence_share_mean": 0.05418012663722038,
+        "interference_transient_presence_minus_mid_db_mean": 3.4773809909820557,
+        "interference_transient_presence_share_mean": 0.46156808733940125,
+        "target_interference_logspec_cosine": 0.6638855173876015
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000065/metadata.json"
+    },
+    {
+      "sample_id": "val_000076",
+      "focus_minus_reference_db": -0.015604496002197266,
+      "pass_count": 3,
+      "fail_count": 2,
+      "min_constraint_gap_db": -0.19080686569213867,
+      "failed_constraints": [
+        "v66>v64",
+        "v66>v65"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.015604496002197266,
+        "v66>v65": -0.19080686569213867
+      },
+      "metadata_distance_z": 1.7395970311131628,
+      "constraint_distance_z": 0.34072016973461366,
+      "joint_distance_z": 1.7726500119092077,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -9.813207626342773,
+        "target_transient_presence_share_mean": 0.016725817695260048,
+        "interference_transient_presence_minus_mid_db_mean": 4.2904791831970215,
+        "interference_transient_presence_share_mean": 0.44215553998947144,
+        "target_interference_logspec_cosine": 0.6577434147870588
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000076/metadata.json"
+    },
+    {
+      "sample_id": "val_000153",
+      "focus_minus_reference_db": 0.21747589111328125,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.3704967498779297,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.15302085876464844,
+        "v64>v67": -0.3704967498779297,
+        "v20>v24": -0.16748619079589844
+      },
+      "metadata_distance_z": 1.939271312265059,
+      "constraint_distance_z": 0.38644025167204515,
+      "joint_distance_z": 1.977399628473364,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -7.850541114807129,
+        "target_transient_presence_share_mean": 0.05127888172864914,
+        "interference_transient_presence_minus_mid_db_mean": 2.8256027698516846,
+        "interference_transient_presence_share_mean": 0.41113659739494324,
+        "target_interference_logspec_cosine": 0.6147501839193095
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000153/metadata.json"
+    },
+    {
+      "sample_id": "val_000041",
+      "focus_minus_reference_db": 0.015427589416503906,
+      "pass_count": 1,
+      "fail_count": 4,
+      "min_constraint_gap_db": -0.07982349395751953,
+      "failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -0.019849777221679688,
+        "v66>v67": -0.06439590454101562,
+        "v64>v67": -0.07982349395751953,
+        "v20>v24": -0.029010772705078125
+      },
+      "metadata_distance_z": 2.0135617259152974,
+      "constraint_distance_z": 0.18650255062804927,
+      "joint_distance_z": 2.0221805125808525,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -8.051219940185547,
+        "target_transient_presence_share_mean": 0.02426496148109436,
+        "interference_transient_presence_minus_mid_db_mean": 5.840137958526611,
+        "interference_transient_presence_share_mean": 0.37222644686698914,
+        "target_interference_logspec_cosine": 0.6037298161131465
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000041/metadata.json"
+    },
+    {
+      "sample_id": "val_000329",
+      "focus_minus_reference_db": 0.06604290008544922,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.06437397003173828,
+      "failed_constraints": [
+        "v66>v65",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -0.006552696228027344,
+        "v64>v67": -0.06437397003173828,
+        "v20>v24": -0.015562057495117188
+      },
+      "metadata_distance_z": 2.216654128738159,
+      "constraint_distance_z": 0.16030656853595635,
+      "joint_distance_z": 2.2224431876580555,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -23.011409759521484,
+        "target_transient_presence_share_mean": 0.046165186911821365,
+        "interference_transient_presence_minus_mid_db_mean": 3.0813944339752197,
+        "interference_transient_presence_share_mean": 0.1452009081840515,
+        "target_interference_logspec_cosine": 0.598041267387562
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000329/metadata.json"
+    },
+    {
+      "sample_id": "val_000279",
+      "focus_minus_reference_db": 0.010093927383422852,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.0585399866104126,
+      "failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -0.0585399866104126,
+        "v66>v67": -0.03652536869049072,
+        "v64>v67": -0.046619296073913574
+      },
+      "metadata_distance_z": 2.2322791448425328,
+      "constraint_distance_z": 0.20658435785067392,
+      "joint_distance_z": 2.241817851076997,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -7.436224937438965,
+        "target_transient_presence_share_mean": 0.021021703258156776,
+        "interference_transient_presence_minus_mid_db_mean": 3.1626389026641846,
+        "interference_transient_presence_share_mean": 0.4030889570713043,
+        "target_interference_logspec_cosine": 0.5187767252524704
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000279/metadata.json"
+    },
+    {
+      "sample_id": "val_000281",
+      "focus_minus_reference_db": -0.010951995849609375,
+      "pass_count": 1,
+      "fail_count": 4,
+      "min_constraint_gap_db": -0.06453824043273926,
+      "failed_constraints": [
+        "v66>v64",
+        "v66>v65",
+        "v66>v67",
+        "v64>v67"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.010951995849609375,
+        "v66>v65": -0.06453824043273926,
+        "v66>v67": -0.017719745635986328,
+        "v64>v67": -0.006767749786376953
+      },
+      "metadata_distance_z": 2.2521808320746373,
+      "constraint_distance_z": 0.21380274171358105,
+      "joint_distance_z": 2.262306370217935,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -5.19318962097168,
+        "target_transient_presence_share_mean": 0.07336869835853577,
+        "interference_transient_presence_minus_mid_db_mean": -4.875294208526611,
+        "interference_transient_presence_share_mean": 0.14798828959465027,
+        "target_interference_logspec_cosine": 0.6881072891856665
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000281/metadata.json"
+    }
+  ],
+  "top_nearest_aggregate_pass_expansions_by_joint_distance": [
+    {
+      "candidate_sample_id": "val_000076",
+      "seed_plus_candidate_sample_ids": [
+        "val_000331",
+        "val_000376",
+        "val_000430",
+        "val_000076"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v64",
+        "v66>v65"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v64": -0.015604496002197266,
+        "v66>v65": -0.19080686569213867
+      },
+      "candidate_joint_distance_z": 1.7726500119092077,
+      "candidate_metadata_distance_z": 1.7395970311131628,
+      "candidate_constraint_distance_z": 0.34072016973461366,
+      "candidate_focus_minus_reference_db": -0.015604496002197266,
+      "aggregate_all_constraints_pass": true,
+      "aggregate_failed_constraints": [],
+      "aggregate_failed_constraint_gaps_db": {},
+      "aggregate_alias_scores": {
+        "v20": -8.639130473136902,
+        "v24": -8.708325266838074,
+        "v64": -8.640578031539917,
+        "v65": -8.675445437431335,
+        "v66": -8.632425785064697,
+        "v67": -8.654090285301208
+      },
+      "aggregate_focus_minus_reference_db": 0.008152246475219727,
+      "aggregate_min_constraint_gap_db": 0.008152246475219727
+    },
+    {
+      "candidate_sample_id": "val_000281",
+      "seed_plus_candidate_sample_ids": [
+        "val_000331",
+        "val_000376",
+        "val_000430",
+        "val_000281"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v64",
+        "v66>v65",
+        "v66>v67",
+        "v64>v67"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v64": -0.010951995849609375,
+        "v66>v65": -0.06453824043273926,
+        "v66>v67": -0.017719745635986328,
+        "v64>v67": -0.006767749786376953
+      },
+      "candidate_joint_distance_z": 2.262306370217935,
+      "candidate_metadata_distance_z": 2.2521808320746373,
+      "candidate_constraint_distance_z": 0.21380274171358105,
+      "candidate_focus_minus_reference_db": -0.010951995849609375,
+      "aggregate_all_constraints_pass": true,
+      "aggregate_failed_constraints": [],
+      "aggregate_failed_constraint_gaps_db": {},
+      "aggregate_alias_scores": {
+        "v20": -7.583853453397751,
+        "v24": -7.658619225025177,
+        "v64": -7.559852242469788,
+        "v65": -7.625123679637909,
+        "v66": -7.550536870956421,
+        "v67": -7.564727187156677
+      },
+      "aggregate_focus_minus_reference_db": 0.0093153715133667,
+      "aggregate_min_constraint_gap_db": 0.0048749446868896484
+    },
+    {
+      "candidate_sample_id": "val_000316",
+      "seed_plus_candidate_sample_ids": [
+        "val_000331",
+        "val_000376",
+        "val_000430",
+        "val_000316"
+      ],
+      "candidate_failed_constraints": [
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v20>v24": -0.06284177303314209
+      },
+      "candidate_joint_distance_z": 2.3136798766437745,
+      "candidate_metadata_distance_z": 2.3076595509981805,
+      "candidate_constraint_distance_z": 0.16679918546931854,
+      "candidate_focus_minus_reference_db": 0.006538182497024536,
+      "aggregate_all_constraints_pass": true,
+      "aggregate_failed_constraints": [],
+      "aggregate_failed_constraint_gaps_db": {},
+      "aggregate_alias_scores": {
+        "v20": -7.271391034126282,
+        "v24": -7.2906345427036285,
+        "v64": -7.195972099900246,
+        "v65": -7.332596063613892,
+        "v66": -7.1822841838002205,
+        "v67": -7.22711880505085
+      },
+      "aggregate_focus_minus_reference_db": 0.013687916100025177,
+      "aggregate_min_constraint_gap_db": 0.013687916100025177
+    },
+    {
+      "candidate_sample_id": "val_000401",
+      "seed_plus_candidate_sample_ids": [
+        "val_000331",
+        "val_000376",
+        "val_000430",
+        "val_000401"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v64",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v64": -0.010829448699951172,
+        "v20>v24": -0.06453704833984375
+      },
+      "candidate_joint_distance_z": 2.482381379139616,
+      "candidate_metadata_distance_z": 2.4685351486536935,
+      "candidate_constraint_distance_z": 0.26182347366191133,
+      "candidate_focus_minus_reference_db": -0.010829448699951172,
+      "aggregate_all_constraints_pass": true,
+      "aggregate_failed_constraints": [],
+      "aggregate_failed_constraint_gaps_db": {},
+      "aggregate_alias_scores": {
+        "v20": -8.752045631408691,
+        "v24": -8.770865321159363,
+        "v64": -8.63507628440857,
+        "v65": -8.801736950874329,
+        "v66": -8.625730276107788,
+        "v67": -8.668843626976013
+      },
+      "aggregate_focus_minus_reference_db": 0.00934600830078125,
+      "aggregate_min_constraint_gap_db": 0.00934600830078125
+    },
+    {
+      "candidate_sample_id": "val_000223",
+      "seed_plus_candidate_sample_ids": [
+        "val_000331",
+        "val_000376",
+        "val_000430",
+        "val_000223"
+      ],
+      "candidate_failed_constraints": [
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v20>v24": -0.05127286911010742
+      },
+      "candidate_joint_distance_z": 2.640515350836234,
+      "candidate_metadata_distance_z": 2.6385269449219657,
+      "candidate_constraint_distance_z": 0.10245427722919712,
+      "candidate_focus_minus_reference_db": 0.03452348709106445,
+      "aggregate_all_constraints_pass": true,
+      "aggregate_failed_constraints": [],
+      "aggregate_failed_constraint_gaps_db": {},
+      "aggregate_alias_scores": {
+        "v20": -8.995259881019592,
+        "v24": -9.017395615577698,
+        "v64": -8.918079853057861,
+        "v65": -9.037208914756775,
+        "v66": -8.897395610809326,
+        "v67": -8.930643916130066
+      },
+      "aggregate_focus_minus_reference_db": 0.020684242248535156,
+      "aggregate_min_constraint_gap_db": 0.01256406307220459
+    },
+    {
+      "candidate_sample_id": "val_000469",
+      "seed_plus_candidate_sample_ids": [
+        "val_000331",
+        "val_000376",
+        "val_000430",
+        "val_000469"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v64",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v64": -0.025435447692871094,
+        "v20>v24": -0.0038700103759765625
+      },
+      "candidate_joint_distance_z": 2.6625465869549942,
+      "candidate_metadata_distance_z": 2.647661984041648,
+      "candidate_constraint_distance_z": 0.2811411495429523,
+      "candidate_focus_minus_reference_db": -0.025435447692871094,
+      "aggregate_all_constraints_pass": true,
+      "aggregate_failed_constraints": [],
+      "aggregate_failed_constraint_gaps_db": {},
+      "aggregate_alias_scores": {
+        "v20": -9.358676075935364,
+        "v24": -9.392662525177002,
+        "v64": -9.280128955841064,
+        "v65": -9.443477749824524,
+        "v66": -9.274434447288513,
+        "v67": -9.335996747016907
+      },
+      "aggregate_focus_minus_reference_db": 0.0056945085525512695,
+      "aggregate_min_constraint_gap_db": 0.0056945085525512695
+    },
+    {
+      "candidate_sample_id": "val_000022",
+      "seed_plus_candidate_sample_ids": [
+        "val_000331",
+        "val_000376",
+        "val_000430",
+        "val_000022"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v65": -0.09150028228759766,
+        "v66>v67": -0.022151947021484375,
+        "v64>v67": -0.02591991424560547
+      },
+      "candidate_joint_distance_z": 2.8542958056571277,
+      "candidate_metadata_distance_z": 2.844592497757923,
+      "candidate_constraint_distance_z": 0.23515541220905944,
+      "candidate_focus_minus_reference_db": 0.0037679672241210938,
+      "aggregate_all_constraints_pass": true,
+      "aggregate_failed_constraints": [],
+      "aggregate_failed_constraint_gaps_db": {},
+      "aggregate_alias_scores": {
+        "v20": -8.297443389892578,
+        "v24": -8.336060523986816,
+        "v64": -8.2741060256958,
+        "v65": -8.328956961631775,
+        "v66": -8.261110663414001,
+        "v67": -8.274192929267883
+      },
+      "aggregate_focus_minus_reference_db": 0.012995362281799316,
+      "aggregate_min_constraint_gap_db": 8.690357208251953e-05
+    },
+    {
+      "candidate_sample_id": "val_000165",
+      "seed_plus_candidate_sample_ids": [
+        "val_000331",
+        "val_000376",
+        "val_000430",
+        "val_000165"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v64",
+        "v66>v65"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v64": -0.0011494159698486328,
+        "v66>v65": -0.11557984352111816
+      },
+      "candidate_joint_distance_z": 3.0765414459214604,
+      "candidate_metadata_distance_z": 3.0656554167398387,
+      "candidate_constraint_distance_z": 0.2585810014022593,
+      "candidate_focus_minus_reference_db": -0.0011494159698486328,
+      "aggregate_all_constraints_pass": true,
+      "aggregate_failed_constraints": [],
+      "aggregate_failed_constraint_gaps_db": {},
+      "aggregate_alias_scores": {
+        "v20": -7.924691677093506,
+        "v24": -7.984379529953003,
+        "v64": -7.904118478298187,
+        "v65": -7.954178869724274,
+        "v66": -7.89235246181488,
+        "v67": -7.923019051551819
+      },
+      "aggregate_focus_minus_reference_db": 0.011766016483306885,
+      "aggregate_min_constraint_gap_db": 0.011766016483306885
+    },
+    {
+      "candidate_sample_id": "val_000411",
+      "seed_plus_candidate_sample_ids": [
+        "val_000331",
+        "val_000376",
+        "val_000430",
+        "val_000411"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v64",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v64": -0.041345834732055664,
+        "v20>v24": -0.026429176330566406
+      },
+      "candidate_joint_distance_z": 3.232941531952834,
+      "candidate_metadata_distance_z": 3.23114236131251,
+      "candidate_constraint_distance_z": 0.10784243115469566,
+      "candidate_focus_minus_reference_db": -0.041345834732055664,
+      "aggregate_all_constraints_pass": true,
+      "aggregate_failed_constraints": [],
+      "aggregate_failed_constraint_gaps_db": {},
+      "aggregate_alias_scores": {
+        "v20": -7.868640899658203,
+        "v24": -7.896987557411194,
+        "v64": -7.791635453701019,
+        "v65": -7.896376729011536,
+        "v66": -7.789918541908264,
+        "v67": -7.817216753959656
+      },
+      "aggregate_focus_minus_reference_db": 0.001716911792755127,
+      "aggregate_min_constraint_gap_db": 0.001716911792755127
+    },
+    {
+      "candidate_sample_id": "val_000202",
+      "seed_plus_candidate_sample_ids": [
+        "val_000331",
+        "val_000376",
+        "val_000430",
+        "val_000202"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v65"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v65": -0.15528202056884766
+      },
+      "candidate_joint_distance_z": 3.3712538650441477,
+      "candidate_metadata_distance_z": 3.3550905847258603,
+      "candidate_constraint_distance_z": 0.32972684279413716,
+      "candidate_focus_minus_reference_db": 0.017746925354003906,
+      "aggregate_all_constraints_pass": true,
+      "aggregate_failed_constraints": [],
+      "aggregate_failed_constraint_gaps_db": {},
+      "aggregate_alias_scores": {
+        "v20": -10.90420401096344,
+        "v24": -11.02322006225586,
+        "v64": -10.874000072479248,
+        "v65": -10.909410834312439,
+        "v66": -10.857509970664978,
+        "v67": -10.890528082847595
+      },
+      "aggregate_focus_minus_reference_db": 0.01649010181427002,
+      "aggregate_min_constraint_gap_db": 0.01649010181427002
+    }
+  ],
+  "top_nearest_rows_by_metadata_distance": [
+    {
+      "sample_id": "val_000075",
+      "focus_minus_reference_db": -0.08524131774902344,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.32916259765625,
+      "failed_constraints": [
+        "v66>v64",
+        "v66>v65",
+        "v66>v67"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.08524131774902344,
+        "v66>v65": -0.32916259765625,
+        "v66>v67": -0.009967803955078125
+      },
+      "metadata_distance_z": 1.0480881166444391,
+      "constraint_distance_z": 0.5082904253360356,
+      "joint_distance_z": 1.1648381246935453,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -13.607194900512695,
+        "target_transient_presence_share_mean": 0.056039851158857346,
+        "interference_transient_presence_minus_mid_db_mean": -3.36702036857605,
+        "interference_transient_presence_share_mean": 0.2427840381860733,
+        "target_interference_logspec_cosine": 0.7003817459632435
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000075/metadata.json"
+    },
+    {
+      "sample_id": "val_000305",
+      "focus_minus_reference_db": -0.007860183715820312,
+      "pass_count": 1,
+      "fail_count": 4,
+      "min_constraint_gap_db": -0.05888557434082031,
+      "failed_constraints": [
+        "v66>v64",
+        "v66>v65",
+        "v66>v67",
+        "v64>v67"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.007860183715820312,
+        "v66>v65": -0.025430679321289062,
+        "v66>v67": -0.05888557434082031,
+        "v64>v67": -0.051025390625
+      },
+      "metadata_distance_z": 1.4037482335228293,
+      "constraint_distance_z": 0.18463221179104108,
+      "joint_distance_z": 1.415838322955455,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -8.34082317352295,
+        "target_transient_presence_share_mean": 0.04136735945940018,
+        "interference_transient_presence_minus_mid_db_mean": 1.401066541671753,
+        "interference_transient_presence_share_mean": 0.2989298403263092,
+        "target_interference_logspec_cosine": 0.7411429256565719
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000305/metadata.json"
+    },
+    {
+      "sample_id": "val_000338",
+      "focus_minus_reference_db": -0.9293899536132812,
+      "pass_count": 3,
+      "fail_count": 2,
+      "min_constraint_gap_db": -1.055999755859375,
+      "failed_constraints": [
+        "v66>v64",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.9293899536132812,
+        "v20>v24": -1.055999755859375
+      },
+      "metadata_distance_z": 1.5518578561536565,
+      "constraint_distance_z": 2.340887478157421,
+      "joint_distance_z": 2.8085613739243858,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -7.850541114807129,
+        "target_transient_presence_share_mean": 0.05127888172864914,
+        "interference_transient_presence_minus_mid_db_mean": -2.4790682792663574,
+        "interference_transient_presence_share_mean": 0.20861676335334778,
+        "target_interference_logspec_cosine": 0.6178988088194538
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000338/metadata.json"
+    },
+    {
+      "sample_id": "val_000182",
+      "focus_minus_reference_db": 4.649478912353516,
+      "pass_count": 1,
+      "fail_count": 4,
+      "min_constraint_gap_db": -14.495071411132812,
+      "failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -4.6157989501953125,
+        "v66>v67": -6.442935943603516,
+        "v64>v67": -11.092414855957031,
+        "v20>v24": -14.495071411132812
+      },
+      "metadata_distance_z": 1.5707073086653112,
+      "constraint_distance_z": 13.698574996264028,
+      "joint_distance_z": 13.788331239775342,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -15.896512985229492,
+        "target_transient_presence_share_mean": 0.00042558732093311846,
+        "interference_transient_presence_minus_mid_db_mean": 2.0366358757019043,
+        "interference_transient_presence_share_mean": 0.2909950315952301,
+        "target_interference_logspec_cosine": 0.5209989793817678
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000182/metadata.json"
+    },
+    {
+      "sample_id": "val_000269",
+      "focus_minus_reference_db": 0.06261825561523438,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.10155868530273438,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.0389404296875,
+        "v64>v67": -0.10155868530273438,
+        "v20>v24": -0.0970296859741211
+      },
+      "metadata_distance_z": 1.6875777548753697,
+      "constraint_distance_z": 0.14971103928842752,
+      "joint_distance_z": 1.6942054403274163,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -10.569087028503418,
+        "target_transient_presence_share_mean": 0.07097723335027695,
+        "interference_transient_presence_minus_mid_db_mean": -3.9483320713043213,
+        "interference_transient_presence_share_mean": 0.19375403225421906,
+        "target_interference_logspec_cosine": 0.7817942773746055
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000269/metadata.json"
+    },
+    {
+      "sample_id": "val_000076",
+      "focus_minus_reference_db": -0.015604496002197266,
+      "pass_count": 3,
+      "fail_count": 2,
+      "min_constraint_gap_db": -0.19080686569213867,
+      "failed_constraints": [
+        "v66>v64",
+        "v66>v65"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.015604496002197266,
+        "v66>v65": -0.19080686569213867
+      },
+      "metadata_distance_z": 1.7395970311131628,
+      "constraint_distance_z": 0.34072016973461366,
+      "joint_distance_z": 1.7726500119092077,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -9.813207626342773,
+        "target_transient_presence_share_mean": 0.016725817695260048,
+        "interference_transient_presence_minus_mid_db_mean": 4.2904791831970215,
+        "interference_transient_presence_share_mean": 0.44215553998947144,
+        "target_interference_logspec_cosine": 0.6577434147870588
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000076/metadata.json"
+    },
+    {
+      "sample_id": "val_000065",
+      "focus_minus_reference_db": 0.024827957153320312,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.05198097229003906,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.02715301513671875,
+        "v64>v67": -0.05198097229003906,
+        "v20>v24": -0.0024251937866210938
+      },
+      "metadata_distance_z": 1.7658138651165336,
+      "constraint_distance_z": 0.11755037077262612,
+      "joint_distance_z": 1.7697222086832083,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -13.317380905151367,
+        "target_transient_presence_share_mean": 0.05418012663722038,
+        "interference_transient_presence_minus_mid_db_mean": 3.4773809909820557,
+        "interference_transient_presence_share_mean": 0.46156808733940125,
+        "target_interference_logspec_cosine": 0.6638855173876015
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000065/metadata.json"
+    },
+    {
+      "sample_id": "val_000153",
+      "focus_minus_reference_db": 0.21747589111328125,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.3704967498779297,
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v67": -0.15302085876464844,
+        "v64>v67": -0.3704967498779297,
+        "v20>v24": -0.16748619079589844
+      },
+      "metadata_distance_z": 1.939271312265059,
+      "constraint_distance_z": 0.38644025167204515,
+      "joint_distance_z": 1.977399628473364,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -7.850541114807129,
+        "target_transient_presence_share_mean": 0.05127888172864914,
+        "interference_transient_presence_minus_mid_db_mean": 2.8256027698516846,
+        "interference_transient_presence_share_mean": 0.41113659739494324,
+        "target_interference_logspec_cosine": 0.6147501839193095
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000153/metadata.json"
+    },
+    {
+      "sample_id": "val_000041",
+      "focus_minus_reference_db": 0.015427589416503906,
+      "pass_count": 1,
+      "fail_count": 4,
+      "min_constraint_gap_db": -0.07982349395751953,
+      "failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v65": -0.019849777221679688,
+        "v66>v67": -0.06439590454101562,
+        "v64>v67": -0.07982349395751953,
+        "v20>v24": -0.029010772705078125
+      },
+      "metadata_distance_z": 2.0135617259152974,
+      "constraint_distance_z": 0.18650255062804927,
+      "joint_distance_z": 2.0221805125808525,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -8.051219940185547,
+        "target_transient_presence_share_mean": 0.02426496148109436,
+        "interference_transient_presence_minus_mid_db_mean": 5.840137958526611,
+        "interference_transient_presence_share_mean": 0.37222644686698914,
+        "target_interference_logspec_cosine": 0.6037298161131465
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000041/metadata.json"
+    },
+    {
+      "sample_id": "val_000170",
+      "focus_minus_reference_db": -0.36383819580078125,
+      "pass_count": 2,
+      "fail_count": 3,
+      "min_constraint_gap_db": -0.6842174530029297,
+      "failed_constraints": [
+        "v66>v64",
+        "v66>v65",
+        "v66>v67"
+      ],
+      "failed_constraint_gaps_db": {
+        "v66>v64": -0.36383819580078125,
+        "v66>v65": -0.6842174530029297,
+        "v66>v67": -0.07144355773925781
+      },
+      "metadata_distance_z": 2.092727145419365,
+      "constraint_distance_z": 1.067943846617958,
+      "joint_distance_z": 2.3494703583370113,
+      "manifest_fields": {
+        "target_transient_presence_minus_mid_db_mean": -13.625691413879395,
+        "target_transient_presence_share_mean": 0.02859668992459774,
+        "interference_transient_presence_minus_mid_db_mean": 2.9750235080718994,
+        "interference_transient_presence_share_mean": 0.4639713764190674,
+        "target_interference_logspec_cosine": 0.5174919761320766
+      },
+      "recipe": "target_clean_speech",
+      "temporal_pattern": "target_full",
+      "target_present_ratio": 1.0,
+      "metadata_path": "data/synthetic/val/val_000170/metadata.json"
+    }
+  ],
+  "top_seed_plus_one_expansions": [
+    {
+      "candidate_sample_id": "val_000202",
+      "seed_plus_candidate_sample_ids": [
+        "val_000331",
+        "val_000376",
+        "val_000430",
+        "val_000202"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v65"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v65": -0.15528202056884766
+      },
+      "candidate_joint_distance_z": 3.3712538650441477,
+      "candidate_metadata_distance_z": 3.3550905847258603,
+      "candidate_constraint_distance_z": 0.32972684279413716,
+      "candidate_focus_minus_reference_db": 0.017746925354003906,
+      "aggregate_all_constraints_pass": true,
+      "aggregate_failed_constraints": [],
+      "aggregate_failed_constraint_gaps_db": {},
+      "aggregate_alias_scores": {
+        "v20": -10.90420401096344,
+        "v24": -11.02322006225586,
+        "v64": -10.874000072479248,
+        "v65": -10.909410834312439,
+        "v66": -10.857509970664978,
+        "v67": -10.890528082847595
+      },
+      "aggregate_focus_minus_reference_db": 0.01649010181427002,
+      "aggregate_min_constraint_gap_db": 0.01649010181427002
+    },
+    {
+      "candidate_sample_id": "val_000316",
+      "seed_plus_candidate_sample_ids": [
+        "val_000331",
+        "val_000376",
+        "val_000430",
+        "val_000316"
+      ],
+      "candidate_failed_constraints": [
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v20>v24": -0.06284177303314209
+      },
+      "candidate_joint_distance_z": 2.3136798766437745,
+      "candidate_metadata_distance_z": 2.3076595509981805,
+      "candidate_constraint_distance_z": 0.16679918546931854,
+      "candidate_focus_minus_reference_db": 0.006538182497024536,
+      "aggregate_all_constraints_pass": true,
+      "aggregate_failed_constraints": [],
+      "aggregate_failed_constraint_gaps_db": {},
+      "aggregate_alias_scores": {
+        "v20": -7.271391034126282,
+        "v24": -7.2906345427036285,
+        "v64": -7.195972099900246,
+        "v65": -7.332596063613892,
+        "v66": -7.1822841838002205,
+        "v67": -7.22711880505085
+      },
+      "aggregate_focus_minus_reference_db": 0.013687916100025177,
+      "aggregate_min_constraint_gap_db": 0.013687916100025177
+    },
+    {
+      "candidate_sample_id": "val_000223",
+      "seed_plus_candidate_sample_ids": [
+        "val_000331",
+        "val_000376",
+        "val_000430",
+        "val_000223"
+      ],
+      "candidate_failed_constraints": [
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v20>v24": -0.05127286911010742
+      },
+      "candidate_joint_distance_z": 2.640515350836234,
+      "candidate_metadata_distance_z": 2.6385269449219657,
+      "candidate_constraint_distance_z": 0.10245427722919712,
+      "candidate_focus_minus_reference_db": 0.03452348709106445,
+      "aggregate_all_constraints_pass": true,
+      "aggregate_failed_constraints": [],
+      "aggregate_failed_constraint_gaps_db": {},
+      "aggregate_alias_scores": {
+        "v20": -8.995259881019592,
+        "v24": -9.017395615577698,
+        "v64": -8.918079853057861,
+        "v65": -9.037208914756775,
+        "v66": -8.897395610809326,
+        "v67": -8.930643916130066
+      },
+      "aggregate_focus_minus_reference_db": 0.020684242248535156,
+      "aggregate_min_constraint_gap_db": 0.01256406307220459
+    },
+    {
+      "candidate_sample_id": "val_000239",
+      "seed_plus_candidate_sample_ids": [
+        "val_000331",
+        "val_000376",
+        "val_000430",
+        "val_000239"
+      ],
+      "candidate_failed_constraints": [],
+      "candidate_failed_constraint_gaps_db": {},
+      "candidate_joint_distance_z": 3.88252201812858,
+      "candidate_metadata_distance_z": 3.880921499342802,
+      "candidate_constraint_distance_z": 0.11146989365761728,
+      "candidate_focus_minus_reference_db": 0.00174713134765625,
+      "aggregate_all_constraints_pass": true,
+      "aggregate_failed_constraints": [],
+      "aggregate_failed_constraint_gaps_db": {},
+      "aggregate_alias_scores": {
+        "v20": -9.591768383979797,
+        "v24": -9.632619619369507,
+        "v64": -9.528953313827515,
+        "v65": -9.61927044391632,
+        "v66": -9.516463160514832,
+        "v67": -9.557023882865906
+      },
+      "aggregate_focus_minus_reference_db": 0.012490153312683105,
+      "aggregate_min_constraint_gap_db": 0.012490153312683105
+    },
+    {
+      "candidate_sample_id": "val_000165",
+      "seed_plus_candidate_sample_ids": [
+        "val_000331",
+        "val_000376",
+        "val_000430",
+        "val_000165"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v64",
+        "v66>v65"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v64": -0.0011494159698486328,
+        "v66>v65": -0.11557984352111816
+      },
+      "candidate_joint_distance_z": 3.0765414459214604,
+      "candidate_metadata_distance_z": 3.0656554167398387,
+      "candidate_constraint_distance_z": 0.2585810014022593,
+      "candidate_focus_minus_reference_db": -0.0011494159698486328,
+      "aggregate_all_constraints_pass": true,
+      "aggregate_failed_constraints": [],
+      "aggregate_failed_constraint_gaps_db": {},
+      "aggregate_alias_scores": {
+        "v20": -7.924691677093506,
+        "v24": -7.984379529953003,
+        "v64": -7.904118478298187,
+        "v65": -7.954178869724274,
+        "v66": -7.89235246181488,
+        "v67": -7.923019051551819
+      },
+      "aggregate_focus_minus_reference_db": 0.011766016483306885,
+      "aggregate_min_constraint_gap_db": 0.011766016483306885
+    },
+    {
+      "candidate_sample_id": "val_000401",
+      "seed_plus_candidate_sample_ids": [
+        "val_000331",
+        "val_000376",
+        "val_000430",
+        "val_000401"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v64",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v64": -0.010829448699951172,
+        "v20>v24": -0.06453704833984375
+      },
+      "candidate_joint_distance_z": 2.482381379139616,
+      "candidate_metadata_distance_z": 2.4685351486536935,
+      "candidate_constraint_distance_z": 0.26182347366191133,
+      "candidate_focus_minus_reference_db": -0.010829448699951172,
+      "aggregate_all_constraints_pass": true,
+      "aggregate_failed_constraints": [],
+      "aggregate_failed_constraint_gaps_db": {},
+      "aggregate_alias_scores": {
+        "v20": -8.752045631408691,
+        "v24": -8.770865321159363,
+        "v64": -8.63507628440857,
+        "v65": -8.801736950874329,
+        "v66": -8.625730276107788,
+        "v67": -8.668843626976013
+      },
+      "aggregate_focus_minus_reference_db": 0.00934600830078125,
+      "aggregate_min_constraint_gap_db": 0.00934600830078125
+    },
+    {
+      "candidate_sample_id": "val_000364",
+      "seed_plus_candidate_sample_ids": [
+        "val_000331",
+        "val_000376",
+        "val_000430",
+        "val_000364"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v64",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v64": -0.01457357406616211,
+        "v20>v24": -0.03823709487915039
+      },
+      "candidate_joint_distance_z": 3.534030171881153,
+      "candidate_metadata_distance_z": 3.531887745061894,
+      "candidate_constraint_distance_z": 0.12303744165065579,
+      "candidate_focus_minus_reference_db": -0.01457357406616211,
+      "aggregate_all_constraints_pass": true,
+      "aggregate_failed_constraints": [],
+      "aggregate_failed_constraint_gaps_db": {},
+      "aggregate_alias_scores": {
+        "v20": -9.07129430770874,
+        "v24": -9.096688985824585,
+        "v64": -8.954080581665039,
+        "v65": -9.068589568138123,
+        "v66": -8.94567060470581,
+        "v67": -8.992230534553528
+      },
+      "aggregate_focus_minus_reference_db": 0.008409976959228516,
+      "aggregate_min_constraint_gap_db": 0.008409976959228516
+    },
+    {
+      "candidate_sample_id": "val_000076",
+      "seed_plus_candidate_sample_ids": [
+        "val_000331",
+        "val_000376",
+        "val_000430",
+        "val_000076"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v64",
+        "v66>v65"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v64": -0.015604496002197266,
+        "v66>v65": -0.19080686569213867
+      },
+      "candidate_joint_distance_z": 1.7726500119092077,
+      "candidate_metadata_distance_z": 1.7395970311131628,
+      "candidate_constraint_distance_z": 0.34072016973461366,
+      "candidate_focus_minus_reference_db": -0.015604496002197266,
+      "aggregate_all_constraints_pass": true,
+      "aggregate_failed_constraints": [],
+      "aggregate_failed_constraint_gaps_db": {},
+      "aggregate_alias_scores": {
+        "v20": -8.639130473136902,
+        "v24": -8.708325266838074,
+        "v64": -8.640578031539917,
+        "v65": -8.675445437431335,
+        "v66": -8.632425785064697,
+        "v67": -8.654090285301208
+      },
+      "aggregate_focus_minus_reference_db": 0.008152246475219727,
+      "aggregate_min_constraint_gap_db": 0.008152246475219727
+    },
+    {
+      "candidate_sample_id": "val_000205",
+      "seed_plus_candidate_sample_ids": [
+        "val_000331",
+        "val_000376",
+        "val_000430",
+        "val_000205"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v67": -0.0014938116073608398,
+        "v64>v67": -0.001711130142211914,
+        "v20>v24": -0.019879281520843506
+      },
+      "candidate_joint_distance_z": 4.363876137694247,
+      "candidate_metadata_distance_z": 4.361801041195023,
+      "candidate_constraint_distance_z": 0.1345608493109149,
+      "candidate_focus_minus_reference_db": 0.00021731853485107422,
+      "aggregate_all_constraints_pass": true,
+      "aggregate_failed_constraints": [],
+      "aggregate_failed_constraint_gaps_db": {},
+      "aggregate_alias_scores": {
+        "v20": -7.325388610363007,
+        "v24": -7.355372741818428,
+        "v64": -7.280646741390228,
+        "v65": -7.360115140676498,
+        "v66": -7.2685390412807465,
+        "v67": -7.286785840988159
+      },
+      "aggregate_focus_minus_reference_db": 0.012107700109481812,
+      "aggregate_min_constraint_gap_db": 0.006139099597930908
+    },
+    {
+      "candidate_sample_id": "val_000469",
+      "seed_plus_candidate_sample_ids": [
+        "val_000331",
+        "val_000376",
+        "val_000430",
+        "val_000469"
+      ],
+      "candidate_failed_constraints": [
+        "v66>v64",
+        "v20>v24"
+      ],
+      "candidate_failed_constraint_gaps_db": {
+        "v66>v64": -0.025435447692871094,
+        "v20>v24": -0.0038700103759765625
+      },
+      "candidate_joint_distance_z": 2.6625465869549942,
+      "candidate_metadata_distance_z": 2.647661984041648,
+      "candidate_constraint_distance_z": 0.2811411495429523,
+      "candidate_focus_minus_reference_db": -0.025435447692871094,
+      "aggregate_all_constraints_pass": true,
+      "aggregate_failed_constraints": [],
+      "aggregate_failed_constraint_gaps_db": {},
+      "aggregate_alias_scores": {
+        "v20": -9.358676075935364,
+        "v24": -9.392662525177002,
+        "v64": -9.280128955841064,
+        "v65": -9.443477749824524,
+        "v66": -9.274434447288513,
+        "v67": -9.335996747016907
+      },
+      "aggregate_focus_minus_reference_db": 0.0056945085525512695,
+      "aggregate_min_constraint_gap_db": 0.0056945085525512695
+    }
+  ],
+  "aggregate_pass_signature_summaries": {
+    "v66>v64 | v20>v24": {
+      "count": 4,
+      "mean_candidate_joint_distance_z": 2.9779749174821495,
+      "mean_aggregate_min_constraint_gap_db": 0.0062918514013290405,
+      "nearest_candidate": {
+        "candidate_sample_id": "val_000401",
+        "seed_plus_candidate_sample_ids": [
+          "val_000331",
+          "val_000376",
+          "val_000430",
+          "val_000401"
+        ],
+        "candidate_failed_constraints": [
+          "v66>v64",
+          "v20>v24"
+        ],
+        "candidate_failed_constraint_gaps_db": {
+          "v66>v64": -0.010829448699951172,
+          "v20>v24": -0.06453704833984375
+        },
+        "candidate_joint_distance_z": 2.482381379139616,
+        "candidate_metadata_distance_z": 2.4685351486536935,
+        "candidate_constraint_distance_z": 0.26182347366191133,
+        "candidate_focus_minus_reference_db": -0.010829448699951172,
+        "aggregate_all_constraints_pass": true,
+        "aggregate_failed_constraints": [],
+        "aggregate_failed_constraint_gaps_db": {},
+        "aggregate_alias_scores": {
+          "v20": -8.752045631408691,
+          "v24": -8.770865321159363,
+          "v64": -8.63507628440857,
+          "v65": -8.801736950874329,
+          "v66": -8.625730276107788,
+          "v67": -8.668843626976013
+        },
+        "aggregate_focus_minus_reference_db": 0.00934600830078125,
+        "aggregate_min_constraint_gap_db": 0.00934600830078125
+      },
+      "strongest_aggregate_candidate": {
+        "candidate_sample_id": "val_000401",
+        "seed_plus_candidate_sample_ids": [
+          "val_000331",
+          "val_000376",
+          "val_000430",
+          "val_000401"
+        ],
+        "candidate_failed_constraints": [
+          "v66>v64",
+          "v20>v24"
+        ],
+        "candidate_failed_constraint_gaps_db": {
+          "v66>v64": -0.010829448699951172,
+          "v20>v24": -0.06453704833984375
+        },
+        "candidate_joint_distance_z": 2.482381379139616,
+        "candidate_metadata_distance_z": 2.4685351486536935,
+        "candidate_constraint_distance_z": 0.26182347366191133,
+        "candidate_focus_minus_reference_db": -0.010829448699951172,
+        "aggregate_all_constraints_pass": true,
+        "aggregate_failed_constraints": [],
+        "aggregate_failed_constraint_gaps_db": {},
+        "aggregate_alias_scores": {
+          "v20": -8.752045631408691,
+          "v24": -8.770865321159363,
+          "v64": -8.63507628440857,
+          "v65": -8.801736950874329,
+          "v66": -8.625730276107788,
+          "v67": -8.668843626976013
+        },
+        "aggregate_focus_minus_reference_db": 0.00934600830078125,
+        "aggregate_min_constraint_gap_db": 0.00934600830078125
+      },
+      "top_nearest_candidates": [
+        {
+          "candidate_sample_id": "val_000401",
+          "seed_plus_candidate_sample_ids": [
+            "val_000331",
+            "val_000376",
+            "val_000430",
+            "val_000401"
+          ],
+          "candidate_failed_constraints": [
+            "v66>v64",
+            "v20>v24"
+          ],
+          "candidate_failed_constraint_gaps_db": {
+            "v66>v64": -0.010829448699951172,
+            "v20>v24": -0.06453704833984375
+          },
+          "candidate_joint_distance_z": 2.482381379139616,
+          "candidate_metadata_distance_z": 2.4685351486536935,
+          "candidate_constraint_distance_z": 0.26182347366191133,
+          "candidate_focus_minus_reference_db": -0.010829448699951172,
+          "aggregate_all_constraints_pass": true,
+          "aggregate_failed_constraints": [],
+          "aggregate_failed_constraint_gaps_db": {},
+          "aggregate_alias_scores": {
+            "v20": -8.752045631408691,
+            "v24": -8.770865321159363,
+            "v64": -8.63507628440857,
+            "v65": -8.801736950874329,
+            "v66": -8.625730276107788,
+            "v67": -8.668843626976013
+          },
+          "aggregate_focus_minus_reference_db": 0.00934600830078125,
+          "aggregate_min_constraint_gap_db": 0.00934600830078125
+        },
+        {
+          "candidate_sample_id": "val_000469",
+          "seed_plus_candidate_sample_ids": [
+            "val_000331",
+            "val_000376",
+            "val_000430",
+            "val_000469"
+          ],
+          "candidate_failed_constraints": [
+            "v66>v64",
+            "v20>v24"
+          ],
+          "candidate_failed_constraint_gaps_db": {
+            "v66>v64": -0.025435447692871094,
+            "v20>v24": -0.0038700103759765625
+          },
+          "candidate_joint_distance_z": 2.6625465869549942,
+          "candidate_metadata_distance_z": 2.647661984041648,
+          "candidate_constraint_distance_z": 0.2811411495429523,
+          "candidate_focus_minus_reference_db": -0.025435447692871094,
+          "aggregate_all_constraints_pass": true,
+          "aggregate_failed_constraints": [],
+          "aggregate_failed_constraint_gaps_db": {},
+          "aggregate_alias_scores": {
+            "v20": -9.358676075935364,
+            "v24": -9.392662525177002,
+            "v64": -9.280128955841064,
+            "v65": -9.443477749824524,
+            "v66": -9.274434447288513,
+            "v67": -9.335996747016907
+          },
+          "aggregate_focus_minus_reference_db": 0.0056945085525512695,
+          "aggregate_min_constraint_gap_db": 0.0056945085525512695
+        },
+        {
+          "candidate_sample_id": "val_000411",
+          "seed_plus_candidate_sample_ids": [
+            "val_000331",
+            "val_000376",
+            "val_000430",
+            "val_000411"
+          ],
+          "candidate_failed_constraints": [
+            "v66>v64",
+            "v20>v24"
+          ],
+          "candidate_failed_constraint_gaps_db": {
+            "v66>v64": -0.041345834732055664,
+            "v20>v24": -0.026429176330566406
+          },
+          "candidate_joint_distance_z": 3.232941531952834,
+          "candidate_metadata_distance_z": 3.23114236131251,
+          "candidate_constraint_distance_z": 0.10784243115469566,
+          "candidate_focus_minus_reference_db": -0.041345834732055664,
+          "aggregate_all_constraints_pass": true,
+          "aggregate_failed_constraints": [],
+          "aggregate_failed_constraint_gaps_db": {},
+          "aggregate_alias_scores": {
+            "v20": -7.868640899658203,
+            "v24": -7.896987557411194,
+            "v64": -7.791635453701019,
+            "v65": -7.896376729011536,
+            "v66": -7.789918541908264,
+            "v67": -7.817216753959656
+          },
+          "aggregate_focus_minus_reference_db": 0.001716911792755127,
+          "aggregate_min_constraint_gap_db": 0.001716911792755127
+        },
+        {
+          "candidate_sample_id": "val_000364",
+          "seed_plus_candidate_sample_ids": [
+            "val_000331",
+            "val_000376",
+            "val_000430",
+            "val_000364"
+          ],
+          "candidate_failed_constraints": [
+            "v66>v64",
+            "v20>v24"
+          ],
+          "candidate_failed_constraint_gaps_db": {
+            "v66>v64": -0.01457357406616211,
+            "v20>v24": -0.03823709487915039
+          },
+          "candidate_joint_distance_z": 3.534030171881153,
+          "candidate_metadata_distance_z": 3.531887745061894,
+          "candidate_constraint_distance_z": 0.12303744165065579,
+          "candidate_focus_minus_reference_db": -0.01457357406616211,
+          "aggregate_all_constraints_pass": true,
+          "aggregate_failed_constraints": [],
+          "aggregate_failed_constraint_gaps_db": {},
+          "aggregate_alias_scores": {
+            "v20": -9.07129430770874,
+            "v24": -9.096688985824585,
+            "v64": -8.954080581665039,
+            "v65": -9.068589568138123,
+            "v66": -8.94567060470581,
+            "v67": -8.992230534553528
+          },
+          "aggregate_focus_minus_reference_db": 0.008409976959228516,
+          "aggregate_min_constraint_gap_db": 0.008409976959228516
+        }
+      ]
+    },
+    "v20>v24": {
+      "count": 2,
+      "mean_candidate_joint_distance_z": 2.4770976137400043,
+      "mean_aggregate_min_constraint_gap_db": 0.013125989586114883,
+      "nearest_candidate": {
+        "candidate_sample_id": "val_000316",
+        "seed_plus_candidate_sample_ids": [
+          "val_000331",
+          "val_000376",
+          "val_000430",
+          "val_000316"
+        ],
+        "candidate_failed_constraints": [
+          "v20>v24"
+        ],
+        "candidate_failed_constraint_gaps_db": {
+          "v20>v24": -0.06284177303314209
+        },
+        "candidate_joint_distance_z": 2.3136798766437745,
+        "candidate_metadata_distance_z": 2.3076595509981805,
+        "candidate_constraint_distance_z": 0.16679918546931854,
+        "candidate_focus_minus_reference_db": 0.006538182497024536,
+        "aggregate_all_constraints_pass": true,
+        "aggregate_failed_constraints": [],
+        "aggregate_failed_constraint_gaps_db": {},
+        "aggregate_alias_scores": {
+          "v20": -7.271391034126282,
+          "v24": -7.2906345427036285,
+          "v64": -7.195972099900246,
+          "v65": -7.332596063613892,
+          "v66": -7.1822841838002205,
+          "v67": -7.22711880505085
+        },
+        "aggregate_focus_minus_reference_db": 0.013687916100025177,
+        "aggregate_min_constraint_gap_db": 0.013687916100025177
+      },
+      "strongest_aggregate_candidate": {
+        "candidate_sample_id": "val_000316",
+        "seed_plus_candidate_sample_ids": [
+          "val_000331",
+          "val_000376",
+          "val_000430",
+          "val_000316"
+        ],
+        "candidate_failed_constraints": [
+          "v20>v24"
+        ],
+        "candidate_failed_constraint_gaps_db": {
+          "v20>v24": -0.06284177303314209
+        },
+        "candidate_joint_distance_z": 2.3136798766437745,
+        "candidate_metadata_distance_z": 2.3076595509981805,
+        "candidate_constraint_distance_z": 0.16679918546931854,
+        "candidate_focus_minus_reference_db": 0.006538182497024536,
+        "aggregate_all_constraints_pass": true,
+        "aggregate_failed_constraints": [],
+        "aggregate_failed_constraint_gaps_db": {},
+        "aggregate_alias_scores": {
+          "v20": -7.271391034126282,
+          "v24": -7.2906345427036285,
+          "v64": -7.195972099900246,
+          "v65": -7.332596063613892,
+          "v66": -7.1822841838002205,
+          "v67": -7.22711880505085
+        },
+        "aggregate_focus_minus_reference_db": 0.013687916100025177,
+        "aggregate_min_constraint_gap_db": 0.013687916100025177
+      },
+      "top_nearest_candidates": [
+        {
+          "candidate_sample_id": "val_000316",
+          "seed_plus_candidate_sample_ids": [
+            "val_000331",
+            "val_000376",
+            "val_000430",
+            "val_000316"
+          ],
+          "candidate_failed_constraints": [
+            "v20>v24"
+          ],
+          "candidate_failed_constraint_gaps_db": {
+            "v20>v24": -0.06284177303314209
+          },
+          "candidate_joint_distance_z": 2.3136798766437745,
+          "candidate_metadata_distance_z": 2.3076595509981805,
+          "candidate_constraint_distance_z": 0.16679918546931854,
+          "candidate_focus_minus_reference_db": 0.006538182497024536,
+          "aggregate_all_constraints_pass": true,
+          "aggregate_failed_constraints": [],
+          "aggregate_failed_constraint_gaps_db": {},
+          "aggregate_alias_scores": {
+            "v20": -7.271391034126282,
+            "v24": -7.2906345427036285,
+            "v64": -7.195972099900246,
+            "v65": -7.332596063613892,
+            "v66": -7.1822841838002205,
+            "v67": -7.22711880505085
+          },
+          "aggregate_focus_minus_reference_db": 0.013687916100025177,
+          "aggregate_min_constraint_gap_db": 0.013687916100025177
+        },
+        {
+          "candidate_sample_id": "val_000223",
+          "seed_plus_candidate_sample_ids": [
+            "val_000331",
+            "val_000376",
+            "val_000430",
+            "val_000223"
+          ],
+          "candidate_failed_constraints": [
+            "v20>v24"
+          ],
+          "candidate_failed_constraint_gaps_db": {
+            "v20>v24": -0.05127286911010742
+          },
+          "candidate_joint_distance_z": 2.640515350836234,
+          "candidate_metadata_distance_z": 2.6385269449219657,
+          "candidate_constraint_distance_z": 0.10245427722919712,
+          "candidate_focus_minus_reference_db": 0.03452348709106445,
+          "aggregate_all_constraints_pass": true,
+          "aggregate_failed_constraints": [],
+          "aggregate_failed_constraint_gaps_db": {},
+          "aggregate_alias_scores": {
+            "v20": -8.995259881019592,
+            "v24": -9.017395615577698,
+            "v64": -8.918079853057861,
+            "v65": -9.037208914756775,
+            "v66": -8.897395610809326,
+            "v67": -8.930643916130066
+          },
+          "aggregate_focus_minus_reference_db": 0.020684242248535156,
+          "aggregate_min_constraint_gap_db": 0.01256406307220459
+        }
+      ]
+    },
+    "v66>v64 | v66>v65": {
+      "count": 2,
+      "mean_candidate_joint_distance_z": 2.424595728915334,
+      "mean_aggregate_min_constraint_gap_db": 0.009959131479263306,
+      "nearest_candidate": {
+        "candidate_sample_id": "val_000076",
+        "seed_plus_candidate_sample_ids": [
+          "val_000331",
+          "val_000376",
+          "val_000430",
+          "val_000076"
+        ],
+        "candidate_failed_constraints": [
+          "v66>v64",
+          "v66>v65"
+        ],
+        "candidate_failed_constraint_gaps_db": {
+          "v66>v64": -0.015604496002197266,
+          "v66>v65": -0.19080686569213867
+        },
+        "candidate_joint_distance_z": 1.7726500119092077,
+        "candidate_metadata_distance_z": 1.7395970311131628,
+        "candidate_constraint_distance_z": 0.34072016973461366,
+        "candidate_focus_minus_reference_db": -0.015604496002197266,
+        "aggregate_all_constraints_pass": true,
+        "aggregate_failed_constraints": [],
+        "aggregate_failed_constraint_gaps_db": {},
+        "aggregate_alias_scores": {
+          "v20": -8.639130473136902,
+          "v24": -8.708325266838074,
+          "v64": -8.640578031539917,
+          "v65": -8.675445437431335,
+          "v66": -8.632425785064697,
+          "v67": -8.654090285301208
+        },
+        "aggregate_focus_minus_reference_db": 0.008152246475219727,
+        "aggregate_min_constraint_gap_db": 0.008152246475219727
+      },
+      "strongest_aggregate_candidate": {
+        "candidate_sample_id": "val_000165",
+        "seed_plus_candidate_sample_ids": [
+          "val_000331",
+          "val_000376",
+          "val_000430",
+          "val_000165"
+        ],
+        "candidate_failed_constraints": [
+          "v66>v64",
+          "v66>v65"
+        ],
+        "candidate_failed_constraint_gaps_db": {
+          "v66>v64": -0.0011494159698486328,
+          "v66>v65": -0.11557984352111816
+        },
+        "candidate_joint_distance_z": 3.0765414459214604,
+        "candidate_metadata_distance_z": 3.0656554167398387,
+        "candidate_constraint_distance_z": 0.2585810014022593,
+        "candidate_focus_minus_reference_db": -0.0011494159698486328,
+        "aggregate_all_constraints_pass": true,
+        "aggregate_failed_constraints": [],
+        "aggregate_failed_constraint_gaps_db": {},
+        "aggregate_alias_scores": {
+          "v20": -7.924691677093506,
+          "v24": -7.984379529953003,
+          "v64": -7.904118478298187,
+          "v65": -7.954178869724274,
+          "v66": -7.89235246181488,
+          "v67": -7.923019051551819
+        },
+        "aggregate_focus_minus_reference_db": 0.011766016483306885,
+        "aggregate_min_constraint_gap_db": 0.011766016483306885
+      },
+      "top_nearest_candidates": [
+        {
+          "candidate_sample_id": "val_000076",
+          "seed_plus_candidate_sample_ids": [
+            "val_000331",
+            "val_000376",
+            "val_000430",
+            "val_000076"
+          ],
+          "candidate_failed_constraints": [
+            "v66>v64",
+            "v66>v65"
+          ],
+          "candidate_failed_constraint_gaps_db": {
+            "v66>v64": -0.015604496002197266,
+            "v66>v65": -0.19080686569213867
+          },
+          "candidate_joint_distance_z": 1.7726500119092077,
+          "candidate_metadata_distance_z": 1.7395970311131628,
+          "candidate_constraint_distance_z": 0.34072016973461366,
+          "candidate_focus_minus_reference_db": -0.015604496002197266,
+          "aggregate_all_constraints_pass": true,
+          "aggregate_failed_constraints": [],
+          "aggregate_failed_constraint_gaps_db": {},
+          "aggregate_alias_scores": {
+            "v20": -8.639130473136902,
+            "v24": -8.708325266838074,
+            "v64": -8.640578031539917,
+            "v65": -8.675445437431335,
+            "v66": -8.632425785064697,
+            "v67": -8.654090285301208
+          },
+          "aggregate_focus_minus_reference_db": 0.008152246475219727,
+          "aggregate_min_constraint_gap_db": 0.008152246475219727
+        },
+        {
+          "candidate_sample_id": "val_000165",
+          "seed_plus_candidate_sample_ids": [
+            "val_000331",
+            "val_000376",
+            "val_000430",
+            "val_000165"
+          ],
+          "candidate_failed_constraints": [
+            "v66>v64",
+            "v66>v65"
+          ],
+          "candidate_failed_constraint_gaps_db": {
+            "v66>v64": -0.0011494159698486328,
+            "v66>v65": -0.11557984352111816
+          },
+          "candidate_joint_distance_z": 3.0765414459214604,
+          "candidate_metadata_distance_z": 3.0656554167398387,
+          "candidate_constraint_distance_z": 0.2585810014022593,
+          "candidate_focus_minus_reference_db": -0.0011494159698486328,
+          "aggregate_all_constraints_pass": true,
+          "aggregate_failed_constraints": [],
+          "aggregate_failed_constraint_gaps_db": {},
+          "aggregate_alias_scores": {
+            "v20": -7.924691677093506,
+            "v24": -7.984379529953003,
+            "v64": -7.904118478298187,
+            "v65": -7.954178869724274,
+            "v66": -7.89235246181488,
+            "v67": -7.923019051551819
+          },
+          "aggregate_focus_minus_reference_db": 0.011766016483306885,
+          "aggregate_min_constraint_gap_db": 0.011766016483306885
+        }
+      ]
+    },
+    "v66>v65 | v66>v67 | v64>v67": {
+      "count": 2,
+      "mean_candidate_joint_distance_z": 3.3219460685577133,
+      "mean_aggregate_min_constraint_gap_db": 0.00019812583923339844,
+      "nearest_candidate": {
+        "candidate_sample_id": "val_000022",
+        "seed_plus_candidate_sample_ids": [
+          "val_000331",
+          "val_000376",
+          "val_000430",
+          "val_000022"
+        ],
+        "candidate_failed_constraints": [
+          "v66>v65",
+          "v66>v67",
+          "v64>v67"
+        ],
+        "candidate_failed_constraint_gaps_db": {
+          "v66>v65": -0.09150028228759766,
+          "v66>v67": -0.022151947021484375,
+          "v64>v67": -0.02591991424560547
+        },
+        "candidate_joint_distance_z": 2.8542958056571277,
+        "candidate_metadata_distance_z": 2.844592497757923,
+        "candidate_constraint_distance_z": 0.23515541220905944,
+        "candidate_focus_minus_reference_db": 0.0037679672241210938,
+        "aggregate_all_constraints_pass": true,
+        "aggregate_failed_constraints": [],
+        "aggregate_failed_constraint_gaps_db": {},
+        "aggregate_alias_scores": {
+          "v20": -8.297443389892578,
+          "v24": -8.336060523986816,
+          "v64": -8.2741060256958,
+          "v65": -8.328956961631775,
+          "v66": -8.261110663414001,
+          "v67": -8.274192929267883
+        },
+        "aggregate_focus_minus_reference_db": 0.012995362281799316,
+        "aggregate_min_constraint_gap_db": 8.690357208251953e-05
+      },
+      "strongest_aggregate_candidate": {
+        "candidate_sample_id": "val_000365",
+        "seed_plus_candidate_sample_ids": [
+          "val_000331",
+          "val_000376",
+          "val_000430",
+          "val_000365"
+        ],
+        "candidate_failed_constraints": [
+          "v66>v65",
+          "v66>v67",
+          "v64>v67"
+        ],
+        "candidate_failed_constraint_gaps_db": {
+          "v66>v65": -0.17945098876953125,
+          "v66>v67": -0.018552780151367188,
+          "v64>v67": -0.025030136108398438
+        },
+        "candidate_joint_distance_z": 3.789596331458299,
+        "candidate_metadata_distance_z": 3.7754738205452347,
+        "candidate_constraint_distance_z": 0.32686049895906255,
+        "candidate_focus_minus_reference_db": 0.00647735595703125,
+        "aggregate_all_constraints_pass": true,
+        "aggregate_failed_constraints": [],
+        "aggregate_failed_constraint_gaps_db": {},
+        "aggregate_alias_scores": {
+          "v20": -12.393617749214172,
+          "v24": -12.44325590133667,
+          "v64": -12.35819387435913,
+          "v65": -12.390379786491394,
+          "v66": -12.344521164894104,
+          "v67": -12.358503222465515
+        },
+        "aggregate_focus_minus_reference_db": 0.013672709465026855,
+        "aggregate_min_constraint_gap_db": 0.00030934810638427734
+      },
+      "top_nearest_candidates": [
+        {
+          "candidate_sample_id": "val_000022",
+          "seed_plus_candidate_sample_ids": [
+            "val_000331",
+            "val_000376",
+            "val_000430",
+            "val_000022"
+          ],
+          "candidate_failed_constraints": [
+            "v66>v65",
+            "v66>v67",
+            "v64>v67"
+          ],
+          "candidate_failed_constraint_gaps_db": {
+            "v66>v65": -0.09150028228759766,
+            "v66>v67": -0.022151947021484375,
+            "v64>v67": -0.02591991424560547
+          },
+          "candidate_joint_distance_z": 2.8542958056571277,
+          "candidate_metadata_distance_z": 2.844592497757923,
+          "candidate_constraint_distance_z": 0.23515541220905944,
+          "candidate_focus_minus_reference_db": 0.0037679672241210938,
+          "aggregate_all_constraints_pass": true,
+          "aggregate_failed_constraints": [],
+          "aggregate_failed_constraint_gaps_db": {},
+          "aggregate_alias_scores": {
+            "v20": -8.297443389892578,
+            "v24": -8.336060523986816,
+            "v64": -8.2741060256958,
+            "v65": -8.328956961631775,
+            "v66": -8.261110663414001,
+            "v67": -8.274192929267883
+          },
+          "aggregate_focus_minus_reference_db": 0.012995362281799316,
+          "aggregate_min_constraint_gap_db": 8.690357208251953e-05
+        },
+        {
+          "candidate_sample_id": "val_000365",
+          "seed_plus_candidate_sample_ids": [
+            "val_000331",
+            "val_000376",
+            "val_000430",
+            "val_000365"
+          ],
+          "candidate_failed_constraints": [
+            "v66>v65",
+            "v66>v67",
+            "v64>v67"
+          ],
+          "candidate_failed_constraint_gaps_db": {
+            "v66>v65": -0.17945098876953125,
+            "v66>v67": -0.018552780151367188,
+            "v64>v67": -0.025030136108398438
+          },
+          "candidate_joint_distance_z": 3.789596331458299,
+          "candidate_metadata_distance_z": 3.7754738205452347,
+          "candidate_constraint_distance_z": 0.32686049895906255,
+          "candidate_focus_minus_reference_db": 0.00647735595703125,
+          "aggregate_all_constraints_pass": true,
+          "aggregate_failed_constraints": [],
+          "aggregate_failed_constraint_gaps_db": {},
+          "aggregate_alias_scores": {
+            "v20": -12.393617749214172,
+            "v24": -12.44325590133667,
+            "v64": -12.35819387435913,
+            "v65": -12.390379786491394,
+            "v66": -12.344521164894104,
+            "v67": -12.358503222465515
+          },
+          "aggregate_focus_minus_reference_db": 0.013672709465026855,
+          "aggregate_min_constraint_gap_db": 0.00030934810638427734
+        }
+      ]
+    },
+    "v66>v67 | v64>v67 | v20>v24": {
+      "count": 2,
+      "mean_candidate_joint_distance_z": 4.478192491842133,
+      "mean_aggregate_min_constraint_gap_db": 0.0035050809383392334,
+      "nearest_candidate": {
+        "candidate_sample_id": "val_000205",
+        "seed_plus_candidate_sample_ids": [
+          "val_000331",
+          "val_000376",
+          "val_000430",
+          "val_000205"
+        ],
+        "candidate_failed_constraints": [
+          "v66>v67",
+          "v64>v67",
+          "v20>v24"
+        ],
+        "candidate_failed_constraint_gaps_db": {
+          "v66>v67": -0.0014938116073608398,
+          "v64>v67": -0.001711130142211914,
+          "v20>v24": -0.019879281520843506
+        },
+        "candidate_joint_distance_z": 4.363876137694247,
+        "candidate_metadata_distance_z": 4.361801041195023,
+        "candidate_constraint_distance_z": 0.1345608493109149,
+        "candidate_focus_minus_reference_db": 0.00021731853485107422,
+        "aggregate_all_constraints_pass": true,
+        "aggregate_failed_constraints": [],
+        "aggregate_failed_constraint_gaps_db": {},
+        "aggregate_alias_scores": {
+          "v20": -7.325388610363007,
+          "v24": -7.355372741818428,
+          "v64": -7.280646741390228,
+          "v65": -7.360115140676498,
+          "v66": -7.2685390412807465,
+          "v67": -7.286785840988159
+        },
+        "aggregate_focus_minus_reference_db": 0.012107700109481812,
+        "aggregate_min_constraint_gap_db": 0.006139099597930908
+      },
+      "strongest_aggregate_candidate": {
+        "candidate_sample_id": "val_000205",
+        "seed_plus_candidate_sample_ids": [
+          "val_000331",
+          "val_000376",
+          "val_000430",
+          "val_000205"
+        ],
+        "candidate_failed_constraints": [
+          "v66>v67",
+          "v64>v67",
+          "v20>v24"
+        ],
+        "candidate_failed_constraint_gaps_db": {
+          "v66>v67": -0.0014938116073608398,
+          "v64>v67": -0.001711130142211914,
+          "v20>v24": -0.019879281520843506
+        },
+        "candidate_joint_distance_z": 4.363876137694247,
+        "candidate_metadata_distance_z": 4.361801041195023,
+        "candidate_constraint_distance_z": 0.1345608493109149,
+        "candidate_focus_minus_reference_db": 0.00021731853485107422,
+        "aggregate_all_constraints_pass": true,
+        "aggregate_failed_constraints": [],
+        "aggregate_failed_constraint_gaps_db": {},
+        "aggregate_alias_scores": {
+          "v20": -7.325388610363007,
+          "v24": -7.355372741818428,
+          "v64": -7.280646741390228,
+          "v65": -7.360115140676498,
+          "v66": -7.2685390412807465,
+          "v67": -7.286785840988159
+        },
+        "aggregate_focus_minus_reference_db": 0.012107700109481812,
+        "aggregate_min_constraint_gap_db": 0.006139099597930908
+      },
+      "top_nearest_candidates": [
+        {
+          "candidate_sample_id": "val_000205",
+          "seed_plus_candidate_sample_ids": [
+            "val_000331",
+            "val_000376",
+            "val_000430",
+            "val_000205"
+          ],
+          "candidate_failed_constraints": [
+            "v66>v67",
+            "v64>v67",
+            "v20>v24"
+          ],
+          "candidate_failed_constraint_gaps_db": {
+            "v66>v67": -0.0014938116073608398,
+            "v64>v67": -0.001711130142211914,
+            "v20>v24": -0.019879281520843506
+          },
+          "candidate_joint_distance_z": 4.363876137694247,
+          "candidate_metadata_distance_z": 4.361801041195023,
+          "candidate_constraint_distance_z": 0.1345608493109149,
+          "candidate_focus_minus_reference_db": 0.00021731853485107422,
+          "aggregate_all_constraints_pass": true,
+          "aggregate_failed_constraints": [],
+          "aggregate_failed_constraint_gaps_db": {},
+          "aggregate_alias_scores": {
+            "v20": -7.325388610363007,
+            "v24": -7.355372741818428,
+            "v64": -7.280646741390228,
+            "v65": -7.360115140676498,
+            "v66": -7.2685390412807465,
+            "v67": -7.286785840988159
+          },
+          "aggregate_focus_minus_reference_db": 0.012107700109481812,
+          "aggregate_min_constraint_gap_db": 0.006139099597930908
+        },
+        {
+          "candidate_sample_id": "val_000034",
+          "seed_plus_candidate_sample_ids": [
+            "val_000331",
+            "val_000376",
+            "val_000430",
+            "val_000034"
+          ],
+          "candidate_failed_constraints": [
+            "v66>v67",
+            "v64>v67",
+            "v20>v24"
+          ],
+          "candidate_failed_constraint_gaps_db": {
+            "v66>v67": -0.006060600280761719,
+            "v64>v67": -0.022783279418945312,
+            "v20>v24": -0.0017671585083007812
+          },
+          "candidate_joint_distance_z": 4.59250884599002,
+          "candidate_metadata_distance_z": 4.590621226762319,
+          "candidate_constraint_distance_z": 0.13165960996376994,
+          "candidate_focus_minus_reference_db": 0.016722679138183594,
+          "aggregate_all_constraints_pass": true,
+          "aggregate_failed_constraints": [],
+          "aggregate_failed_constraint_gaps_db": {},
+          "aggregate_alias_scores": {
+            "v20": -9.234886527061462,
+            "v24": -9.26939868927002,
+            "v64": -9.192363500595093,
+            "v65": -9.268132328987122,
+            "v66": -9.176129460334778,
+            "v67": -9.19323456287384
+          },
+          "aggregate_focus_minus_reference_db": 0.01623404026031494,
+          "aggregate_min_constraint_gap_db": 0.0008710622787475586
+        }
+      ]
+    },
+    "": {
+      "count": 1,
+      "mean_candidate_joint_distance_z": 3.88252201812858,
+      "mean_aggregate_min_constraint_gap_db": 0.012490153312683105,
+      "nearest_candidate": {
+        "candidate_sample_id": "val_000239",
+        "seed_plus_candidate_sample_ids": [
+          "val_000331",
+          "val_000376",
+          "val_000430",
+          "val_000239"
+        ],
+        "candidate_failed_constraints": [],
+        "candidate_failed_constraint_gaps_db": {},
+        "candidate_joint_distance_z": 3.88252201812858,
+        "candidate_metadata_distance_z": 3.880921499342802,
+        "candidate_constraint_distance_z": 0.11146989365761728,
+        "candidate_focus_minus_reference_db": 0.00174713134765625,
+        "aggregate_all_constraints_pass": true,
+        "aggregate_failed_constraints": [],
+        "aggregate_failed_constraint_gaps_db": {},
+        "aggregate_alias_scores": {
+          "v20": -9.591768383979797,
+          "v24": -9.632619619369507,
+          "v64": -9.528953313827515,
+          "v65": -9.61927044391632,
+          "v66": -9.516463160514832,
+          "v67": -9.557023882865906
+        },
+        "aggregate_focus_minus_reference_db": 0.012490153312683105,
+        "aggregate_min_constraint_gap_db": 0.012490153312683105
+      },
+      "strongest_aggregate_candidate": {
+        "candidate_sample_id": "val_000239",
+        "seed_plus_candidate_sample_ids": [
+          "val_000331",
+          "val_000376",
+          "val_000430",
+          "val_000239"
+        ],
+        "candidate_failed_constraints": [],
+        "candidate_failed_constraint_gaps_db": {},
+        "candidate_joint_distance_z": 3.88252201812858,
+        "candidate_metadata_distance_z": 3.880921499342802,
+        "candidate_constraint_distance_z": 0.11146989365761728,
+        "candidate_focus_minus_reference_db": 0.00174713134765625,
+        "aggregate_all_constraints_pass": true,
+        "aggregate_failed_constraints": [],
+        "aggregate_failed_constraint_gaps_db": {},
+        "aggregate_alias_scores": {
+          "v20": -9.591768383979797,
+          "v24": -9.632619619369507,
+          "v64": -9.528953313827515,
+          "v65": -9.61927044391632,
+          "v66": -9.516463160514832,
+          "v67": -9.557023882865906
+        },
+        "aggregate_focus_minus_reference_db": 0.012490153312683105,
+        "aggregate_min_constraint_gap_db": 0.012490153312683105
+      },
+      "top_nearest_candidates": [
+        {
+          "candidate_sample_id": "val_000239",
+          "seed_plus_candidate_sample_ids": [
+            "val_000331",
+            "val_000376",
+            "val_000430",
+            "val_000239"
+          ],
+          "candidate_failed_constraints": [],
+          "candidate_failed_constraint_gaps_db": {},
+          "candidate_joint_distance_z": 3.88252201812858,
+          "candidate_metadata_distance_z": 3.880921499342802,
+          "candidate_constraint_distance_z": 0.11146989365761728,
+          "candidate_focus_minus_reference_db": 0.00174713134765625,
+          "aggregate_all_constraints_pass": true,
+          "aggregate_failed_constraints": [],
+          "aggregate_failed_constraint_gaps_db": {},
+          "aggregate_alias_scores": {
+            "v20": -9.591768383979797,
+            "v24": -9.632619619369507,
+            "v64": -9.528953313827515,
+            "v65": -9.61927044391632,
+            "v66": -9.516463160514832,
+            "v67": -9.557023882865906
+          },
+          "aggregate_focus_minus_reference_db": 0.012490153312683105,
+          "aggregate_min_constraint_gap_db": 0.012490153312683105
+        }
+      ]
+    },
+    "v66>v64 | v66>v65 | v66>v67 | v64>v67": {
+      "count": 1,
+      "mean_candidate_joint_distance_z": 2.262306370217935,
+      "mean_aggregate_min_constraint_gap_db": 0.0048749446868896484,
+      "nearest_candidate": {
+        "candidate_sample_id": "val_000281",
+        "seed_plus_candidate_sample_ids": [
+          "val_000331",
+          "val_000376",
+          "val_000430",
+          "val_000281"
+        ],
+        "candidate_failed_constraints": [
+          "v66>v64",
+          "v66>v65",
+          "v66>v67",
+          "v64>v67"
+        ],
+        "candidate_failed_constraint_gaps_db": {
+          "v66>v64": -0.010951995849609375,
+          "v66>v65": -0.06453824043273926,
+          "v66>v67": -0.017719745635986328,
+          "v64>v67": -0.006767749786376953
+        },
+        "candidate_joint_distance_z": 2.262306370217935,
+        "candidate_metadata_distance_z": 2.2521808320746373,
+        "candidate_constraint_distance_z": 0.21380274171358105,
+        "candidate_focus_minus_reference_db": -0.010951995849609375,
+        "aggregate_all_constraints_pass": true,
+        "aggregate_failed_constraints": [],
+        "aggregate_failed_constraint_gaps_db": {},
+        "aggregate_alias_scores": {
+          "v20": -7.583853453397751,
+          "v24": -7.658619225025177,
+          "v64": -7.559852242469788,
+          "v65": -7.625123679637909,
+          "v66": -7.550536870956421,
+          "v67": -7.564727187156677
+        },
+        "aggregate_focus_minus_reference_db": 0.0093153715133667,
+        "aggregate_min_constraint_gap_db": 0.0048749446868896484
+      },
+      "strongest_aggregate_candidate": {
+        "candidate_sample_id": "val_000281",
+        "seed_plus_candidate_sample_ids": [
+          "val_000331",
+          "val_000376",
+          "val_000430",
+          "val_000281"
+        ],
+        "candidate_failed_constraints": [
+          "v66>v64",
+          "v66>v65",
+          "v66>v67",
+          "v64>v67"
+        ],
+        "candidate_failed_constraint_gaps_db": {
+          "v66>v64": -0.010951995849609375,
+          "v66>v65": -0.06453824043273926,
+          "v66>v67": -0.017719745635986328,
+          "v64>v67": -0.006767749786376953
+        },
+        "candidate_joint_distance_z": 2.262306370217935,
+        "candidate_metadata_distance_z": 2.2521808320746373,
+        "candidate_constraint_distance_z": 0.21380274171358105,
+        "candidate_focus_minus_reference_db": -0.010951995849609375,
+        "aggregate_all_constraints_pass": true,
+        "aggregate_failed_constraints": [],
+        "aggregate_failed_constraint_gaps_db": {},
+        "aggregate_alias_scores": {
+          "v20": -7.583853453397751,
+          "v24": -7.658619225025177,
+          "v64": -7.559852242469788,
+          "v65": -7.625123679637909,
+          "v66": -7.550536870956421,
+          "v67": -7.564727187156677
+        },
+        "aggregate_focus_minus_reference_db": 0.0093153715133667,
+        "aggregate_min_constraint_gap_db": 0.0048749446868896484
+      },
+      "top_nearest_candidates": [
+        {
+          "candidate_sample_id": "val_000281",
+          "seed_plus_candidate_sample_ids": [
+            "val_000331",
+            "val_000376",
+            "val_000430",
+            "val_000281"
+          ],
+          "candidate_failed_constraints": [
+            "v66>v64",
+            "v66>v65",
+            "v66>v67",
+            "v64>v67"
+          ],
+          "candidate_failed_constraint_gaps_db": {
+            "v66>v64": -0.010951995849609375,
+            "v66>v65": -0.06453824043273926,
+            "v66>v67": -0.017719745635986328,
+            "v64>v67": -0.006767749786376953
+          },
+          "candidate_joint_distance_z": 2.262306370217935,
+          "candidate_metadata_distance_z": 2.2521808320746373,
+          "candidate_constraint_distance_z": 0.21380274171358105,
+          "candidate_focus_minus_reference_db": -0.010951995849609375,
+          "aggregate_all_constraints_pass": true,
+          "aggregate_failed_constraints": [],
+          "aggregate_failed_constraint_gaps_db": {},
+          "aggregate_alias_scores": {
+            "v20": -7.583853453397751,
+            "v24": -7.658619225025177,
+            "v64": -7.559852242469788,
+            "v65": -7.625123679637909,
+            "v66": -7.550536870956421,
+            "v67": -7.564727187156677
+          },
+          "aggregate_focus_minus_reference_db": 0.0093153715133667,
+          "aggregate_min_constraint_gap_db": 0.0048749446868896484
+        }
+      ]
+    },
+    "v66>v65": {
+      "count": 1,
+      "mean_candidate_joint_distance_z": 3.3712538650441477,
+      "mean_aggregate_min_constraint_gap_db": 0.01649010181427002,
+      "nearest_candidate": {
+        "candidate_sample_id": "val_000202",
+        "seed_plus_candidate_sample_ids": [
+          "val_000331",
+          "val_000376",
+          "val_000430",
+          "val_000202"
+        ],
+        "candidate_failed_constraints": [
+          "v66>v65"
+        ],
+        "candidate_failed_constraint_gaps_db": {
+          "v66>v65": -0.15528202056884766
+        },
+        "candidate_joint_distance_z": 3.3712538650441477,
+        "candidate_metadata_distance_z": 3.3550905847258603,
+        "candidate_constraint_distance_z": 0.32972684279413716,
+        "candidate_focus_minus_reference_db": 0.017746925354003906,
+        "aggregate_all_constraints_pass": true,
+        "aggregate_failed_constraints": [],
+        "aggregate_failed_constraint_gaps_db": {},
+        "aggregate_alias_scores": {
+          "v20": -10.90420401096344,
+          "v24": -11.02322006225586,
+          "v64": -10.874000072479248,
+          "v65": -10.909410834312439,
+          "v66": -10.857509970664978,
+          "v67": -10.890528082847595
+        },
+        "aggregate_focus_minus_reference_db": 0.01649010181427002,
+        "aggregate_min_constraint_gap_db": 0.01649010181427002
+      },
+      "strongest_aggregate_candidate": {
+        "candidate_sample_id": "val_000202",
+        "seed_plus_candidate_sample_ids": [
+          "val_000331",
+          "val_000376",
+          "val_000430",
+          "val_000202"
+        ],
+        "candidate_failed_constraints": [
+          "v66>v65"
+        ],
+        "candidate_failed_constraint_gaps_db": {
+          "v66>v65": -0.15528202056884766
+        },
+        "candidate_joint_distance_z": 3.3712538650441477,
+        "candidate_metadata_distance_z": 3.3550905847258603,
+        "candidate_constraint_distance_z": 0.32972684279413716,
+        "candidate_focus_minus_reference_db": 0.017746925354003906,
+        "aggregate_all_constraints_pass": true,
+        "aggregate_failed_constraints": [],
+        "aggregate_failed_constraint_gaps_db": {},
+        "aggregate_alias_scores": {
+          "v20": -10.90420401096344,
+          "v24": -11.02322006225586,
+          "v64": -10.874000072479248,
+          "v65": -10.909410834312439,
+          "v66": -10.857509970664978,
+          "v67": -10.890528082847595
+        },
+        "aggregate_focus_minus_reference_db": 0.01649010181427002,
+        "aggregate_min_constraint_gap_db": 0.01649010181427002
+      },
+      "top_nearest_candidates": [
+        {
+          "candidate_sample_id": "val_000202",
+          "seed_plus_candidate_sample_ids": [
+            "val_000331",
+            "val_000376",
+            "val_000430",
+            "val_000202"
+          ],
+          "candidate_failed_constraints": [
+            "v66>v65"
+          ],
+          "candidate_failed_constraint_gaps_db": {
+            "v66>v65": -0.15528202056884766
+          },
+          "candidate_joint_distance_z": 3.3712538650441477,
+          "candidate_metadata_distance_z": 3.3550905847258603,
+          "candidate_constraint_distance_z": 0.32972684279413716,
+          "candidate_focus_minus_reference_db": 0.017746925354003906,
+          "aggregate_all_constraints_pass": true,
+          "aggregate_failed_constraints": [],
+          "aggregate_failed_constraint_gaps_db": {},
+          "aggregate_alias_scores": {
+            "v20": -10.90420401096344,
+            "v24": -11.02322006225586,
+            "v64": -10.874000072479248,
+            "v65": -10.909410834312439,
+            "v66": -10.857509970664978,
+            "v67": -10.890528082847595
+          },
+          "aggregate_focus_minus_reference_db": 0.01649010181427002,
+          "aggregate_min_constraint_gap_db": 0.01649010181427002
+        }
+      ]
+    },
+    "v66>v65 | v64>v67 | v20>v24": {
+      "count": 1,
+      "mean_candidate_joint_distance_z": 4.289997929807921,
+      "mean_aggregate_min_constraint_gap_db": 0.0020166635513305664,
+      "nearest_candidate": {
+        "candidate_sample_id": "val_000002",
+        "seed_plus_candidate_sample_ids": [
+          "val_000331",
+          "val_000376",
+          "val_000430",
+          "val_000002"
+        ],
+        "candidate_failed_constraints": [
+          "v66>v65",
+          "v64>v67",
+          "v20>v24"
+        ],
+        "candidate_failed_constraint_gaps_db": {
+          "v66>v65": -0.0025606155395507812,
+          "v64>v67": -0.01820087432861328,
+          "v20>v24": -0.0017862319946289062
+        },
+        "candidate_joint_distance_z": 4.289997929807921,
+        "candidate_metadata_distance_z": 4.287799659333601,
+        "candidate_constraint_distance_z": 0.137318313326756,
+        "candidate_focus_minus_reference_db": 0.025422096252441406,
+        "aggregate_all_constraints_pass": true,
+        "aggregate_failed_constraints": [],
+        "aggregate_failed_constraint_gaps_db": {},
+        "aggregate_alias_scores": {
+          "v20": -9.296899437904358,
+          "v24": -9.331406831741333,
+          "v64": -9.254109144210815,
+          "v65": -9.325781464576721,
+          "v66": -9.235700249671936,
+          "v67": -9.256125807762146
+        },
+        "aggregate_focus_minus_reference_db": 0.018408894538879395,
+        "aggregate_min_constraint_gap_db": 0.0020166635513305664
+      },
+      "strongest_aggregate_candidate": {
+        "candidate_sample_id": "val_000002",
+        "seed_plus_candidate_sample_ids": [
+          "val_000331",
+          "val_000376",
+          "val_000430",
+          "val_000002"
+        ],
+        "candidate_failed_constraints": [
+          "v66>v65",
+          "v64>v67",
+          "v20>v24"
+        ],
+        "candidate_failed_constraint_gaps_db": {
+          "v66>v65": -0.0025606155395507812,
+          "v64>v67": -0.01820087432861328,
+          "v20>v24": -0.0017862319946289062
+        },
+        "candidate_joint_distance_z": 4.289997929807921,
+        "candidate_metadata_distance_z": 4.287799659333601,
+        "candidate_constraint_distance_z": 0.137318313326756,
+        "candidate_focus_minus_reference_db": 0.025422096252441406,
+        "aggregate_all_constraints_pass": true,
+        "aggregate_failed_constraints": [],
+        "aggregate_failed_constraint_gaps_db": {},
+        "aggregate_alias_scores": {
+          "v20": -9.296899437904358,
+          "v24": -9.331406831741333,
+          "v64": -9.254109144210815,
+          "v65": -9.325781464576721,
+          "v66": -9.235700249671936,
+          "v67": -9.256125807762146
+        },
+        "aggregate_focus_minus_reference_db": 0.018408894538879395,
+        "aggregate_min_constraint_gap_db": 0.0020166635513305664
+      },
+      "top_nearest_candidates": [
+        {
+          "candidate_sample_id": "val_000002",
+          "seed_plus_candidate_sample_ids": [
+            "val_000331",
+            "val_000376",
+            "val_000430",
+            "val_000002"
+          ],
+          "candidate_failed_constraints": [
+            "v66>v65",
+            "v64>v67",
+            "v20>v24"
+          ],
+          "candidate_failed_constraint_gaps_db": {
+            "v66>v65": -0.0025606155395507812,
+            "v64>v67": -0.01820087432861328,
+            "v20>v24": -0.0017862319946289062
+          },
+          "candidate_joint_distance_z": 4.289997929807921,
+          "candidate_metadata_distance_z": 4.287799659333601,
+          "candidate_constraint_distance_z": 0.137318313326756,
+          "candidate_focus_minus_reference_db": 0.025422096252441406,
+          "aggregate_all_constraints_pass": true,
+          "aggregate_failed_constraints": [],
+          "aggregate_failed_constraint_gaps_db": {},
+          "aggregate_alias_scores": {
+            "v20": -9.296899437904358,
+            "v24": -9.331406831741333,
+            "v64": -9.254109144210815,
+            "v65": -9.325781464576721,
+            "v66": -9.235700249671936,
+            "v67": -9.256125807762146
+          },
+          "aggregate_focus_minus_reference_db": 0.018408894538879395,
+          "aggregate_min_constraint_gap_db": 0.0020166635513305664
+        }
+      ]
+    }
+  }
+}

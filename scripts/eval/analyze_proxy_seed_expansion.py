@@ -179,6 +179,25 @@ def project_row(row: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def project_expansion_row(row: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "candidate_sample_id": str(row["candidate_sample_id"]),
+        "seed_plus_candidate_sample_ids": list(row["seed_plus_candidate_sample_ids"]),
+        "candidate_failed_constraints": list(row["candidate_failed_constraints"]),
+        "candidate_failed_constraint_gaps_db": dict(row["candidate_failed_constraint_gaps_db"]),
+        "candidate_joint_distance_z": float(row["candidate_joint_distance_z"]),
+        "candidate_metadata_distance_z": float(row["candidate_metadata_distance_z"]),
+        "candidate_constraint_distance_z": float(row["candidate_constraint_distance_z"]),
+        "candidate_focus_minus_reference_db": float(row["candidate_focus_minus_reference_db"]),
+        "aggregate_all_constraints_pass": bool(row["aggregate_all_constraints_pass"]),
+        "aggregate_failed_constraints": list(row["aggregate_failed_constraints"]),
+        "aggregate_failed_constraint_gaps_db": dict(row["aggregate_failed_constraint_gaps_db"]),
+        "aggregate_alias_scores": dict(row["aggregate_alias_scores"]),
+        "aggregate_focus_minus_reference_db": float(row["aggregate_focus_minus_reference_db"]),
+        "aggregate_min_constraint_gap_db": float(row["aggregate_min_constraint_gap_db"]),
+    }
+
+
 def z_distance(
     row_values: dict[str, float],
     center_values: dict[str, float],
@@ -408,6 +427,45 @@ def main() -> None:
         reverse=True,
     )
 
+    aggregate_pass_expansion_rows = [row for row in expansion_rows if row["aggregate_all_constraints_pass"]]
+    aggregate_pass_signature_groups: dict[str, list[dict[str, Any]]] = {}
+    for row in aggregate_pass_expansion_rows:
+        signature = " | ".join(row["candidate_failed_constraints"])
+        aggregate_pass_signature_groups.setdefault(signature, []).append(row)
+
+    aggregate_pass_signature_summaries: dict[str, Any] = {}
+    for signature, rows in sorted(
+        aggregate_pass_signature_groups.items(),
+        key=lambda item: (-len(item[1]), item[0]),
+    ):
+        nearest_rows = sorted(
+            rows,
+            key=lambda item: (
+                float(item["candidate_joint_distance_z"]),
+                -float(item["aggregate_min_constraint_gap_db"]),
+                str(item["candidate_sample_id"]),
+            ),
+        )
+        strongest_rows = sorted(
+            rows,
+            key=lambda item: (
+                -float(item["aggregate_min_constraint_gap_db"]),
+                -float(item["aggregate_focus_minus_reference_db"]),
+                float(item["candidate_joint_distance_z"]),
+                str(item["candidate_sample_id"]),
+            ),
+        )
+        aggregate_pass_signature_summaries[signature] = {
+            "count": len(rows),
+            "mean_candidate_joint_distance_z": float(mean(float(item["candidate_joint_distance_z"]) for item in rows)),
+            "mean_aggregate_min_constraint_gap_db": float(
+                mean(float(item["aggregate_min_constraint_gap_db"]) for item in rows)
+            ),
+            "nearest_candidate": project_expansion_row(nearest_rows[0]),
+            "strongest_aggregate_candidate": project_expansion_row(strongest_rows[0]),
+            "top_nearest_candidates": [project_expansion_row(item) for item in nearest_rows[: args.top_k]],
+        }
+
     output = {
         "manifest_jsonl": serialize_repo_path(args.manifest_jsonl),
         "seed_sample_ids_file": serialize_repo_path(args.seed_sample_ids_file),
@@ -430,11 +488,23 @@ def main() -> None:
             )
         ),
         "top_nearest_rows_by_joint_distance": [project_row(row) for row in non_seed_rows[: args.top_k]],
+        "top_nearest_aggregate_pass_expansions_by_joint_distance": [
+            project_expansion_row(row)
+            for row in sorted(
+                aggregate_pass_expansion_rows,
+                key=lambda item: (
+                    float(item["candidate_joint_distance_z"]),
+                    -float(item["aggregate_min_constraint_gap_db"]),
+                    str(item["candidate_sample_id"]),
+                ),
+            )[: args.top_k]
+        ],
         "top_nearest_rows_by_metadata_distance": [
             project_row(row)
             for row in sorted(non_seed_rows, key=lambda row: (float(row["metadata_distance_z"]), str(row["sample_id"])))[: args.top_k]
         ],
         "top_seed_plus_one_expansions": expansion_rows[: args.top_k],
+        "aggregate_pass_signature_summaries": aggregate_pass_signature_summaries,
     }
 
     args.output_json.parent.mkdir(parents=True, exist_ok=True)
