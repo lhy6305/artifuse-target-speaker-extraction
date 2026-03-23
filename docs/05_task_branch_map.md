@@ -3575,6 +3575,84 @@
       `gain + cosine`
       sink-side，
       却仍停在 pre
+84. 已把 `001543 -> 000697` 与 `001543 -> 000799` 各自单独压成 sink-pocket false-positive contrast；当前分支图默认必须改写成：这两条虽然都已踩进 `gain + cosine` sink-side，但不是同一种残留 pre：
+  - 入口：
+    - `reports/daily/2026-03-24_candidate_v7_v65_sink_pocket_falsepositive_case_contrast.md`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_gaincosine_falsepositive_case_split/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_to_sink_factor_contrast/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000799_to_sink_factor_contrast/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_to_sink_duration_reference_quadrants/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000799_to_sink_duration_intmean_quadrants/summary.json`
+  - 当前更关键的新事实是：
+    - `train_000799`
+      已固定成：
+      - shorter-duration
+        false positive
+      - target / interference transient
+        一起塌
+      - `duration + interference transient mean`
+        的
+        `neither`
+        当前只剩：
+        - `train_000799`
+        - `train_000697`
+        - `train_000904`
+        且全是 pre
+    - `train_000697`
+      已固定成：
+      - long duration
+      - long reference
+      - low transient / share
+      - `duration + reference`
+        的
+        `neither`
+        当前只剩：
+        - `train_001589`
+        - `train_000697`
+      - `000799`
+        则已落到：
+        - `factor_a_only`
+        说明它不是同一宽类
+    - `gain`
+      在
+      `000697`
+      的 contrast 里
+      虽然排前，
+      但当前应解释成：
+      - 区分
+        `000697`
+        与
+        `000799`
+        的伴随项，
+      不是
+      `000697 -> sink`
+      的主 blocker
+  - 当前判断：
+    - sink pocket false positives
+      不再写成：
+      - 单一
+        `gain + cosine`
+        残留 pre
+    - 应固定拆成：
+      - `000799`
+        transient-collapse pocket
+      - `000697`
+        long-duration / long-reference pocket
+  - 当前默认下一步：
+    - 不再平均
+      sink pocket
+    - 若继续推进，
+      默认改成：
+      - 沿
+        `000799`
+        的
+        duration + transient
+      - 与
+        `000697`
+        的
+        duration + reference + low transient/share
+        两条线分别解释
+    - 仍不启动新训练
 
 ## 6. 忘线检查表
 
@@ -3586,6 +3664,7 @@
 4. 本文档 `docs/05_task_branch_map.md`
 5. 当前活跃分支日报：
    - 现在补到：
+     - `reports/daily/2026-03-24_candidate_v7_v65_sink_pocket_falsepositive_case_contrast.md`
      - `reports/daily/2026-03-24_candidate_v7_v65_sink_final_case_divergence_split.md`
      - `reports/daily/2026-03-24_candidate_v7_v65_sink_reference_gain_edge_case_branch_split.md`
      - `reports/daily/2026-03-24_candidate_v7_v65_sink_reference_gain_edge_residual_split.md`
@@ -3617,10 +3696,12 @@
      - `reports/daily/2026-03-21_candidate_v5_guardv67_negative_materialization.md`
      - `reports/daily/2026-03-21_candidate_v4_subgroup_diagnosis.md`
    - 当前主停点日报已更新为：
-     - `reports/daily/2026-03-24_candidate_v7_v65_sink_final_case_divergence_split.md`
+     - `reports/daily/2026-03-24_candidate_v7_v65_sink_pocket_falsepositive_case_contrast.md`
    - 上一条主停点日报：
-     - `reports/daily/2026-03-24_candidate_v7_v65_sink_reference_gain_edge_case_branch_split.md`
+     - `reports/daily/2026-03-24_candidate_v7_v65_sink_final_case_divergence_split.md`
    - 再上一条主停点日报：
+     - `reports/daily/2026-03-24_candidate_v7_v65_sink_reference_gain_edge_case_branch_split.md`
+   - 再再上一条主停点日报：
      - `reports/daily/2026-03-24_candidate_v7_v65_sink_reference_gain_edge_residual_split.md`
    - 再上一条主停点日报：
      - `reports/daily/2026-03-24_candidate_v7_v65_sink_duration_cosine_boundary_routing_split.md`

@@ -5146,3 +5146,114 @@
    `gain + cosine`
    sink-side，
    却仍停在 pre。
+
+### 179. 当 `gain + cosine both` 里已经残留多个 pre 时，不要再把它们写成同一种 sink-side 残留；`000799` 与 `000697` 已经证明 false positive 会在这个 pocket 里继续分成不同语义
+
+现象：
+
+- 本轮把：
+  - `train_001543`
+  - `train_000697`
+  - `train_000799`
+  放进同一份 split，
+  再分别做：
+  - `000697 -> 001543`
+  - `000799 -> 001543`
+    两条独立 contrast；
+- 结果显示：
+  - `000799 -> sink`
+    的 factor contrast
+    前三位固定成：
+    - `interference transient share`
+    - `target_duration`
+    - `interference transient mean`
+  - `000697 -> sink`
+    的 absolute delta
+    则固定成：
+    - `target_duration +1.08 sec`
+    - `reference +0.84 sec`
+    - `low target/interference transient`
+- 同时：
+  - `000799`
+    相对
+    `000697`
+    是 shorter-duration
+    那条 false positive；
+  - `000697`
+    则在
+    `duration + reference`
+    四象限里
+    和
+    `001589`
+    一起留在
+    `neither`
+
+影响：
+
+- 如果这时还把：
+  - `gain + cosine`
+    sink-side
+    里的 pre
+  统写成：
+  - 同一残留
+    只差深浅
+  就会把：
+  - `000799`
+    的短时长 transient-collapse pocket
+  和：
+  - `000697`
+    的 long-duration / long-reference / low-transient pocket
+  再次压扁成一条假深度轴。
+- 进一步还会把：
+  - `000697`
+    contrast 里排前的
+    `gain`
+  误写成主 blocker；
+  但那更多只是
+  它与
+  `000799`
+  的 case-distinguishing 项，
+  不是
+  `000697 -> sink`
+  的主语。
+
+处理：
+
+- 已落盘：
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_gaincosine_falsepositive_case_split/summary.json`
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_to_sink_factor_contrast/summary.json`
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000799_to_sink_factor_contrast/summary.json`
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_to_sink_duration_reference_quadrants/summary.json`
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000799_to_sink_duration_intmean_quadrants/summary.json`
+  - `reports/daily/2026-03-24_candidate_v7_v65_sink_pocket_falsepositive_case_contrast.md`
+
+后续要求：
+
+1. 之后凡是再写
+   sink pocket false positives，
+   默认先排除：
+   - 同一种残留
+     只差深浅
+   这条旧口径。
+2. `000799`
+   默认固定写成：
+   - shorter-duration
+   - transient-collapse
+     pocket。
+3. `000697`
+   默认固定写成：
+   - long duration
+   - long reference
+   - low transient / share
+     pocket。
+4. 当某个 case
+   在对照 residual
+   里出现：
+   - `gain`
+     排前
+   时，
+   要先核对它是不是
+   只是用来区分
+   另一个 false positive，
+   不能直接抬成
+   绝对 blocker。

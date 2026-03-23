@@ -1,0 +1,553 @@
+{
+  "manifests": [
+    "data/synthetic/train_manifest_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_failboth_topv67.jsonl"
+  ],
+  "groups": {
+    "sink_gaincosine_pre_000697": "data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_failboth_sink_gaincosine_pre_000697_train.txt",
+    "sink_gaincosine_pre_000799": "data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_failboth_sink_gaincosine_pre_000799_train.txt",
+    "v65_sink_singleton": "data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_failboth_reference_gain_edge_v65_sink_singleton_train.txt"
+  },
+  "manifest_fields": [
+    "target_transient_presence_minus_mid_db_mean",
+    "target_transient_presence_share_mean",
+    "interference_transient_presence_minus_mid_db_mean",
+    "interference_transient_presence_share_mean",
+    "target_interference_logspec_cosine"
+  ],
+  "metadata_fields": [
+    "target_duration_sec",
+    "reference_duration_sec",
+    "interference_layers.0.gain_db",
+    "interference_layers.0.start_offset_sec"
+  ],
+  "numeric_fields": [
+    "target_transient_presence_minus_mid_db_mean",
+    "target_transient_presence_share_mean",
+    "interference_transient_presence_minus_mid_db_mean",
+    "interference_transient_presence_share_mean",
+    "target_interference_logspec_cosine",
+    "target_duration_sec",
+    "reference_duration_sec",
+    "interference_layers.0.gain_db",
+    "interference_layers.0.start_offset_sec"
+  ],
+  "compares": {
+    "v20": "reports/eval/compare_v19_vs_v20_on_active_targetfull_clean/per_sample_metrics.jsonl",
+    "v24": "reports/eval/compare_v19_vs_v24_on_active_targetfull_clean/per_sample_metrics.jsonl",
+    "v64": "reports/eval/compare_v19_vs_v64_on_active_targetfull_clean/per_sample_metrics.jsonl",
+    "v65": "reports/eval/compare_v19_vs_v65_on_active_targetfull_clean/per_sample_metrics.jsonl",
+    "v66": "reports/eval/compare_v19_vs_v66_on_active_targetfull_clean/per_sample_metrics.jsonl",
+    "v67": "reports/eval/compare_v19_vs_v67_on_active_targetfull_clean/per_sample_metrics.jsonl"
+  },
+  "focus_alias": "v66",
+  "reference_alias": "v64",
+  "ordered_aliases": [
+    "v66",
+    "v64"
+  ],
+  "extra_order_constraints": [
+    "v66>v65",
+    "v66>v67",
+    "v64>v67",
+    "v20>v24"
+  ],
+  "field_means": {
+    "target_transient_presence_minus_mid_db_mean": -13.390017827351889,
+    "target_transient_presence_share_mean": 0.0226231561973691,
+    "interference_transient_presence_minus_mid_db_mean": 3.7536892096201577,
+    "interference_transient_presence_share_mean": 0.3967820604642232,
+    "target_interference_logspec_cosine": 0.5754140102886862,
+    "target_duration_sec": 1.62,
+    "reference_duration_sec": 2.32,
+    "interference_layers.0.gain_db": -4.545,
+    "interference_layers.0.start_offset_sec": 0.16666666666666666
+  },
+  "field_stdevs": {
+    "target_transient_presence_minus_mid_db_mean": 2.0948354473904502,
+    "target_transient_presence_share_mean": 0.02576299536250641,
+    "interference_transient_presence_minus_mid_db_mean": 2.846259266073671,
+    "interference_transient_presence_share_mean": 0.03222264078427569,
+    "target_interference_logspec_cosine": 0.022611168995535655,
+    "target_duration_sec": 0.4489988864128731,
+    "reference_duration_sec": 0.463033476111609,
+    "interference_layers.0.gain_db": 0.883413078161438,
+    "interference_layers.0.start_offset_sec": 0.05071708018234313
+  },
+  "group_summaries": {
+    "sink_gaincosine_pre_000697": {
+      "count": 1,
+      "sample_ids": [
+        "train_000697"
+      ],
+      "numeric_field_means": {
+        "target_transient_presence_minus_mid_db_mean": -13.136429786682129,
+        "target_transient_presence_share_mean": 0.008533641695976257,
+        "interference_transient_presence_minus_mid_db_mean": 0.927656888961792,
+        "interference_transient_presence_share_mean": 0.35832324624061584,
+        "target_interference_logspec_cosine": 0.5612513565695104,
+        "target_duration_sec": 2.22,
+        "reference_duration_sec": 2.52,
+        "interference_layers.0.gain_db": -4.993,
+        "interference_layers.0.start_offset_sec": 0.205
+      },
+      "representative_rows": [
+        {
+          "sample_id": "train_000697",
+          "distance_to_group_center_z": 0.0,
+          "numeric_values": {
+            "target_transient_presence_minus_mid_db_mean": -13.136429786682129,
+            "target_transient_presence_share_mean": 0.008533641695976257,
+            "interference_transient_presence_minus_mid_db_mean": 0.927656888961792,
+            "interference_transient_presence_share_mean": 0.35832324624061584,
+            "target_interference_logspec_cosine": 0.5612513565695104,
+            "target_duration_sec": 2.22,
+            "reference_duration_sec": 2.52,
+            "interference_layers.0.gain_db": -4.993,
+            "interference_layers.0.start_offset_sec": 0.205
+          },
+          "compare_summary": {
+            "top_alias": "v67",
+            "ranking": [
+              {
+                "rank": 1,
+                "alias": "v67",
+                "sisdr_db": -11.594316482543945
+              },
+              {
+                "rank": 2,
+                "alias": "v66",
+                "sisdr_db": -11.611957550048828
+              },
+              {
+                "rank": 3,
+                "alias": "v64",
+                "sisdr_db": -11.639461517333984
+              },
+              {
+                "rank": 4,
+                "alias": "v24",
+                "sisdr_db": -11.696566581726074
+              },
+              {
+                "rank": 5,
+                "alias": "v65",
+                "sisdr_db": -11.704633712768555
+              },
+              {
+                "rank": 6,
+                "alias": "v20",
+                "sisdr_db": -11.708114624023438
+              }
+            ],
+            "focus_minus_reference_db": 0.02750396728515625,
+            "candidate_gap_vs_aliases_db": {
+              "v20": 0.09615707397460938,
+              "v24": 0.0846090316772461,
+              "v64": 0.02750396728515625,
+              "v65": 0.09267616271972656,
+              "v67": -0.017641067504882812
+            },
+            "failed_constraints": [
+              "v66>v67",
+              "v64>v67",
+              "v20>v24"
+            ]
+          }
+        }
+      ],
+      "top_alias_counts": {
+        "v67": 1
+      },
+      "failed_constraint_counts": {
+        "v66>v67 | v64>v67 | v20>v24": 1
+      },
+      "mean_focus_minus_reference_db": 0.02750396728515625,
+      "mean_candidate_gap_vs_aliases_db": {
+        "v20": 0.09615707397460938,
+        "v24": 0.0846090316772461,
+        "v64": 0.02750396728515625,
+        "v65": 0.09267616271972656,
+        "v67": -0.017641067504882812
+      },
+      "aggregate_scores_db": {
+        "v20": -11.708114624023438,
+        "v24": -11.696566581726074,
+        "v64": -11.639461517333984,
+        "v65": -11.704633712768555,
+        "v66": -11.611957550048828,
+        "v67": -11.594316482543945
+      },
+      "aggregate_ranking": [
+        {
+          "rank": 1,
+          "alias": "v67",
+          "sisdr_db": -11.594316482543945
+        },
+        {
+          "rank": 2,
+          "alias": "v66",
+          "sisdr_db": -11.611957550048828
+        },
+        {
+          "rank": 3,
+          "alias": "v64",
+          "sisdr_db": -11.639461517333984
+        },
+        {
+          "rank": 4,
+          "alias": "v24",
+          "sisdr_db": -11.696566581726074
+        },
+        {
+          "rank": 5,
+          "alias": "v65",
+          "sisdr_db": -11.704633712768555
+        },
+        {
+          "rank": 6,
+          "alias": "v20",
+          "sisdr_db": -11.708114624023438
+        }
+      ]
+    },
+    "sink_gaincosine_pre_000799": {
+      "count": 1,
+      "sample_ids": [
+        "train_000799"
+      ],
+      "numeric_field_means": {
+        "target_transient_presence_minus_mid_db_mean": -16.073034286499023,
+        "target_transient_presence_share_mean": 0.000569595955312252,
+        "interference_transient_presence_minus_mid_db_mean": 2.6843791007995605,
+        "interference_transient_presence_share_mean": 0.3948422074317932,
+        "target_interference_logspec_cosine": 0.5576666868680021,
+        "target_duration_sec": 1.5,
+        "reference_duration_sec": 2.76,
+        "interference_layers.0.gain_db": -3.311,
+        "interference_layers.0.start_offset_sec": 0.095
+      },
+      "representative_rows": [
+        {
+          "sample_id": "train_000799",
+          "distance_to_group_center_z": 0.0,
+          "numeric_values": {
+            "target_transient_presence_minus_mid_db_mean": -16.073034286499023,
+            "target_transient_presence_share_mean": 0.000569595955312252,
+            "interference_transient_presence_minus_mid_db_mean": 2.6843791007995605,
+            "interference_transient_presence_share_mean": 0.3948422074317932,
+            "target_interference_logspec_cosine": 0.5576666868680021,
+            "target_duration_sec": 1.5,
+            "reference_duration_sec": 2.76,
+            "interference_layers.0.gain_db": -3.311,
+            "interference_layers.0.start_offset_sec": 0.095
+          },
+          "compare_summary": {
+            "top_alias": "v67",
+            "ranking": [
+              {
+                "rank": 1,
+                "alias": "v67",
+                "sisdr_db": -18.13848876953125
+              },
+              {
+                "rank": 2,
+                "alias": "v66",
+                "sisdr_db": -18.26133918762207
+              },
+              {
+                "rank": 3,
+                "alias": "v64",
+                "sisdr_db": -18.326953887939453
+              },
+              {
+                "rank": 4,
+                "alias": "v65",
+                "sisdr_db": -18.37859344482422
+              },
+              {
+                "rank": 5,
+                "alias": "v24",
+                "sisdr_db": -18.4370059967041
+              },
+              {
+                "rank": 6,
+                "alias": "v20",
+                "sisdr_db": -18.50856590270996
+              }
+            ],
+            "focus_minus_reference_db": 0.06561470031738281,
+            "candidate_gap_vs_aliases_db": {
+              "v20": 0.24722671508789062,
+              "v24": 0.17566680908203125,
+              "v64": 0.06561470031738281,
+              "v65": 0.11725425720214844,
+              "v67": -0.12285041809082031
+            },
+            "failed_constraints": [
+              "v66>v67",
+              "v64>v67",
+              "v20>v24"
+            ]
+          }
+        }
+      ],
+      "top_alias_counts": {
+        "v67": 1
+      },
+      "failed_constraint_counts": {
+        "v66>v67 | v64>v67 | v20>v24": 1
+      },
+      "mean_focus_minus_reference_db": 0.06561470031738281,
+      "mean_candidate_gap_vs_aliases_db": {
+        "v20": 0.24722671508789062,
+        "v24": 0.17566680908203125,
+        "v64": 0.06561470031738281,
+        "v65": 0.11725425720214844,
+        "v67": -0.12285041809082031
+      },
+      "aggregate_scores_db": {
+        "v20": -18.50856590270996,
+        "v24": -18.4370059967041,
+        "v64": -18.326953887939453,
+        "v65": -18.37859344482422,
+        "v66": -18.26133918762207,
+        "v67": -18.13848876953125
+      },
+      "aggregate_ranking": [
+        {
+          "rank": 1,
+          "alias": "v67",
+          "sisdr_db": -18.13848876953125
+        },
+        {
+          "rank": 2,
+          "alias": "v66",
+          "sisdr_db": -18.26133918762207
+        },
+        {
+          "rank": 3,
+          "alias": "v64",
+          "sisdr_db": -18.326953887939453
+        },
+        {
+          "rank": 4,
+          "alias": "v65",
+          "sisdr_db": -18.37859344482422
+        },
+        {
+          "rank": 5,
+          "alias": "v24",
+          "sisdr_db": -18.4370059967041
+        },
+        {
+          "rank": 6,
+          "alias": "v20",
+          "sisdr_db": -18.50856590270996
+        }
+      ]
+    },
+    "v65_sink_singleton": {
+      "count": 1,
+      "sample_ids": [
+        "train_001543"
+      ],
+      "numeric_field_means": {
+        "target_transient_presence_minus_mid_db_mean": -10.960589408874512,
+        "target_transient_presence_share_mean": 0.05876623094081879,
+        "interference_transient_presence_minus_mid_db_mean": 7.649031639099121,
+        "interference_transient_presence_share_mean": 0.4371807277202606,
+        "target_interference_logspec_cosine": 0.607323987428546,
+        "target_duration_sec": 1.14,
+        "reference_duration_sec": 1.68,
+        "interference_layers.0.gain_db": -5.331,
+        "interference_layers.0.start_offset_sec": 0.2
+      },
+      "representative_rows": [
+        {
+          "sample_id": "train_001543",
+          "distance_to_group_center_z": 0.0,
+          "numeric_values": {
+            "target_transient_presence_minus_mid_db_mean": -10.960589408874512,
+            "target_transient_presence_share_mean": 0.05876623094081879,
+            "interference_transient_presence_minus_mid_db_mean": 7.649031639099121,
+            "interference_transient_presence_share_mean": 0.4371807277202606,
+            "target_interference_logspec_cosine": 0.607323987428546,
+            "target_duration_sec": 1.14,
+            "reference_duration_sec": 1.68,
+            "interference_layers.0.gain_db": -5.331,
+            "interference_layers.0.start_offset_sec": 0.2
+          },
+          "compare_summary": {
+            "top_alias": "v67",
+            "ranking": [
+              {
+                "rank": 1,
+                "alias": "v67",
+                "sisdr_db": -14.96899127960205
+              },
+              {
+                "rank": 2,
+                "alias": "v65",
+                "sisdr_db": -14.98377799987793
+              },
+              {
+                "rank": 3,
+                "alias": "v64",
+                "sisdr_db": -15.088933944702148
+              },
+              {
+                "rank": 4,
+                "alias": "v66",
+                "sisdr_db": -15.097762107849121
+              },
+              {
+                "rank": 5,
+                "alias": "v24",
+                "sisdr_db": -15.19363021850586
+              },
+              {
+                "rank": 6,
+                "alias": "v20",
+                "sisdr_db": -15.262375831604004
+              }
+            ],
+            "focus_minus_reference_db": -0.008828163146972656,
+            "candidate_gap_vs_aliases_db": {
+              "v20": 0.1646137237548828,
+              "v24": 0.09586811065673828,
+              "v64": -0.008828163146972656,
+              "v65": -0.1139841079711914,
+              "v67": -0.1287708282470703
+            },
+            "failed_constraints": [
+              "v66>v64",
+              "v66>v65",
+              "v66>v67",
+              "v64>v67",
+              "v20>v24"
+            ]
+          }
+        }
+      ],
+      "top_alias_counts": {
+        "v67": 1
+      },
+      "failed_constraint_counts": {
+        "v66>v64 | v66>v65 | v66>v67 | v64>v67 | v20>v24": 1
+      },
+      "mean_focus_minus_reference_db": -0.008828163146972656,
+      "mean_candidate_gap_vs_aliases_db": {
+        "v20": 0.1646137237548828,
+        "v24": 0.09586811065673828,
+        "v64": -0.008828163146972656,
+        "v65": -0.1139841079711914,
+        "v67": -0.1287708282470703
+      },
+      "aggregate_scores_db": {
+        "v20": -15.262375831604004,
+        "v24": -15.19363021850586,
+        "v64": -15.088933944702148,
+        "v65": -14.98377799987793,
+        "v66": -15.097762107849121,
+        "v67": -14.96899127960205
+      },
+      "aggregate_ranking": [
+        {
+          "rank": 1,
+          "alias": "v67",
+          "sisdr_db": -14.96899127960205
+        },
+        {
+          "rank": 2,
+          "alias": "v65",
+          "sisdr_db": -14.98377799987793
+        },
+        {
+          "rank": 3,
+          "alias": "v64",
+          "sisdr_db": -15.088933944702148
+        },
+        {
+          "rank": 4,
+          "alias": "v66",
+          "sisdr_db": -15.097762107849121
+        },
+        {
+          "rank": 5,
+          "alias": "v24",
+          "sisdr_db": -15.19363021850586
+        },
+        {
+          "rank": 6,
+          "alias": "v20",
+          "sisdr_db": -15.262375831604004
+        }
+      ]
+    }
+  },
+  "pairwise_deltas": {
+    "sink_gaincosine_pre_000697_minus_sink_gaincosine_pre_000799": {
+      "numeric_field_mean_deltas": {
+        "target_transient_presence_minus_mid_db_mean": 2.9366044998168945,
+        "target_transient_presence_share_mean": 0.007964045740664005,
+        "interference_transient_presence_minus_mid_db_mean": -1.7567222118377686,
+        "interference_transient_presence_share_mean": -0.03651896119117737,
+        "target_interference_logspec_cosine": 0.0035846697015082807,
+        "target_duration_sec": 0.7200000000000002,
+        "reference_duration_sec": -0.23999999999999977,
+        "interference_layers.0.gain_db": -1.6820000000000004,
+        "interference_layers.0.start_offset_sec": 0.10999999999999999
+      },
+      "mean_focus_minus_reference_db": -0.03811073303222656,
+      "mean_candidate_gap_vs_aliases_db": {
+        "v20": -0.15106964111328125,
+        "v24": -0.09105777740478516,
+        "v64": -0.03811073303222656,
+        "v65": -0.024578094482421875,
+        "v67": 0.1052093505859375
+      }
+    },
+    "sink_gaincosine_pre_000697_minus_v65_sink_singleton": {
+      "numeric_field_mean_deltas": {
+        "target_transient_presence_minus_mid_db_mean": -2.175840377807617,
+        "target_transient_presence_share_mean": -0.05023258924484253,
+        "interference_transient_presence_minus_mid_db_mean": -6.721374750137329,
+        "interference_transient_presence_share_mean": -0.07885748147964478,
+        "target_interference_logspec_cosine": -0.04607263085903557,
+        "target_duration_sec": 1.0800000000000003,
+        "reference_duration_sec": 0.8400000000000001,
+        "interference_layers.0.gain_db": 0.3380000000000001,
+        "interference_layers.0.start_offset_sec": 0.004999999999999977
+      },
+      "mean_focus_minus_reference_db": 0.036332130432128906,
+      "mean_candidate_gap_vs_aliases_db": {
+        "v20": -0.06845664978027344,
+        "v24": -0.011259078979492188,
+        "v64": 0.036332130432128906,
+        "v65": 0.20666027069091797,
+        "v67": 0.1111297607421875
+      }
+    },
+    "sink_gaincosine_pre_000799_minus_v65_sink_singleton": {
+      "numeric_field_mean_deltas": {
+        "target_transient_presence_minus_mid_db_mean": -5.112444877624512,
+        "target_transient_presence_share_mean": -0.058196634985506535,
+        "interference_transient_presence_minus_mid_db_mean": -4.9646525382995605,
+        "interference_transient_presence_share_mean": -0.04233852028846741,
+        "target_interference_logspec_cosine": -0.04965730056054385,
+        "target_duration_sec": 0.3600000000000001,
+        "reference_duration_sec": 1.0799999999999998,
+        "interference_layers.0.gain_db": 2.0200000000000005,
+        "interference_layers.0.start_offset_sec": -0.10500000000000001
+      },
+      "mean_focus_minus_reference_db": 0.07444286346435547,
+      "mean_candidate_gap_vs_aliases_db": {
+        "v20": 0.08261299133300781,
+        "v24": 0.07979869842529297,
+        "v64": 0.07444286346435547,
+        "v65": 0.23123836517333984,
+        "v67": 0.00592041015625
+      }
+    }
+  }
+}

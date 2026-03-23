@@ -4745,6 +4745,91 @@
       sink-side，
       却仍停在 pre
     - 仍不启动新训练
+272. 已把 `001543 -> 000697` 与 `001543 -> 000799` 各自单独对成 sink-pocket false-positive case contrast；当前应明确判成：这两条虽然都已踩进 `gain + cosine` sink-side，但并不是同一种残留：
+  - 新日报：
+    - `reports/daily/2026-03-24_candidate_v7_v65_sink_pocket_falsepositive_case_contrast.md`
+  - 新 summary：
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_gaincosine_falsepositive_case_split/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_to_sink_factor_contrast/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000799_to_sink_factor_contrast/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_to_sink_slice_support/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000799_to_sink_slice_support/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_to_sink_duration_reference_quadrants/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000799_to_sink_duration_intmean_quadrants/summary.json`
+  - 当前更关键的新事实是：
+    - `train_000799`
+      相对
+      `train_001543`
+      的主 residual
+      已固定成：
+      - shorter-duration
+        false positive
+      - `target / interference transient`
+        一起塌
+      - factor contrast
+        前三位为：
+        - `interference transient share`
+        - `target_duration`
+        - `interference transient mean`
+      - `gain`
+        与 `offset`
+        都已降到次级
+    - `train_000697`
+      相对
+      `train_001543`
+      的主 residual
+      则固定成：
+      - long duration
+      - long reference
+      - low transient / share
+      - `duration + reference`
+        四象限里，
+        `neither`
+        当前只剩：
+        - `train_001589`
+        - `train_000697`
+      - 说明它更像
+        长时长 / 长 reference
+        这一类
+        near-sink 宽类 pre
+    - `gain`
+      虽然在
+      `000697`
+      的 contrast residual
+      里排得靠前，
+      但那主要是：
+      - 用来区分
+        `000697`
+        和
+        `000799`
+      - 不是
+        `000697 -> sink`
+        的主 blocker
+  - 当前解释应更新为：
+    - sink pocket false positives
+      不能再回写成
+      单一
+      `gain + cosine`
+      之后的残留 pre
+    - 应固定拆成：
+      - `000799`
+        transient-collapse pocket
+      - `000697`
+        long-duration / long-reference pocket
+  - 当前默认下一步：
+    - 不回到
+      sink pocket
+      的均值解释
+    - 若继续推进，
+      默认分别沿：
+      - `000799`
+        的
+        duration + transient
+      - `000697`
+        的
+        duration + reference + low transient/share
+      做后续解释
+    - 仍不启动新训练
 
 ## 9. 文档入口
 
