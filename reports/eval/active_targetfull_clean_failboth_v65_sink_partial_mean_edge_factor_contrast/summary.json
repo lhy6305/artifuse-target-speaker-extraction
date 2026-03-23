@@ -1,0 +1,88 @@
+{
+  "split_json": "reports/eval/active_targetfull_clean_failboth_v65_sink_hinge_ladder_split/summary.json",
+  "scale_json": "reports/eval/active_targetfull_clean_failboth_post_entry_v64_collapse_neighbor_scan_all/summary.json",
+  "target_group": "v65_sink",
+  "baseline_group": "weak_gain_hinge_floor",
+  "contrast_group": "weak_gain_partial_mean_hinge",
+  "factor_fields": [
+    "target_transient_presence_minus_mid_db_mean",
+    "target_transient_presence_share_mean",
+    "target_duration_sec",
+    "reference_duration_sec",
+    "target_interference_logspec_cosine",
+    "interference_layers.0.gain_db",
+    "interference_layers.0.start_offset_sec"
+  ],
+  "rows_ranked_by_target_specific_residual_z": [
+    {
+      "field": "reference_duration_sec",
+      "target_minus_baseline": -0.27,
+      "contrast_minus_baseline": 1.41,
+      "target_specific_residual": -1.68,
+      "abs_target_specific_residual": 1.68,
+      "scale_stdev": 0.5079192999937316,
+      "target_specific_residual_z": -3.307612055735494,
+      "abs_target_specific_residual_z": 3.307612055735494
+    },
+    {
+      "field": "target_duration_sec",
+      "target_minus_baseline": -0.6000000000000001,
+      "contrast_minus_baseline": 0.5399999999999998,
+      "target_specific_residual": -1.14,
+      "abs_target_specific_residual": 1.14,
+      "scale_stdev": 0.5121652714760367,
+      "target_specific_residual_z": -2.2258440067882237,
+      "abs_target_specific_residual_z": 2.2258440067882237
+    },
+    {
+      "field": "target_interference_logspec_cosine",
+      "target_minus_baseline": -0.09476600537035784,
+      "contrast_minus_baseline": 0.012763306844173927,
+      "target_specific_residual": -0.10752931221453177,
+      "abs_target_specific_residual": 0.10752931221453177,
+      "scale_stdev": 0.06475189193283612,
+      "target_specific_residual_z": -1.6606358363407592,
+      "abs_target_specific_residual_z": 1.6606358363407592
+    },
+    {
+      "field": "interference_layers.0.start_offset_sec",
+      "target_minus_baseline": 0.049000000000000016,
+      "contrast_minus_baseline": -0.08199999999999999,
+      "target_specific_residual": 0.131,
+      "abs_target_specific_residual": 0.131,
+      "scale_stdev": 0.08709600614100675,
+      "target_specific_residual_z": 1.5040873376893258,
+      "abs_target_specific_residual_z": 1.5040873376893258
+    },
+    {
+      "field": "target_transient_presence_share_mean",
+      "target_minus_baseline": 0.056539305951446295,
+      "contrast_minus_baseline": -0.00045743328519165516,
+      "target_specific_residual": 0.05699673923663795,
+      "abs_target_specific_residual": 0.05699673923663795,
+      "scale_stdev": 0.053014773138438234,
+      "target_specific_residual_z": 1.0751104996300098,
+      "abs_target_specific_residual_z": 1.0751104996300098
+    },
+    {
+      "field": "target_transient_presence_minus_mid_db_mean",
+      "target_minus_baseline": 5.912337303161621,
+      "contrast_minus_baseline": 2.5202159881591797,
+      "target_specific_residual": 3.3921213150024414,
+      "abs_target_specific_residual": 3.3921213150024414,
+      "scale_stdev": 4.623479074988485,
+      "target_specific_residual_z": 0.7336729030207386,
+      "abs_target_specific_residual_z": 0.7336729030207386
+    },
+    {
+      "field": "interference_layers.0.gain_db",
+      "target_minus_baseline": 0.058999999999999275,
+      "contrast_minus_baseline": -0.04800000000000004,
+      "target_specific_residual": 0.10699999999999932,
+      "abs_target_specific_residual": 0.10699999999999932,
+      "scale_stdev": 1.943028822181115,
+      "target_specific_residual_z": 0.05506866330468955,
+      "abs_target_specific_residual_z": 0.05506866330468955
+    }
+  ]
+}

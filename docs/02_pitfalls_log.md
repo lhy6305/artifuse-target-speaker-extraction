@@ -2737,3 +2737,1875 @@
    它必须单独写，
    不能再和 pure `v67` takeover
    并写成同一个边界带。
+
+### 153. 对 train-side pure frontier 做 metadata-rich 近邻搜索时，如果不先把 val rows 剥掉，`val_000182` 这类 metadata-only outlier 会重新挤进 top-k；而在 pure `v67` takeover` 的最近 train 邻域里，真正区分 pure-signature 与 `v65` drift 的也不是“低 transient 是否还在”，而是 `v66>v64` 保护带有没有先被磨平
+
+现象：
+
+- 本轮围绕：
+  - `train_001079`
+  - `train_001494`
+  - `train_000697`
+  跑 metadata-rich 近邻后，
+  如果直接把：
+  - train
+  - val
+  混在一起看，
+  top-k 会重新混进：
+  - `val_000182`
+  - `val_000396`
+  - `val_000041`
+- 其中：
+  - `val_000182`
+    依旧表现为：
+    - metadata 看着不远
+    - 但 direction 彻底失真
+  - `val_000396`
+    甚至已经变成：
+    - `v66 < v64`
+    - `v66 < v65`
+- 改成 train-only 后，
+  pure trio 最近邻才稳定裂成：
+  - shell-like `v66-top 3`
+  - pure-signature `v67-top 5`
+  - `v65` drift `v67-top 4`
+- 更关键的是：
+  - pure-signature `v67-top 5`
+    相对 pure trio
+    已经出现：
+    - `interference_transient_presence_minus_mid_db_mean = +5.666825`
+    - `interference_transient_presence_share_mean = +0.134391`
+    但仍保住：
+    - `v66 > v64`
+    - `v66 > v65`
+  - `v65` drift `v67-top 4`
+    则更接近：
+    - `interference_transient_presence_minus_mid_db_mean = +6.529567`
+    - `interference_transient_presence_share_mean = +0.153944`
+    同时：
+    - `v66 > v64`
+      均值只剩：
+      - `+0.007218`
+    - `v66 > v65`
+      已翻到：
+      - `-0.036646`
+
+影响：
+
+- 如果不先拆掉 val，
+  会把：
+  - metadata-only false neighbor
+  误当成：
+  - pure frontier 最近 train 邻居
+- 如果继续把 pure `v67` takeover
+  写成：
+  - 低 transient 的一层
+  就会错过真正的分界；
+  因为 pure-signature 邻居
+  已经可以带着很高的
+  interference transient
+  继续保住：
+  - `v66 > v65`
+- 当前更危险的误写是把：
+  - transient 升高
+  直接当成：
+  - `v65`
+    已经开始进场
+
+处理：
+
+- 新增脚本：
+  - `scripts/eval/analyze_proxy_case_neighbors.py`
+- 新增 summary：
+  - `reports/eval/active_targetfull_clean_failboth_pure_v67_neighbor_diagnosis/summary.json`
+  - `reports/eval/active_targetfull_clean_failboth_pure_v67_neighbor_diagnosis_train_only/summary.json`
+- 新日报：
+  - `reports/daily/2026-03-23_candidate_v7_pure_v67_neighbor_diagnosis.md`
+
+后续要求：
+
+1. 以后只要诊断 train-side pure frontier，默认先做 train-only neighbor search，再决定是否补看 val。
+2. 不要再把：
+   - “interference transient 还低”
+   当成 pure `v67` takeover 的必要条件。
+3. 当前更该优先跟的边界应写成：
+   - `v66 > v64`
+     是否先被磨到接近 `0`
+   - 随后
+     `v66 > v65`
+     是否一起翻负
+   而不是继续围着
+   单个 transient 字段打转。
+
+### 154. 当 pure-signature `v67-top` 与 `v65` drift 都已经进入高 interference-transient 区间后，再继续把“transient 变高”当作两组分界，会把真正先塌的 `v66>v64` 保护带忽略掉
+
+现象：
+
+- 本轮把 mixed ring
+  继续拆成：
+  - pure-signature `v67-top 5`
+  - `v65` drift `v67-top 4`
+  后，
+  两组都已经有：
+  - 较高的
+    `interference_transient_presence_minus_mid_db_mean`
+  - 较高的
+    `interference_transient_presence_share_mean`
+- 具体均值为：
+  - pure-signature `5`
+    - `interference_transient_presence_minus_mid_db_mean = 5.294541`
+    - `interference_transient_presence_share_mean = 0.423214`
+  - `v65` drift `4`
+    - `interference_transient_presence_minus_mid_db_mean = 6.157284`
+    - `interference_transient_presence_share_mean = 0.442767`
+- 但真正先翻掉的不是：
+  - `v66 > v67`
+    再变差很多
+  而是：
+  - pure-signature `5`
+    仍有：
+    - `v66 > v64 = +0.065665`
+    - `v66 > v65 = +0.164763`
+  - `v65` drift `4`
+    已掉到：
+    - `v66 > v64 = +0.007218`
+    - `v66 > v65 = -0.036646`
+
+影响：
+
+- 如果继续把：
+  - transient 升高
+  直接写成：
+  - `v65`
+    进场原因
+  会把 pure-signature `5`
+  也误判成 drift；
+  因为它们本身已经能带着较高 transient
+  继续保住：
+  - `v66 > v65`
+- 真正危险的误写是：
+  - 看到两组都很吵
+  就忘了先去看
+  `v66 > v64`
+  这层缓冲还剩多少
+
+处理：
+
+- 已新增：
+  - `scripts/eval/analyze_proxy_group_split.py`
+- 已落盘：
+  - `reports/eval/active_targetfull_clean_failboth_neighbor_ring_split/summary.json`
+  - `reports/daily/2026-03-23_candidate_v7_neighbor_ring_split.md`
+
+后续要求：
+
+1. 以后诊断 pure-signature vs drift 时，默认先看：
+   - `v66 > v64`
+   - `v66 > v65`
+   两条 margin，再看 transient。
+2. 不要把：
+   - “两组 transient 都高”
+   误写成：
+   - “两组没有结构差异”；
+   差异可能早就转移到
+   guard margin 上了。
+3. `train_001589`
+   当前默认直接归入：
+   - `v65` drift
+   不再作为 pure edge
+   留作开放问题。
+
+### 155. 当 mixed ring 已经拆到纯 `v67-top` 与 `v65` drift 两组后，如果还继续默认往 raw metadata 上找单字段 hard carve，很容易忽略这层 ring 里真正稳定联动的是 `v66>v64` 和 `v66>v65` 两条模型 margin，而不是哪一个 duration / gain / transient 字段
+
+现象：
+
+- 本轮把 ring `9`
+  条样本按
+  `v66 > v64`
+  做排序后，
+  最明显的联动是：
+  - `corr(v66>v64, v66>v65) = +0.5021`
+- 其余字段都偏弱：
+  - `target_duration_sec = +0.0028`
+  - `reference_duration_sec = -0.2362`
+  - `interference_gain_db = -0.2443`
+  - `start_offset_sec = +0.1786`
+  - `cosine = +0.0873`
+  - `interference_transient_mean = -0.1387`
+- 按中位数
+  `0.044802`
+  切开后：
+  - low-buffer `5`
+    的
+    `v66 > v65 = -0.007487`
+  - high-buffer `4`
+    的
+    `v66 > v65 = +0.178667`
+  - 但：
+    - `v66 > v67`
+      两边均值几乎不变
+
+影响：
+
+- 如果继续把当前这条线
+  默认写成：
+  - 再找 duration / gain / transient
+    的硬阈值
+  很容易白跑；
+  因为这层 ring
+  已经不像 shell vs outer 那样
+  还存在明显单字段 carve
+- 当前更危险的误写是：
+  - 看到某条 row
+    transient 更高
+  就推断它一定更靠近
+    `v65` drift；
+  但真正更稳定的判断
+  是先看：
+  - `v66 > v64`
+    还剩多少
+  - `v66 > v65`
+    是否已经贴到 `0`
+
+处理：
+
+- 已落盘：
+  - `reports/eval/active_targetfull_clean_failboth_neighbor_ring_buffer_collapse/summary.json`
+  - `reports/daily/2026-03-23_candidate_v7_neighbor_buffer_collapse_diagnosis.md`
+
+后续要求：
+
+1. 以后进入 mixed ring 内部诊断时，默认先看 margin 联动，再看 metadata。
+2. 不要再把：
+   - “这一层一定还能再用单字段 carve”
+   当成默认假设。
+3. 当前下一步若继续，优先做：
+   - `train_001006`
+   - `train_001589`
+   - `train_001610`
+   - `train_001745`
+   的 case-to-case 对照，
+   不再继续扩大样本面。
+
+### 156. 当 low-buffer ring 里的 case 已经出现“metadata 位置还靠 pure-signature，但 margin 状态已先倒向 drift”的分叉时，不能再用单一 nearest-group 或单一元数据画像给它贴 pure / drift 身份；这一步必须把 metadata position 与 margin state 分开读
+
+现象：
+
+- 本轮对：
+  - `train_001006`
+  - `train_001589`
+  - `train_001610`
+  - `train_001745`
+  做 reference-group positioning 后，
+  发现：
+  - `train_001006`
+    对 pure-signature
+    的
+    total / metadata / margin
+    三条距离都最近
+  - `train_001589`
+    total 与 margin
+    都最近：
+    - `v65` drift
+  - 但：
+    - `train_001610`
+    - `train_001745`
+      的 total / metadata
+      最近组
+      仍是：
+      - pure-signature
+      同时：
+      - margin
+        最近组
+        已经变成：
+        - `v65` drift
+
+影响：
+
+- 如果继续默认把当前这层
+  写成：
+  - “谁 total 最近哪组，
+    谁就是哪组”
+  会把：
+  - `train_001610`
+  - `train_001745`
+    误判成
+    还没进入 drift；
+  但它们的：
+  - `v66 > v64`
+  - `v66 > v65`
+    已经明显更像 drift
+- 反过来，
+  如果只看
+  - target transient
+  - duration
+  - gain
+  之类单条 metadata
+  也会误以为
+  `train_001006`
+  只是“还没跑完的 drift”；
+  但它当前
+  三条距离
+  仍一致指向：
+  - pure-signature
+
+处理：
+
+- 已落盘：
+  - `reports/eval/active_targetfull_clean_failboth_lowbuffer_edge_case_contrast/summary.json`
+  - `reports/eval/active_targetfull_clean_failboth_lowbuffer_edge_positioning/summary.json`
+  - `reports/daily/2026-03-23_candidate_v7_lowbuffer_edge_positioning.md`
+
+后续要求：
+
+1. 进入 low-buffer ring 个例诊断时，默认同时写：
+   - metadata position
+   - margin state
+2. 不要再用：
+   - 单轴 nearest-group
+   作为 pure / drift 身份的唯一判定。
+3. 当前若继续推进，优先解释：
+   - `train_001610`
+   - `train_001745`
+   的 margin-first collapse，
+   而不是再回头扩大样本面。
+
+### 157. 当 case 已经落在 pure-signature -> drift 的过渡带里，如果只看总距离或 metadata 进度，很容易误以为“必须先把 metadata 迁到 drift，margin 才会翻”；但在当前 low-buffer ring 里，`train_001610` 与 `train_001745` 已经证明 margin 完全可以先塌完，metadata 迁移反而是滞后的
+
+现象：
+
+- 本轮把：
+  - `train_001006`
+  - `train_001610`
+  - `train_001745`
+  投影到：
+  - pure-signature
+    -> `v65` drift
+    的 metadata axis
+  - pure-signature
+    -> `v65` drift
+    的 margin axis
+  后发现：
+  - `train_001006`
+    - metadata ratio
+      = `-1.581300`
+    - margin ratio
+      = `+0.051259`
+  - `train_001610`
+    - metadata ratio
+      = `+0.004083`
+    - margin ratio
+      = `+1.240782`
+  - `train_001745`
+    - metadata ratio
+      = `+0.349352`
+    - margin ratio
+      = `+1.046646`
+
+影响：
+
+- 如果继续把当前这条线
+  默认写成：
+  - 先找 metadata
+    谁先把样本整体推向 drift
+  会把：
+  - `train_001610`
+    这种最干净的
+    margin-first collapse
+    看漏；
+    因为它 metadata
+    几乎还停在 pure center，
+    但 margin
+    已经超过 drift center
+- 同理，
+  `train_001745`
+  也不是
+  metadata
+  先整体换挡，
+  而是：
+  - margin
+    已经基本走完
+  - metadata
+    只走到约三分之一
+
+处理：
+
+- 已落盘：
+  - `reports/eval/active_targetfull_clean_failboth_margin_first_transition_axes/summary.json`
+  - `reports/daily/2026-03-23_candidate_v7_margin_first_transition_axes.md`
+
+后续要求：
+
+1. 当前 low-buffer ring 若继续推进，默认先拆：
+   - `v66 > v64`
+   - `v66 > v65`
+   的次序关系，
+   不再默认先找 metadata 主导项。
+2. 不要把：
+   - “metadata 先迁到 drift”
+   当成 drift 成立的必要条件。
+3. `train_001610`
+   应作为当前 margin-first collapse
+   的主锚点样本。
+
+### 158. 当已经确认 drift 是 margin-first collapse 后，如果还把 `v66 > v64` 与 `v66 > v65` 的越零次序混写成“同步翻掉”，会把 `train_001610` 这类 hinge-entry 样本和 `train_001745` 这类更深 post-entry 样本混成一类
+
+现象：
+
+- 本轮显式计算后，
+  两条 gap 的 zero-cross threshold
+  已明确为：
+  - `v66 > v64`
+    = `1.123493`
+  - `v66 > v65`
+    = `0.818051`
+- 这说明：
+  - `v66 > v65`
+    会更早越过 `0`
+- 对当前 3 条 case：
+  - `train_001006`
+    - `v66 > v64`
+      progress to zero
+      = `0.317728`
+    - `v66 > v65`
+      progress to zero
+      = `0.337545`
+    - 两条都未越零
+  - `train_001610`
+    - `v66 > v64`
+      progress to zero
+      = `0.982427`
+      仍未越零
+    - `v66 > v65`
+      progress to zero
+      = `1.310871`
+      已越零
+  - `train_001745`
+    - `v66 > v64`
+      progress to zero
+      = `1.418327`
+    - `v66 > v65`
+      progress to zero
+      = `1.011576`
+    - 两条都已越零，
+      但 `v66 > v64`
+      更深
+
+影响：
+
+- 如果继续把当前这条线
+  简写成：
+  - “`v66 > v64`
+    和
+    `v66 > v65`
+    一起翻掉”
+  会丢掉当前最关键的
+  阶段差异：
+  - `train_001610`
+    是：
+    - `v66 > v65`
+      先翻
+    - `v66 > v64`
+      只剩最后一层
+  - `train_001745`
+    才是：
+    - `v66 > v64`
+      进一步翻成负值
+      的更深阶段
+
+处理：
+
+- 已落盘：
+  - `reports/eval/active_targetfull_clean_failboth_margin_order_split/summary.json`
+  - `reports/daily/2026-03-23_candidate_v7_margin_order_split.md`
+
+后续要求：
+
+1. 当前 low-buffer ring 若继续推进，默认把：
+   - hinge-entry
+   - post-entry depth
+   分开写。
+2. 不要再把：
+   - `v66 > v64`
+   - `v66 > v65`
+   的翻转
+   当成同步事件。
+3. `train_001610`
+   应作为：
+   - `v66 > v65`
+     先越零
+   的主锚点；
+   `train_001745`
+   应作为：
+   - `v66 > v64`
+     后续继续翻负
+   的主锚点。
+
+### 159. 当已经进入 post-entry depth split 后，如果还把更深阶段误写成“`v65` takeover 继续加深”，会看漏 `train_001745` 相对 `train_001610` 的真正差异其实是 `v64` 剩余保护带被继续单边打穿，而不是 `v66 > v65` 继续变得更负
+
+现象：
+
+- 本轮对：
+  - `train_001610`
+  - `train_001745`
+  做 singleton split 后，
+  pairwise delta
+  显示：
+  - `v66 - v64`
+    继续下掉
+    `0.028624 dB`
+  - 但
+    `v66 - v65`
+    反而回升
+    `0.049313 dB`
+- ranking
+  也同步从：
+  - `v67 > v65 > v66 > v64`
+  变成：
+  - `v67 > v64 > v65 > v66`
+
+影响：
+
+- 如果继续把当前更深阶段
+  简写成：
+  - `v65`
+    继续 takeover
+  就会把：
+  - `train_001745`
+    为什么会出现
+    `v66 < v64`
+    看反；
+  因为它这一步
+  真正更深的是：
+  - `v64`
+    剩余 buffer
+    被继续打穿
+- 同时也会错过：
+  在这对样本里，
+  与更深 `v64` collapse
+  同步出现的是一组
+  条件性组合：
+  - 更早 overlap
+  - 更长 reference
+  - 更高 target / interference transient
+  - 更弱 gain
+
+处理：
+
+- 已落盘：
+  - `reports/eval/active_targetfull_clean_failboth_post_entry_depth_split/summary.json`
+  - `reports/daily/2026-03-23_candidate_v7_post_entry_depth_split.md`
+
+后续要求：
+
+1. 当前 post-entry 分析若继续推进，默认先问：
+   - `v64`
+     为什么继续单边塌
+   而不是：
+   - `v65`
+     是否继续 takeover
+2. 不要把：
+   - deeper drift
+     = `v66 > v65`
+       更负
+   当成默认假设。
+3. `train_001745`
+   应作为当前：
+   - `v64`
+     single-sided collapse
+   的主锚点。
+
+### 160. 当 `train_001745` 这种 singleton case 的 metadata 邻居已经扫到窄 ring 以后，不能因为“最近邻里也有 `v66 < v64`”就把它们并成同型 family；还必须继续检查 `v66 < v65` 是否同时成立，以及两条负 gap 里到底是谁更深
+
+现象：
+
+- 本轮对
+  `train_001745`
+  的 train-side `topv67`
+  邻域做全量 `27` 条
+  signature scan 后，
+  bucket
+  变成：
+  - `pre_entry_or_pure = 20`
+  - `hinge_secondary_crossed_first = 4`
+  - `post_entry_both_crossed_secondary_deeper_or_equal = 1`
+  - `reference_only_crossed_unexpected = 2`
+  - `post_entry_both_crossed_reference_deeper = 0`
+- 最近的
+  post-entry row
+  `train_001543`
+  虽然满足：
+  - `v66 < v64`
+  - `v66 < v65`
+  但它的：
+  - `v66 - v64 = -0.008828 dB`
+  - `v66 - v65 = -0.113984 dB`
+  实际是
+  `v65`
+  更深；
+  不是
+  `train_001745`
+  那种：
+  - `v64`
+    deeper
+- 另外两条：
+  - `train_000664`
+  - `train_000210`
+  虽然也出现：
+  - `v66 < v64`
+  但仍保有：
+  - `v66 > v65`
+  属于另一条
+  `v64-only crossed`
+  异型支路
+
+影响：
+
+- 如果只因为：
+  - 邻居里也有
+    `v66 < v64`
+  就把它们并成：
+  - `train_001745`
+    同型 family
+  会把三种不同几何
+  混成一类：
+  - `both-crossed + v64-deeper`
+  - `both-crossed + v65-deeper`
+  - `v64-only crossed`
+- 这样会误以为：
+  - `train_001745`
+    已经在窄 ring
+    找到 mirror
+  实际上当前 ring
+  内同型数是：
+  - `0`
+
+处理：
+
+- 已落盘：
+  - `reports/eval/active_targetfull_clean_failboth_post_entry_v64_collapse_neighbor_scan_all/summary.json`
+  - `reports/eval/active_targetfull_clean_failboth_post_entry_v64_collapse_signature_scan/summary.json`
+  - `reports/daily/2026-03-23_candidate_v7_post_entry_v64_collapse_neighbor_scan.md`
+
+后续要求：
+
+1. 之后凡是再说
+   `train_001745`
+   是否有同型近邻，
+   默认至少同时检查：
+   - `v66 < v64`
+   - `v66 < v65`
+   - 以及
+     `v66 - v64`
+     是否比
+     `v66 - v65`
+     更深。
+2. 不要把：
+   - `metadata_distance`
+     最近
+   当作：
+   - margin 几何同型
+   的充分条件。
+3. 当前窄 ring
+   内对
+   `train_001745`
+   的默认表述
+   应固定为：
+   - rare conditional singleton
+   而不是：
+   - local family member。
+
+### 161. 当已经把 `train_001745` 的假近邻压成 `001543 / 000664` 这种分叉对照后，不能再把它们写成“离 `001745` 远近不同的同一路 drift 深度”；真正要看的，是它们是否在同一个 `v64 crossed` 台阶后分流到不同 branch identity
+
+现象：
+
+- 本轮把：
+  - `train_001745`
+  - `train_001543`
+  - `train_000664`
+  压成 singleton group split 后，
+  看到：
+  - `001543 - 000664`
+    的
+    `v66 - v64`
+    只差
+    `+0.000345 dB`
+    基本不动；
+    但
+    `v66 - v65`
+    额外下掉
+    `0.118462 dB`
+  - `001745 - 000664`
+    则是：
+    - `v66 - v64`
+      再下掉
+      `0.018296 dB`
+    - `v66 - v65`
+      只再下掉
+      `0.006385 dB`
+  - `001745 - 001543`
+    甚至表现为：
+    - `v66 - v64`
+      更负
+      `0.018641 dB`
+    - 但
+      `v66 - v65`
+      反而更高
+      `0.112077 dB`
+
+影响：
+
+- 如果继续把这三条
+  理解成：
+  - 同一条 drift
+    上只是深浅不同
+  就会把：
+  - `001543`
+    的
+    `v65 sink`
+  - 和
+  - `001745`
+    的
+    `v64 pocket`
+  混成同一类
+- 这样会看不见：
+  - `000664 -> 001543`
+    实际上几乎只是在
+    `v65`
+    这一侧翻负
+  - 而
+    `000664 -> 001745`
+    则是在
+    `v64`
+    已翻负的前提下，
+    把
+    `v65`
+    只刚好推过零
+
+处理：
+
+- 已落盘：
+  - `reports/eval/active_targetfull_clean_failboth_post_entry_branch_divergence_split/summary.json`
+  - `reports/daily/2026-03-23_candidate_v7_post_entry_branch_divergence_split.md`
+
+后续要求：
+
+1. 之后凡是再说
+   `001543 / 000664 / 001745`
+   这组三角关系，
+   默认先问：
+   - 它们共享的是不是同一个
+     `v64 crossed`
+     shelf
+   - 分流的是：
+     `v65 sink`
+     还是
+     `v64 pocket`
+2. 不要再把：
+   - `距离 `001745` 更近`
+   自动等同于：
+   - `在同一条 drift 深度线上`
+3. 当前如果还要继续压窄，
+   默认优先用：
+   - `train_001543`
+   - `train_000664`
+   这对
+   去隔离：
+   - 什么因素
+     只会推动
+     `v66 > v65`
+     翻负，
+     而不会明显继续加深
+     `v66 > v64`。
+
+### 162. 当已经找到 `train_001543 / train_000664` 这种 clean isolation pair 后，不要再把 `train_001745` 混回同一条“谁在推动 `v66 > v65` 翻负”的分析线；否则会把 `v65 sink` 和 `v64 pocket` 两种不同触发方向再次糊在一起
+
+现象：
+
+- 本轮把：
+  - `train_001543`
+  - `train_000664`
+  单独做 `v65 sink`
+  isolation 后，
+  看到：
+  - `v66 - v64`
+    只变化
+    `+0.000345 dB`
+  - 但
+    `v66 - v65`
+    额外下掉
+    `0.118462 dB`
+- 同时，
+  与这一步同步出现的
+  是：
+  - 更短 reference
+  - 更早 overlap
+  - 更弱 gain
+  - 更高双侧 transient
+  - 更低 cosine
+- 而
+  `train_001745`
+  那条支路
+  虽然也有：
+  - 更早 overlap
+  - 更高 transient
+  但它更关键的变化
+  是：
+  - `v66 - v64`
+    继续更负
+  - `v66 - v65`
+    只刚好越零
+
+影响：
+
+- 如果这时还把
+  `001745`
+  混回同一条 isolation 线，
+  就会把：
+  - `谁在推动`
+    `v65 sink`
+  和
+  - `谁在维持`
+    `v64 pocket`
+  再次混成一包
+- 这样会让：
+  - 更短 reference /
+    更弱 gain /
+    更低 cosine
+  这组只在
+  `001543 -> 000664`
+  上干净显影的信号
+  被
+  `001745`
+  的异型支路
+  冲淡
+
+处理：
+
+- 已落盘：
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_isolation/summary.json`
+  - `reports/daily/2026-03-23_candidate_v7_v65_sink_isolation.md`
+
+后续要求：
+
+1. 之后凡是要隔离：
+   - `v66 > v65`
+     为什么翻负
+   默认先用：
+   - `train_001543`
+   - `train_000664`
+   这对，
+   不要先把
+   `train_001745`
+   混回来。
+2. 当前
+   `train_001745`
+   只应保留在：
+   - `v64 pocket`
+     支路
+   的解释线上。
+3. 当前如果继续推进，
+   默认优先检查：
+   - 更短 reference
+   - 更弱 gain
+   - 更低 cosine
+   这三项
+   在
+   `v65 sink`
+   里
+   哪一项更像主导因子。
+
+### 163. 当已经把 `v65 sink` 的 factor contrast 做到 sink-branch vs pocket-branch 的 residual 排序后，不要还把 `cosine` 和 `reference / overlap / gain` 并列写成主导候选；这会把真正有分支区分力的因子稀释掉
+
+现象：
+
+- 本轮用：
+  - `train_001543`
+    作为 target sink
+  - `train_000664`
+    作为 shared shelf
+  - `train_001745`
+    作为 pocket contrast
+  做 branch factor contrast 后，
+  标准化 residual
+  排序为：
+  - `reference_duration_sec = 2.0673 z`
+  - `interference_layers.0.start_offset_sec = 1.5845 z`
+  - `interference_layers.0.gain_db = 1.2125 z`
+  - `target_transient_presence_share_mean = 0.5273 z`
+  - `interference_transient_presence_share_mean = 0.3164 z`
+  - `target_interference_logspec_cosine = 0.2609 z`
+- 也就是：
+  - `cosine`
+    比
+    `reference / overlap / gain`
+    都弱很多；
+  - 双侧 transient share
+    也更像 shared package，
+    不是 sink identity
+    的主导项
+
+影响：
+
+- 如果这时还把：
+  - 更低 cosine
+  和：
+  - 更短 reference
+  - 更早 overlap
+  - 更弱 gain
+  并列写成：
+  - `v65 sink`
+    主导候选
+  就会让下一步继续排查时，
+  把注意力浪费在
+  已经明显偏弱的因子上
+- 同时也会把：
+  - overlap
+    明明比
+    gain
+    更强的 sink-specific
+    区分力
+  看低
+
+处理：
+
+- 已落盘：
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_factor_contrast/summary.json`
+  - `reports/daily/2026-03-23_candidate_v7_v65_sink_factor_contrast.md`
+
+后续要求：
+
+1. 之后凡是再写
+   `v65 sink`
+   的主导候选，
+   默认顺序固定为：
+   - `reference`
+   - `overlap`
+   - `gain`
+   - `cosine`
+     仅作弱辅助
+2. 不要再把：
+   - 双侧 transient share
+   当作当前
+   sink branch
+   identity
+   的主导因子。
+3. 当前如果继续推进，
+   默认只拆：
+   - `reference`
+   - `overlap`
+   这两项，
+   不再优先拆
+   `cosine`。
+
+### 164. 当已经把 `reference / overlap / gain` 做成 target-side slice support 后，不要再把 `overlap` 写成 `v65 sink` 的主分界；它会把 `train_001745` 这条 pocket 分支一起吸进来
+
+现象：
+
+- 本轮用
+  `target=001543`
+  / `baseline=000664`
+  / `contrast=001745`
+  做 factor slice support 后，
+  看到：
+  - `reference`
+    的
+    `contrast_on_target_side = false`
+  - `gain`
+    的
+    `contrast_on_target_side = false`
+  - 但
+    `start_offset`
+    的
+    `contrast_on_target_side = true`
+- 也就是：
+  - `001745`
+    会和
+    `001543`
+    一起落到：
+    - 更早 overlap
+      这一侧
+  - 却不会一起落到：
+    - 更短 reference
+    - 更弱 gain
+      这一侧
+
+影响：
+
+- 如果这时还把：
+  - 更早 overlap
+  写成：
+  - `v65 sink`
+    主分界
+  就会把：
+  - `v64 pocket`
+    这条支路
+  一起吸进来
+- 这样会把：
+  - `reference`
+    明明是当前最干净
+    sink-vs-pocket
+    分界
+  的事实
+  再次冲淡
+
+处理：
+
+- 已落盘：
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_factor_slice_support/summary.json`
+  - `reports/daily/2026-03-23_candidate_v7_v65_sink_factor_slice_support.md`
+
+后续要求：
+
+1. 之后凡是再写
+   `v65 sink`
+   的主分界，
+   默认优先级固定为：
+   - `reference`
+   - `gain`
+   - `overlap`
+     仅作 shared package
+2. 不要再把：
+   - `overlap`
+   当作当前
+   sink-vs-pocket
+   的主切片边界。
+3. 当前如果继续推进，
+   默认只拆：
+   - `reference`
+   - `gain`
+   不再优先拆
+   `overlap`。
+
+### 165. 当已经把 `v65 sink` 压到 `reference+gain both` 象限内部后，不要再把 `gain` 或“更早 overlap”继续当作 hinge -> sink 的最后主导步；这会把已经解释成 entry gate 的条件又误写成最终触发器
+
+现象：
+
+- 本轮对：
+  - `train_001543`
+  - `train_000266`
+  做局部 split 后，
+  看到：
+  - `interference_layers.0.gain_db = +0.059`
+    基本不变
+  - `interference_layers.0.start_offset_sec = +0.049`
+    overlap
+    反而略更晚
+- 但同时：
+  - `reference_duration_sec = -0.27`
+  - `target_transient_presence_minus_mid_db_mean = +5.912337`
+  - `target_transient_presence_share_mean = +0.056539`
+  明显上升
+- margin 也同步从：
+  - `v66 - v64 = +0.015989`
+  走到：
+  - `-0.008828`
+  并把：
+  - `v66 - v65`
+    再额外下掉
+    `0.074139 dB`
+
+影响：
+
+- 如果这时还把：
+  - 弱 gain
+  或：
+  - 更早 overlap
+  写成：
+  - hinge -> sink
+    最后主导步
+  就会把：
+  - 已经属于
+    `reference+gain`
+    entry gate
+    的条件
+  和：
+  - 真正把
+    `000266`
+    推成
+    `001543`
+    的最后局部变化
+  再次混在一起
+- 这样会错过：
+  - `reference`
+    继续缩短
+  - `target transient`
+    抬升
+  才是当前更像
+  最终补刀的组合
+
+处理：
+
+- 已落盘：
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_vs_reference_gain_hinge/summary.json`
+  - `reports/daily/2026-03-23_candidate_v7_v65_sink_reference_gain_hinge_split.md`
+
+后续要求：
+
+1. 之后凡是再写
+   `v65 sink`
+   的局部因子层级，
+   默认改写成：
+   - `reference + gain`
+     = entry gate
+   - `reference`
+     再缩短
+     + `target transient`
+     抬升
+     = hinge -> sink
+2. 不要再把：
+   - `overlap`
+   写成当前
+   hinge -> sink
+   的最后主导步。
+3. 当前如果继续推进，
+   默认只拆：
+   - `reference`
+   - `target transient`
+   不再优先拆
+   `gain / overlap`。
+
+### 166. 当已经把 `reference+gain both` 象限继续拆成 sink / hinge / pre 后，不要再把 `reference` 写成 gate 内统一最强的 final push；这会把真正更稳定的 `target transient` 分离作用盖掉
+
+现象：
+
+- 本轮把
+  `reference+gain`
+  做成交叉四象限后，
+  看到：
+  - `train_001543`
+    在
+    `both`
+  - `train_001745`
+    和
+    `train_000664`
+    都在
+    `neither`
+  说明：
+  - `reference+gain`
+    更像
+    conjunction entry gate
+- 进一步把
+  `both`
+  象限拆成：
+  - sink
+  - hinge
+  - pre
+  后，
+  看到：
+  - `sink - both_pre`
+    的
+    `reference = -0.0375`
+    很小
+    但
+    `target_transient_mean = +0.5340`
+    `target_transient_share = +0.04247`
+  - `sink - both_nonsink`
+    的
+    `reference = -0.084`
+    也不大，
+    但
+    `target_transient_mean = +1.6097`
+    `target_transient_share = +0.04528`
+- 只有在：
+  - `sink - hinge`
+  这条局部边界上，
+  `reference = -0.27`
+  仍然比较显著
+
+影响：
+
+- 如果这时还把：
+  - `reference`
+  写成：
+  - gate 内
+    统一最强的
+    final push
+  就会把：
+  - `target transient`
+    明明对
+    sink-vs-nonsink
+    更稳定的
+    分离作用
+  压掉
+- 这样会误把：
+  - `reference`
+    的局部补刀作用
+  夸大成：
+  - 对所有 gate 内
+    非-sink
+    都同样主导
+
+处理：
+
+- 已落盘：
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_reference_gain_quadrants/summary.json`
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_reference_vs_target_transient_split/summary.json`
+  - `reports/daily/2026-03-23_candidate_v7_v65_sink_reference_vs_target_transient_split.md`
+
+后续要求：
+
+1. 之后凡是再写
+   `v65 sink`
+   的层级，
+   默认改写成：
+   - `reference+gain`
+     = conjunction entry gate
+   - `target transient`
+     = gate 内 final push
+   - `reference`
+     = hinge -> sink
+       局部补刀
+2. 不要再把：
+   - `reference`
+   当作当前 gate 内
+   所有非-sink
+   的统一第一分界。
+3. 当前如果继续推进，
+   默认只拆：
+   - `target transient mean`
+   - `target transient share`
+   不再优先回到
+   `reference / gain`。
+
+### 167. 当已经把 gate 内的 `target transient` 拆成 `mean` vs `share` 后，不要再把两者并列写成同等主导；这会忽略 `share` 更容易把旁支一起吸进来的污染
+
+现象：
+
+- 本轮 gate 内 factor contrast
+  显示：
+  - `target_transient_mean = 1.2788 z`
+  - `target_transient_share = 1.0665 z`
+  说明：
+  - `mean`
+    已经更强
+- 同时，
+  slice support
+  里：
+  - `mean`
+    和
+    `share`
+    都能把
+    hinge anchor
+    `train_000266`
+    挡在 target-side 外
+  - 但
+    `share`
+    会额外吸进：
+    - `train_000210`
+      这条
+      `v64_only`
+      旁支
+  - `mean`
+    没有这层污染
+
+影响：
+
+- 如果这时还把：
+  - `mean`
+  和：
+  - `share`
+  写成：
+  - 同等主导
+  就会把：
+  - `share`
+    更容易误吸旁支
+  这层缺点
+  抹掉
+- 这样会让下一步继续诊断时，
+  还在两项上平均分配注意力，
+  而不是直接把主线收口到
+  `mean`
+
+处理：
+
+- 已落盘：
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_target_transient_factor_contrast/summary.json`
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_target_transient_slice_support/summary.json`
+  - `reports/daily/2026-03-23_candidate_v7_v65_sink_target_transient_mean_vs_share.md`
+
+后续要求：
+
+1. 之后凡是再写
+   `v65 sink`
+   的 final push，
+   默认主线固定为：
+   - `target transient mean`
+2. `target transient share`
+   只保留为：
+   - 辅助项
+   不再与
+   `mean`
+   并列。
+3. 当前如果继续推进，
+   默认只围绕：
+   - `target transient mean`
+   做更细支持复核。
+
+### 168. 当已经把 gate 内的 `target transient` 拆成 `mean` vs `share`，并确认 `share` 会误吸 `v64_only` 旁支后，不要再把 `share` 写成和 `mean` 同等干净的 final-push 指标
+
+现象：
+
+- 本轮 gate 内 factor contrast
+  显示：
+  - `target_transient_mean = 1.2788 z`
+  - `target_transient_share = 1.0665 z`
+  说明：
+  - `mean`
+    更强
+- 同时，
+  slice support
+  里：
+  - `mean`
+    和
+    `share`
+    都能把
+    hinge anchor
+    `train_000266`
+    挡在外面
+  - 但
+    `share`
+    会额外吸进：
+    - `train_000210`
+      这条
+      `v64_only`
+      旁支
+  - `mean`
+    没有这层额外污染
+
+影响：
+
+- 如果这时还把：
+  - `share`
+  写成：
+  - 和 `mean`
+    同等干净的
+    final push
+    指标
+  就会把：
+  - `share`
+    对旁支的误吸
+  这一层风险
+  藏掉
+- 这样会让：
+  - `v65 sink`
+    的最终主导
+  再次被写得过宽
+
+处理：
+
+- 已落盘：
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_target_transient_factor_contrast/summary.json`
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_target_transient_slice_support/summary.json`
+  - `reports/daily/2026-03-23_candidate_v7_v65_sink_target_transient_mean_vs_share.md`
+
+后续要求：
+
+1. 之后凡是再写
+   `v65 sink`
+   的 final push，
+   默认只把：
+   - `target transient mean`
+   当作当前主导候选。
+
+### 169. 当已经证明 `mean+gain` 的 `both` 桶只剩 sink 本人时，不要再把 `reference` 继续写成和 `gain` 对 `mean` 同等有效的本地搭档
+
+现象：
+
+- 本轮
+  `mean + reference`
+  四象限里：
+  - `both`
+    桶共有：
+    - `6`
+      条
+  其中：
+  - `1` 条 sink
+  - `5` 条 pre
+- 同时，
+  `mean + gain`
+  四象限里：
+  - `both`
+    桶只有：
+    - `train_001543`
+  这一条 sink
+- 而且：
+  - `train_000266`
+    仍在：
+    - `factor_b_only`
+  说明：
+  - `weak gain`
+    单独还不够
+  - 但它和
+    `mean`
+    结合后，
+    已经比
+    `mean + reference`
+    更接近
+    当前窄 ring
+    的 sink-only carve
+
+影响：
+
+- 如果这时还把：
+  - `reference`
+  写成：
+  - 和 `gain`
+    对
+    `mean`
+    同等有效的
+    本地 partner
+  就会把：
+  - 上游 entry 约束
+  和：
+  - 当前局部 carve
+    条件
+  再次混在一起
+- 这样会让：
+  - `v65 sink`
+    当前最窄的
+    操作性切面
+  被写得偏宽，
+  也会错过：
+  - 为什么
+    `weak gain`
+    壳里的
+    hinge
+    还需要
+    `mean`
+    再抬一截
+
+处理：
+
+- 已落盘：
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_mean_reference_quadrants/summary.json`
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_mean_gain_quadrants/summary.json`
+  - `reports/daily/2026-03-23_candidate_v7_v65_sink_mean_gate_partner_split.md`
+
+后续要求：
+
+1. 之后凡是再写
+   当前窄 ring
+   的
+   `v65 sink`
+   局部 carve，
+   默认优先写成：
+   - `mean + gain`
+   而不是：
+   - `mean + reference`。
+2. `reference`
+   继续保留为：
+   - 上游 entry
+     描述，
+   不再和
+   `gain`
+   并列成
+   `mean`
+   的同级本地搭档。
+3. 当前如果继续推进，
+   默认只看：
+   - `train_000266 / train_001589 / train_001543`
+   这组
+   `weak gain`
+   壳内样本，
+   不再把
+   `reference`
+   拉回同一级。 
+
+### 170. 当已经把 `train_000266 / train_001589 / train_001543` 压成 weak-gain 壳内 split，并看到 sink 的 gain 并没有更弱时，不要再把 `gain` 写成壳内 final push
+
+现象：
+
+- 本轮
+  `v65_sink - weak_gain_hinge`
+  的：
+  - `interference_layers.0.gain_db = +0.083`
+  说明：
+  - sink
+    的 gain
+    并没有
+    更弱
+- 同时：
+  - `interference_layers.0.start_offset_sec = +0.090`
+  也就是：
+  - sink
+    overlap
+    反而更晚
+- 真正最大的
+  target-side
+  变化反而是：
+  - `target_transient_mean = +4.6522`
+  - `target_transient_share = +0.05677`
+  且这一步会继续带出：
+  - `v66-v64 = -0.0364 dB`
+  - `v66-v65 = -0.0673 dB`
+    的更深塌缩
+
+影响：
+
+- 如果这时还把：
+  - `gain`
+  写成：
+  - weak-gain 壳内
+    的 final push
+  就会把：
+  - 上游 entry shell
+  和：
+  - 壳内真正主导的
+    `mean`
+  再次混在一起
+- 这样会直接误读：
+  - 为什么
+    `train_000266`
+    和
+    `train_001589`
+    虽然都已落到
+    weak-gain
+    一侧，
+    却仍然停在
+    hinge
+
+处理：
+
+- 已落盘：
+  - `data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_failboth_weak_gain_hinge_train.txt`
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_weak_gain_hinge_split/summary.json`
+  - `reports/daily/2026-03-23_candidate_v7_v65_sink_weak_gain_hinge_split.md`
+
+后续要求：
+
+1. 之后凡是再写
+   weak-gain 壳内
+   的
+   `v65 sink`
+   分界，
+   默认不要再把：
+   - `gain`
+   当作壳内
+   final push。
+2. 当前默认主语
+   应固定为：
+   - `target transient mean`
+   才是把 hinge
+   真正推进 sink
+   的第一主轴。
+3. 当前如果继续推进，
+   默认只看：
+   - `train_001589 / train_001543`
+   不再回到
+   “gain
+   是否还要更弱”
+   这条线。 
+
+### 171. 当已经把 `train_001589 / train_001543` 压成 one-to-one split，并确认 `001589` 已经是 partial-mean hinge 后，不要再把它写成“还没进入 weak-gain 壳”
+
+现象：
+
+- 本轮
+  `v65_sink - weak_gain_partial_mean_hinge`
+  显示：
+  - `target_transient_mean = +3.3921`
+  - `target_transient_share = +0.056997`
+  说明：
+  - `train_001589`
+    相对 floor hinge
+    已经抬起了一截
+    `mean`
+- 同时：
+  - `gain = +0.107`
+  - `start_offset = +0.131 sec`
+  依然说明：
+  - 它卡住的原因
+    不是：
+    - 不够 weak gain
+    - overlap 不够早
+- 真实的卡点是：
+  - `v66 < v65`
+    已成立
+  - 但
+    `v66 > v64`
+    还没有一起翻负
+  并且
+  `001589`
+  还带着：
+  - 更长 duration
+  - 更高 cosine
+
+影响：
+
+- 如果这时还把：
+  - `train_001589`
+  写成：
+  - 还没进入
+    weak-gain 壳
+  就会把：
+  - 壳外
+  和：
+  - 壳内 near-sink hinge
+  再次混掉
+- 这样会直接错过
+  当前最窄的问题：
+  - `mean`
+    还没抬够
+  还是：
+  - duration / cosine
+    壳
+    还在托住
+    `v64 buffer`
+
+处理：
+
+- 已落盘：
+  - `data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_failboth_weak_gain_partial_mean_hinge_train.txt`
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_vs_partial_mean_hinge/summary.json`
+  - `reports/daily/2026-03-23_candidate_v7_v65_sink_partial_mean_hinge_split.md`
+
+后续要求：
+
+1. 之后凡是再写
+   `train_001589`
+   的身份，
+   默认固定为：
+   - weak-gain shell
+     内部
+     `partial mean rise`
+     的 near-sink hinge。
+2. 当前如果继续推进，
+   默认只拆：
+   - `mean`
+   对
+   - `duration / cosine`
+   不再回到
+   “它是否已经进壳”
+   这条线。 
+
+### 172. 当已经把 `001589 -> 001543` 的最后边界拆成 `mean / duration / cosine`，并看到 `duration` 与 `cosine` 在当前窄 ring 标准化尺度里都排在 `mean` 前面后，不要再把 near-sink 卡点写成单纯“mean 还没抬够”
+
+现象：
+
+- 本轮 factor contrast
+  显示：
+  - `reference_duration = 3.3076 z`
+  - `target_duration = 2.2258 z`
+  - `cosine = 1.6606 z`
+  - `mean = 0.7337 z`
+- 同时，
+  slice support
+  里：
+  - `reference`
+    的
+    `contrast_on_target_side = true`
+    说明：
+    - `train_000266`
+      已经落在
+      它的 target-side
+  - `target_duration`
+    与
+    `cosine`
+    则都满足：
+    - `contrast_on_target_side = false`
+- 两组 quadrants
+  还进一步表明：
+  - `mean + target_duration`
+    和
+    `mean + cosine`
+    都不是独立 hard gate，
+    但：
+    - `target_duration`
+      更强
+    - `cosine`
+      更干净
+
+影响：
+
+- 如果这时还把：
+  - `001589`
+    没进 sink
+  写成：
+  - 只是
+    `mean`
+    还没抬够
+  就会把：
+  - duration shell
+  和：
+  - cosine
+    这层 near-sink
+    约束
+  整体藏掉
+- 这样会让
+  当前最后一条边界
+  被写得过粗，
+  也会误把
+  `reference`
+  再次抬成
+  最后主语
+
+处理：
+
+- 已落盘：
+  - `data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_failboth_weak_gain_hinge_floor_train.txt`
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_hinge_ladder_split/summary.json`
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_partial_mean_edge_factor_contrast/summary.json`
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_partial_mean_edge_slice_support/summary.json`
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_mean_targetduration_quadrants/summary.json`
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_mean_cosine_quadrants/summary.json`
+  - `reports/daily/2026-03-24_candidate_v7_v65_sink_partial_mean_duration_cosine_split.md`
+
+后续要求：
+
+1. 之后凡是再写
+   `train_001589`
+   最后没跨进 sink
+   的原因，
+   默认不要再写成：
+   - 单纯
+     `mean`
+     不够。
+2. 当前默认主语
+   应固定成：
+   - `target_duration`
+     是更强的
+     near-sink blocker
+   - `cosine`
+     是更干净的
+     辅助约束。
+3. `reference`
+   不再抬回
+   最后边界主语，
+   因为
+   `train_000266`
+   已经落在
+   它的 target-side。
+4. 当前如果继续推进，
+   默认只拆：
+   - `target_duration`
+   对
+   - `cosine`。 
+
+### 173. 当已经把 `target_duration` 与 `cosine` 正式压成 focused split 后，不要因为 `cosine` 的 target-side 更干净，就把它误写成比 `duration` 更强的主 blocker
+
+现象：
+
+- 本轮 focused split
+  显示：
+  - `target_duration`
+    的 target-side
+    为：
+    - `1` 条 sink
+    - `2` 条 hinge
+    - `2` 条 `v64_only`
+    - `17` 条 pre
+  - `cosine`
+    的 target-side
+    为：
+    - `1` 条 sink
+    - `2` 条 hinge
+    - `2` 条 `v64_only`
+    - `13` 条 pre
+- 也就是：
+  - `cosine`
+    确实更干净，
+    会多排掉一部分
+    pure pre
+- 但真正决定
+  `001589`
+  与
+  `000266`
+  “还差多远”
+  的，仍是：
+  - `duration`
+  因为：
+  - `target_duration`
+    midpoint
+    为：
+    - `1.71 sec`
+  - `001589`
+    离 target-side
+    还差：
+    - `0.57 sec`
+  - `000266`
+    只差：
+    - `0.03 sec`
+  - gap 差为：
+    - `0.54 sec`
+  而：
+  - `cosine`
+    midpoint
+    为：
+    - `0.661089`
+  - `001589`
+    还差：
+    - `0.053765`
+  - `000266`
+    只差：
+    - `0.041001`
+  - gap 差只有：
+    - `0.012763`
+
+影响：
+
+- 如果这时只看：
+  - `cosine`
+    的 target-side
+    更干净
+  很容易把它误写成：
+  - 比 `duration`
+    更接近
+    最后主 blocker
+- 但这会把：
+  - “谁更像
+     主导 001589
+     还没跨进去
+     的幅度”
+  和：
+  - “谁更像
+     shell 上的
+     干净 trim”
+  混成一件事
+
+处理：
+
+- 已落盘：
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_duration_cosine_slice_support/summary.json`
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_duration_cosine_quadrants/summary.json`
+  - `reports/daily/2026-03-24_candidate_v7_v65_sink_duration_vs_cosine_split.md`
+
+后续要求：
+
+1. 之后凡是再写
+   `001589`
+   没跨进 sink
+   的主 blocker，
+   默认固定为：
+   - `target_duration`
+2. `cosine`
+   只保留为：
+   - duration shell
+     上的
+     secondary trim
+   不再和
+   `duration`
+   并列成
+   同级主语。
+3. 当
+   `duration-only`
+   与
+   `cosine-only`
+   桶里
+   都没有
+   hinge / `v64_only`
+   row 时，
+   不要再把
+   任一单因子
+   写成独立 hard gate。
+4. 当前如果继续推进，
+   默认只看：
+   - `duration + cosine both`
+     这层 shell
+     内部
+     为什么还残留
+     大量 pre，
+   不再继续问：
+   - `duration`
+   还是：
+   - `cosine`。

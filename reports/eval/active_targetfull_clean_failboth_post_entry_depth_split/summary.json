@@ -1,0 +1,375 @@
+{
+  "manifests": [
+    "data/synthetic/train_manifest_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_failboth_topv67.jsonl"
+  ],
+  "groups": {
+    "hinge_entry_v65_crossed_first": "data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_failboth_hinge_entry_v65_crossed_first_train.txt",
+    "post_entry_v64_deeper_than_v65": "data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_failboth_post_entry_v64_deeper_than_v65_train.txt"
+  },
+  "manifest_fields": [
+    "target_transient_presence_minus_mid_db_mean",
+    "target_transient_presence_share_mean",
+    "interference_transient_presence_minus_mid_db_mean",
+    "interference_transient_presence_share_mean",
+    "target_interference_logspec_cosine"
+  ],
+  "metadata_fields": [
+    "target_duration_sec",
+    "reference_duration_sec",
+    "interference_layers.0.gain_db",
+    "interference_layers.0.start_offset_sec"
+  ],
+  "numeric_fields": [
+    "target_transient_presence_minus_mid_db_mean",
+    "target_transient_presence_share_mean",
+    "interference_transient_presence_minus_mid_db_mean",
+    "interference_transient_presence_share_mean",
+    "target_interference_logspec_cosine",
+    "target_duration_sec",
+    "reference_duration_sec",
+    "interference_layers.0.gain_db",
+    "interference_layers.0.start_offset_sec"
+  ],
+  "compares": {
+    "v20": "reports/eval/compare_v19_vs_v20_on_active_targetfull_clean/per_sample_metrics.jsonl",
+    "v24": "reports/eval/compare_v19_vs_v24_on_active_targetfull_clean/per_sample_metrics.jsonl",
+    "v64": "reports/eval/compare_v19_vs_v64_on_active_targetfull_clean/per_sample_metrics.jsonl",
+    "v65": "reports/eval/compare_v19_vs_v65_on_active_targetfull_clean/per_sample_metrics.jsonl",
+    "v66": "reports/eval/compare_v19_vs_v66_on_active_targetfull_clean/per_sample_metrics.jsonl",
+    "v67": "reports/eval/compare_v19_vs_v67_on_active_targetfull_clean/per_sample_metrics.jsonl"
+  },
+  "focus_alias": "v66",
+  "reference_alias": "v64",
+  "ordered_aliases": [
+    "v66",
+    "v64"
+  ],
+  "extra_order_constraints": [
+    "v66>v65",
+    "v66>v67",
+    "v64>v67",
+    "v20>v24"
+  ],
+  "field_means": {
+    "target_transient_presence_minus_mid_db_mean": -14.659787654876709,
+    "target_transient_presence_share_mean": 0.0444832646753639,
+    "interference_transient_presence_minus_mid_db_mean": 5.452200174331665,
+    "interference_transient_presence_share_mean": 0.4571145623922348,
+    "target_interference_logspec_cosine": 0.6177704827075104,
+    "target_duration_sec": 1.0950000000000002,
+    "reference_duration_sec": 2.535,
+    "interference_layers.0.gain_db": -1.703,
+    "interference_layers.0.start_offset_sec": 0.1375
+  },
+  "field_stdevs": {
+    "target_transient_presence_minus_mid_db_mean": 2.3498215675354004,
+    "target_transient_presence_share_mean": 0.04223660589195788,
+    "interference_transient_presence_minus_mid_db_mean": 2.1310627460479736,
+    "interference_transient_presence_share_mean": 0.025427058339118958,
+    "target_interference_logspec_cosine": 0.006444047860570512,
+    "target_duration_sec": 0.015000000000000013,
+    "reference_duration_sec": 0.19500000000000006,
+    "interference_layers.0.gain_db": 1.272,
+    "interference_layers.0.start_offset_sec": 0.0755
+  },
+  "group_summaries": {
+    "hinge_entry_v65_crossed_first": {
+      "count": 1,
+      "sample_ids": [
+        "train_001610"
+      ],
+      "numeric_field_means": {
+        "target_transient_presence_minus_mid_db_mean": -17.00960922241211,
+        "target_transient_presence_share_mean": 0.002246658783406019,
+        "interference_transient_presence_minus_mid_db_mean": 3.3211374282836914,
+        "interference_transient_presence_share_mean": 0.43168750405311584,
+        "target_interference_logspec_cosine": 0.6113264348469399,
+        "target_duration_sec": 1.08,
+        "reference_duration_sec": 2.34,
+        "interference_layers.0.gain_db": -0.431,
+        "interference_layers.0.start_offset_sec": 0.213
+      },
+      "representative_rows": [
+        {
+          "sample_id": "train_001610",
+          "distance_to_group_center_z": 0.0,
+          "numeric_values": {
+            "target_transient_presence_minus_mid_db_mean": -17.00960922241211,
+            "target_transient_presence_share_mean": 0.002246658783406019,
+            "interference_transient_presence_minus_mid_db_mean": 3.3211374282836914,
+            "interference_transient_presence_share_mean": 0.43168750405311584,
+            "target_interference_logspec_cosine": 0.6113264348469399,
+            "target_duration_sec": 1.08,
+            "reference_duration_sec": 2.34,
+            "interference_layers.0.gain_db": -0.431,
+            "interference_layers.0.start_offset_sec": 0.213
+          },
+          "compare_summary": {
+            "top_alias": "v67",
+            "ranking": [
+              {
+                "rank": 1,
+                "alias": "v67",
+                "sisdr_db": -11.339033126831055
+              },
+              {
+                "rank": 2,
+                "alias": "v65",
+                "sisdr_db": -11.364728927612305
+              },
+              {
+                "rank": 3,
+                "alias": "v66",
+                "sisdr_db": -11.415948867797852
+              },
+              {
+                "rank": 4,
+                "alias": "v64",
+                "sisdr_db": -11.417102813720703
+              },
+              {
+                "rank": 5,
+                "alias": "v24",
+                "sisdr_db": -11.44631576538086
+              },
+              {
+                "rank": 6,
+                "alias": "v20",
+                "sisdr_db": -11.558834075927734
+              }
+            ],
+            "focus_minus_reference_db": 0.0011539459228515625,
+            "candidate_gap_vs_aliases_db": {
+              "v20": 0.1428852081298828,
+              "v24": 0.030366897583007812,
+              "v64": 0.0011539459228515625,
+              "v65": -0.051219940185546875,
+              "v67": -0.07691574096679688
+            },
+            "failed_constraints": [
+              "v66>v65",
+              "v66>v67",
+              "v64>v67",
+              "v20>v24"
+            ]
+          }
+        }
+      ],
+      "top_alias_counts": {
+        "v67": 1
+      },
+      "failed_constraint_counts": {
+        "v66>v65 | v66>v67 | v64>v67 | v20>v24": 1
+      },
+      "mean_focus_minus_reference_db": 0.0011539459228515625,
+      "mean_candidate_gap_vs_aliases_db": {
+        "v20": 0.1428852081298828,
+        "v24": 0.030366897583007812,
+        "v64": 0.0011539459228515625,
+        "v65": -0.051219940185546875,
+        "v67": -0.07691574096679688
+      },
+      "aggregate_scores_db": {
+        "v20": -11.558834075927734,
+        "v24": -11.44631576538086,
+        "v64": -11.417102813720703,
+        "v65": -11.364728927612305,
+        "v66": -11.415948867797852,
+        "v67": -11.339033126831055
+      },
+      "aggregate_ranking": [
+        {
+          "rank": 1,
+          "alias": "v67",
+          "sisdr_db": -11.339033126831055
+        },
+        {
+          "rank": 2,
+          "alias": "v65",
+          "sisdr_db": -11.364728927612305
+        },
+        {
+          "rank": 3,
+          "alias": "v66",
+          "sisdr_db": -11.415948867797852
+        },
+        {
+          "rank": 4,
+          "alias": "v64",
+          "sisdr_db": -11.417102813720703
+        },
+        {
+          "rank": 5,
+          "alias": "v24",
+          "sisdr_db": -11.44631576538086
+        },
+        {
+          "rank": 6,
+          "alias": "v20",
+          "sisdr_db": -11.558834075927734
+        }
+      ]
+    },
+    "post_entry_v64_deeper_than_v65": {
+      "count": 1,
+      "sample_ids": [
+        "train_001745"
+      ],
+      "numeric_field_means": {
+        "target_transient_presence_minus_mid_db_mean": -12.309966087341309,
+        "target_transient_presence_share_mean": 0.08671987056732178,
+        "interference_transient_presence_minus_mid_db_mean": 7.583262920379639,
+        "interference_transient_presence_share_mean": 0.48254162073135376,
+        "target_interference_logspec_cosine": 0.624214530568081,
+        "target_duration_sec": 1.11,
+        "reference_duration_sec": 2.73,
+        "interference_layers.0.gain_db": -2.975,
+        "interference_layers.0.start_offset_sec": 0.062
+      },
+      "representative_rows": [
+        {
+          "sample_id": "train_001745",
+          "distance_to_group_center_z": 0.0,
+          "numeric_values": {
+            "target_transient_presence_minus_mid_db_mean": -12.309966087341309,
+            "target_transient_presence_share_mean": 0.08671987056732178,
+            "interference_transient_presence_minus_mid_db_mean": 7.583262920379639,
+            "interference_transient_presence_share_mean": 0.48254162073135376,
+            "target_interference_logspec_cosine": 0.624214530568081,
+            "target_duration_sec": 1.11,
+            "reference_duration_sec": 2.73,
+            "interference_layers.0.gain_db": -2.975,
+            "interference_layers.0.start_offset_sec": 0.062
+          },
+          "compare_summary": {
+            "top_alias": "v67",
+            "ranking": [
+              {
+                "rank": 1,
+                "alias": "v67",
+                "sisdr_db": -20.455692291259766
+              },
+              {
+                "rank": 2,
+                "alias": "v64",
+                "sisdr_db": -20.602128982543945
+              },
+              {
+                "rank": 3,
+                "alias": "v65",
+                "sisdr_db": -20.6276912689209
+              },
+              {
+                "rank": 4,
+                "alias": "v66",
+                "sisdr_db": -20.62959861755371
+              },
+              {
+                "rank": 5,
+                "alias": "v24",
+                "sisdr_db": -20.796735763549805
+              },
+              {
+                "rank": 6,
+                "alias": "v20",
+                "sisdr_db": -20.97031021118164
+              }
+            ],
+            "focus_minus_reference_db": -0.027469635009765625,
+            "candidate_gap_vs_aliases_db": {
+              "v20": 0.3407115936279297,
+              "v24": 0.16713714599609375,
+              "v64": -0.027469635009765625,
+              "v65": -0.0019073486328125,
+              "v67": -0.1739063262939453
+            },
+            "failed_constraints": [
+              "v66>v64",
+              "v66>v65",
+              "v66>v67",
+              "v64>v67",
+              "v20>v24"
+            ]
+          }
+        }
+      ],
+      "top_alias_counts": {
+        "v67": 1
+      },
+      "failed_constraint_counts": {
+        "v66>v64 | v66>v65 | v66>v67 | v64>v67 | v20>v24": 1
+      },
+      "mean_focus_minus_reference_db": -0.027469635009765625,
+      "mean_candidate_gap_vs_aliases_db": {
+        "v20": 0.3407115936279297,
+        "v24": 0.16713714599609375,
+        "v64": -0.027469635009765625,
+        "v65": -0.0019073486328125,
+        "v67": -0.1739063262939453
+      },
+      "aggregate_scores_db": {
+        "v20": -20.97031021118164,
+        "v24": -20.796735763549805,
+        "v64": -20.602128982543945,
+        "v65": -20.6276912689209,
+        "v66": -20.62959861755371,
+        "v67": -20.455692291259766
+      },
+      "aggregate_ranking": [
+        {
+          "rank": 1,
+          "alias": "v67",
+          "sisdr_db": -20.455692291259766
+        },
+        {
+          "rank": 2,
+          "alias": "v64",
+          "sisdr_db": -20.602128982543945
+        },
+        {
+          "rank": 3,
+          "alias": "v65",
+          "sisdr_db": -20.6276912689209
+        },
+        {
+          "rank": 4,
+          "alias": "v66",
+          "sisdr_db": -20.62959861755371
+        },
+        {
+          "rank": 5,
+          "alias": "v24",
+          "sisdr_db": -20.796735763549805
+        },
+        {
+          "rank": 6,
+          "alias": "v20",
+          "sisdr_db": -20.97031021118164
+        }
+      ]
+    }
+  },
+  "pairwise_deltas": {
+    "hinge_entry_v65_crossed_first_minus_post_entry_v64_deeper_than_v65": {
+      "numeric_field_mean_deltas": {
+        "target_transient_presence_minus_mid_db_mean": -4.699643135070801,
+        "target_transient_presence_share_mean": -0.08447321178391576,
+        "interference_transient_presence_minus_mid_db_mean": -4.262125492095947,
+        "interference_transient_presence_share_mean": -0.050854116678237915,
+        "target_interference_logspec_cosine": -0.012888095721141024,
+        "target_duration_sec": -0.030000000000000027,
+        "reference_duration_sec": -0.3900000000000001,
+        "interference_layers.0.gain_db": 2.544,
+        "interference_layers.0.start_offset_sec": 0.151
+      },
+      "mean_focus_minus_reference_db": 0.028623580932617188,
+      "mean_candidate_gap_vs_aliases_db": {
+        "v20": -0.19782638549804688,
+        "v24": -0.13677024841308594,
+        "v64": 0.028623580932617188,
+        "v65": -0.049312591552734375,
+        "v67": 0.09699058532714844
+      }
+    }
+  }
+}

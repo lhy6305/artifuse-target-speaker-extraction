@@ -7,31 +7,20 @@
   - 通过本目录 `README.md` 和 `index_YYYY-MM.md` 做月度索引与跳读入口。
 
 - 月度索引：
-  - `index_2026-03.md` | `118` 份日报 | 日期 `2026-03-16` 至 `2026-03-21`
+  - `index_2026-03.md` | `137` 份日报 | 日期 `2026-03-16` 至 `2026-03-24`
 
 - 最近新增日报：
-  - `2026-03-21_candidate_v7_failboth_pure_v67_takeover_case_diagnosis.md` | `288` 行
-  - `2026-03-21_candidate_v7_failboth_nearshell_case_diagnosis.md` | `268` 行
-  - `2026-03-21_candidate_v7_failboth_borderline_case_split.md` | `312` 行
-  - `2026-03-21_candidate_v7_failboth_single_trigger_scan.md` | `307` 行
-  - `2026-03-21_candidate_v7_failboth_v66_vs_v67_split.md` | `325` 行
-  - `2026-03-21_candidate_v7_active_guardpair_bucketization.md` | `319` 行
-  - `2026-03-21_candidate_v7_bridgepair_active_dualleak_shell_neighbor_drift.md` | `298` 行
-  - `2026-03-21_candidate_v7_bridgepair_active_targetfull_clean_dualleak_shell.md` | `333` 行
-  - `2026-03-21_candidate_v7_bridgepair_active_microbuffer_core_trio.md` | `174` 行
-  - `2026-03-21_candidate_v7_bridgepair_active_microbuffer_targetfull_split.md` | `232` 行
-  - `2026-03-21_candidate_v7_bridgepair_active_neighbor_behavior_probe.md` | `321` 行
-  - `2026-03-21_candidate_v7_bridgepair_trio_softseed_probe.md` | `190` 行
-  - `2026-03-21_candidate_v7_bridgepair_seedplusone_signature_split.md` | `243` 行
-  - `2026-03-21_candidate_v7_bridgepair_seed_expansion.md` | `232` 行
-  - `2026-03-21_candidate_v7_guardv65_relaxed_bridge_search.md` | `218` 行
-  - `2026-03-21_candidate_v7_strictcore_nearmiss_frontier.md` | `222` 行
-  - `2026-03-21_candidate_v7_strictcore_asset_and_overlap.md` | `195` 行
-  - `2026-03-21_candidate_v7_strictall_core_search.md` | `188` 行
-  - `2026-03-21_candidate_v6_pure_negative_expand.md` | `195` 行
-  - `2026-03-21_proxy_subfamily_materialization.md` | `142` 行
-  - `2026-03-21_candidate_v4_v5_overlap_analysis.md` | `253` 行
-  - `2026-03-21_candidate_v5_guardv67_negative_materialization.md` | `280` 行
+  - `2026-03-24_candidate_v7_v65_sink_duration_vs_cosine_split.md` | `210` 行
+  - `2026-03-24_candidate_v7_v65_sink_partial_mean_duration_cosine_split.md` | `253` 行
+  - `2026-03-23_candidate_v7_v65_sink_weak_gain_hinge_split.md` | `248` 行
+  - `2026-03-23_candidate_v7_v65_sink_target_transient_mean_vs_share.md` | `189` 行
+  - `2026-03-23_candidate_v7_v65_sink_reference_vs_target_transient_split.md` | `262` 行
+  - `2026-03-23_candidate_v7_v65_sink_reference_gain_hinge_split.md` | `266` 行
+  - `2026-03-23_candidate_v7_v65_sink_partial_mean_hinge_split.md` | `182` 行
+  - `2026-03-23_candidate_v7_v65_sink_mean_gate_partner_split.md` | `219` 行
+  - `2026-03-23_candidate_v7_v65_sink_isolation.md` | `276` 行
+  - `2026-03-23_candidate_v7_v65_sink_factor_slice_support.md` | `270` 行
+  - `2026-03-23_candidate_v7_v65_sink_factor_contrast.md` | `270` 行
 
 建议读取顺序：
 

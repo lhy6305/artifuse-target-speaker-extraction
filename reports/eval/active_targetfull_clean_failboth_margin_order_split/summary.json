@@ -1,0 +1,127 @@
+{
+  "transition_summary": "reports/eval/active_targetfull_clean_failboth_margin_first_transition_axes/summary.json",
+  "focus_cases": [
+    "train_001006",
+    "train_001610",
+    "train_001745"
+  ],
+  "gap_fields": [
+    "gap::v66>v64",
+    "gap::v66>v65"
+  ],
+  "gap_zero_thresholds": {
+    "gap::v66>v64": {
+      "source_value": 0.06566543579101562,
+      "target_value": 0.007217884063720703,
+      "zero_cross_transition_ratio": 1.1234933517386316,
+      "target_crosses_zero": false
+    },
+    "gap::v66>v65": {
+      "source_value": 0.16476287841796874,
+      "target_value": -0.036646127700805664,
+      "zero_cross_transition_ratio": 0.8180511963839651,
+      "target_crosses_zero": true
+    }
+  },
+  "case_summaries": {
+    "train_001006": {
+      "key_gaps": {
+        "v66_minus_v64": 0.04480171203613281,
+        "v66_minus_v65": 0.10914802551269531,
+        "v66_minus_v67": -0.251953125,
+        "v64_minus_v67": -0.2967548370361328
+      },
+      "gap_rows": [
+        {
+          "field": "gap::v66>v64",
+          "source_value": 0.06566543579101562,
+          "target_value": 0.007217884063720703,
+          "case_value": 0.04480171203613281,
+          "transition_ratio": 0.35696488797732623,
+          "zero_cross_transition_ratio": 1.1234933517386316,
+          "progress_to_zero": 0.3177276371283505,
+          "crossed_zero": false,
+          "overshoot_vs_zero": -0.6822723628716495
+        },
+        {
+          "field": "gap::v66>v65",
+          "source_value": 0.16476287841796874,
+          "target_value": -0.036646127700805664,
+          "case_value": 0.10914802551269531,
+          "transition_ratio": 0.27612892778228787,
+          "zero_cross_transition_ratio": 0.8180511963839651,
+          "progress_to_zero": 0.33754480037785123,
+          "crossed_zero": false,
+          "overshoot_vs_zero": -0.6624551996221488
+        }
+      ],
+      "stage_label": "pre_entry_lowbuffer_edge"
+    },
+    "train_001610": {
+      "key_gaps": {
+        "v66_minus_v64": 0.0011539459228515625,
+        "v66_minus_v65": -0.051219940185546875,
+        "v66_minus_v67": -0.07691574096679688,
+        "v64_minus_v67": -0.07806968688964844
+      },
+      "gap_rows": [
+        {
+          "field": "gap::v66>v64",
+          "source_value": 0.06566543579101562,
+          "target_value": 0.007217884063720703,
+          "case_value": 0.0011539459228515625,
+          "transition_ratio": 1.1037500795441753,
+          "zero_cross_transition_ratio": 1.1234933517386316,
+          "progress_to_zero": 0.9824268900533295,
+          "crossed_zero": false,
+          "overshoot_vs_zero": -0.017573109946670495
+        },
+        {
+          "field": "gap::v66>v65",
+          "source_value": 0.16476287841796874,
+          "target_value": -0.036646127700805664,
+          "case_value": -0.051219940185546875,
+          "transition_ratio": 1.0723592890188176,
+          "zero_cross_transition_ratio": 0.8180511963839651,
+          "progress_to_zero": 1.3108706322525676,
+          "crossed_zero": true,
+          "overshoot_vs_zero": 0.3108706322525676
+        }
+      ],
+      "stage_label": "hinge_entry_v65_crossed_first"
+    },
+    "train_001745": {
+      "key_gaps": {
+        "v66_minus_v64": -0.027469635009765625,
+        "v66_minus_v65": -0.0019073486328125,
+        "v66_minus_v67": -0.1739063262939453,
+        "v64_minus_v67": -0.1464366912841797
+      },
+      "gap_rows": [
+        {
+          "field": "gap::v66>v64",
+          "source_value": 0.06566543579101562,
+          "target_value": 0.007217884063720703,
+          "case_value": -0.027469635009765625,
+          "transition_ratio": 1.5934811304899759,
+          "zero_cross_transition_ratio": 1.1234933517386316,
+          "progress_to_zero": 1.418327156118928,
+          "crossed_zero": true,
+          "overshoot_vs_zero": 0.4183271561189279
+        },
+        {
+          "field": "gap::v66>v65",
+          "source_value": 0.16476287841796874,
+          "target_value": -0.036646127700805664,
+          "case_value": -0.0019073486328125,
+          "transition_ratio": 0.8275212229213469,
+          "zero_cross_transition_ratio": 0.8180511963839651,
+          "progress_to_zero": 1.0115763250261625,
+          "crossed_zero": true,
+          "overshoot_vs_zero": 0.01157632502616246
+        }
+      ],
+      "stage_label": "post_entry_v64_deeper_than_v65"
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "split_json": "reports/eval/active_targetfull_clean_failboth_v65_sink_reference_vs_target_transient_split/summary.json",
+  "scale_json": "reports/eval/active_targetfull_clean_failboth_post_entry_v64_collapse_neighbor_scan_all/summary.json",
+  "target_group": "v65_sink",
+  "baseline_group": "reference_gain_both_nonsink",
+  "contrast_group": "reference_gain_both_hinge",
+  "factor_fields": [
+    "target_transient_presence_minus_mid_db_mean",
+    "target_transient_presence_share_mean",
+    "reference_duration_sec"
+  ],
+  "rows_ranked_by_target_specific_residual_z": [
+    {
+      "field": "target_transient_presence_minus_mid_db_mean",
+      "target_minus_baseline": 1.6097006797790527,
+      "contrast_minus_baseline": -4.302636623382568,
+      "target_specific_residual": 5.912337303161621,
+      "abs_target_specific_residual": 5.912337303161621,
+      "scale_stdev": 4.623479074988485,
+      "target_specific_residual_z": 1.2787637204081745,
+      "abs_target_specific_residual_z": 1.2787637204081745
+    },
+    {
+      "field": "target_transient_presence_share_mean",
+      "target_minus_baseline": 0.04528305330313742,
+      "contrast_minus_baseline": -0.011256252648308873,
+      "target_specific_residual": 0.056539305951446295,
+      "abs_target_specific_residual": 0.056539305951446295,
+      "scale_stdev": 0.053014773138438234,
+      "target_specific_residual_z": 1.0664820879984602,
+      "abs_target_specific_residual_z": 1.0664820879984602
+    },
+    {
+      "field": "reference_duration_sec",
+      "target_minus_baseline": -0.08400000000000007,
+      "contrast_minus_baseline": 0.18599999999999994,
+      "target_specific_residual": -0.27,
+      "abs_target_specific_residual": 0.27,
+      "scale_stdev": 0.5079192999937316,
+      "target_specific_residual_z": -0.5315805089574902,
+      "abs_target_specific_residual_z": 0.5315805089574902
+    }
+  ]
+}
