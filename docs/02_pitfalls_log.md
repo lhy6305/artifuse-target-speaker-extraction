@@ -5257,3 +5257,252 @@
    另一个 false positive，
    不能直接抬成
    绝对 blocker。
+
+### 180. 当 sink-side false positive 已经被拆开后，不要只继续对 sink 做 contrast；必须先把每个 case 放回最近的已知 pre archetype，否则会把“靠近 sink 的量”误判成它的主 blocker
+
+现象：
+
+- 本轮对：
+  - `train_000799`
+  - `train_000697`
+  做
+  case positioning
+  后发现：
+  - `000799`
+    最近的
+    reference group
+    不是 sink，
+    而是：
+    - `train_001589`
+      那条
+      weak-gain partial-mean hinge
+  - `000697`
+    最近的
+    reference group
+    不是
+    `001589`，
+    而是：
+    - `train_000664`
+      那条
+      low-share `v64_only`
+- 进一步做
+  archetype contrast
+  后又发现：
+  - `000799 -> 001589`
+    的
+    direct residual
+    前列
+    固定成：
+    - target transient share
+    - target transient mean
+    - shorter duration
+    而
+    `cosine`
+    几乎中性
+  - `000697 -> 000664`
+    的
+    direct residual
+    前列
+    固定成：
+    - longer duration
+    - lower interference share
+    - weaker interference package
+    而不是
+    “同一种 low-share
+    更深一点”
+
+影响：
+
+- 如果跳过
+  archetype positioning，
+  继续只看：
+  - `case -> sink`
+  的 contrast，
+  就很容易把：
+  - `000799`
+    写成
+    单纯更低 cosine
+  - `000697`
+    写成
+    单纯更弱 gain
+  但这两个量
+  其实只是：
+  - 它离 sink
+    最近时
+    最显眼的差
+  - 不一定是
+    它离最近 pre archetype
+    最关键的回摆 residual
+- 这样会把：
+  - `000799`
+    与
+    `001589`
+  - `000697`
+    与
+    `000664`
+  这两条本来不同的
+  local 路线
+  再次压扁成
+  同一条
+  sink-side 假深度轴。
+
+处理：
+
+- 已落盘：
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_falsepositive_case_positioning/summary.json`
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_falsepositive_archetype_split/summary.json`
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000799_vs_partialmeanhinge_factor_contrast/summary.json`
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_vs_v64only_factor_contrast/summary.json`
+  - `reports/daily/2026-03-24_candidate_v7_v65_sink_falsepositive_archetype_positioning.md`
+
+后续要求：
+
+1. 之后凡是再写
+   sink-side false positive，
+   默认先问：
+   - 它最近的
+     已知 pre archetype
+     是谁
+2. 只有先做完
+   archetype positioning，
+   才能决定：
+   - 哪些字段
+     是离 sink
+     最近时最显眼的差
+   - 哪些字段
+     才是把它
+     从最近 archetype
+     拉回 pre 的主 residual
+3. `000799`
+   默认挂回：
+   - `001589`
+     partial-mean hinge
+4. `000697`
+   默认挂回：
+   - `000664`
+     low-share `v64_only`
+5. 没完成这一步前，
+   不要再把
+   `000799 / 000697`
+   写成同一种
+   sink-side 残留。
+
+### 181. archetype-local 分析里不能只看 raw neighbor rank；邻域本身常常还是 mixed shelf，必须再用 route-specific residual 投影一次，否则会把“近邻”误判成“同 pocket support”
+
+现象：
+
+- 本轮分别围着：
+  - `train_001589`
+  - `train_000664`
+  做 local neighbor scan
+  后发现：
+  - 两个邻域
+    都是
+    mixed shelf
+  - 都同时混着：
+    - pre
+    - hinge
+    - crossed
+  - 而且：
+    - `000697`
+      在
+      `001589`
+      邻域里
+      也排得很近
+    - `000799`
+      在
+      `000664`
+      邻域里
+      也排得很近
+- 但进一步把邻域
+  投影到
+  route-specific residual
+  后，
+  pocket
+  才真正收缩出来：
+  - `001589 -> 000799`
+    在
+    `target transient share + target transient mean`
+    上
+    只剩：
+    - `000799`
+    - `000681`
+  - `000664 -> 000697`
+    在
+    `duration + interference share`
+    上
+    只剩：
+    - `000697`
+    - `000904`
+
+影响：
+
+- 如果只因为
+  某个 row
+  在 archetype 邻域里
+  排得近，
+  就把它记成：
+  - 同 pocket support
+  那么就会把：
+  - generic metadata 近似
+  和：
+  - route-specific residual
+    一致
+  混成一件事
+- 这样会直接误判：
+  - `000697`
+    好像也属于
+    `001589 -> 000799`
+    这条 pocket
+  - `000799`
+    好像也属于
+    `000664 -> 000697`
+    这条 pocket
+  但它们在
+  local quadrants
+  里其实都稳定落在
+  `neither`
+  一侧。
+
+处理：
+
+- 已落盘：
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000799_partialmean_neighbor_scan/summary.json`
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_v64only_neighbor_scan/summary.json`
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000799_vs_partialmean_slice_support/summary.json`
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000799_vs_partialmean_duration_targetmean_quadrants/summary.json`
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000799_vs_partialmean_targetshare_targetmean_quadrants/summary.json`
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_vs_v64only_slice_support/summary.json`
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_vs_v64only_duration_targetshare_quadrants/summary.json`
+  - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_vs_v64only_duration_intshare_quadrants/summary.json`
+  - `reports/daily/2026-03-24_candidate_v7_v65_sink_falsepositive_archetype_local_support.md`
+
+后续要求：
+
+1. 之后凡是做
+   archetype-local support，
+   默认先分两步写：
+   - raw neighbor ring
+   - route-specific projection
+2. 只有同时满足：
+   - 在邻域里排得近
+   - 在 route-specific
+     quadrants / slice support
+     里也站在
+     target side
+   才能记成：
+   - 同 pocket support
+3. `000799`
+   当前最紧的
+   local support
+   默认记成：
+   - `000681`
+4. `000697`
+   当前最紧的
+   local support
+   默认记成：
+   - `000904`
+   更宽一点的
+   tail support
+   记成：
+   - `000219`

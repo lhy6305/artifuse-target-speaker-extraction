@@ -3654,6 +3654,156 @@
         两条线分别解释
     - 仍不启动新训练
 
+85. 已把 `000799 / 000697` 放回已知 pre archetype 坐标系做 positioning；当前分支图默认必须改写成：这两个 sink-side false positive 不是同一个 pocket 的深浅差，而是分别贴近不同的局部 archetype，再被不同 residual 拉回 pre：
+  - 入口：
+    - `reports/daily/2026-03-24_candidate_v7_v65_sink_falsepositive_archetype_positioning.md`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_falsepositive_case_positioning/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_falsepositive_archetype_split/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000799_vs_partialmeanhinge_factor_contrast/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_vs_v64only_factor_contrast/summary.json`
+  - 当前更关键的新事实是：
+    - `train_000799`
+      最近的
+      archetype
+      已固定成：
+      - `train_001589`
+        weak-gain partial-mean hinge
+      - 真正把它
+        拉回 pre 的
+        direct residual
+        固定成：
+        - target transient collapse
+        - shorter duration
+      - `cosine`
+        只保留为
+        positioning 层面的
+        靠近 sink 信号，
+        不再单独当成
+        主 blocker
+    - `train_000697`
+      最近的
+      archetype
+      已固定成：
+      - `train_000664`
+        low-share `v64_only`
+      - 真正把它
+        拉回 pre 的
+        direct residual
+        固定成：
+        - longer duration
+        - lower interference share
+        - weaker interference package
+      - 说明它不是
+        `000799`
+        的长一点版本
+    - `000799 / 000697`
+      现在默认回挂到：
+      - `001589 -> 000799`
+      - `000664 -> 000697`
+      两条不同 local 路线
+  - 当前判断：
+    - sink-side false positives
+      不再写成：
+      - 同一个
+        `gain + cosine`
+        pocket 的深浅差
+    - 应固定拆成：
+      - `001589`
+        partial-mean hinge
+        回摆到
+        `000799`
+      - `000664`
+        low-share `v64_only`
+        回摆到
+        `000697`
+  - 当前默认下一步：
+    - 若继续推进，
+      默认沿：
+      - `001589 -> 000799`
+      - `000664 -> 000697`
+      两条 local archetype
+      路线继续找 support
+    - 仍不启动新训练
+
+86. 已把 `001589 -> 000799` 与 `000664 -> 000697` 两条 local route 压到各自邻域内做 support；当前分支图默认必须改写成：这两条 archetype-local route 都会在邻域里收缩成不同语义的 pre-only micro-pocket，而不是大而散的 mixed shelf：
+  - 入口：
+    - `reports/daily/2026-03-24_candidate_v7_v65_sink_falsepositive_archetype_local_support.md`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000799_partialmean_neighbor_scan/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_v64only_neighbor_scan/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000799_vs_partialmean_slice_support/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000799_vs_partialmean_duration_targetmean_quadrants/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000799_vs_partialmean_targetshare_targetmean_quadrants/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_vs_v64only_slice_support/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_vs_v64only_duration_targetshare_quadrants/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_vs_v64only_duration_intshare_quadrants/summary.json`
+  - 当前更关键的新事实是：
+    - `001589`
+      邻域
+      只要投影到：
+      - target transient share
+      - target transient mean
+      - shorter duration
+      这条 route，
+      `000799`
+      就会收缩成：
+      - `000799`
+      - `000681`
+      这条
+      pre-only micro-pocket
+      而
+      `000697`
+      稳定落在
+      `neither`
+    - `000664`
+      邻域
+      只要投影到：
+      - longer duration
+      - lower interference share
+      这条 route，
+      `000697`
+      就会收缩成：
+      - `000697`
+      - `000904`
+      这条
+      pre-only micro-pocket，
+      `000219`
+      是更宽一点的
+      tail support，
+      而
+      `000799`
+      稳定落在
+      `neither`
+    - 因此 raw 邻域排序
+      默认不能直接当作
+      local support
+  - 当前判断：
+    - `001589 -> 000799`
+      默认写成：
+      - target-transient-collapse
+        micro-pocket
+      - 当前最紧 support
+        是：
+        - `000681`
+    - `000664 -> 000697`
+      默认写成：
+      - long-duration
+        + low-share
+        micro-pocket
+      - 当前最紧 support
+        是：
+        - `000904`
+      - 更宽 tail
+        是：
+        - `000219`
+  - 当前默认下一步：
+    - 若继续推进，
+      默认直接转到：
+      - `000799 <-> 000681`
+      - `000697 <-> 000904 / 000219`
+      两条 companion
+      线继续压 support
+    - 仍不启动新训练
+
 ## 6. 忘线检查表
 
 每次恢复上下文前，先看这 5 个入口：
@@ -3664,6 +3814,8 @@
 4. 本文档 `docs/05_task_branch_map.md`
 5. 当前活跃分支日报：
    - 现在补到：
+     - `reports/daily/2026-03-24_candidate_v7_v65_sink_falsepositive_archetype_local_support.md`
+     - `reports/daily/2026-03-24_candidate_v7_v65_sink_falsepositive_archetype_positioning.md`
      - `reports/daily/2026-03-24_candidate_v7_v65_sink_pocket_falsepositive_case_contrast.md`
      - `reports/daily/2026-03-24_candidate_v7_v65_sink_final_case_divergence_split.md`
      - `reports/daily/2026-03-24_candidate_v7_v65_sink_reference_gain_edge_case_branch_split.md`
@@ -3695,12 +3847,16 @@
      - `reports/daily/2026-03-21_candidate_v4_v5_overlap_analysis.md`
      - `reports/daily/2026-03-21_candidate_v5_guardv67_negative_materialization.md`
      - `reports/daily/2026-03-21_candidate_v4_subgroup_diagnosis.md`
-   - 当前主停点日报已更新为：
-     - `reports/daily/2026-03-24_candidate_v7_v65_sink_pocket_falsepositive_case_contrast.md`
-   - 上一条主停点日报：
-     - `reports/daily/2026-03-24_candidate_v7_v65_sink_final_case_divergence_split.md`
-   - 再上一条主停点日报：
-     - `reports/daily/2026-03-24_candidate_v7_v65_sink_reference_gain_edge_case_branch_split.md`
+    - 当前主停点日报已更新为：
+      - `reports/daily/2026-03-24_candidate_v7_v65_sink_falsepositive_archetype_local_support.md`
+    - 上一条主停点日报：
+      - `reports/daily/2026-03-24_candidate_v7_v65_sink_falsepositive_archetype_positioning.md`
+    - 再上一条主停点日报：
+      - `reports/daily/2026-03-24_candidate_v7_v65_sink_pocket_falsepositive_case_contrast.md`
+    - 再再上一条主停点日报：
+      - `reports/daily/2026-03-24_candidate_v7_v65_sink_final_case_divergence_split.md`
+    - 再再上一条主停点日报：
+      - `reports/daily/2026-03-24_candidate_v7_v65_sink_reference_gain_edge_case_branch_split.md`
    - 再再上一条主停点日报：
      - `reports/daily/2026-03-24_candidate_v7_v65_sink_reference_gain_edge_residual_split.md`
    - 再上一条主停点日报：

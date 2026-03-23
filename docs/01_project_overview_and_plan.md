@@ -4831,6 +4831,196 @@
       做后续解释
     - 仍不启动新训练
 
+273. 已把 `000799 / 000697` 放回已知 pre archetype 坐标系做 case positioning；当前应明确判成：这两个 sink-side false positive 不是同一个 pocket 的不同深浅，而是分别贴近不同的局部 archetype，再被不同 residual 拉回 pre：
+  - 新日报：
+    - `reports/daily/2026-03-24_candidate_v7_v65_sink_falsepositive_archetype_positioning.md`
+  - 新 summary：
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_falsepositive_case_positioning/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_falsepositive_archetype_split/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000799_vs_partialmeanhinge_factor_contrast/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_vs_v64only_factor_contrast/summary.json`
+  - 当前更关键的新事实是：
+    - `train_000799`
+      最近的
+      archetype
+      已固定成：
+      - `train_001589`
+        那条
+        weak-gain partial-mean hinge
+      - positioning
+        top deviations
+        为：
+        - 更低 cosine
+        - `v66>v65`
+          重新翻正
+        - 更短 duration / reference
+      - 但真正把它
+        从
+        `001589`
+        拉回 pre 的
+        direct residual
+        已固定成：
+        - target transient share
+        - target transient mean
+        - shorter duration
+      - `cosine`
+        在
+        archetype contrast
+        里几乎中性，
+        不能再继续写成
+        唯一主语
+    - `train_000697`
+      最近的
+      archetype
+      已固定成：
+      - `train_000664`
+        那条
+        low-share `v64_only`
+      - positioning
+        top deviations
+        为：
+        - 更长 target duration
+        - 更弱 gain
+        - 更弱 interference transient mean
+        - `v66>v64`
+          重新翻正
+      - 但把它
+        与
+        `000799`
+        区分开的
+        direct residual
+        已固定成：
+        - 更长 duration
+        - 更低 interference share
+        - 更弱 interference package
+      - 说明它不是
+        `000799`
+        的长一点版本，
+        而是另一条
+        archetype-local pre
+    - `000799 - 000697`
+      的直接 delta
+      也已固定显示：
+      - 一个更短、
+        更偏 target transient collapse
+      - 一个更长、
+        更偏 weak interference package
+      - 两者不是同一轴上
+        的深浅差
+  - 当前解释应更新为：
+    - `000799`
+      默认挂回：
+      - `001589`
+        partial-mean hinge
+      的 local 路线
+    - `000697`
+      默认挂回：
+      - `000664`
+        low-share `v64_only`
+      的 local 路线
+    - 后续若继续推进，
+      默认分别沿：
+      - `001589 -> 000799`
+      - `000664 -> 000697`
+      两条 archetype-local
+      路线找 support
+    - 仍不启动新训练
+
+274. 已把 `001589 -> 000799` 与 `000664 -> 000697` 两条 archetype-local route 压到各自邻域内做 local support；当前应明确判成：这两条 route 在各自 archetype ring 里都不是大而散的 mixed shelf，而是会收缩成不同语义的 pre-only micro-pocket：
+  - 新日报：
+    - `reports/daily/2026-03-24_candidate_v7_v65_sink_falsepositive_archetype_local_support.md`
+  - 新 summary：
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000799_partialmean_neighbor_scan/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_v64only_neighbor_scan/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000799_vs_partialmean_slice_support/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000799_vs_partialmean_duration_targetmean_quadrants/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000799_vs_partialmean_targetshare_targetmean_quadrants/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_vs_v64only_slice_support/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_vs_v64only_duration_targetshare_quadrants/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_vs_v64only_duration_intshare_quadrants/summary.json`
+  - 当前更关键的新事实是：
+    - `001589`
+      的 raw 邻域
+      虽然也是
+      mixed shelf，
+      但一旦投影到：
+      - target transient share
+      - target transient mean
+      - duration
+      这条 residual 线上，
+      `000799`
+      就会收缩成：
+      - `000799`
+      - `000681`
+      这条
+      pre-only micro-pocket
+      且
+      `000697`
+      稳定落在
+      pocket 外
+    - `000664`
+      的 raw 邻域
+      也仍是
+      mixed shelf，
+      但一旦投影到：
+      - longer duration
+      - lower interference share
+      - weaker interference package
+      这条 residual 线上，
+      `000697`
+      就会收缩成：
+      - `000697`
+      - `000904`
+      这条
+      pre-only micro-pocket，
+      `000219`
+      则是更宽一点的
+      tail support，
+      且
+      `000799`
+      稳定落在
+      pocket 外
+    - 说明：
+      - `000799`
+        不只是
+        更像
+        `001589`
+      - `000697`
+        不只是
+        更像
+        `000664`
+      - 它们都已在
+        各自 archetype ring
+        里拿到
+        不同语义的
+        local support row
+  - 当前解释应更新为：
+    - `001589 -> 000799`
+      默认写成：
+      - target-transient-collapse
+        pre-only micro-pocket
+      - 当前最紧 support
+        为：
+        - `000681`
+    - `000664 -> 000697`
+      默认写成：
+      - long-duration
+        + low-share
+        pre-only micro-pocket
+      - 当前最紧 support
+        为：
+        - `000904`
+      - 更宽 tail
+        为：
+        - `000219`
+    - 后续若继续推进，
+      默认直接转到：
+      - `000799 <-> 000681`
+      - `000697 <-> 000904 / 000219`
+      这两条 companion
+      线继续压 support
+    - 仍不启动新训练
+
 ## 9. 文档入口
 
 - 规范入口：`docs/00_context_bootstrap.md`

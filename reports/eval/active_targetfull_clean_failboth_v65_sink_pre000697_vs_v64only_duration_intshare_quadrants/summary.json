@@ -1,0 +1,310 @@
+{
+  "neighbor_json": "reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_v64only_neighbor_scan/summary.json",
+  "split_json": "reports/eval/active_targetfull_clean_failboth_v65_sink_falsepositive_archetype_split/summary.json",
+  "target_group": "sink_gaincosine_pre_000697",
+  "baseline_group": "low_share_v64only",
+  "contrast_group": "sink_gaincosine_pre_000799",
+  "factor_a": {
+    "field": "target_duration_sec",
+    "target_value": 2.22,
+    "baseline_value": 1.23,
+    "midpoint": 1.725,
+    "target_direction": "higher"
+  },
+  "factor_b": {
+    "field": "interference_transient_presence_share_mean",
+    "target_value": 0.35832324624061584,
+    "baseline_value": 0.39585036039352417,
+    "midpoint": 0.37708680331707,
+    "target_direction": "lower"
+  },
+  "anchor_quadrants": {
+    "target_group": {
+      "sample_ids": [
+        "train_000697"
+      ],
+      "quadrant": "both",
+      "factor_a_value": 2.22,
+      "factor_b_value": 0.35832324624061584
+    },
+    "baseline_group": {
+      "sample_ids": [
+        "train_000664"
+      ],
+      "quadrant": "neither",
+      "factor_a_value": 1.23,
+      "factor_b_value": 0.39585036039352417
+    },
+    "contrast_group": {
+      "sample_ids": [
+        "train_000799"
+      ],
+      "quadrant": "neither",
+      "factor_a_value": 1.5,
+      "factor_b_value": 0.3948422074317932
+    }
+  },
+  "quadrant_summaries": {
+    "both": {
+      "count": 2,
+      "state_counts": {
+        "pre_entry_or_pure": 2
+      },
+      "sample_ids": [
+        "train_000697",
+        "train_000904"
+      ],
+      "rows": [
+        {
+          "sample_id": "train_000697",
+          "state": "pre_entry_or_pure",
+          "metadata_distance_z": 3.4334234361997367,
+          "factor_a_value": 2.22,
+          "factor_b_value": 0.35832324624061584
+        },
+        {
+          "sample_id": "train_000904",
+          "state": "pre_entry_or_pure",
+          "metadata_distance_z": 7.9929647864224815,
+          "factor_a_value": 1.92,
+          "factor_b_value": 0.010711930692195892
+        }
+      ]
+    },
+    "factor_a_only": {
+      "count": 3,
+      "state_counts": {
+        "hinge_v65_crossed": 2,
+        "pre_entry_or_pure": 1
+      },
+      "sample_ids": [
+        "train_000266",
+        "train_001589",
+        "train_000219"
+      ],
+      "rows": [
+        {
+          "sample_id": "train_000266",
+          "state": "hinge_v65_crossed",
+          "metadata_distance_z": 3.6788598691094747,
+          "factor_a_value": 1.74,
+          "factor_b_value": 0.4796588122844696
+        },
+        {
+          "sample_id": "train_001589",
+          "state": "hinge_v65_crossed",
+          "metadata_distance_z": 4.446498791779309,
+          "factor_a_value": 2.28,
+          "factor_b_value": 0.37717947363853455
+        },
+        {
+          "sample_id": "train_000219",
+          "state": "pre_entry_or_pure",
+          "metadata_distance_z": 4.561356468812293,
+          "factor_a_value": 3.36,
+          "factor_b_value": 0.41857823729515076
+        }
+      ]
+    },
+    "factor_b_only": {
+      "count": 5,
+      "state_counts": {
+        "pre_entry_or_pure": 4,
+        "v64_only_crossed": 1
+      },
+      "sample_ids": [
+        "train_001006",
+        "train_001494",
+        "train_000951",
+        "train_001079",
+        "train_000210"
+      ],
+      "rows": [
+        {
+          "sample_id": "train_001006",
+          "state": "pre_entry_or_pure",
+          "metadata_distance_z": 3.4710463847604527,
+          "factor_a_value": 1.29,
+          "factor_b_value": 0.2905155122280121
+        },
+        {
+          "sample_id": "train_001494",
+          "state": "pre_entry_or_pure",
+          "metadata_distance_z": 3.7543630185849475,
+          "factor_a_value": 1.02,
+          "factor_b_value": 0.30371609330177307
+        },
+        {
+          "sample_id": "train_000951",
+          "state": "pre_entry_or_pure",
+          "metadata_distance_z": 3.811246867683978,
+          "factor_a_value": 1.08,
+          "factor_b_value": 0.3677087426185608
+        },
+        {
+          "sample_id": "train_001079",
+          "state": "pre_entry_or_pure",
+          "metadata_distance_z": 4.25677188292238,
+          "factor_a_value": 1.02,
+          "factor_b_value": 0.20442937314510345
+        },
+        {
+          "sample_id": "train_000210",
+          "state": "v64_only_crossed",
+          "metadata_distance_z": 4.753265249913876,
+          "factor_a_value": 1.08,
+          "factor_b_value": 0.19508635997772217
+        }
+      ]
+    },
+    "neither": {
+      "count": 17,
+      "state_counts": {
+        "both_crossed_v64_deeper": 1,
+        "both_crossed_v65_deeper": 1,
+        "hinge_v65_crossed": 2,
+        "pre_entry_or_pure": 13
+      },
+      "sample_ids": [
+        "train_001610",
+        "train_000759",
+        "train_001639",
+        "train_000117",
+        "train_001725",
+        "train_000799",
+        "train_001745",
+        "train_001543",
+        "train_001495",
+        "train_000216",
+        "train_000578",
+        "train_000634",
+        "train_000788",
+        "train_000681",
+        "train_000999",
+        "train_000207",
+        "train_001705"
+      ],
+      "rows": [
+        {
+          "sample_id": "train_001610",
+          "state": "hinge_v65_crossed",
+          "metadata_distance_z": 1.7331684512698804,
+          "factor_a_value": 1.08,
+          "factor_b_value": 0.43168750405311584
+        },
+        {
+          "sample_id": "train_000759",
+          "state": "pre_entry_or_pure",
+          "metadata_distance_z": 2.055266580227977,
+          "factor_a_value": 1.26,
+          "factor_b_value": 0.5290168523788452
+        },
+        {
+          "sample_id": "train_001639",
+          "state": "pre_entry_or_pure",
+          "metadata_distance_z": 2.5600567263216853,
+          "factor_a_value": 1.2,
+          "factor_b_value": 0.46158871054649353
+        },
+        {
+          "sample_id": "train_000117",
+          "state": "pre_entry_or_pure",
+          "metadata_distance_z": 2.874619151269278,
+          "factor_a_value": 1.5,
+          "factor_b_value": 0.46664515137672424
+        },
+        {
+          "sample_id": "train_001725",
+          "state": "pre_entry_or_pure",
+          "metadata_distance_z": 2.996327672986455,
+          "factor_a_value": 1.08,
+          "factor_b_value": 0.5826805830001831
+        },
+        {
+          "sample_id": "train_000799",
+          "state": "pre_entry_or_pure",
+          "metadata_distance_z": 3.0777659151205734,
+          "factor_a_value": 1.5,
+          "factor_b_value": 0.3948422074317932
+        },
+        {
+          "sample_id": "train_001745",
+          "state": "both_crossed_v64_deeper",
+          "metadata_distance_z": 3.388150938657853,
+          "factor_a_value": 1.11,
+          "factor_b_value": 0.48254162073135376
+        },
+        {
+          "sample_id": "train_001543",
+          "state": "both_crossed_v65_deeper",
+          "metadata_distance_z": 3.448212722469956,
+          "factor_a_value": 1.14,
+          "factor_b_value": 0.4371807277202606
+        },
+        {
+          "sample_id": "train_001495",
+          "state": "pre_entry_or_pure",
+          "metadata_distance_z": 3.511593077128591,
+          "factor_a_value": 1.29,
+          "factor_b_value": 0.6270498037338257
+        },
+        {
+          "sample_id": "train_000216",
+          "state": "pre_entry_or_pure",
+          "metadata_distance_z": 3.623796361239816,
+          "factor_a_value": 1.08,
+          "factor_b_value": 0.4401053190231323
+        },
+        {
+          "sample_id": "train_000578",
+          "state": "pre_entry_or_pure",
+          "metadata_distance_z": 3.8308642829548107,
+          "factor_a_value": 1.08,
+          "factor_b_value": 0.3979531526565552
+        },
+        {
+          "sample_id": "train_000634",
+          "state": "pre_entry_or_pure",
+          "metadata_distance_z": 3.8342537708018725,
+          "factor_a_value": 1.11,
+          "factor_b_value": 0.41467785835266113
+        },
+        {
+          "sample_id": "train_000788",
+          "state": "pre_entry_or_pure",
+          "metadata_distance_z": 4.010593754579037,
+          "factor_a_value": 1.14,
+          "factor_b_value": 0.5879872441291809
+        },
+        {
+          "sample_id": "train_000681",
+          "state": "pre_entry_or_pure",
+          "metadata_distance_z": 4.0387788932220605,
+          "factor_a_value": 1.02,
+          "factor_b_value": 0.44032931327819824
+        },
+        {
+          "sample_id": "train_000999",
+          "state": "pre_entry_or_pure",
+          "metadata_distance_z": 4.100447738135731,
+          "factor_a_value": 1.29,
+          "factor_b_value": 0.6141756772994995
+        },
+        {
+          "sample_id": "train_000207",
+          "state": "pre_entry_or_pure",
+          "metadata_distance_z": 4.265035189169563,
+          "factor_a_value": 1.08,
+          "factor_b_value": 0.5722601413726807
+        },
+        {
+          "sample_id": "train_001705",
+          "state": "hinge_v65_crossed",
+          "metadata_distance_z": 4.716023106332854,
+          "factor_a_value": 1.08,
+          "factor_b_value": 0.7195932865142822
+        }
+      ]
+    }
+  }
+}
