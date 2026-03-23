@@ -1,0 +1,110 @@
+{
+  "split_json": "reports/eval/active_targetfull_clean_failboth_v65_sink_duration_cosine_shell_split/summary.json",
+  "scale_json": null,
+  "target_group": "duration_cosine_both_boundary",
+  "baseline_group": "duration_cosine_both_pre",
+  "contrast_group": "v65_sink",
+  "factor_fields": [
+    "target_transient_presence_minus_mid_db_mean",
+    "target_transient_presence_share_mean",
+    "interference_transient_presence_minus_mid_db_mean",
+    "interference_transient_presence_share_mean",
+    "target_interference_logspec_cosine",
+    "target_duration_sec",
+    "reference_duration_sec",
+    "interference_layers.0.gain_db",
+    "interference_layers.0.start_offset_sec"
+  ],
+  "rows_ranked_by_target_specific_residual_z": [
+    {
+      "field": "interference_layers.0.gain_db",
+      "target_minus_baseline": 2.069113636363636,
+      "contrast_minus_baseline": -2.695636363636364,
+      "target_specific_residual": 4.76475,
+      "abs_target_specific_residual": 4.76475,
+      "scale_stdev": 1.9171034695078844,
+      "target_specific_residual_z": 2.485390108455179,
+      "abs_target_specific_residual_z": 2.485390108455179
+    },
+    {
+      "field": "reference_duration_sec",
+      "target_minus_baseline": 0.293181818181818,
+      "contrast_minus_baseline": -0.321818181818182,
+      "target_specific_residual": 0.615,
+      "abs_target_specific_residual": 0.615,
+      "scale_stdev": 0.4548675351195369,
+      "target_specific_residual_z": 1.35204197379877,
+      "abs_target_specific_residual_z": 1.35204197379877
+    },
+    {
+      "field": "interference_transient_presence_minus_mid_db_mean",
+      "target_minus_baseline": -2.620393931865692,
+      "contrast_minus_baseline": 1.623985469341278,
+      "target_specific_residual": -4.24437940120697,
+      "abs_target_specific_residual": 4.24437940120697,
+      "scale_stdev": 3.791766415477593,
+      "target_specific_residual_z": -1.1193673175335532,
+      "abs_target_specific_residual_z": 1.1193673175335532
+    },
+    {
+      "field": "target_interference_logspec_cosine",
+      "target_minus_baseline": 0.002589083550412541,
+      "contrast_minus_baseline": -0.011451895866608996,
+      "target_specific_residual": 0.014040979417021537,
+      "abs_target_specific_residual": 0.014040979417021537,
+      "scale_stdev": 0.027639247091779433,
+      "target_specific_residual_z": 0.5080087518446788,
+      "abs_target_specific_residual_z": 0.5080087518446788
+    },
+    {
+      "field": "interference_layers.0.start_offset_sec",
+      "target_minus_baseline": 0.02265909090909088,
+      "contrast_minus_baseline": 0.052909090909090906,
+      "target_specific_residual": -0.030250000000000027,
+      "abs_target_specific_residual": 0.030250000000000027,
+      "scale_stdev": 0.08625713561398167,
+      "target_specific_residual_z": -0.3506956240162549,
+      "abs_target_specific_residual_z": 0.3506956240162549
+    },
+    {
+      "field": "target_transient_presence_minus_mid_db_mean",
+      "target_minus_baseline": -1.548595645210959,
+      "contrast_minus_baseline": -0.11802838065407428,
+      "target_specific_residual": -1.4305672645568848,
+      "abs_target_specific_residual": 1.4305672645568848,
+      "scale_stdev": 5.283598547160978,
+      "target_specific_residual_z": -0.2707562377776729,
+      "abs_target_specific_residual_z": 0.2707562377776729
+    },
+    {
+      "field": "target_duration_sec",
+      "target_minus_baseline": -0.03886363636363632,
+      "contrast_minus_baseline": -0.01636363636363658,
+      "target_specific_residual": -0.022499999999999742,
+      "abs_target_specific_residual": 0.022499999999999742,
+      "scale_stdev": 0.11864216172601479,
+      "target_specific_residual_z": -0.18964590389005145,
+      "abs_target_specific_residual_z": 0.18964590389005145
+    },
+    {
+      "field": "target_transient_presence_share_mean",
+      "target_minus_baseline": 0.006216105187459936,
+      "contrast_minus_baseline": 0.011575763198462402,
+      "target_specific_residual": -0.005359658011002466,
+      "abs_target_specific_residual": 0.005359658011002466,
+      "scale_stdev": 0.05269330937536323,
+      "target_specific_residual_z": -0.10171420384365489,
+      "abs_target_specific_residual_z": 0.10171420384365489
+    },
+    {
+      "field": "interference_transient_presence_share_mean",
+      "target_minus_baseline": -0.05122846026312222,
+      "contrast_minus_baseline": -0.049602110277522704,
+      "target_specific_residual": -0.0016263499855995178,
+      "abs_target_specific_residual": 0.0016263499855995178,
+      "scale_stdev": 0.12357037509066926,
+      "target_specific_residual_z": -0.01316132596025698,
+      "abs_target_specific_residual_z": 0.01316132596025698
+    }
+  ]
+}

@@ -4211,11 +4211,539 @@
         内部
         为什么还残留
         大量 pre
-      - 也就是
-        回到：
-        - `mean`
-        作为 shell 内
+    - 仍不启动新训练
+
+267. 已把 `duration + cosine both` 这层 shell 正式压成 `pre / boundary / nonsink` 结构；当前应明确判成 shell 内残留的 pre 不是“`mean` 还没抬够”，而是一个更宽的 mixed shell，真正继续把 row 路由成 boundary / sink 的更像 `gain / reference / offset`：
+  - 新日报：
+    - `reports/daily/2026-03-24_candidate_v7_v65_sink_duration_cosine_shell_split.md`
+  - 新资产：
+    - `data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_failboth_duration_cosine_both_pre_train.txt`
+    - `data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_failboth_duration_cosine_both_boundary_train.txt`
+    - `data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_failboth_duration_cosine_both_nonsink_train.txt`
+  - 新 summary：
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_duration_cosine_shell_split/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_duration_cosine_shell_factor_contrast/summary.json`
+  - 当前更关键的新事实是：
+    - `duration + cosine both`
+      当前真实结构为：
+      - `1` 条 sink
+      - `4` 条 boundary
+      - `11` 条 pre
+      说明：
+      - 它只是
+        boundary-support shell
+      - 不是
+        near-sink 小壳
+    - shell 内的 pre
+      不是：
+      - `mean`
+        还低一点
+      因为：
+      - `train_000578 = -3.4491`
+      - `train_001495 = -4.9590`
+      - `train_001725 = -5.1932`
+      - `train_000951 = -6.3755`
+      这些 pre
+      的 `mean`
+      都高于
+      sink
+      `train_001543 = -10.9606`
+    - 用：
+      - `target = v65_sink`
+      - `baseline = duration_cosine_both_boundary`
+      - `contrast = duration_cosine_both_pre`
+      做 shell 内 factor contrast，
+      当前标准化 residual
+      排名前三已变成：
+      - `gain = -1.4061 z`
+      - `reference = -0.7075 z`
+      - `start_offset = +0.6134 z`
+      而：
+      - `cosine = -0.4143 z`
+      - `target_duration = -0.1379 z`
+      - `target_transient_mean = -0.0223 z`
+      说明：
+      - 在
+        `duration + cosine`
+        固定之后，
+        `mean`
+        已经几乎没有
+        额外分离力
+    - `pre -> boundary`
+      这一步
+      也不是
+      `mean`
+      继续抬升，
+      因为：
+      - `boundary - pre`
+        的
+        `target_transient_mean = -1.5486`
+      反而更低
+  - 当前解释应进一步更新为：
+    - `duration`
+      继续保留为：
+      - near-sink 主 blocker
+    - `cosine`
+      继续保留为：
+      - duration shell 上的
+        secondary trim
+    - 但
+      `duration + cosine both`
+      内部
+      不再默认写成：
+      - `mean`
         final push
+    - 当前更准确的 shell 内 routing
+      主语应改成：
+      - `gain`
+      - `reference`
+      - `offset`
+  - 当前默认下一步
+    应继续收紧为：
+    - 不再扩样本面
+    - 不再继续问：
+      - `mean`
+      是否还是
+      shell 内主导
+    - 若还继续推进，
+      默认只拆：
+      - `gain`
+      - `reference`
+      - `offset`
+      看谁更接近把
+      `duration+cosine both`
+      内的 row
+      从 pre
+      再路由成：
+      - boundary
+      - sink
+    - 仍不启动新训练
+
+268. 已把 `duration + cosine` shell 的口径翻成 `boundary vs pre`；当前应明确判成把 row 从 pre 推进 boundary 的最强主轴已经固定成“更强 gain + 更长 reference”，而 `offset` 只是 boundary 与 sink 共享的 package，不再把它混写成 boundary-specific 主语：
+  - 新日报：
+    - `reports/daily/2026-03-24_candidate_v7_v65_sink_duration_cosine_boundary_routing_split.md`
+  - 新 summary：
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_duration_cosine_boundary_factor_contrast/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_duration_cosine_boundary_slice_support/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_duration_cosine_boundary_reference_offset_quadrants/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_duration_cosine_boundary_reference_gain_quadrants/summary.json`
+  - 当前更关键的新事实是：
+    - 用：
+      - `target = boundary`
+      - `baseline = pre`
+      - `contrast = sink`
+      做 factor contrast，
+      当前标准化 residual
+      排名前三已固定成：
+      - `gain = +2.4854 z`
+      - `reference = +1.3520 z`
+      - `interference transient mean = -1.1194 z`
+      说明：
+      - 在
+        `duration + cosine`
+        已经固定后，
+        把 row
+        从 pre
+        推进 boundary
+        的主轴
+        不是：
+        - `mean`
+      - 而是：
+        - gain 变强
+        - reference 变长
+    - `offset`
+      的：
+      - `contrast_on_target_side = true`
+      说明：
+      - sink
+        也站在
+        boundary
+        的 target-side
+      所以：
+      - 更晚 offset
+        只像
+        pre -> boundary -> sink
+        共享 package
+    - `gain`
+      与
+      `reference`
+      的：
+      - `contrast_on_target_side = false`
+      说明：
+      - sink
+        都不站在
+        它们的 target-side
+      所以：
+      - 这两项
+        是当前
+        boundary 与 sink
+        的反向分叉轴
+    - `reference + gain`
+      四象限里：
+      - boundary anchor
+        在 `both`
+      - sink anchor
+        在 `neither`
+      - `both`
+        桶为：
+        - `2` 条 hinge
+        - `1` 条 `v64_only`
+        - `1` 条 pre
+        - `0` 条 sink
+      说明：
+      - `reference + gain`
+        已经是
+        当前最像
+        boundary
+        的 conjunction
+      - 但还不是
+        独立 hard gate
+  - 当前解释应进一步更新为：
+    - `duration`
+      继续保留为：
+      - near-sink 主 blocker
+    - `cosine`
+      继续保留为：
+      - duration shell 上的
+        secondary trim
+    - shell 内：
+      - `offset`
+        固定为
+        shared package
+      - `gain + reference`
+        固定为
+        当前 boundary routing
+        的主 conjunction
+  - 当前默认下一步
+    应继续收紧为：
+    - 不再扩样本面
+    - 不再继续问：
+      - `offset`
+      是否还是
+      boundary-specific
+    - 若还继续推进，
+      默认只拆：
+      - `reference + gain`
+        这条 conjunction
+        里
+        为什么还残留
+        `train_000951`
+        这类 pre，
+        以及：
+      - `hinge / v64_only`
+        为什么会优先落在
+        这条边上
+    - 仍不启动新训练
+
+269. 已把 `reference + gain both` 这条 boundary conjunction 显式拆成 crossed edge 与残留 pre；当前应明确判成 `train_000951` 留在这里不是因为 `gain` 不够，而是因为这条 conjunction 本身只是 crossed-support shelf，`000951` 仍然带着明显 pre compare margin：
+  - 新日报：
+    - `reports/daily/2026-03-24_candidate_v7_v65_sink_reference_gain_edge_residual_split.md`
+  - 新资产：
+    - `data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_failboth_reference_gain_both_crossed_train.txt`
+    - `data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_failboth_reference_gain_both_pre_train.txt`
+  - 新 summary：
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_reference_gain_both_edge_split/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_reference_gain_both_edge_factor_contrast/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_reference_gain_both_edge_slice_support/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_reference_gain_both_pre_neighbor_scan/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_reference_gain_both_edge_interference_cosine_quadrants/summary.json`
+  - 当前更关键的新事实是：
+    - 显式拆开后，
+      crossed edge
+      `3` 条的均值已变成：
+      - `v66 - v64 = +0.004184 dB`
+      - `v66 - v65 = -0.015859 dB`
+      说明它们已贴到：
+      - `v64`
+        近零
+      - `v65`
+        刚翻负
+    - 但
+      `train_000951`
+      仍是：
+      - `v66 - v64 = +0.027298 dB`
+      - `v66 - v65 = +0.101198 dB`
+      说明它还明显停在：
+      - pre margin
+        这一侧
+    - 用：
+      - `target = reference_gain_both_crossed`
+      - `baseline = reference_gain_both_pre`
+      - `contrast = v65_sink`
+      做 factor contrast，
+      当前标准化 residual
+      排名前三已固定成：
+      - `reference = +2.3843 z`
+      - `gain = +2.2473 z`
+      - `cosine = +1.6143 z`
+      但方向上必须记成：
+      - crossed
+        相对
+        `000951`
+        是：
+        - reference 更长
+        - cosine 更高
+        - gain 反而回落
+      所以：
+      - `000951`
+        不是差
+        更多 gain
+      - 它只是踩中了
+        上游
+        `reference + gain`
+        shelf，
+        还没把
+        `reference / cosine`
+        再推进到
+        crossed 那侧
+    - 更硬的个例事实是：
+      - `train_000951`
+        与
+        `train_001705`
+        共享完全相同的：
+        - `target_transient_presence_minus_mid_db_mean = -6.375519`
+        - `target_transient_presence_share_mean = 0.155784`
+      - 但一个仍是 pre，
+        一个已成 hinge
+      说明：
+      - 当前不应再把
+        target-side transient
+        写成
+        `000951`
+        的主 blocker
+    - `000951`
+      的 local neighbor scan
+      最近 `12` 条
+      已混成：
+      - `6` 条 pre
+      - `2` 条 hinge
+      - `2` 条 `v64_only`
+      - `1` 条 `both_crossed_v64_deeper`
+      - `1` 条 sink
+      说明：
+      - `reference + gain both`
+        不是单线 near-miss edge
+      - 它更准确的定位应固定为：
+        - crossed-support mixed shelf
+  - 当前解释应进一步更新为：
+    - `reference + gain`
+      不再写成：
+      - hard gate
+    - 应固定写成：
+      - boundary / crossed-support shelf
+    - `train_000951`
+      留在 shelf 内
+      的主语
+      不再写成：
+      - gain 不够
+    - 应改写成：
+      - compare 仍明显 pre
+      - reference / cosine
+        仍偏 shelf 低侧
+      - interference package
+        还没稳定带起
+  - 当前默认下一步
+    应继续收紧为：
+    - 不再把
+      `reference_gain_both_crossed`
+      当成单一机制
+      继续做均值解释
+    - 若还继续推进，
+      默认改成
+      case-level 双分支：
+      - `000951 -> 001705`
+        这条
+        shared-target
+        子路径
+      - `000951 -> 001610 / 000664`
+        这条
+        low-target-share
+        子路径
+    - 只继续解释：
+      - 为什么一条会先落成 hinge
+      - 另一条会落成
+        `v64_only`
+    - 仍不启动新训练
+
+270. 已把 crossed edge 正式拆成 shared-target soft hinge 与 low-share `v64_only` 两条正交子支路；当前不应再把 `001705 / 001610 / 000664` 当成“同一路径只差深浅”的连续深度：
+  - 新日报：
+    - `reports/daily/2026-03-24_candidate_v7_v65_sink_reference_gain_edge_case_branch_split.md`
+  - 新资产：
+    - `data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_failboth_reference_gain_edge_shared_target_hinge_train.txt`
+    - `data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_failboth_reference_gain_edge_low_share_hinge_train.txt`
+    - `data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_failboth_reference_gain_edge_low_share_v64only_train.txt`
+  - 新 summary：
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_reference_gain_edge_case_split/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_reference_gain_edge_shared_target_factor_contrast/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_reference_gain_edge_shared_target_slice_support/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_reference_gain_edge_shared_target_share_cosine_quadrants/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_reference_gain_edge_v64only_factor_contrast/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_reference_gain_edge_v64only_slice_support/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_reference_gain_edge_v64only_offset_duration_quadrants/summary.json`
+  - 当前更关键的新事实是：
+    - `train_001705`
+      已固定成：
+      - shared-target
+        `v65-first`
+        soft hinge
+      - `v66 - v64 = +0.020573 dB`
+      - `v66 - v65 = -0.000834 dB`
+    - `train_001610`
+      已固定成：
+      - low-share hinge
+      - `v66 - v64 = +0.001154 dB`
+      - `v66 - v65 = -0.051220 dB`
+    - `train_000664`
+      则不是更深 hinge，
+      而是：
+      - `v64_only`
+      - `v66 - v64 = -0.009173 dB`
+      - `v66 - v65 = +0.004478 dB`
+    - `001705`
+      相对
+      `000951`
+      的主语
+      不是 target
+      继续抬升，
+      而是：
+      - shared target
+        不塌
+      - interference package
+        明显更强
+      - cosine 更高
+      - offset 更早
+    - `000664`
+      相对
+      `001610`
+      的主语
+      不是 hinge 更深，
+      而是：
+      - 更晚 offset
+      - 更长 target duration
+      - 更低 share
+      共同把 margin
+      旋成
+      `v64_only`
+  - 当前解释应更新为：
+    - crossed edge
+      已不是
+      单线深度轴
+    - 应固定改写成：
+      - `000951 -> 001705`
+        shared-target soft hinge
+      - `000951 -> 001610 -> 000664`
+        low-share branch rotation
+  - 当前默认下一步：
+    - 不再继续围绕
+      crossed edge
+      做均值解释
+    - 默认只继续拆：
+      - `001705 -> 001543`
+      - `000664 -> 001543`
+      两条终分歧
+    - 仍不启动新训练
+
+271. 已把 `001705 -> 001543` 与 `000664 -> 001543` 这两条终分歧压到 singleton sink；当前应明确判成：sink 不是把 hinge / `v64_only` 的既有 package 继续放大，而是在两条路径上共同执行“降 gain + 降 cosine + 缩短 reference”的反向收紧：
+  - 新日报：
+    - `reports/daily/2026-03-24_candidate_v7_v65_sink_final_case_divergence_split.md`
+  - 新资产：
+    - `data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_failboth_reference_gain_edge_v65_sink_singleton_train.txt`
+  - 新 summary：
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_final_case_divergence_split/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_sharedtarget_to_sink_factor_contrast/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_v64only_to_sink_factor_contrast/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_sharedtarget_to_sink_slice_support/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_v64only_to_sink_slice_support/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_sharedtarget_to_sink_gain_reference_quadrants/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_sharedtarget_to_sink_gain_cosine_quadrants/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_sharedtarget_to_sink_reference_cosine_quadrants/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_v64only_to_sink_cosine_reference_quadrants/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_v64only_to_sink_gain_reference_quadrants/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_v64only_to_sink_gain_cosine_quadrants/summary.json`
+  - 当前更关键的新事实是：
+    - `001705 -> 001543`
+      时：
+      - `v66 - v64`
+        只再下降
+        `0.029401 dB`
+      - `v66 - v65`
+        却再下降
+        `0.113151 dB`
+      说明：
+      - sink
+        相对
+        shared-target hinge
+        更像：
+        - 继续压
+          `v65`
+        - 并同步收紧：
+          - gain
+          - reference
+          - cosine
+    - `000664 -> 001543`
+      时：
+      - `v66 - v64`
+        只回弹
+        `+0.000345 dB`
+      - `v66 - v65`
+        却再下降
+        `0.118462 dB`
+      说明：
+      - sink
+        相对
+        `v64_only`
+        几乎不是
+        继续压
+        `v64`
+      - 而是把 margin
+        主动重新压回：
+        - `v65`
+          这一侧
+    - 两条终分歧
+      当前共同最紧的
+      local support pair
+      都已落成：
+      - `gain + cosine`
+      不是：
+      - `reference + gain`
+    - 但
+      `gain + cosine both`
+      里仍残留：
+      - `train_000697`
+      - `train_000799`
+      这类 pre
+      说明：
+      - 它仍只是
+        sink local support pair
+      - 不是 hard gate
+  - 当前解释应更新为：
+    - sink route
+      不再写成：
+      - hinge / `v64_only`
+        package 更强
+    - 应固定改写成：
+      - 降 gain
+      - 降 cosine
+      - 缩短 reference
+      - 并在
+        `000664 -> 001543`
+        这条上
+        主要继续压
+        `v65`
+  - 当前默认下一步：
+    - 不再回到
+      branch-level
+      均值解释
+    - 默认只继续拆
+      sink pocket
+      内的 false positives：
+      - `001543 -> 000697`
+      - `001543 -> 000799`
+    - 看为什么这些 row
+      已踩进
+      `gain + cosine`
+      sink-side，
+      却仍停在 pre
     - 仍不启动新训练
 
 ## 9. 文档入口

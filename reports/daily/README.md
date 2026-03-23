@@ -7,9 +7,14 @@
   - 通过本目录 `README.md` 和 `index_YYYY-MM.md` 做月度索引与跳读入口。
 
 - 月度索引：
-  - `index_2026-03.md` | `137` 份日报 | 日期 `2026-03-16` 至 `2026-03-24`
+  - `index_2026-03.md` | `142` 份日报 | 日期 `2026-03-16` 至 `2026-03-24`
 
 - 最近新增日报：
+  - `2026-03-24_candidate_v7_v65_sink_final_case_divergence_split.md` | `423` 行
+  - `2026-03-24_candidate_v7_v65_sink_reference_gain_edge_case_branch_split.md` | `446` 行
+  - `2026-03-24_candidate_v7_v65_sink_reference_gain_edge_residual_split.md` | `325` 行
+  - `2026-03-24_candidate_v7_v65_sink_duration_cosine_boundary_routing_split.md` | `209` 行
+  - `2026-03-24_candidate_v7_v65_sink_duration_cosine_shell_split.md` | `188` 行
   - `2026-03-24_candidate_v7_v65_sink_duration_vs_cosine_split.md` | `210` 行
   - `2026-03-24_candidate_v7_v65_sink_partial_mean_duration_cosine_split.md` | `253` 行
   - `2026-03-23_candidate_v7_v65_sink_weak_gain_hinge_split.md` | `248` 行
