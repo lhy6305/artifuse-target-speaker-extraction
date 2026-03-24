@@ -4606,6 +4606,27 @@
         是谁
       这个旧问题
     - 仍不启动新训练
+99. 已把“下一步先做人耳决策关卡，而不是继续顺着 `candidate_v7` 细分链下钻”的执行物补齐；当前分支图的默认下一步应改成先听这轮小规模 near-real 包，再决定 `v64 / v32` 是否还值得继续：
+  - 入口：
+    - `reports/daily/2026-03-24_decision_gate_listening_pack_export.md`
+    - `docs/06_decision_gate_listening_pack.md`
+  - 已导出的两组盲包：
+    - `reports/eval/decision_gate_listening_pack_near_real_v1_stage2_vs_v64_blind`
+    - `reports/eval/decision_gate_listening_pack_near_real_v1_stage2_vs_v32_blind`
+  - 固定样本口径：
+    - `data/references/real_eval_manifest_near_real_v1.jsonl`
+    - 共 `10` 条：
+      - `near_real_0001` 到 `near_real_0010`
+  - 当前更关键的新约束是：
+    - 默认先听
+      `stage2 vs v64`
+    - 再听
+      `stage2 vs v32`
+    - 在这轮听审完成前，
+      不继续自动开新训练，
+      也不继续默认沿
+      `candidate_v7`
+      旧 rows 重路由往下拆
 
 ## 6. 忘线检查表
 
@@ -4663,8 +4684,15 @@
      - `reports/daily/2026-03-21_candidate_v5_guardv67_negative_materialization.md`
      - `reports/daily/2026-03-21_candidate_v4_subgroup_diagnosis.md`
    - 当前主停点日报已更新为：
-     - `reports/daily/2026-03-24_candidate_v7_v65_sink_lowshare_rotation_terminal_route_priority.md`
+     - `reports/daily/2026-03-24_decision_gate_listening_pack_export.md`
+   - 当前决策关卡听审包总说明：
+     - `docs/06_decision_gate_listening_pack.md`
+   - 当前两组待听盲包：
+     - `reports/eval/decision_gate_listening_pack_near_real_v1_stage2_vs_v64_blind`
+     - `reports/eval/decision_gate_listening_pack_near_real_v1_stage2_vs_v32_blind`
    - 上一条主停点日报：
+     - `reports/daily/2026-03-24_candidate_v7_v65_sink_lowshare_rotation_terminal_route_priority.md`
+   - 再上一条主停点日报：
      - `reports/daily/2026-03-24_candidate_v7_v65_sink_lowshare_rotation_local_fanout.md`
    - 再上一条主停点日报：
      - `reports/daily/2026-03-24_candidate_v7_v65_sink_hingeentry_lowshare_rotation_relink.md`

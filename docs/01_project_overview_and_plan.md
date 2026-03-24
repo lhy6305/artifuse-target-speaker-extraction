@@ -5942,6 +5942,34 @@
       - `v66_minus_v65 = -0.0019073486328125`
       所以它只能继续记成：
       - post-entry `v64`-deeper side exit
+287. 已按“先做决策关卡、不要继续顺着细分分析自动往下滚”的口径，导出一版 near-real 小规模听审包；本轮价值在于把后续判断重新拉回人耳裁决，而不是继续扩 `candidate_v7` 旧 rows 重路由：
+  - 新日报：
+    - `reports/daily/2026-03-24_decision_gate_listening_pack_export.md`
+  - 新总说明：
+    - `docs/06_decision_gate_listening_pack.md`
+  - 两组盲包：
+    - `reports/eval/decision_gate_listening_pack_near_real_v1_stage2_vs_v32_blind`
+    - `reports/eval/decision_gate_listening_pack_near_real_v1_stage2_vs_v64_blind`
+  - 使用固定样本：
+    - `data/references/real_eval_manifest_near_real_v1.jsonl`
+    - 共 `10` 条：
+      - `near_real_0001` 到 `near_real_0010`
+  - 当前导包比较对象：
+    - `legacy stage2`
+    - `v32`
+    - `v64`
+  - 当前更关键的新约束是：
+    - 下一步默认先等这轮听审，
+      不继续新增训练，
+      也不继续默认沿
+      `candidate_v7`
+      细分链路下钻
+  - 当前建议的听审顺序：
+    - 先听
+      `stage2 vs v64`
+    - 再听
+      `stage2 vs v32`
+  - 本轮仍未启动新训练
 
 ## 9. 文档入口
 
@@ -5951,6 +5979,7 @@
 - 结构说明：`docs/03_project_structure.md`
 - 人耳复核指南：`docs/04_human_listening_review_guide.md`
 - 任务分支图：`docs/05_task_branch_map.md`
+- 决策关卡听审包说明：`docs/06_decision_gate_listening_pack.md`
 - 初始设计：`initial_design.md`
 - 设计评审占位：`initial_design_judg.md`
 - 本轮模型条件化升级记录：`reports/daily/2026-03-16_ref_conditioning_upgrade.md`
@@ -6050,5 +6079,7 @@
 - 本轮 `candidate_v7` pure `v67` takeover train-side neighbor diagnosis：`reports/daily/2026-03-23_candidate_v7_pure_v67_neighbor_diagnosis.md`
 - 本轮 `candidate_v7` neighbor-ring split：`reports/daily/2026-03-23_candidate_v7_neighbor_ring_split.md`
 - 本轮 `candidate_v7` neighbor-ring buffer collapse diagnosis：`reports/daily/2026-03-23_candidate_v7_neighbor_buffer_collapse_diagnosis.md`
+- 本轮决策关卡听审包导出：`reports/daily/2026-03-24_decision_gate_listening_pack_export.md`
+- 本轮决策关卡听审包总说明：`docs/06_decision_gate_listening_pack.md`
 - 本轮仓库与 `.gitignore` 审计：`reports/daily/2026-03-18_repo_gitignore_audit.md`
 - 本轮全仓库评估总结：`reports/daily/2026-03-17_repo_evaluation_summary.md`

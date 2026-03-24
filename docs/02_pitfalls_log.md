@@ -6800,3 +6800,75 @@
      = pre singleton side exit
    - `001745`
      = post-entry `v64`-deeper side exit
+
+### 194. 当主线冻结、研究线又连续多轮只在做旧 rows 重路由时，不要继续默认往更细的 proxy / route 解释下钻；应先回到固定 near-real 小包做人耳决策关卡
+
+现象：
+
+- 本项目在
+  2026-03-20
+  状态重置后，
+  已经正式切到：
+  - 默认主线冻结
+  - 研究排雷停扩
+- 但
+  2026-03-21
+  到
+  2026-03-24
+  之间，
+  仍连续追加了大量
+  `candidate_v7`
+  旧 rows 重路由诊断
+- 这些分析虽然补细了：
+  - route identity
+  - local fanout
+  - terminal priority
+- 但没有新增：
+  - 新听审结论
+  - 新 keep 候选
+  - 新训练放行条件
+
+影响：
+
+- 如果在这种状态下
+  还继续默认往下拆：
+  - neighbor
+  - positioning
+  - transition axes
+  - local support
+  项目会再次把
+  “解释失败样本”
+  误当成
+  “继续推进主线”的等价工作
+- 进一步会让时间和算力
+  消耗在
+  越来越细的代理空间自洽上，
+  而不是回到
+  更高层的用户裁决：
+  - 这条研究线
+    还值不值得继续
+
+处理：
+
+- 已落盘：
+  - `reports/daily/2026-03-24_decision_gate_listening_pack_export.md`
+  - `docs/06_decision_gate_listening_pack.md`
+  - `reports/eval/decision_gate_listening_pack_near_real_v1_stage2_vs_v32_blind`
+  - `reports/eval/decision_gate_listening_pack_near_real_v1_stage2_vs_v64_blind`
+
+后续要求：
+
+1. 当项目已经进入：
+   - 主线冻结
+   - 研究排雷
+   且连续数轮都未新增训练或新听审时，
+   默认不要再自动往更细 route 解释继续下钻
+2. 这时应先回到
+   固定的 near-real 小包，
+   用少量高价值样本做
+   决策关卡听审
+3. 若这轮听审
+   仍不能给某条研究线
+   带来明确可听价值，
+   就应优先考虑停线或降级，
+   而不是继续补更细 proxy 解释
