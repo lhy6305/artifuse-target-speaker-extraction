@@ -1,0 +1,595 @@
+{
+  "input_json": "reports/eval/active_targetfull_clean_failboth_v65_sink_pre000664_neighbor_scan/summary.json",
+  "source_seed_sample_ids": [
+    "train_000664"
+  ],
+  "focus_alias": "v66",
+  "reference_alias": "v64",
+  "secondary_alias": "v65",
+  "num_scanned_rows": 20,
+  "same_signature_definition": "v66<v64, v66<v65, and v66-v64 is deeper than v66-v65",
+  "bucket_counts": {
+    "pre_entry_or_pure": 16,
+    "hinge_secondary_crossed_first": 2,
+    "post_entry_both_crossed_reference_deeper": 1,
+    "post_entry_both_crossed_secondary_deeper_or_equal": 1,
+    "reference_only_crossed_unexpected": 0
+  },
+  "nearest_row_by_bucket": {
+    "hinge_secondary_crossed_first": {
+      "sample_id": "train_001610",
+      "metadata_distance_z": 1.7331684512698804,
+      "bucket": "hinge_secondary_crossed_first",
+      "focus_minus_reference_db": 0.0011539459228515625,
+      "focus_minus_secondary_db": -0.051219940185546875,
+      "reference_minus_secondary_db": 0.05237388610839844,
+      "top_alias": "v67",
+      "ranking_aliases": [
+        "v67",
+        "v65",
+        "v66",
+        "v64",
+        "v24",
+        "v20"
+      ],
+      "failed_constraints": [
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ]
+    },
+    "post_entry_both_crossed_reference_deeper": {
+      "sample_id": "train_001745",
+      "metadata_distance_z": 3.388150938657853,
+      "bucket": "post_entry_both_crossed_reference_deeper",
+      "focus_minus_reference_db": -0.027469635009765625,
+      "focus_minus_secondary_db": -0.0019073486328125,
+      "reference_minus_secondary_db": -0.025562286376953125,
+      "top_alias": "v67",
+      "ranking_aliases": [
+        "v67",
+        "v64",
+        "v65",
+        "v66",
+        "v24",
+        "v20"
+      ],
+      "failed_constraints": [
+        "v66>v64",
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ]
+    },
+    "post_entry_both_crossed_secondary_deeper_or_equal": {
+      "sample_id": "train_001543",
+      "metadata_distance_z": 3.448212722469956,
+      "bucket": "post_entry_both_crossed_secondary_deeper_or_equal",
+      "focus_minus_reference_db": -0.008828163146972656,
+      "focus_minus_secondary_db": -0.1139841079711914,
+      "reference_minus_secondary_db": 0.10515594482421875,
+      "top_alias": "v67",
+      "ranking_aliases": [
+        "v67",
+        "v65",
+        "v64",
+        "v66",
+        "v24",
+        "v20"
+      ],
+      "failed_constraints": [
+        "v66>v64",
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ]
+    },
+    "pre_entry_or_pure": {
+      "sample_id": "train_000759",
+      "metadata_distance_z": 2.055266580227977,
+      "bucket": "pre_entry_or_pure",
+      "focus_minus_reference_db": 0.06226539611816406,
+      "focus_minus_secondary_db": 0.18639183044433594,
+      "reference_minus_secondary_db": -0.12412643432617188,
+      "top_alias": "v67",
+      "ranking_aliases": [
+        "v67",
+        "v66",
+        "v64",
+        "v65",
+        "v24",
+        "v20"
+      ],
+      "failed_constraints": [
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ]
+    }
+  },
+  "same_signature_rows": [
+    {
+      "sample_id": "train_001745",
+      "metadata_distance_z": 3.388150938657853,
+      "bucket": "post_entry_both_crossed_reference_deeper",
+      "focus_minus_reference_db": -0.027469635009765625,
+      "focus_minus_secondary_db": -0.0019073486328125,
+      "reference_minus_secondary_db": -0.025562286376953125,
+      "top_alias": "v67",
+      "ranking_aliases": [
+        "v67",
+        "v64",
+        "v65",
+        "v66",
+        "v24",
+        "v20"
+      ],
+      "failed_constraints": [
+        "v66>v64",
+        "v66>v65",
+        "v66>v67",
+        "v64>v67",
+        "v20>v24"
+      ]
+    }
+  ],
+  "bucket_rows": {
+    "hinge_secondary_crossed_first": [
+      {
+        "sample_id": "train_001610",
+        "metadata_distance_z": 1.7331684512698804,
+        "bucket": "hinge_secondary_crossed_first",
+        "focus_minus_reference_db": 0.0011539459228515625,
+        "focus_minus_secondary_db": -0.051219940185546875,
+        "reference_minus_secondary_db": 0.05237388610839844,
+        "top_alias": "v67",
+        "ranking_aliases": [
+          "v67",
+          "v65",
+          "v66",
+          "v64",
+          "v24",
+          "v20"
+        ],
+        "failed_constraints": [
+          "v66>v65",
+          "v66>v67",
+          "v64>v67",
+          "v20>v24"
+        ]
+      },
+      {
+        "sample_id": "train_000266",
+        "metadata_distance_z": 3.6788598691094747,
+        "bucket": "hinge_secondary_crossed_first",
+        "focus_minus_reference_db": 0.015989303588867188,
+        "focus_minus_secondary_db": -0.03984546661376953,
+        "reference_minus_secondary_db": 0.05583477020263672,
+        "top_alias": "v67",
+        "ranking_aliases": [
+          "v67",
+          "v65",
+          "v66",
+          "v24",
+          "v64",
+          "v20"
+        ],
+        "failed_constraints": [
+          "v66>v65",
+          "v66>v67",
+          "v64>v67",
+          "v20>v24"
+        ]
+      }
+    ],
+    "post_entry_both_crossed_reference_deeper": [
+      {
+        "sample_id": "train_001745",
+        "metadata_distance_z": 3.388150938657853,
+        "bucket": "post_entry_both_crossed_reference_deeper",
+        "focus_minus_reference_db": -0.027469635009765625,
+        "focus_minus_secondary_db": -0.0019073486328125,
+        "reference_minus_secondary_db": -0.025562286376953125,
+        "top_alias": "v67",
+        "ranking_aliases": [
+          "v67",
+          "v64",
+          "v65",
+          "v66",
+          "v24",
+          "v20"
+        ],
+        "failed_constraints": [
+          "v66>v64",
+          "v66>v65",
+          "v66>v67",
+          "v64>v67",
+          "v20>v24"
+        ]
+      }
+    ],
+    "post_entry_both_crossed_secondary_deeper_or_equal": [
+      {
+        "sample_id": "train_001543",
+        "metadata_distance_z": 3.448212722469956,
+        "bucket": "post_entry_both_crossed_secondary_deeper_or_equal",
+        "focus_minus_reference_db": -0.008828163146972656,
+        "focus_minus_secondary_db": -0.1139841079711914,
+        "reference_minus_secondary_db": 0.10515594482421875,
+        "top_alias": "v67",
+        "ranking_aliases": [
+          "v67",
+          "v65",
+          "v64",
+          "v66",
+          "v24",
+          "v20"
+        ],
+        "failed_constraints": [
+          "v66>v64",
+          "v66>v65",
+          "v66>v67",
+          "v64>v67",
+          "v20>v24"
+        ]
+      }
+    ],
+    "pre_entry_or_pure": [
+      {
+        "sample_id": "train_000759",
+        "metadata_distance_z": 2.055266580227977,
+        "bucket": "pre_entry_or_pure",
+        "focus_minus_reference_db": 0.06226539611816406,
+        "focus_minus_secondary_db": 0.18639183044433594,
+        "reference_minus_secondary_db": -0.12412643432617188,
+        "top_alias": "v67",
+        "ranking_aliases": [
+          "v67",
+          "v66",
+          "v64",
+          "v65",
+          "v24",
+          "v20"
+        ],
+        "failed_constraints": [
+          "v66>v67",
+          "v64>v67",
+          "v20>v24"
+        ]
+      },
+      {
+        "sample_id": "train_001639",
+        "metadata_distance_z": 2.5600567263216853,
+        "bucket": "pre_entry_or_pure",
+        "focus_minus_reference_db": 0.06099891662597656,
+        "focus_minus_secondary_db": 0.3706989288330078,
+        "reference_minus_secondary_db": -0.30970001220703125,
+        "top_alias": "v67",
+        "ranking_aliases": [
+          "v67",
+          "v66",
+          "v64",
+          "v24",
+          "v20",
+          "v65"
+        ],
+        "failed_constraints": [
+          "v66>v67",
+          "v64>v67",
+          "v20>v24"
+        ]
+      },
+      {
+        "sample_id": "train_000117",
+        "metadata_distance_z": 2.874619151269278,
+        "bucket": "pre_entry_or_pure",
+        "focus_minus_reference_db": 0.023734092712402344,
+        "focus_minus_secondary_db": 0.02172565460205078,
+        "reference_minus_secondary_db": 0.0020084381103515625,
+        "top_alias": "v67",
+        "ranking_aliases": [
+          "v67",
+          "v66",
+          "v65",
+          "v64",
+          "v24",
+          "v20"
+        ],
+        "failed_constraints": [
+          "v66>v67",
+          "v64>v67",
+          "v20>v24"
+        ]
+      },
+      {
+        "sample_id": "train_001725",
+        "metadata_distance_z": 2.996327672986455,
+        "bucket": "pre_entry_or_pure",
+        "focus_minus_reference_db": 0.013107776641845703,
+        "focus_minus_secondary_db": 0.016691923141479492,
+        "reference_minus_secondary_db": -0.003584146499633789,
+        "top_alias": "v67",
+        "ranking_aliases": [
+          "v67",
+          "v66",
+          "v24",
+          "v64",
+          "v65",
+          "v20"
+        ],
+        "failed_constraints": [
+          "v66>v67",
+          "v64>v67",
+          "v20>v24"
+        ]
+      },
+      {
+        "sample_id": "train_000799",
+        "metadata_distance_z": 3.0777659151205734,
+        "bucket": "pre_entry_or_pure",
+        "focus_minus_reference_db": 0.06561470031738281,
+        "focus_minus_secondary_db": 0.11725425720214844,
+        "reference_minus_secondary_db": -0.051639556884765625,
+        "top_alias": "v67",
+        "ranking_aliases": [
+          "v67",
+          "v66",
+          "v64",
+          "v65",
+          "v24",
+          "v20"
+        ],
+        "failed_constraints": [
+          "v66>v67",
+          "v64>v67",
+          "v20>v24"
+        ]
+      },
+      {
+        "sample_id": "train_000697",
+        "metadata_distance_z": 3.4334234361997367,
+        "bucket": "pre_entry_or_pure",
+        "focus_minus_reference_db": 0.02750396728515625,
+        "focus_minus_secondary_db": 0.09267616271972656,
+        "reference_minus_secondary_db": -0.06517219543457031,
+        "top_alias": "v67",
+        "ranking_aliases": [
+          "v67",
+          "v66",
+          "v64",
+          "v24",
+          "v65",
+          "v20"
+        ],
+        "failed_constraints": [
+          "v66>v67",
+          "v64>v67",
+          "v20>v24"
+        ]
+      },
+      {
+        "sample_id": "train_001006",
+        "metadata_distance_z": 3.4710463847604527,
+        "bucket": "pre_entry_or_pure",
+        "focus_minus_reference_db": 0.04480171203613281,
+        "focus_minus_secondary_db": 0.10914802551269531,
+        "reference_minus_secondary_db": -0.0643463134765625,
+        "top_alias": "v67",
+        "ranking_aliases": [
+          "v67",
+          "v66",
+          "v24",
+          "v64",
+          "v20",
+          "v65"
+        ],
+        "failed_constraints": [
+          "v66>v67",
+          "v64>v67",
+          "v20>v24"
+        ]
+      },
+      {
+        "sample_id": "train_001495",
+        "metadata_distance_z": 3.511593077128591,
+        "bucket": "pre_entry_or_pure",
+        "focus_minus_reference_db": 0.07036876678466797,
+        "focus_minus_secondary_db": 0.3222036361694336,
+        "reference_minus_secondary_db": -0.2518348693847656,
+        "top_alias": "v67",
+        "ranking_aliases": [
+          "v67",
+          "v66",
+          "v24",
+          "v64",
+          "v65",
+          "v20"
+        ],
+        "failed_constraints": [
+          "v66>v67",
+          "v64>v67",
+          "v20>v24"
+        ]
+      },
+      {
+        "sample_id": "train_000216",
+        "metadata_distance_z": 3.623796361239816,
+        "bucket": "pre_entry_or_pure",
+        "focus_minus_reference_db": 0.09464645385742188,
+        "focus_minus_secondary_db": 0.04032135009765625,
+        "reference_minus_secondary_db": 0.054325103759765625,
+        "top_alias": "v67",
+        "ranking_aliases": [
+          "v67",
+          "v66",
+          "v24",
+          "v65",
+          "v64",
+          "v20"
+        ],
+        "failed_constraints": [
+          "v66>v67",
+          "v64>v67",
+          "v20>v24"
+        ]
+      },
+      {
+        "sample_id": "train_001494",
+        "metadata_distance_z": 3.7543630185849475,
+        "bucket": "pre_entry_or_pure",
+        "focus_minus_reference_db": 0.1462545394897461,
+        "focus_minus_secondary_db": 0.1409893035888672,
+        "reference_minus_secondary_db": 0.005265235900878906,
+        "top_alias": "v67",
+        "ranking_aliases": [
+          "v67",
+          "v66",
+          "v65",
+          "v64",
+          "v24",
+          "v20"
+        ],
+        "failed_constraints": [
+          "v66>v67",
+          "v64>v67",
+          "v20>v24"
+        ]
+      },
+      {
+        "sample_id": "train_000951",
+        "metadata_distance_z": 3.811246867683978,
+        "bucket": "pre_entry_or_pure",
+        "focus_minus_reference_db": 0.0272979736328125,
+        "focus_minus_secondary_db": 0.10119819641113281,
+        "reference_minus_secondary_db": -0.07390022277832031,
+        "top_alias": "v67",
+        "ranking_aliases": [
+          "v67",
+          "v66",
+          "v64",
+          "v65",
+          "v24",
+          "v20"
+        ],
+        "failed_constraints": [
+          "v66>v67",
+          "v64>v67",
+          "v20>v24"
+        ]
+      },
+      {
+        "sample_id": "train_000578",
+        "metadata_distance_z": 3.8308642829548107,
+        "bucket": "pre_entry_or_pure",
+        "focus_minus_reference_db": 0.005391359329223633,
+        "focus_minus_secondary_db": 0.006041884422302246,
+        "reference_minus_secondary_db": -0.0006505250930786133,
+        "top_alias": "v67",
+        "ranking_aliases": [
+          "v67",
+          "v66",
+          "v64",
+          "v65",
+          "v24",
+          "v20"
+        ],
+        "failed_constraints": [
+          "v66>v67",
+          "v64>v67",
+          "v20>v24"
+        ]
+      },
+      {
+        "sample_id": "train_000634",
+        "metadata_distance_z": 3.8342537708018725,
+        "bucket": "pre_entry_or_pure",
+        "focus_minus_reference_db": 0.06331777572631836,
+        "focus_minus_secondary_db": 0.007712364196777344,
+        "reference_minus_secondary_db": 0.055605411529541016,
+        "top_alias": "v67",
+        "ranking_aliases": [
+          "v67",
+          "v66",
+          "v65",
+          "v24",
+          "v20",
+          "v64"
+        ],
+        "failed_constraints": [
+          "v66>v67",
+          "v64>v67",
+          "v20>v24"
+        ]
+      },
+      {
+        "sample_id": "train_000788",
+        "metadata_distance_z": 4.010593754579037,
+        "bucket": "pre_entry_or_pure",
+        "focus_minus_reference_db": 0.049414634704589844,
+        "focus_minus_secondary_db": 0.09274005889892578,
+        "reference_minus_secondary_db": -0.04332542419433594,
+        "top_alias": "v67",
+        "ranking_aliases": [
+          "v67",
+          "v66",
+          "v64",
+          "v65",
+          "v24",
+          "v20"
+        ],
+        "failed_constraints": [
+          "v66>v67",
+          "v64>v67",
+          "v20>v24"
+        ]
+      },
+      {
+        "sample_id": "train_000681",
+        "metadata_distance_z": 4.0387788932220605,
+        "bucket": "pre_entry_or_pure",
+        "focus_minus_reference_db": 0.5382671356201172,
+        "focus_minus_secondary_db": 0.46567535400390625,
+        "reference_minus_secondary_db": 0.07259178161621094,
+        "top_alias": "v67",
+        "ranking_aliases": [
+          "v67",
+          "v24",
+          "v66",
+          "v65",
+          "v64",
+          "v20"
+        ],
+        "failed_constraints": [
+          "v66>v67",
+          "v64>v67",
+          "v20>v24"
+        ]
+      },
+      {
+        "sample_id": "train_000999",
+        "metadata_distance_z": 4.100447738135731,
+        "bucket": "pre_entry_or_pure",
+        "focus_minus_reference_db": 0.022006988525390625,
+        "focus_minus_secondary_db": 0.057868003845214844,
+        "reference_minus_secondary_db": -0.03586101531982422,
+        "top_alias": "v67",
+        "ranking_aliases": [
+          "v67",
+          "v66",
+          "v64",
+          "v24",
+          "v65",
+          "v20"
+        ],
+        "failed_constraints": [
+          "v66>v67",
+          "v64>v67",
+          "v20>v24"
+        ]
+      }
+    ]
+  }
+}

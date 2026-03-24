@@ -3804,6 +3804,809 @@
       线继续压 support
     - 仍不启动新训练
 
+87. 已把 `000681 / 000904 / 000219` 做成 companion validation；当前分支图默认必须改写成：`000799` 这条线已经拿到稳定 companion，但 `000697` 这条线目前仍只有单 core，`000904` 只是 extreme edge support，`000219` 只是 broad tail：
+  - 入口：
+    - `reports/daily/2026-03-24_candidate_v7_v65_sink_falsepositive_companion_validation.md`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_falsepositive_companion_split/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_falsepositive_companion_positioning/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000799_vs_000681_factor_contrast/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000681_vs_000799_factor_contrast/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_vs_000904_factor_contrast/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000904_vs_000697_factor_contrast/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000219_vs_000697_factor_contrast/summary.json`
+  - 当前更关键的新事实是：
+    - `000681`
+      已通过
+      companion validation
+      - 可以固定成：
+        - `000799`
+          stable companion
+      - 但 companion
+        口径固定写成：
+        - 更深 pre
+        - 更短 reference
+        的同 pocket 变体
+    - `000904`
+      虽然仍贴在
+      `000697`
+      route 上，
+      但 reverse contrast
+      已显示它会改写：
+      - target share
+      - gain
+      - interference share
+      这些主 residual
+      - 当前只能保留为：
+        - extreme edge support
+    - `000219`
+      最近 reference
+      已回到：
+      - `000664`
+        archetype
+      - 当前只能保留为：
+        - broad long-duration tail
+  - 当前判断：
+    - `001589 -> 000799`
+      默认写成：
+      - core = `000799`
+      - stable companion = `000681`
+    - `000664 -> 000697`
+      默认写成：
+      - core = `000697`
+      - extreme edge support = `000904`
+      - broad tail = `000219`
+    - 默认不再写成：
+      - `000697 + 000904`
+        对称双 core
+  - 当前默认下一步：
+    - 若继续推进，
+      默认继续：
+      - 沿 `000799 <-> 000681`
+        深挖
+      - 同时为 `000697`
+        继续找
+        比 `000904`
+        更 tight 的 companion
+    - 仍不启动新训练
+
+88. 已直接以 `000697` 本人做 tight-companion search；当前分支图默认必须改写成：这条 route 当前确实还没有 tighter companion，`000697` 仍是 singleton core，而它最近的 direct ring 会稳定拆成两条 side-branch，不应再继续围着 `000904` 打转：
+  - 入口：
+    - `reports/daily/2026-03-24_candidate_v7_v65_sink_pre000697_tight_companion_search.md`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_direct_neighbor_scan/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_direct_vs_000904_slice_support/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_direct_duration_gain_quadrants/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_direct_duration_targetshare_quadrants/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_direct_gain_intshare_quadrants/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_direct_candidate_positioning/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_direct_neighbor_family_split/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_vs_shortgain_neighbor_factor_contrast/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_vs_shortshare_neighbor_factor_contrast/summary.json`
+  - 当前更关键的新事实是：
+    - direct ring
+      里，
+      `000904`
+      不近，
+      `metadata_distance_z`
+      已高到：
+      - `6.938`
+      - 说明它只能继续写成：
+        - archetype-centered
+          extreme support
+      - 不能再写成：
+        - direct tight companion
+    - direct ring
+      里最像
+      `000697`
+      core 的
+      非-core 候选，
+      已固定拆成：
+      - `000207 / 000216`
+        shortgain neighbor
+      - `001079 / 001494`
+        shortshare / offset-cosine neighbor
+    - `000207 / 000216`
+      相对
+      `000697`
+      的主差
+      已固定成：
+      - 更短 duration
+      - 更短 reference
+      - interference package
+        不够弱
+    - `001079 / 001494`
+      相对
+      `000697`
+      的主差
+      已固定成：
+      - 更短 duration
+      - 更早 offset
+      - 更高 cosine
+  - 当前判断：
+    - `000697`
+      默认固定写成：
+      - singleton core
+      - 当前没有 tighter companion
+    - `000904`
+      默认只保留为：
+      - extreme support
+    - `000219`
+      默认只保留为：
+      - broad tail
+    - direct ring
+      默认补两条 side-branch：
+      - `000207 / 000216`
+      - `001079 / 001494`
+  - 当前默认下一步：
+    - 若继续推进，
+      默认直接转成：
+      - 解释
+        `000697`
+        为什么仍是
+        singleton core
+      - 以及
+        两条 side-branch
+        为什么都接不住 core
+    - 仍不启动新训练
+
+89. 已把 `000697` 这条线正式改写成 singleton-core mechanism；当前分支图默认必须改写成：这条 route 现在不是“谁更像 core”的问题，而是已确认三类 partial routes 分别只接住 core 的不同部分，没有任何一类能整块接住 long-duration + low-gain + weak-interference-package：
+  - 入口：
+    - `reports/daily/2026-03-24_candidate_v7_v65_sink_pre000697_singleton_core_mechanics.md`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_vs_shortgain_neighbor_slice_support/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_vs_shortgain_neighbor_duration_intmean_quadrants/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_vs_shortgain_neighbor_reference_intshare_quadrants/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_vs_shortshare_neighbor_slice_support/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_vs_shortshare_neighbor_duration_offset_quadrants/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000697_vs_shortshare_neighbor_duration_cosine_quadrants/summary.json`
+  - 当前更关键的新事实是：
+    - `000904`
+      只能接住：
+      - long duration
+      - weak interference package
+      - 接不住：
+        - low gain
+      - 所以继续只写成：
+        - extreme support
+    - `000207 / 000216`
+      只能接住：
+      - low gain
+      - 接不住：
+        - long duration
+        - weak interference package
+      - 所以固定写成：
+        - shortgain side-branch
+    - `001079 / 001494`
+      只能接住：
+      - offset
+        那一侧
+      - 接不住：
+        - long duration
+        - low cosine
+      - 所以固定写成：
+        - shortshare / offset-cosine side-branch
+  - 当前判断：
+    - `000697`
+      默认固定写成：
+      - long-duration
+      - low-gain
+      - weak-interference-package
+        conjunction
+      的 singleton core
+    - 默认不再问：
+      - 谁是 tighter companion
+    - 默认改问：
+      - 哪条旁支
+        接住了 core 的哪一部分
+        又缺了哪一部分
+  - 当前默认下一步：
+    - 若继续推进，
+      默认转成：
+      - 解释
+        `000799 / 000697`
+        这两条线
+        为什么一个已经出现
+        stable companion，
+        一个却长期维持
+        singleton core
+    - 仍不启动新训练
+
+90. 已把 `000799` stable-companion route 与 `000697` singleton-core route 的 cohesion asymmetry 正式固化；当前分支图默认必须改写成：两条线现在不再共用“同一种 sink residual”解释，而是分别挂回 cohesive micro-pocket 与 distributed conjunction 两种不同的 route 机制：
+  - 入口：
+    - `reports/daily/2026-03-24_candidate_v7_v65_sink_route_cohesion_asymmetry.md`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_route_cohesion_split/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_partialmean_core_direct_neighbor_scan/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_partialmean_core_direct_slice_support/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_partialmean_core_direct_targetshare_targetmean_quadrants/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_partialmean_core_direct_duration_targetmean_quadrants/summary.json`
+  - 当前更关键的新事实是：
+    - `000799 + 000681`
+      这条线
+      真正占住的是：
+      - `target share + target mean`
+        同时塌陷的
+        cohesive target-collapse
+        micro-pocket
+      - `001610 / 000207 / 000266`
+        最多只能保留为：
+        - loose shadow /
+          partial support
+        不能升格成：
+        - 对称 companion
+    - `000697`
+      这条线
+      则继续固定写成：
+      - long-duration
+      - low-gain
+      - weak-interference-package
+        distributed conjunction
+      - `000904`
+      - `000207 / 000216`
+      - `001079 / 001494`
+        只分别接住
+        其中一部分
+  - 当前判断：
+    - `000799`
+      默认固定写成：
+      - stable companion route
+      - cohesive micro-pocket
+    - `000697`
+      默认固定写成：
+      - singleton-core route
+      - distributed conjunction
+    - 这两条线
+      默认不再放回
+      同一个
+      sink-pocket mean
+      框架里解释
+  - 当前默认下一步：
+    - 若继续推进，
+      默认沿
+      `000799`
+      线
+      继续区分：
+      - stable core
+      与
+      - loose shadow
+    - `000697`
+      线
+      则继续解释：
+      - 为什么 partial routes
+        始终接不住 core
+    - 仍不启动新训练
+
+91. 已把 `000799` 线里的 `stable core` 与 `loose shadow` 正式拆开；当前分支图默认必须改写成：`001610 / 000207 / 000266` 这组三条 row 虽然会一起踩进 `target mean + short duration` 外圈，但它们共同缺失 `target share collapse`，而且内部来源 mixed，所以只能写成 loose shadow，不能升格成 third core：
+  - 入口：
+    - `reports/daily/2026-03-24_candidate_v7_v65_sink_partialmean_core_loose_shadow_decomposition.md`
+    - `data/synthetic/sample_ids_friend_speech_leak_proxy_search_candidate_v7_active_targetfull_clean_failboth_sink_partialmean_loose_shadow_train.txt`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_partialmean_core_shadow_split/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_partialmean_loose_shadow_positioning/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_partialmean_core_vs_loose_shadow_factor_contrast/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_partialmean_core_vs_loose_shadow_slice_support/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_partialmean_core_vs_loose_shadow_targetshare_targetmean_quadrants/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_partialmean_core_vs_loose_shadow_duration_targetmean_quadrants/summary.json`
+  - 当前更关键的新事实是：
+    - `partialmean_loose_shadow = 001610 / 000207 / 000266`
+      相对
+      `001589`
+      共享的是：
+      - lower target mean
+      - shorter duration
+      - shorter reference
+      但不共享：
+      - target share collapse
+    - `target share + target mean`
+      象限里，
+      shadow
+      只落在：
+      - `factor_b_only`
+      说明它只接住：
+      - target mean
+    - `duration + target mean`
+      象限里，
+      shadow
+      会落在：
+      - `both`
+      说明
+      `duration`
+      只是 shared support，
+      不是 pocket identity
+    - `001610 / 000207 / 000266`
+      各自更像：
+      - hinge-entry shadow
+      - shortgain-side shadow
+      - archetype-side floor hinge
+      而不是统一 shadow source
+  - 当前判断：
+    - `000799`
+      默认固定写成：
+      - stable core
+        = `000799 <-> 000681`
+      - loose shadow
+        = `001610 / 000207 / 000266`
+    - 但 `loose shadow`
+      只表示：
+      - `target mean + short duration`
+        外圈
+      - mixed-source partial support
+      不能再写成：
+      - third core
+      - 对称 companion family
+  - 当前默认下一步：
+    - 若继续推进，
+      默认沿
+      `000799`
+      线
+      继续解释：
+      - stable core
+        为什么能保持
+        pocket identity
+      - loose shadow
+        为什么始终只停在外圈
+    - `000697`
+      线
+      暂不回退到
+      companion search
+    - 仍不启动新训练
+
+92. 已把 `000799 <-> 000681` 这对 stable core 的内部角色正式拆开；当前分支图默认必须改写成：这两个 row 不是对称 twin，而是同一个 `target share + target mean` collapse core 里的 outer anchor 与 inner companion，shadow 则被卡在它们外面：
+  - 入口：
+    - `reports/daily/2026-03-24_candidate_v7_v65_sink_partialmean_core_role_split.md`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_partialmean_core_role_split/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000799_vs_loose_shadow_factor_contrast/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000681_vs_loose_shadow_factor_contrast/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000799_vs_loose_shadow_targetshare_targetmean_quadrants/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000681_vs_loose_shadow_targetshare_targetmean_quadrants/summary.json`
+  - 当前更关键的新事实是：
+    - `000799`
+      对 loose shadow
+      的最强 residual
+      已固定成：
+      - `target share`
+      而在
+      `share + mean`
+      象限里，
+      shadow
+      仍会落在：
+      - `factor_b_only`
+      说明它是
+      shell-facing
+      outer anchor
+    - `000681`
+      对 loose shadow
+      的最强 residual
+      则是：
+      - `target share`
+      - `target mean`
+      双强项
+      而在
+      `share + mean`
+      象限里，
+      shadow
+      直接退到：
+      - `neither`
+      说明它是
+      barrier 内侧
+      的 deeper companion
+    - 与更早的
+      `000799 vs 000681`
+      reverse contrast
+      合起来后，
+      core 内部分工
+      已固定成：
+      - outer anchor
+      - inner companion
+      而不是：
+      - 对称 twin
+  - 当前判断：
+    - `000799`
+      默认固定写成：
+      - outer anchor
+    - `000681`
+      默认固定写成：
+      - inner companion
+    - `001610 / 000207 / 000266`
+      默认继续只写成：
+      - mixed-source loose shadow
+      因为它们既过不掉：
+      - `000799`
+        的 share barrier
+      也够不到：
+      - `000681`
+        的 deeper mean depth
+  - 当前默认下一步：
+    - 若继续推进，
+      默认沿
+      `000799`
+      线
+      继续解释：
+      - outer anchor
+        为什么能稳住 barrier
+      - inner companion
+        为什么能把 core depth
+        压稳
+      - loose shadow
+        为什么始终只能贴外圈
+    - `000697`
+      线
+      仍不回退到
+      companion search
+    - 仍不启动新训练
+
+93. 已把 `000799` 线 stable core 与 outer-ring shadow 之间的 barrier-depth mechanics 正式写透；当前分支图默认必须改写成：`000799` 负责守住 share-collapse barrier，`000681` 负责把 barrier 内侧的 mean depth 再往里压深一层，shadow 则同时被卡在这两层外面：
+  - 入口：
+    - `reports/daily/2026-03-24_candidate_v7_v65_sink_partialmean_barrier_depth_mechanics.md`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000799_vs_loose_shadow_factor_contrast/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000681_vs_loose_shadow_factor_contrast/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000799_vs_loose_shadow_targetshare_targetmean_quadrants/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000681_vs_loose_shadow_targetshare_targetmean_quadrants/summary.json`
+  - 当前更关键的新事实是：
+    - 相对
+      `000799`
+      ，
+      shadow
+      已经能摸到：
+      - mean-side 外圈
+      但仍接不住：
+      - share collapse
+    - 相对
+      `000681`
+      ，
+      shadow
+      连：
+      - share
+      - deeper mean
+      都一起退掉
+    - 所以 stable core
+      默认必须固定成：
+      - `000799`
+        = outer barrier anchor
+      - `000681`
+        = inner depth companion
+  - 当前默认下一步：
+    - 若继续推进，
+      默认继续拆：
+      - outer ring
+        三条 shadow
+        各自来自
+        哪条本地 route
+    - 仍不启动新训练
+
+94. 已把 `001610 / 000207 / 000266` 这组三条 outer-ring shadow 的来源正式拆开；当前分支图默认必须改写成：loose shadow 只能保留为聚合统称，内部至少要再拆成 `001610` 的 hinge-entry shadow、`000207` 的 shortgain-side projection、`000266` 的 archetype-side floor hinge：
+  - 入口：
+    - `reports/daily/2026-03-24_candidate_v7_v65_sink_partialmean_outer_ring_shadow_source_split.md`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_partialmean_loose_shadow_source_split/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_partialmean_loose_shadow_source_positioning/summary.json`
+  - 当前更关键的新事实是：
+    - `001610`
+      最近的 reference
+      已固定成：
+      - `000799`
+      但主要偏离
+      是：
+      - late offset
+      - higher gain
+    - `000207`
+      也最近
+      `000799`
+      ，
+      但主要偏离
+      是：
+      - high interference share
+      - shorter reference
+      - lower gain
+    - `000266`
+      最近的 reference
+      则稳定回到：
+      - `001589`
+      所以不应再挂成
+      `000799`
+      线里的同类 shadow
+    - 三条 row
+      相对
+      `000681`
+      都同时暴露：
+      - share 不够塌
+      - mean 不够深
+      所以 outer ring
+      不是 stable core
+      的第三层
+  - 当前默认下一步：
+    - 若继续推进，
+      默认应只保留：
+      - loose shadow
+        作为聚合统称
+      - route level
+        讨论时
+        必须改用：
+        - hinge-entry shadow
+        - shortgain-side projection
+        - archetype-side floor hinge
+    - `000697`
+      线
+      仍不回退到
+      companion search
+    - 仍不启动新训练
+
+95. 已把同样都“最近 `000799`”的两条 outer side route 正式拉开；当前分支图默认必须改写成：`001610` 和 `000207 / 000216` 不是同一路 barrier-facing shadow 的深浅差，而是两条相反方向的 side-route，前者继续挂回 hinge-entry / low-share rotation，后者继续挂回 shortgain 支线：
+  - 入口：
+    - `reports/daily/2026-03-24_candidate_v7_v65_sink_outer_anchor_side_route_split.md`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_outer_anchor_side_route_split/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000799_outer_anchor_neighbor_scan/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_outer_hinge_entry_vs_shortgain_factor_contrast/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_outer_shortgain_vs_hinge_entry_factor_contrast/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_outer_hinge_entry_offset_gain_quadrants/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_outer_shortgain_gain_intshare_quadrants/summary.json`
+  - 当前更关键的新事实是：
+    - `001610`
+      相对
+      `000207 / 000216`
+      的前三位专属残差
+      已固定成：
+      - 更高 gain
+      - 更晚 offset
+      - 更长 reference
+      所以它应继续记成：
+      - hinge-entry shadow
+    - `000207 / 000216`
+      相对
+      `001610`
+      的前三位专属残差
+      已固定成：
+      - 更低 gain
+      - 更早 overlap
+      - 更短 reference
+      而且还会带着：
+      - 更高 interference share
+      所以它们应继续记成：
+      - shortgain side-route
+    - `offset + gain`
+      象限里，
+      `001610`
+      在：
+      - `both`
+      而
+      `000207 / 000216`
+      在：
+      - `neither`
+    - `gain + intshare`
+      象限里，
+      `000207 / 000216`
+      anchor
+      在：
+      - `both`
+      而
+      `001610`
+      在：
+      - `neither`
+    - 其中
+      `000207`
+      当前是
+      tight projection，
+      `000216`
+      只算 broad support
+  - 当前默认下一步：
+    - 若继续推进，
+      默认继续把
+      `001610`
+      线
+      接回：
+      - `000664`
+        那条 low-share rotation
+      或把
+      `000207 / 000216`
+      线
+      继续压成：
+      - shortgain projection
+        与 broad support
+        的 role split
+    - 不再把
+      `001610`
+      与
+      `000207`
+      互相借名
+    - `000697`
+      线
+      仍不回退到
+      companion search
+    - 仍不启动新训练
+96. 已把 `001610` 这条 outer-anchor-facing hinge-entry shadow 正式接回 `000664` 的 low-share rotation；当前分支图默认必须改写成：`001610` 不再是只相对 `000799` 成立的单点 shadow，而是已经有明确 continuation 的 side-route，`000664` 也不再允许借名到 shortgain 或 shared-target soft hinge：
+  - 入口：
+    - `reports/daily/2026-03-24_candidate_v7_v65_sink_hingeentry_lowshare_rotation_relink.md`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre001610_neighbor_scan/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_hingeentry_rotation_split/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000664_side_route_positioning/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_lowshare_v64only_vs_shortgain_factor_contrast/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_lowshare_v64only_offset_targetdur_quadrants/summary.json`
+  - 当前更关键的新事实是：
+    - 直接以
+      `001610`
+      做 seed
+      时，
+      第一近邻已经稳定是：
+      - `000664`
+      而不是：
+      - `000207`
+      所以
+      `001610`
+      这条线
+      不能继续悬空
+    - `000664`
+      做 route positioning
+      时，
+      最近 group
+      稳定是：
+      - `outer_hinge_entry_shadow`
+      不再是：
+      - shortgain
+      或
+      - shared-target soft hinge
+    - `000664`
+      相对 shortgain
+      的专属轴
+      已固定成：
+      - 更晚 offset
+      - 更长 reference
+      - 更高 gain
+      并带着：
+      - 略长 target duration
+      - 更低 interference share
+      所以它应固定记成：
+      - low-share `v64_only` rotation
+    - `offset + target_duration`
+      象限里，
+      `000664`
+      在：
+      - `both`
+      而
+      `001610`
+      与
+      `000207 / 000216`
+      都在：
+      - `neither`
+      所以这对轴
+      当前就是
+      `001610 -> 000664`
+      的局部 support pair
+  - 当前默认下一步：
+    - 若继续推进，
+      默认沿
+      `001610 -> 000664`
+      继续压：
+      - `000664`
+        周围是否还有
+        tighter local support
+        或 inner continuation
+    - 不再回到：
+      - `001610`
+        vs
+        `000207 / 000216`
+        是否同路
+      这个旧问题
+    - 仍不启动新训练
+97. 已把 `000664` 这一步的本地结构正式压成 low-share rotation local fanout；当前分支图默认必须改写成：`000664` 不是还在等待 tight companion 的 pocket center，而是一个已经向 pre / sink / post-entry 三侧分流的 rotation hub：
+  - 入口：
+    - `reports/daily/2026-03-24_candidate_v7_v65_sink_lowshare_rotation_local_fanout.md`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000664_neighbor_scan/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000664_signature_scan/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000664_local_support_positioning/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000664_hinge_to_rotation_support_axes/summary.json`
+  - 当前更关键的新事实是：
+    - `000664`
+      top-20 近邻里，
+      `reference_only_crossed_unexpected`
+      已经是：
+      - `0`
+      所以周围没有
+      第二条 tight `v64_only` crossed
+    - `000759`
+      虽然最近 group
+      是：
+      - `lowshare_v64only_rotation`
+      但相对
+      `001610`
+      的 margin
+      只有：
+      - `0.09200046913276516`
+      所以只能记成：
+      - broad bridge support
+    - `001639`
+      最近 group
+      已回落到：
+      - `partialmean_outer_anchor`
+      所以它不属于
+      `000664`
+      的 local support
+    - `000117 / 001725 / 001006`
+      虽然 state
+      还没 crossed，
+      但 positioning
+      最近都已偏向：
+      - `v65_sink_singleton`
+      所以应改记成：
+      - sink-facing broad shell
+    - `001543 / 001745 / 000697`
+      同时进入
+      `000664`
+      窄 ring，
+      说明这里已经开始
+      向：
+      - sink
+      - post-entry `v64`-deeper
+      - pre singleton
+      三侧分流
+  - 当前默认下一步：
+    - 若继续推进，
+      默认沿
+      `000664`
+      的 downstream fanout
+      继续压：
+      - 哪一侧
+        才是最直接的
+        terminal continuation
+    - 不再继续做：
+      - `000664`
+        tight companion search
+    - 仍不启动新训练
+98. 已把 `000664` downstream fanout 的 terminal priority 正式排出；当前分支图默认必须改写成：主干默认先去 `000117 / 001725 / 001006` 这层 sink-facing shell，再到 `001543`，而 `000697 / 001745` 都只能继续记成 side exit：
+  - 入口：
+    - `reports/daily/2026-03-24_candidate_v7_v65_sink_lowshare_rotation_terminal_route_priority.md`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000664_downstream_terminal_positioning/summary.json`
+    - `reports/eval/active_targetfull_clean_failboth_v65_sink_pre000664_to_sink_terminal_axes/summary.json`
+  - 当前更关键的新事实是：
+    - 在最窄的
+      `000664 -> 001543`
+      frame
+      里，
+      `000117 / 001725 / 001006`
+      最近 group
+      都已稳定是：
+      - `v65_sink_singleton`
+      所以主干默认应先写向：
+      - sink-facing shell
+      - 再到 `001543`
+    - 其中
+      `000117`
+      当前是最平衡的
+      preterminal shell；
+      `001725`
+      更偏 metadata-side，
+      `001006`
+      更偏 margin-side
+    - `000697`
+      虽然仍最近
+      `000664`，
+      但在
+      `000664 -> 001543`
+      轴上：
+      - metadata progress
+        为正
+      - margin progress
+        为负
+      所以它只能继续记成：
+      - pre singleton side exit
+    - `001745`
+      虽然在
+      二元 frame
+      里也会被吸到
+      sink 侧，
+      但真正继续加深的
+      是：
+      - `v64`
+      所以它只能继续记成：
+      - post-entry `v64`-deeper side exit
+  - 当前默认下一步：
+    - 若继续推进，
+      默认继续拆：
+      - `000117 / 001725 / 001006`
+        这层 shell
+        内部谁更像
+        真正的 preterminal anchor
+    - 不再回到：
+      - `000664`
+        的 terminal continuation
+        是谁
+      这个旧问题
+    - 仍不启动新训练
+
 ## 6. 忘线检查表
 
 每次恢复上下文前，先看这 5 个入口：
@@ -3814,6 +4617,18 @@
 4. 本文档 `docs/05_task_branch_map.md`
 5. 当前活跃分支日报：
    - 现在补到：
+     - `reports/daily/2026-03-24_candidate_v7_v65_sink_lowshare_rotation_terminal_route_priority.md`
+     - `reports/daily/2026-03-24_candidate_v7_v65_sink_lowshare_rotation_local_fanout.md`
+     - `reports/daily/2026-03-24_candidate_v7_v65_sink_hingeentry_lowshare_rotation_relink.md`
+     - `reports/daily/2026-03-24_candidate_v7_v65_sink_outer_anchor_side_route_split.md`
+     - `reports/daily/2026-03-24_candidate_v7_v65_sink_partialmean_outer_ring_shadow_source_split.md`
+     - `reports/daily/2026-03-24_candidate_v7_v65_sink_partialmean_barrier_depth_mechanics.md`
+     - `reports/daily/2026-03-24_candidate_v7_v65_sink_partialmean_core_role_split.md`
+     - `reports/daily/2026-03-24_candidate_v7_v65_sink_partialmean_core_loose_shadow_decomposition.md`
+     - `reports/daily/2026-03-24_candidate_v7_v65_sink_route_cohesion_asymmetry.md`
+     - `reports/daily/2026-03-24_candidate_v7_v65_sink_pre000697_singleton_core_mechanics.md`
+     - `reports/daily/2026-03-24_candidate_v7_v65_sink_pre000697_tight_companion_search.md`
+     - `reports/daily/2026-03-24_candidate_v7_v65_sink_falsepositive_companion_validation.md`
      - `reports/daily/2026-03-24_candidate_v7_v65_sink_falsepositive_archetype_local_support.md`
      - `reports/daily/2026-03-24_candidate_v7_v65_sink_falsepositive_archetype_positioning.md`
      - `reports/daily/2026-03-24_candidate_v7_v65_sink_pocket_falsepositive_case_contrast.md`
@@ -3847,16 +4662,40 @@
      - `reports/daily/2026-03-21_candidate_v4_v5_overlap_analysis.md`
      - `reports/daily/2026-03-21_candidate_v5_guardv67_negative_materialization.md`
      - `reports/daily/2026-03-21_candidate_v4_subgroup_diagnosis.md`
-    - 当前主停点日报已更新为：
-      - `reports/daily/2026-03-24_candidate_v7_v65_sink_falsepositive_archetype_local_support.md`
-    - 上一条主停点日报：
-      - `reports/daily/2026-03-24_candidate_v7_v65_sink_falsepositive_archetype_positioning.md`
-    - 再上一条主停点日报：
-      - `reports/daily/2026-03-24_candidate_v7_v65_sink_pocket_falsepositive_case_contrast.md`
-    - 再再上一条主停点日报：
-      - `reports/daily/2026-03-24_candidate_v7_v65_sink_final_case_divergence_split.md`
-    - 再再上一条主停点日报：
-      - `reports/daily/2026-03-24_candidate_v7_v65_sink_reference_gain_edge_case_branch_split.md`
+   - 当前主停点日报已更新为：
+     - `reports/daily/2026-03-24_candidate_v7_v65_sink_lowshare_rotation_terminal_route_priority.md`
+   - 上一条主停点日报：
+     - `reports/daily/2026-03-24_candidate_v7_v65_sink_lowshare_rotation_local_fanout.md`
+   - 再上一条主停点日报：
+     - `reports/daily/2026-03-24_candidate_v7_v65_sink_hingeentry_lowshare_rotation_relink.md`
+   - 再再上一条主停点日报：
+     - `reports/daily/2026-03-24_candidate_v7_v65_sink_outer_anchor_side_route_split.md`
+   - 再再上一条主停点日报：
+     - `reports/daily/2026-03-24_candidate_v7_v65_sink_partialmean_outer_ring_shadow_source_split.md`
+   - 再再上一条主停点日报：
+     - `reports/daily/2026-03-24_candidate_v7_v65_sink_partialmean_barrier_depth_mechanics.md`
+   - 再再上一条主停点日报：
+     - `reports/daily/2026-03-24_candidate_v7_v65_sink_partialmean_core_role_split.md`
+   - 再再上一条主停点日报：
+     - `reports/daily/2026-03-24_candidate_v7_v65_sink_partialmean_core_loose_shadow_decomposition.md`
+   - 再再上一条主停点日报：
+     - `reports/daily/2026-03-24_candidate_v7_v65_sink_route_cohesion_asymmetry.md`
+   - 再上一条主停点日报：
+     - `reports/daily/2026-03-24_candidate_v7_v65_sink_pre000697_singleton_core_mechanics.md`
+   - 再再上一条主停点日报：
+     - `reports/daily/2026-03-24_candidate_v7_v65_sink_pre000697_tight_companion_search.md`
+   - 再再上一条主停点日报：
+     - `reports/daily/2026-03-24_candidate_v7_v65_sink_falsepositive_companion_validation.md`
+   - 再再上一条主停点日报：
+     - `reports/daily/2026-03-24_candidate_v7_v65_sink_falsepositive_archetype_local_support.md`
+   - 再再上一条主停点日报：
+     - `reports/daily/2026-03-24_candidate_v7_v65_sink_falsepositive_archetype_positioning.md`
+   - 再再上一条主停点日报：
+     - `reports/daily/2026-03-24_candidate_v7_v65_sink_pocket_falsepositive_case_contrast.md`
+   - 再再上一条主停点日报：
+     - `reports/daily/2026-03-24_candidate_v7_v65_sink_final_case_divergence_split.md`
+   - 再再上一条主停点日报：
+     - `reports/daily/2026-03-24_candidate_v7_v65_sink_reference_gain_edge_case_branch_split.md`
    - 再再上一条主停点日报：
      - `reports/daily/2026-03-24_candidate_v7_v65_sink_reference_gain_edge_residual_split.md`
    - 再上一条主停点日报：
