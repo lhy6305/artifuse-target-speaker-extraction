@@ -5123,3 +5123,11 @@
   - 真实结果：`legacy_stage2 10 / v32 1 / tie 1`
   - 分组合结果：`none = 3:0`，`target_only = 2:0:1`，`speech_only = 3:0`，`both = 2:1`
   - 新增评审标准：目标弱到几乎不可辨时，`prefer_silence_over_leak`
+- 2026-03-25：`silence-over-leak` 新子题的 active gate 已落地，记录在 `reports/daily/2026-03-25_silence_over_leak_guardrail_v1_shortlist.md`。
+  - 小 manifest：`data/references/real_eval_manifest_silence_over_leak_guardrail_v1.jsonl`
+  - pair packs：
+    - `reports/eval/ab_listening_pack_silence_over_leak_guardrail_v1_stage2_vs_v32_blind`
+    - `reports/eval/ab_listening_pack_silence_over_leak_guardrail_v1_stage2_vs_v8_blind`
+    - `reports/eval/ab_listening_pack_silence_over_leak_guardrail_v1_stage2_vs_v13_blind`
+  - 合并多候选 blind 包：`reports/eval/decision_gate_listening_pack_silence_over_leak_guardrail_v1_stage2_v32_v8_v13_blind`
+  - 当前用途：判断旧 absent-guard 家族 `v8 / v13` 中是否存在比 `legacy_stage2 / v32` 更符合“弱源时宁可闭嘴”的历史候选；这一步完成前不启动新训练。

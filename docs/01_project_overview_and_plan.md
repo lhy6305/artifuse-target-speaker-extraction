@@ -6384,3 +6384,6 @@
 - 2026-03-25 续记：已导出新的 combo-stratified blind GUI 包 `reports/eval/ab_listening_pack_same_gender_reverb_proxy_v3_combo_gate_stage2_vs_v32_blind`，每个组合各取 `top improvement / top regression / top near tie` 三条，共 `12` 条，作为下一轮人耳根因定位 gate。
 - 2026-03-25 续记：`same_gender_reverb_proxy_v3` combo gate 听审解盲后为 `legacy_stage2=10 / v32=1 / tie=1`。四个组合里 `legacy_stage2` 都更稳，`v32` 只在 `both` 组赢 `1` 条，当前不允许基于这条 synthetic 线放行训练。
 - 2026-03-25 续记：本轮新增一条必须保留的评审标准：当目标已经弱到几乎不可辨时，`完全闭嘴` 优于 `输出几乎全是干扰`；后续听审与裁决不能把“更响”误判成“更好”。
+- 2026-03-25 续记：已把下一轮子题从 `same_gender_reverb` 收窄成 `silence-over-leak under weak / absent target audibility`，并补出新 shortlist 报告 `reports/daily/2026-03-25_silence_over_leak_guardrail_v1_shortlist.md`。
+- 2026-03-25 续记：新 near-real 小 manifest 为 `data/references/real_eval_manifest_silence_over_leak_guardrail_v1.jsonl`，当前四候选 blind 包为 `reports/eval/decision_gate_listening_pack_silence_over_leak_guardrail_v1_stage2_v32_v8_v13_blind`。
+- 2026-03-25 续记：这轮不直接训练。优先先听 `legacy_stage2 / v32 / v8_absentguard / v13_absentguard` 四候选，判断旧 absent-guard 家族里是否有分支比 `legacy / v32` 更符合“弱源时宁可闭嘴”的新标准。
