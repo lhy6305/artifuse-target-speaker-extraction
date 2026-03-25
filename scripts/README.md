@@ -20,6 +20,8 @@
 - `scripts/eval/eval_stft_mask_baseline.py`：评估 baseline checkpoint，输出总指标、分组指标和少量样例音频。
 - `scripts/eval/listening_pack_gui.py`：本地 blind listening pack GUI，支持样本筛选、音频播放、结构化打分和一键导出结果。
 - `scripts/eval/decode_listening_gui_export.py`：读取 GUI 导出的 `listening_sheet.csv`、`listening_results_summary.json` 与 `blind_key.json`，自动解盲成真实标签统计和样本级摘要。
+- `scripts/eval/score_silence_over_leak_pack.py`：针对 `silence-over-leak` 子题的 objective-only 批量筛选器；直接读取 listening pack 的 `mixture / target / candidate` 音频，自动给出 absent-case 泄漏排名和 target-present backstop 排名，适合先程序大筛、再只把边界样本交给人耳。
+- `scripts/eval/rank_checkpoints_on_silence_over_leak_manifest.py`：对一批 checkpoint 在 near-real `silence-over-leak` manifest 上做批量推理和排序；现已支持 raw-target-only backstop、present non-regression guardrail，以及 `guardrail_filtered_rank`，用于先程序淘汰“极端静音但压坏 target”的候选。
 - `scripts/eval/analyze_proxy_case_neighbors.py`：基于 manifest 字段 + `metadata.json` 字段做 metadata-rich 近邻搜索，并可拼接 compare 结果一起看 top alias / failed constraints / alias gap。
 - `scripts/eval/analyze_proxy_group_split.py`：对多个显式 sample-id group 做组均值、代表样本、aggregate 排序和 pairwise delta 对照，适合 frontier ring / subgroup split 诊断。
 - `scripts/eval/analyze_proxy_case_positioning.py`：把单条 focus case 放到多个 reference group center 之间做位置诊断，支持 leave-one-out 距离、metadata / margin 分拆和 top 偏离字段解释。

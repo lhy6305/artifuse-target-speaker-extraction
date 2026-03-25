@@ -7223,3 +7223,18 @@
 - 2026-03-25：`same_gender_reverb_proxy_v3` 四个混响组合在 objective 上都可能同时偏向 `v32`，但人耳仍可能明显偏向 `legacy_stage2`。结论：涉及“目标是否被空间化得更假、更远、更空”的问题时，不能把 `avg_sisdr_delta_db > 0` 当成放行训练的充分条件，必须加一层组合分层听审。
 - 2026-03-25：听审里不能把“更响”默认当成“更好”。当目标已经弱到几乎不可辨时，`静音/闭嘴` 往往优于“输出几乎全是干扰”；如果后者只是把残留放大，会被人耳判为更差。这条标准必须显式写进 `decision_tags / note`，否则容易把真正的 failure mode 误记成“源保留更强”。
 - 2026-03-25：当新子题已经被收窄成 `silence-over-leak` 时，不要继续默认围绕当前研究基座 `v32` 做增量训练。先回头检查历史 absent-guard 家族是否已经有更贴近新标准的旧 checkpoint；如果已有 `v8 / v13` 这种明显更像 absent specialization 的候选，优先导出多候选 near-real 小包做人耳短名单，而不是直接再造一轮新分支。
+- 2026-03-25：多候选听审里如果出现“只有一个候选明显更差，其余全部打平”，不能把它误写成“已经找到最优候选”。这种结果只能说明：
+  - 已经排除了一个掉队候选；
+  - 但剩余前沿候选之间仍然没有被人耳拉开。
+  这次 `silence-over-leak guardrail v1` 就属于这一类：`legacy_stage2` 在 `near_real_0009` 上被备注为唯一明显泄漏，但 `v32 / v8 / v13` 之间仍然没有形成主观胜负，因此不应据此直接切换研究基座或启动训练。
+- 2026-03-25：不是所有听审都值得继续靠人耳全量逐条跑。如果子题目标已经被收窄成“尽量静音 / 尽量少漏”，而且不再关心干扰音质本身，那么应优先尝试 objective-only batch triage。当前 `score_silence_over_leak_pack.py` 在 `near_real_0009` 上已经能和人耳一致地把 `legacy_stage2` 判成最泄漏，因此后续这类包默认应该先程序大筛，再只把近似打平的 frontier 样本交给人耳。
+- 2026-03-25：`silence-over-leak` 的 batch triage 不能只按“更静音 / 更少漏”做 raw 排序，否则会结构性偏爱 `v5_absentguard_ft1` 这种 extreme silence anchor。必须至少再加一层 present non-regression guardrail；当前有效做法是相对 `baseline_stft_mask_stage2` 检查：
+  - `target_capture` 不要回退超过 `2.0 dB`
+  - `residual_output_share` 不要增加超过 `0.08`
+  否则 objective 会把“把 target 一起压坏”的候选误判成前沿。
+- 2026-03-25：`rank_checkpoints_on_silence_over_leak_manifest.py` 之前存在边界污染坑：显式传了 `--include-checkpoint`，若没再传 `--checkpoint-glob`，脚本仍会自动带上默认 glob，导致“短名单 smoke”变成“全家族大扫”。后续凡是做 shortlist objective triage，都必须确认：
+  - 显式名单优先；
+  - 没有额外候选被默认 glob 混进来。
+- 2026-03-25：raw-target-only backstop 不能用 `retention_minus_leak_db` 直接打分，因为这类样本没有 interference 分量，会让 present score 变成空值。当前固定口径是：
+  - 有 interference 时看 `retention_minus_leak_db`
+  - 无 interference 时回退到 `target_capture_db`

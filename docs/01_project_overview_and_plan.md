@@ -6387,3 +6387,29 @@
 - 2026-03-25 续记：已把下一轮子题从 `same_gender_reverb` 收窄成 `silence-over-leak under weak / absent target audibility`，并补出新 shortlist 报告 `reports/daily/2026-03-25_silence_over_leak_guardrail_v1_shortlist.md`。
 - 2026-03-25 续记：新 near-real 小 manifest 为 `data/references/real_eval_manifest_silence_over_leak_guardrail_v1.jsonl`，当前四候选 blind 包为 `reports/eval/decision_gate_listening_pack_silence_over_leak_guardrail_v1_stage2_v32_v8_v13_blind`。
 - 2026-03-25 续记：这轮不直接训练。优先先听 `legacy_stage2 / v32 / v8_absentguard / v13_absentguard` 四候选，判断旧 absent-guard 家族里是否有分支比 `legacy / v32` 更符合“弱源时宁可闭嘴”的新标准。
+- 2026-03-25 续记：`silence-over-leak guardrail v1` 听审已完成，记录在 `reports/daily/2026-03-25_silence_over_leak_guardrail_v1_listening_review.md`。当前真实结果不是“新赢家出现”，而是：
+  - `near_real_0009` 上 `legacy_stage2` 是唯一被明确点名为明显泄漏的候选；
+  - `v32 / v8_absentguard / v13_absentguard` 三条线在这条新子题核心样本上并列前沿；
+  - 其余 `0006 / 0008 / 0010` 三条样本四候选都主观打平。
+- 2026-03-25 续记：因此当前默认主线仍保持 `legacy stage2`，但若只看 `silence-over-leak` 这条窄题，`legacy` 已不在最优前沿；研究侧继续保留 `v32` 基座，并把 `v8 / v13` 升格为并列历史锚点，后续若继续推进，应先扩充 `external speech only / weak target audibility` 的 near-real 小包，而不是立即开训练。
+- 2026-03-25 续记：已补 `scripts/eval/score_silence_over_leak_pack.py`，允许对这类“目标是闭嘴、不关心干扰音质”的 listening pack 先做 objective-only 批量筛选。当前在 `decision_gate_listening_pack_silence_over_leak_guardrail_v1_stage2_v32_v8_v13_blind` 上，程序自动排名为：
+  - absent rank：`v32 > v13_absentguard > v8_absentguard > legacy_stage2`
+  - present backstop：`v32 > v8_absentguard > v13_absentguard > legacy_stage2`
+  这和人耳听出的核心事实一致：`legacy_stage2` 在 `near_real_0009` 上掉队。后续这条子题应优先采用“程序大筛 + 少量边界样本人耳复核”，不再逐条全听。
+- 2026-03-25 续记：已把 `silence-over-leak` 的 objective triage 升到 v2，记录在 `reports/daily/2026-03-25_silence_over_leak_batch_triage_and_frontier_pack.md`。
+  - 新批量 manifest：`data/references/real_eval_manifest_silence_over_leak_guardrail_v2.jsonl`
+  - 新脚本能力：`scripts/eval/rank_checkpoints_on_silence_over_leak_manifest.py` 现支持：
+    - `raw-target-only` 样本回退到 `target_capture_db`
+    - `present_guardrail_baseline = baseline_stft_mask_stage2`
+    - `guardrail_filtered_rank`
+  - 关键裁决：`v5_absentguard_ft1` raw silence 分数虽然最高，但因 `6` 条 present guardrail violation 被正式排除出可保留前沿。
+  - 当前通过程序 guardrail 的 frontier 已从旧 `v8 / v13 / v32` 进一步收敛到 `v32` 后裔里的：
+    - `v49_v32_absent_adaptermask_v7_only_ft1`
+    - `v54_v32_absent_dualdecoder_v7_wave_exactguard_ft1`
+    - `v59_v32_absent_dualdecoder_v7_wave_basedeltaproj_w005_ft1`
+- 2026-03-25 续记：下一步默认待听包已切换为极小 frontier blind 包：
+  - `reports/eval/decision_gate_listening_pack_silence_over_leak_frontier_v1_v32_v49_v54_v59_blind`
+  - 小 manifest：`data/references/real_eval_manifest_silence_over_leak_frontier_v1.jsonl`
+  - 候选：`v32 / v49_adaptermask / v54_dualdecoder_exactguard / v59_dualdecoder_basedeltaproj_w005`
+  - 样本：`near_real_0003 / 0006 / 0007 / 0008 / 0009 / 0010`
+  - pack objective 摘要：`v54` 和 `v59` 在 absent rank 与 present rank 上都领先 `v32`，因此后续人耳只需复核这 6 条样本，而不再回到大包全听。

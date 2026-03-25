@@ -5131,3 +5131,39 @@
     - `reports/eval/ab_listening_pack_silence_over_leak_guardrail_v1_stage2_vs_v13_blind`
   - 合并多候选 blind 包：`reports/eval/decision_gate_listening_pack_silence_over_leak_guardrail_v1_stage2_v32_v8_v13_blind`
   - 当前用途：判断旧 absent-guard 家族 `v8 / v13` 中是否存在比 `legacy_stage2 / v32` 更符合“弱源时宁可闭嘴”的历史候选；这一步完成前不启动新训练。
+- 2026-03-25：`silence-over-leak guardrail v1` 听审解盲已完成，记录在 `reports/daily/2026-03-25_silence_over_leak_guardrail_v1_listening_review.md`。
+  - 真实总体结果：`tie = 4`
+  - 但 `near_real_0009` 的备注解盲后对应：
+    - `candidate_4 = legacy_stage2`
+    - 且 `legacy_stage2` 是唯一被明确指出“明显不行/显著泄漏”的候选
+  - 当前前沿关系：
+    - `v32 / v8_absentguard / v13_absentguard` = 并列前沿
+    - `legacy_stage2` = 在这条窄题核心样本上掉队
+  - 当前用途修正：
+    - 不再用这包寻找“唯一新赢家”
+    - 而是把 `legacy_stage2` 从 `silence-over-leak` 子题前沿里排除，并要求后续新包继续细分 `v32 / v8 / v13`
+- 2026-03-25：`silence-over-leak` objective batch triage v2 已落地，记录在 `reports/daily/2026-03-25_silence_over_leak_batch_triage_and_frontier_pack.md`。
+  - 批量 ranking manifest：`data/references/real_eval_manifest_silence_over_leak_guardrail_v2.jsonl`
+  - 关键脚本：`scripts/eval/rank_checkpoints_on_silence_over_leak_manifest.py`
+  - 新输出重点：
+    - `combined_rank`
+    - `guardrail_filtered_rank`
+    - `present_guardrail_violation_count`
+  - 当前已确认：
+    - `v5_absentguard_ft1` raw suppression 最强，但有 `6` 条 present guardrail violation，不能再视为可推进前沿
+    - 全家族里更值得复核的新 frontier 转为：
+      - `v49_v32_absent_adaptermask_v7_only_ft1`
+      - `v54_v32_absent_dualdecoder_v7_wave_exactguard_ft1`
+      - `v59_v32_absent_dualdecoder_v7_wave_basedeltaproj_w005_ft1`
+- 2026-03-25：当前 active 小包已切换为 `silence-over-leak frontier v1`。
+  - manifest：`data/references/real_eval_manifest_silence_over_leak_frontier_v1.jsonl`
+  - pair packs：
+    - `reports/eval/ab_listening_pack_silence_over_leak_frontier_v1_v32_vs_v49_blind`
+    - `reports/eval/ab_listening_pack_silence_over_leak_frontier_v1_v32_vs_v54_blind`
+    - `reports/eval/ab_listening_pack_silence_over_leak_frontier_v1_v32_vs_v59_blind`
+  - 合并多候选 blind 包：
+    - `reports/eval/decision_gate_listening_pack_silence_over_leak_frontier_v1_v32_v49_v54_v59_blind`
+  - 当前用途：
+    - 不再大规模听旧家族全量 checkpoint
+    - 只在 `near_real_0003 / 0006 / 0007 / 0008 / 0009 / 0010` 这 6 条边界样本上，
+      判断 `v49 / v54 / v59` 是否有人耳上真正超过 `v32`
