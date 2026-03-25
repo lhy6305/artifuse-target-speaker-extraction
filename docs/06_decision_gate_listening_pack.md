@@ -49,3 +49,48 @@
 - `guodegang` anchor
 - target absent
 - harder mixed case
+
+## 2026-03-25 听审结果补记
+
+本轮实际已完成人工听审，
+对应日报：
+
+- `reports/daily/2026-03-25_decision_gate_listening_review.md`
+
+当前最关键的解盲结论是：
+
+1. `v32` 与 `v64` 在这 10 条样本上人耳完全没有拉开。
+2. 表面上
+   `candidate_1 / candidate_2 / candidate_3`
+   的胜负次数不同，
+   主要是因为三候选 GUI 只有单选，
+   有几条样本实际是：
+   - 两条候选打平，
+   - 另一条明显更差，
+   用户只是在打平的两条里随机点了一边。
+3. 真实两两比较应还原为：
+   - `v32 vs v64 = 10` 条全 tie
+   - `v32 vs legacy stage2 = 3 胜 / 1 负 / 6 tie`
+   - `v64 vs legacy stage2 = 3 胜 / 1 负 / 6 tie`
+4. `v32 / v64`
+   的局部收益主要落在：
+   - music
+   - harder mix
+   - absent external speech
+5. 但在当前最关键的
+   friend speech leakage
+   主问题上，
+   仍没有形成稳定可听优势。
+
+因此当前默认裁决更新为：
+
+- `legacy stage2`
+  继续保持默认主线；
+- `v32`
+  保留为研究基座；
+- `v64`
+  保留为历史证据轮次，
+  但不再作为独立 active 候选继续推进；
+- `candidate_v7`
+  高粒度旧 rows 重路由分析
+  阶段性停止。

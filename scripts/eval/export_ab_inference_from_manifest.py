@@ -107,6 +107,21 @@ def save_audio(path: Path, waveform: torch.Tensor, sample_rate: int) -> None:
     torchaudio.save(str(path), waveform.detach().cpu().unsqueeze(0), sample_rate)
 
 
+def resolve_optional_target_path(row: dict[str, Any]) -> Path | None:
+    target_audio_raw = str(row.get("target_audio_path", "")).strip()
+    if target_audio_raw:
+        target_path = ROOT / target_audio_raw
+        if target_path.exists():
+            return target_path
+    mixture_audio_raw = str(row.get("mixture_audio_path", "")).strip()
+    if not mixture_audio_raw:
+        return None
+    sibling_target = (ROOT / mixture_audio_raw).parent / "target.wav"
+    if sibling_target.exists():
+        return sibling_target
+    return None
+
+
 def rms_value(waveform: torch.Tensor) -> float:
     return float(torch.sqrt(torch.mean(torch.square(waveform)) + 1e-12).item())
 
@@ -161,10 +176,12 @@ def main() -> None:
         sample_id = row["sample_id"]
         mixture_path = ROOT / row["mixture_audio_path"]
         reference_path = ROOT / row["reference_audio_path"]
+        target_path = resolve_optional_target_path(row)
         note = row.get("note", "")
 
         mixture = load_audio_mono(mixture_path, args.sample_rate)
         reference = load_audio_mono(reference_path, args.sample_rate)
+        target = load_audio_mono(target_path, args.sample_rate) if target_path is not None else None
         mixture_batch = mixture.unsqueeze(0).to(device)
         reference_batch = reference.unsqueeze(0).to(device)
         mixture_lengths = torch.tensor([mixture.shape[-1]], dtype=torch.long, device=device)
@@ -202,9 +219,14 @@ def main() -> None:
 
         sample_dir = args.output_dir / sample_id
         sample_dir.mkdir(parents=True, exist_ok=True)
-        gain = compute_shared_export_gain([mixture, reference, estimate_a, estimate_b])
+        tracks_for_gain = [mixture, reference, estimate_a, estimate_b]
+        if target is not None:
+            tracks_for_gain.insert(1, target)
+        gain = compute_shared_export_gain(tracks_for_gain)
         save_audio(sample_dir / "mixture.wav", mixture * gain, args.sample_rate)
         save_audio(sample_dir / "reference.wav", reference * gain, args.sample_rate)
+        if target is not None:
+            save_audio(sample_dir / "target.wav", target * gain, args.sample_rate)
         save_audio(sample_dir / file_a, estimate_a * gain, args.sample_rate)
         save_audio(sample_dir / file_b, estimate_b * gain, args.sample_rate)
 
@@ -212,6 +234,7 @@ def main() -> None:
             "sample_id": sample_id,
             "mixture_audio_path": row["mixture_audio_path"],
             "reference_audio_path": row["reference_audio_path"],
+            "audio_layout": "mono",
             "note": note,
             "exports": {
                 "estimate_a": file_a,
@@ -230,6 +253,8 @@ def main() -> None:
                 },
             },
         }
+        if target_path is not None:
+            sample_meta["target_audio_path"] = serialize_repo_path(target_path)
         (sample_dir / "sample_meta.json").write_text(
             json.dumps(sample_meta, ensure_ascii=False, indent=2) + "\n",
             encoding="utf-8",
@@ -319,9 +344,9 @@ def main() -> None:
         "",
         "Manifest row example:",
         "",
-        '{"sample_id":"real_0001","mixture_audio_path":"data/references/real_eval/real_0001/mixture.wav","reference_audio_path":"data/references/real_eval/real_0001/reference.wav","note":"optional"}',
+        '{"sample_id":"real_0001","mixture_audio_path":"data/references/real_eval/real_0001/mixture.wav","target_audio_path":"data/references/real_eval/real_0001/target.wav","reference_audio_path":"data/references/real_eval/real_0001/reference.wav","note":"optional"}',
         "",
-        "Each sample directory contains mixture/reference and two model outputs.",
+        "Each sample directory contains mono mixture/reference, optional mono target.wav, and two mono model outputs.",
         "",
         "Listening sheet rubric:",
         "",
@@ -332,6 +357,7 @@ def main() -> None:
         "- `file_*_artifact`: choose from `none, slight, moderate, heavy, extreme`",
         "- `decision_tags`: optional semicolon-separated tags, e.g. `better_source_retention;less_interference_leak`",
         "- all files in one sample folder share the same safety gain, so playback is more stable while relative A/B level differences are preserved",
+        "- export audio is always downmixed to mono before scoring, so mixture/reference/target/candidates share the same channel layout",
         "",
     ]
     (args.output_dir / "README.md").write_text(

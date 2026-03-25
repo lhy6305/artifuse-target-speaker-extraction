@@ -8,6 +8,183 @@
 
 ## 当前活跃记录
 
+## 2026-03-25
+
+### 195. 多候选 blind 听审里，如果 GUI 只有单选 `better_output`，遇到“两条候选几乎打平、另一条明显更差”的样本时，表面胜负计数会被随机选边污染；这时必须把 `note` 一起纳入解盲
+
+现象：
+
+- 本轮
+  `legacy stage2 / v32 / v64`
+  三候选听审
+  使用的是：
+  - `reports/eval/decision_gate_listening_pack_near_real_v1_stage2_v32_v64_blind_v2`
+- GUI 的
+  `better_output`
+  仍是单选；
+- 但实际至少有三条样本的真实关系是：
+  - 两条候选无明显差异
+  - 第三条明显更差
+- 用户已在：
+  - `decision_tags`
+  - `note`
+  里明确写出
+  “候选 1 和 2 无明显差异，但 3 明显不行”
+  这类备注。
+
+影响：
+
+- 如果只看：
+  - `candidate_1 = 1`
+  - `candidate_2 = 1`
+  - `candidate_3 = 2`
+  这种盲态表面计数，
+  很容易误判成：
+  - 某一条真实模型略占优；
+- 但解盲并结合备注后，
+  本轮真正的关键事实其实是：
+  - `v32 = v64`
+    在 10 条样本上完全没有拉开；
+  - 不是
+    `v64`
+    比
+    `v32`
+    多赢一次。
+
+处理：
+
+- 已把这轮真实偏序、
+  两两比较和最终裁决
+  集中落盘到：
+  - `reports/daily/2026-03-25_decision_gate_listening_review.md`
+
+后续要求：
+
+1. 以后只要多候选 blind GUI 仍是单选 `better_output`，解盲时就不能只看 summary 计数。
+2. 遇到：
+   - `A = B > C`
+   - `A > B = C`
+   - `A = C > B`
+   这类偏序时，必须显式读取：
+   - `decision_tags`
+   - `note`
+   再还原真实两两关系。
+3. 若后续继续扩多候选听审，优先考虑把 GUI 或导出格式升级成：
+   - 可表达多赢家 / 偏序，
+   否则至少保持人工备注必读。
+
+### 196. `guodegang` 不应再被当成单个人名样本处理；当前更对的解释是“一类同性别、近 `f0`、近共鸣、带轻混响的人声风险家族”，如果继续只围着 `0006/0009` 两条点状样本调，会低估问题外延
+
+现象：
+
+- 本轮人耳反馈进一步指出：
+  - `guodegang`
+    与目标说话人同为男声；
+  - `f0`
+    接近；
+  - 共鸣方式接近；
+  - 且素材带一定房间混响。
+- 这与当前历史现象是对得上的：
+  - `near_real_0006`
+  - `near_real_0009`
+  长期都更像
+  external speech / reverb-like
+  风险，
+  而不只是
+  friend overlap
+  的同义改写。
+
+影响：
+
+- 如果继续把这条问题写成：
+  - “修 `guodegang`”
+  很容易误把它当作
+  单 clip 特例；
+- 进一步会导致：
+  - proxy 只围着旧两条样本找；
+  - 训练只围着旧名字调；
+  - 但真实场景里同类男声+轻混响
+    仍然会继续漏。
+
+处理：
+
+- 已新增下一阶段专门方案文档：
+  - `docs/07_targeted_eval_plan_samegender_reverb_bandwidth.md`
+- 当前正式建议改为：
+  - 若后续继续，
+    应把它升级成：
+    - `same_gender_reverb_like`
+      风险家族
+    来做 near-real / proxy / guardrail
+
+后续要求：
+
+1. 不再把 `guodegang` 当作“某一个人名样本”的局部问题来写。
+2. 下一阶段若重开，
+   必须同时覆盖：
+   - target present
+   - target absent
+   两类 same-gender / near-`f0` / near-resonance / mild-reverb 场景。
+3. 如果后续只新增更多同类素材，
+   但评估口径仍停在旧 `0006 / 0009`
+   两个样本名上，
+   视为问题定义仍未升级完成。
+
+### 197. “电话音 / 频带缺失”不能继续只当作主观 artifact 备注；它需要被单独提升成 bandwidth guardrail，否则后续很容易一边压泄漏一边悄悄把目标频带削窄
+
+现象：
+
+- 本轮用户主观复核再次明确提到：
+  - 当前仍存在
+    “像电话音”
+    的感受；
+  - 并推测真实录音里该频段可能本就一致，
+    导致模型学不到有效区分。
+- 这与历史材料一致：
+  - 早先 reverb probe
+    已多次暴露：
+    - 带宽收窄
+    - presence / upper-band 变弱
+    - 听感不像普通噪声，
+      更像频带被削掉。
+
+影响：
+
+- 如果这类问题继续只写在：
+  - `artifact`
+  - `note`
+  里，
+  它就会被更显眼的泄漏问题掩盖；
+- 结果是：
+  - 模型表面上可能更干净，
+  - 但目标本身被削成窄带，
+  - 最后人耳仍不通过。
+
+处理：
+
+- 当前已正式把下一阶段方案写成：
+  - 每次 near-real 导包后，
+    固定跑：
+    - `scripts/eval/analyze_listening_pack_bandwidth.py`
+- 并把：
+  - raw target only
+  - same-gender / mild-reverb family
+  设成重点带宽 guardrail。
+
+后续要求：
+
+1. 以后“电话音 / 频带缺失”单独记作 bandwidth 问题，不再混进普通 artifact 口头描述。
+2. 若候选相对基座在：
+   - raw target only
+   - same-gender reverb-like
+   上被判成更窄带，
+   直接记为 regression。
+3. 下一阶段若继续训练，
+   必须同时盯：
+   - leakage
+   - bandwidth
+   不能只盯其中一边。
+
 ## 2026-03-16
 
 ### 119. 对 dual-head 来说，exact-family `SI-SDR guard` 依然很容易把训练推成 exact overfit；`v55` 证明“exact 更好”并不等于 near-real protect 真成立

@@ -4635,6 +4635,176 @@
       也不继续默认沿
       `candidate_v7`
       旧 rows 重路由往下拆
+100. 已完成这轮 near-real 决策关卡听审并解盲；当前分支图默认必须改写成：`v32` 与 `v64` 在人耳上没有拉开，因此后续不再需要把 `v64` 当成独立 active 候选继续推进，默认只保留 `v32` 作为研究基座，而 `candidate_v7` 高粒度细分分析阶段性停止：
+  - 入口：
+    - `reports/daily/2026-03-25_decision_gate_listening_review.md`
+    - `reports/eval/decision_gate_listening_pack_near_real_v1_stage2_v32_v64_blind_v2`
+  - 当前更关键的新事实是：
+    - 表面盲态计数里
+      `candidate_1 / candidate_2 / candidate_3`
+      胜负不相等，
+      但这是三候选单选 GUI
+      在
+      “两条打平、一条明显更差”
+      场景下的随机选边噪声
+    - 结合
+      `note`
+      还原后的真实偏序是：
+      - `near_real_0003`
+        `legacy stage2 > v32 = v64`
+      - `near_real_0005 / 0007 / 0009`
+        `v32 = v64 > legacy stage2`
+      - 其余 `6` 条
+        三者打平
+    - 两两比较后的真实结果：
+      - `v32 vs v64`
+        = `10` 条全 tie
+      - `v32 vs legacy stage2`
+        = `3` 胜 `1` 负 `6` tie
+      - `v64 vs legacy stage2`
+        = `3` 胜 `1` 负 `6` tie
+    - 当前局部收益主要落在：
+      - music
+      - harder mix
+      - absent external speech
+    - 但对当前最关键的
+      friend speech leakage
+      主问题，
+      仍没有形成稳定可听优势
+  - 当前默认下一步：
+    - 默认主线继续保持：
+      - `legacy stage2`
+    - 默认研究基座保留：
+      - `v32`
+    - `v64`
+      保留为历史证据轮次，
+      但不再单独继续：
+      - 听审扩包
+      - 细分 proxy / route 解释
+      - 新训练 follow-up
+    - `candidate_v7`
+      高粒度旧 rows 重路由分析
+      当前阶段性停止
+101. 已把“当前项目是否足够结题”与“若只继续修 `guodegang`，下一条应怎么收窄”正式落盘；当前分支图默认必须再收紧成：原 friend-side 研究树到这里就收口，除非用户明确要求继续，否则不再自动起任何 follow-up；若重开，只允许以 `v32` 为基座，单独针对 `guodegang / external speech leakage` 开一个窄题：
+  - 入口：
+    - `reports/daily/2026-03-25_phase_closeout_and_guodegang_next_step.md`
+  - 当前更关键的新判断是：
+    - 当前阶段已足够回答：
+      - 主线是否切换
+      - `v32`
+        是否保留
+      - `v64`
+        是否继续
+      - `candidate_v7`
+        是否停线
+    - 因而当前 Phase C
+      可以结题
+    - 但若后续仍继续，
+      真实剩余问题应只剩：
+      - `guodegang / external speech leakage`
+  - 若重开该窄题，
+    当前默认入口应固定为：
+    - 基座：
+      - `v32`
+    - focused proxy：
+      - `train_manifest_guodegang_proxy_v1.jsonl`
+      - `val_manifest_guodegang_proxy_v1.jsonl`
+    - focused near-real guardrail：
+      - `near_real_guodegang_transient_probe_v1`
+      - `near_real_0006`
+      - `near_real_0009`
+    - 反向 guardrail：
+      - friend speech leakage
+      - target absent
+      - raw target only
+  - 当前默认下一步：
+    - 若无用户明确加码，
+      到此按阶段结题处理
+    - 若用户明确继续，
+      只做：
+      - `v32`
+        上的一轮小规模 focused follow-up
+    - 不再继续：
+      - `v64`
+        独立 follow-up
+      - broad union manifest
+      - `candidate_v7`
+        旧 rows 细分下钻
+102. 已把下一阶段若重开的 targeted eval 方案正式固化；当前分支图默认必须继续收紧成：后续若不是明确做 `same_gender_reverb_like + bandwidth guardrail`，就不应再启动任何新实验：
+  - 入口：
+    - `docs/07_targeted_eval_plan_samegender_reverb_bandwidth.md`
+  - 当前更关键的新事实是：
+    - `guodegang`
+      不再应被解释成单点人名样本；
+      当前更合理的外延是：
+      - 同性别
+      - 近 `f0`
+      - 近共鸣
+      - 轻混响
+      的 external speech 风险家族
+    - “电话音 / 频带缺失”
+      也不再只是 artifact 备注，
+      而应独立升成 bandwidth guardrail
+  - 当前若重开，
+    默认前置检查应固定为：
+    - `scripts/eval/audit_listening_pack_assets.py`
+      先过：
+      - mono
+      - target.wav
+    - near-real family
+      再过：
+      - same_gender_reverb_like
+    - near-real / listening pack
+      固定再跑：
+      - `scripts/eval/analyze_listening_pack_bandwidth.py`
+  - 当前默认下一步：
+    - 若无用户明确继续，
+      仍按阶段结题收口
+    - 若用户明确继续，
+      只做：
+      - `v32`
+        上的一轮小规模
+        same_gender_reverb_like
+        focused follow-up
+    - 不再回到：
+      - broad friend-side 树
+      - `candidate_v7`
+        旧 rows route 分析
+103. 已把下一阶段 focused follow-up 的入口资产正式物化；当前分支图默认必须改成：若后续继续，不再手工口述样本范围，而是直接从固定 manifest 和固定命令顺序起步：
+  - 入口：
+    - `reports/daily/2026-03-25_targeted_eval_asset_materialization.md`
+    - `data/references/real_eval_manifest_same_gender_reverb_like_v1.jsonl`
+    - `data/references/real_eval_manifest_bandwidth_guardrail_v1.jsonl`
+  - 当前更关键的新事实是：
+    - `same_gender_reverb_like_v1`
+      已固定为：
+      - `near_real_0006`
+      - `near_real_0009`
+    - `bandwidth_guardrail_v1`
+      已固定为：
+      - `near_real_0001`
+      - `near_real_0002`
+      - `near_real_0006`
+      - `near_real_0009`
+    - 听审前的资产 QA
+      也已有固定入口：
+      - `scripts/eval/audit_listening_pack_assets.py`
+  - 当前默认下一步：
+    - 若继续，
+      先从：
+      - `same_gender_reverb_like_v1`
+        导包
+    - 再做：
+      - asset audit
+      - bandwidth analysis
+    - synthetic 侧只保留：
+      - `guodegang_proxy_v1`
+        做 focused pre-screen
+    - 不再临时拼：
+      - `0006/0009`
+      - raw-only
+      - absent
+      这些样本集合
 
 ## 6. 忘线检查表
 
@@ -4692,6 +4862,8 @@
      - `reports/daily/2026-03-21_candidate_v5_guardv67_negative_materialization.md`
      - `reports/daily/2026-03-21_candidate_v4_subgroup_diagnosis.md`
    - 当前主停点日报已更新为：
+     - `reports/daily/2026-03-25_decision_gate_listening_review.md`
+   - 上一条主停点日报：
      - `reports/daily/2026-03-24_decision_gate_listening_pack_export.md`
    - 当前决策关卡听审包总说明：
      - `docs/06_decision_gate_listening_pack.md`

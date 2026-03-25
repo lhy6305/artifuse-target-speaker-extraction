@@ -334,20 +334,22 @@ def main() -> None:
 
         component_arrays: list[np.ndarray] = []
         component_meta: list[dict[str, Any]] = []
+        target_track = np.zeros(1, dtype=np.float32)
+        target_output_path = sample_dir / "target.wav"
 
         if spec.target_index is not None:
             target_row = target_rows[spec.target_index]
             target_segment_id = target_row["segment_id"]
             segment_row = segment_rows[target_segment_id]
             target_clip_start_sec, target_clip_duration_sec = clip_duration_from_segment(segment_row)
-            target_output_path = sample_dir / "_target_tmp.wav"
+            target_tmp_path = sample_dir / "_target_tmp.wav"
             extract_audio(
                 input_path=SOURCE_RAW_PATH,
-                output_path=target_output_path,
+                output_path=target_tmp_path,
                 start_sec=target_clip_start_sec,
                 duration_sec=target_clip_duration_sec,
             )
-            target_waveform = load_audio(target_output_path) * db_to_scale(spec.target_gain_db)
+            target_waveform = load_audio(target_tmp_path) * db_to_scale(spec.target_gain_db)
             component_arrays.append(target_waveform)
             component_meta.append(
                 {
@@ -366,6 +368,9 @@ def main() -> None:
 
         mixture_duration_sec = float(spec.duration_sec or target_clip_duration_sec)
         mixture_num_samples = int(round(mixture_duration_sec * SAMPLE_RATE))
+        target_track = np.zeros(mixture_num_samples, dtype=np.float32)
+        if spec.target_index is not None:
+            target_track = fit_or_pad(target_waveform, mixture_num_samples)
 
         if spec.friend_start_sec is not None:
             friend_output_path = sample_dir / "_friend_tmp.wav"
@@ -445,6 +450,7 @@ def main() -> None:
 
         mixture_output_path = sample_dir / "mixture.wav"
         save_audio(mixture_output_path, mixture)
+        save_audio(target_output_path, target_track)
 
         for tmp_name in [
             "_target_tmp.wav",
@@ -461,8 +467,10 @@ def main() -> None:
             "scenario": spec.scenario,
             "note": spec.note,
             "mixture_duration_sec": mixture_duration_sec,
+            "audio_layout": "mono",
             "reference_source_path": serialize_repo_path(reference_input_path),
             "reference_segment_id": reference_row["segment_id"],
+            "target_audio_path": serialize_repo_path(target_output_path),
             "components": component_meta,
         }
         (sample_dir / "sample_meta.json").write_text(
@@ -475,6 +483,7 @@ def main() -> None:
             {
                 "sample_id": spec.sample_id,
                 "mixture_audio_path": serialize_repo_path(mixture_output_path),
+                "target_audio_path": serialize_repo_path(target_output_path),
                 "reference_audio_path": serialize_repo_path(reference_output_path),
                 "note": spec.note,
             }
@@ -484,6 +493,7 @@ def main() -> None:
                 "sample_id": spec.sample_id,
                 "scenario": spec.scenario,
                 "mixture_audio_path": serialize_repo_path(mixture_output_path),
+                "target_audio_path": serialize_repo_path(target_output_path),
                 "reference_segment_id": reference_row["segment_id"],
                 "components": [component["kind"] for component in component_meta],
                 "mixture_duration_sec": round(mixture_duration_sec, 3),

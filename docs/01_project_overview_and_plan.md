@@ -5982,6 +5982,156 @@
       - 再听
         `stage2 vs v32`
   - 本轮仍未启动新训练
+288. 已完成这轮 near-real 决策关卡听审并解盲；当前真实结论不是“`v64` 比 `v32` 略占优”，而是 `v32` 与 `v64` 在 10 条样本上人耳完全没有拉开，表面胜负差异只是三候选单选 GUI 下的随机选边噪声：
+  - 新日报：
+    - `reports/daily/2026-03-25_decision_gate_listening_review.md`
+  - 使用包：
+    - `reports/eval/decision_gate_listening_pack_near_real_v1_stage2_v32_v64_blind_v2`
+  - 解盲后真实偏序：
+    - `near_real_0003`：
+      - `legacy stage2 > v32 = v64`
+    - `near_real_0005`：
+      - `v32 = v64 > legacy stage2`
+    - `near_real_0007`：
+      - `v32 = v64 > legacy stage2`
+    - `near_real_0009`：
+      - `v32 = v64 > legacy stage2`
+    - 其余 `6` 条：
+      - 三者打平
+  - 两两比较后的真实结果：
+    - `v32 vs v64`：
+      - `10` 条全 tie
+    - `v32 vs legacy stage2`：
+      - `3` 胜
+      - `1` 负
+      - `6` tie
+    - `v64 vs legacy stage2`：
+      - `3` 胜
+      - `1` 负
+      - `6` tie
+  - 当前更关键的新判断是：
+    - `v32 / v64`
+      的局部收益主要落在：
+      - music
+      - harder mix
+      - absent external speech
+    - 但在当前最关键的
+      friend speech leakage
+      主问题上，
+      仍没有形成稳定可听优势
+    - 因而：
+      - `legacy stage2`
+        继续保持默认主线
+      - `v32`
+        保留为研究基座
+      - `v64`
+        保留为历史证据轮次，
+        但不再作为独立 active 候选继续推进
+    - `candidate_v7`
+        高粒度旧 rows 重路由分析
+        当前应阶段性停止
+289. 已把“当前项目是否足够结题”与“若只继续修 `guodegang` 该怎么重开”正式拆开；当前默认口径应改成：本阶段可以结题，但 `guodegang / external speech leakage` 若还要继续，必须作为一个更窄的新子题单独重开，不能再混在原 friend-side 大树里自动推进：
+  - 新日报：
+    - `reports/daily/2026-03-25_phase_closeout_and_guodegang_next_step.md`
+  - 当前阶段结题判断：
+    - 已足够完成：
+      - 主线是否切换
+      - `v32`
+        是否保留为研究基座
+      - `v64`
+        是否继续单独推进
+      - `candidate_v7`
+        是否继续下钻
+      这四个核心决策
+    - 因而当前 Phase C
+      可以正式收尾
+  - 但当前仍未被真正解决的真实症状是：
+    - `guodegang / external speech leakage`
+  - 若后续继续，
+    当前建议改成一个更窄的新题：
+    - 基座固定：
+      - `v32`
+    - focused proxy：
+      - `train_manifest_guodegang_proxy_v1.jsonl`
+      - `val_manifest_guodegang_proxy_v1.jsonl`
+    - focused near-real guardrail：
+      - `near_real_guodegang_transient_probe_v1`
+      - `near_real_0006`
+      - `near_real_0009`
+    - 同时继续守住：
+      - friend speech leakage
+      - target absent
+      - raw target only
+    - 执行方式：
+      - 只做小规模 focused follow-up
+      - 不再开大 sweep
+      - 不再继续 broad union manifest
+      - 不再继续 `candidate_v7`
+        旧 rows 重路由分析
+290. 已把下一阶段若重开的定向评估方案正式物化成单独文档；当前新的工作假设不再是“继续修 `guodegang` 这个单点”，而是：要针对一类 `same_gender + near-f0 + near-resonance + mild-reverb` 的 external speech 风险家族，以及独立的 bandwidth / 电话音 guardrail 做 focused 评估：
+  - 新文档：
+    - `docs/07_targeted_eval_plan_samegender_reverb_bandwidth.md`
+  - 当前已补好的工程前置：
+    - `near_real_v1`
+      已重新导出：
+      - `target.wav`
+      - `target_audio_path`
+    - `scripts/eval/export_ab_inference_from_manifest.py`
+      现在会：
+      - 优先导出 `target.wav`
+      - 明确统一导出为单声道
+    - 新增：
+      - `scripts/eval/audit_listening_pack_assets.py`
+      用于在听审前检查：
+      - 是否全单声道
+      - 是否缺 `target.wav`
+  - 当前下一阶段若重开，
+    默认应先做的 targeted eval 包括：
+    - 听审资产 QA
+    - `same_gender_reverb_like` near-real family
+    - `guodegang_proxy_v1` focused synthetic pre-screen
+    - bandwidth / 电话音 guardrail
+  - 当前新的默认执行顺序是：
+    - 先 asset audit
+    - 再 near-real family
+    - 再 focused synthetic pre-screen
+    - 最后才允许起一轮小规模训练
+  - 当前新的 stop rule 是：
+    - 只要 same-gender reverb-like
+      或 bandwidth
+      任一条 guardrail 不过，
+      就直接停，
+      不再扩树
+291. 已把下一阶段若继续推进所需的 focused manifest 与固定执行顺序正式物化；当前后续不再需要手工拼 `near_real_0006 / 0009` 或 raw-target-only 清单，而是已有固定入口：
+  - 新日报：
+    - `reports/daily/2026-03-25_targeted_eval_asset_materialization.md`
+  - 新 near-real family manifest：
+    - `data/references/real_eval_manifest_same_gender_reverb_like_v1.jsonl`
+      - 当前 `2` 条：
+        - `near_real_0006`
+        - `near_real_0009`
+    - `data/references/real_eval_manifest_bandwidth_guardrail_v1.jsonl`
+      - 当前 `4` 条：
+        - `near_real_0001`
+        - `near_real_0002`
+        - `near_real_0006`
+        - `near_real_0009`
+  - 当前若继续，
+    默认固定执行顺序应改成：
+    - 先导出
+      `same_gender_reverb_like_v1`
+      听审包
+    - 再跑：
+      - `scripts/eval/audit_listening_pack_assets.py`
+    - 听审后固定再跑：
+      - `scripts/eval/analyze_listening_pack_bandwidth.py`
+    - synthetic 侧仍只保留：
+      - `guodegang_proxy_v1`
+        做 focused pre-screen
+  - 当前意义：
+    - 后续若继续，
+      已经不再缺“该先听哪几条、该先跑哪几个检查”
+      的执行入口
 
 ## 9. 文档入口
 
@@ -5992,6 +6142,7 @@
 - 人耳复核指南：`docs/04_human_listening_review_guide.md`
 - 任务分支图：`docs/05_task_branch_map.md`
 - 决策关卡听审包说明：`docs/06_decision_gate_listening_pack.md`
+- 下一阶段定向评估方案：`docs/07_targeted_eval_plan_samegender_reverb_bandwidth.md`
 - 初始设计：`initial_design.md`
 - 设计评审占位：`initial_design_judg.md`
 - 本轮模型条件化升级记录：`reports/daily/2026-03-16_ref_conditioning_upgrade.md`
@@ -6095,3 +6246,6 @@
 - 本轮决策关卡听审包总说明：`docs/06_decision_gate_listening_pack.md`
 - 本轮仓库与 `.gitignore` 审计：`reports/daily/2026-03-18_repo_gitignore_audit.md`
 - 本轮全仓库评估总结：`reports/daily/2026-03-17_repo_evaluation_summary.md`
+- 本轮决策关卡听审复盘：`reports/daily/2026-03-25_decision_gate_listening_review.md`
+- 本轮阶段结题与 `guodegang` 下一步建议：`reports/daily/2026-03-25_phase_closeout_and_guodegang_next_step.md`
+- 本轮定向评估资产物化：`reports/daily/2026-03-25_targeted_eval_asset_materialization.md`
