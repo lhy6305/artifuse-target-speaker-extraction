@@ -19,6 +19,7 @@ DECISION_TAG_EXAMPLES = [
     "less_interference_leak",
     "steadier_volume",
     "less_artifact",
+    "prefer_silence_over_leak",
 ]
 RESERVED_AUDIO_NAMES = ["mixture.wav", "reference.wav", "target.wav"]
 EXPORT_TARGET_RMS = 0.12

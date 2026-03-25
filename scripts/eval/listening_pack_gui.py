@@ -25,6 +25,7 @@ DEFAULT_DECISION_TAG_EXAMPLES = [
     "less_interference_leak",
     "steadier_volume",
     "less_artifact",
+    "prefer_silence_over_leak",
 ]
 EXPORT_SUMMARY_NAME = "listening_results_summary.json"
 LEGACY_PACK_FORMAT = "legacy_ab_v1"

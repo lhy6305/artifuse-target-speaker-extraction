@@ -6378,3 +6378,9 @@
 - 本轮 focused GUI 听审解盲与裁决：`reports/daily/2026-03-25_focused_eval_gui_listening_review.md`
 - 本轮 `same_gender_reverb_proxy_v2` 资产物化：`reports/daily/2026-03-25_same_gender_reverb_proxy_v2_materialization.md`
 - 本轮 `same_gender_reverb_proxy_v2` target-present 听审 gate：`reports/daily/2026-03-25_same_gender_reverb_proxy_v2_targetpresent_listening_gate.md`
+
+- 2026-03-25 续记：`same_gender_reverb_proxy_v2` target-present GUI 听审解盲后，结果为 `legacy_stage2=6 / tie=2 / uncertain=2 / v32=0`，说明仅靠 `speech-only reverb` focused gate 不足以支撑放行训练。
+- 2026-03-25 续记：已补物化 `same_gender_reverb_proxy_v3_combo_seed`，把 mixed-reverb synthetic seed 切成 `none / target_only / speech_only / both` 四个组合；四个组合的 objective 结果都仍然偏向 `v32`，因此当前 objective 尚未捕捉到“目标被加混响/更假”的感知失败模式。
+- 2026-03-25 续记：已导出新的 combo-stratified blind GUI 包 `reports/eval/ab_listening_pack_same_gender_reverb_proxy_v3_combo_gate_stage2_vs_v32_blind`，每个组合各取 `top improvement / top regression / top near tie` 三条，共 `12` 条，作为下一轮人耳根因定位 gate。
+- 2026-03-25 续记：`same_gender_reverb_proxy_v3` combo gate 听审解盲后为 `legacy_stage2=10 / v32=1 / tie=1`。四个组合里 `legacy_stage2` 都更稳，`v32` 只在 `both` 组赢 `1` 条，当前不允许基于这条 synthetic 线放行训练。
+- 2026-03-25 续记：本轮新增一条必须保留的评审标准：当目标已经弱到几乎不可辨时，`完全闭嘴` 优于 `输出几乎全是干扰`；后续听审与裁决不能把“更响”误判成“更好”。

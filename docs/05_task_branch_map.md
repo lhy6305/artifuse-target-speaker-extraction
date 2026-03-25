@@ -5112,3 +5112,14 @@
 1. 这条分支是新 coverage，还是旧 rows 重路由？
 2. 会不会再次误命中 `interference_extra` exact family？
 3. 计划跑完后用哪份 gate 判 keep / drop？
+
+- 2026-03-25：`same_gender_reverb_proxy_v3` combo gate 已落地，入口是 `reports/eval/ab_listening_pack_same_gender_reverb_proxy_v3_combo_gate_stage2_vs_v32_blind`。
+  - 上游 seed：`data/synthetic/val_manifest_same_gender_reverb_proxy_v3_combo_seed.jsonl`
+  - 四个组合切片：`val_manifest_same_gender_reverb_proxy_v3_none/target_only/speech_only/both.jsonl`
+  - objective 对比：`reports/eval/compare_stage2_vs_v32_on_same_gender_reverb_proxy_v3_*`
+  - 样本级组合摘要：`reports/eval/ab_listening_pack_same_gender_reverb_proxy_v3_combo_gate_stage2_vs_v32_blind/combo_gate_selection_summary.json`
+  - 当前用途：定位“目标加混响 / 干扰加混响 / joint reverb / 无混响”哪一类才是主观失败主因，不用于直接放行训练。
+- 2026-03-25：`same_gender_reverb_proxy_v3` combo gate 听审解盲已完成，记录在 `reports/daily/2026-03-25_same_gender_reverb_proxy_v3_combo_gate_listening_review.md`。
+  - 真实结果：`legacy_stage2 10 / v32 1 / tie 1`
+  - 分组合结果：`none = 3:0`，`target_only = 2:0:1`，`speech_only = 3:0`，`both = 2:1`
+  - 新增评审标准：目标弱到几乎不可辨时，`prefer_silence_over_leak`

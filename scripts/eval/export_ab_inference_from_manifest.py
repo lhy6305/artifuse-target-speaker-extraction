@@ -28,6 +28,7 @@ DECISION_TAG_EXAMPLES = [
     "less_interference_leak",
     "steadier_volume",
     "less_artifact",
+    "prefer_silence_over_leak",
 ]
 EXPORT_TARGET_RMS = 0.12
 EXPORT_MAX_PEAK = 0.85
