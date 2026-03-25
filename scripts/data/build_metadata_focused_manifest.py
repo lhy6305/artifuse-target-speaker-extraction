@@ -40,6 +40,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--temporal-patterns", nargs="*", default=[])
     parser.add_argument("--min-target-ratio", type=float, default=None)
     parser.add_argument("--max-target-ratio", type=float, default=None)
+    parser.add_argument("--min-target-energy-ratio", type=float, default=None)
+    parser.add_argument("--max-target-energy-ratio", type=float, default=None)
     parser.add_argument("--min-overlap-ratio", type=float, default=None)
     parser.add_argument("--max-overlap-ratio", type=float, default=None)
     parser.add_argument("--min-interference-gain-db", type=float, default=None)
@@ -314,6 +316,37 @@ def build_target_interference_pair_metrics(
     }
 
 
+def build_target_audibility_metrics(
+    mixture_audio_path: Path,
+    target_audio_path: Path,
+) -> dict[str, float]:
+    mixture_waveform, _ = load_audio(mixture_audio_path)
+    target_waveform, _ = load_audio(target_audio_path)
+    common_length = min(mixture_waveform.shape[0], target_waveform.shape[0])
+    if common_length <= 0:
+        return {
+            "target_energy_ratio": 0.0,
+            "interference_energy_ratio": 0.0,
+            "target_to_interference_energy_ratio": 0.0,
+            "target_to_interference_energy_db": -120.0,
+        }
+    mixture_waveform = mixture_waveform[:common_length]
+    target_waveform = target_waveform[:common_length]
+    interference_waveform = mixture_waveform - target_waveform
+
+    target_energy = float(np.dot(target_waveform, target_waveform))
+    mixture_energy = max(float(np.dot(mixture_waveform, mixture_waveform)), 1e-12)
+    interference_energy = max(float(np.dot(interference_waveform, interference_waveform)), 1e-12)
+    target_to_interference_ratio = target_energy / interference_energy
+    target_to_interference_db = float(10.0 * np.log10(target_to_interference_ratio + 1e-12))
+    return {
+        "target_energy_ratio": float(target_energy / mixture_energy),
+        "interference_energy_ratio": float(interference_energy / mixture_energy),
+        "target_to_interference_energy_ratio": float(target_to_interference_ratio),
+        "target_to_interference_energy_db": target_to_interference_db,
+    }
+
+
 def passes_optional_bounds(
     *,
     value: float,
@@ -387,6 +420,8 @@ def main() -> None:
             args.max_target_transient_presence_minus_mid_db_mean,
             args.min_target_transient_presence_share_mean,
             args.max_target_transient_presence_share_mean,
+            args.min_target_energy_ratio,
+            args.max_target_energy_ratio,
             args.min_interference_transient_presence_minus_mid_db_mean,
             args.max_interference_transient_presence_minus_mid_db_mean,
             args.min_interference_transient_presence_share_mean,
@@ -402,6 +437,7 @@ def main() -> None:
     target_transient_cache: dict[str, dict[str, float]] = {}
     interference_transient_cache: dict[str, dict[str, float]] = {}
     pair_metric_cache: dict[tuple[str, str], dict[str, float]] = {}
+    audibility_metric_cache: dict[tuple[str, str], dict[str, float]] = {}
     for row in rows:
         if allowed_sample_ids and str(row["sample_id"]) not in allowed_sample_ids:
             continue
@@ -461,6 +497,8 @@ def main() -> None:
         if use_derived_metrics:
             target_audio_path = ROOT / str(metadata["output_paths"]["target_audio_path"])
             target_key = str(target_audio_path)
+            mixture_audio_path = ROOT / str(metadata["output_paths"]["mixture_audio_path"])
+            mixture_key = str(mixture_audio_path)
             target_transient_metrics = target_transient_cache.get(target_key, {})
             if not target_transient_metrics:
                 target_transient_metrics = build_target_transient_metrics(target_audio_path)
@@ -468,6 +506,13 @@ def main() -> None:
 
             interference_transient_metrics: dict[str, float] = {}
             pair_metrics: dict[str, float] = {}
+            audibility_metrics = audibility_metric_cache.get((mixture_key, target_key), {})
+            if not audibility_metrics:
+                audibility_metrics = build_target_audibility_metrics(
+                    mixture_audio_path=mixture_audio_path,
+                    target_audio_path=target_audio_path,
+                )
+                audibility_metric_cache[(mixture_key, target_key)] = audibility_metrics
             if first_layer is not None and first_layer.get("audio_path"):
                 interference_audio_path = ROOT / str(first_layer["audio_path"])
                 interference_key = str(interference_audio_path)
@@ -483,6 +528,7 @@ def main() -> None:
 
             transient_metrics = {
                 **target_transient_metrics,
+                **audibility_metrics,
                 **interference_transient_metrics,
                 **pair_metrics,
             }
@@ -498,6 +544,11 @@ def main() -> None:
                         value=transient_metrics["target_transient_presence_share_mean"],
                         min_value=args.min_target_transient_presence_share_mean,
                         max_value=args.max_target_transient_presence_share_mean,
+                    ),
+                    passes_optional_bounds(
+                        value=transient_metrics["target_energy_ratio"],
+                        min_value=args.min_target_energy_ratio,
+                        max_value=args.max_target_energy_ratio,
                     ),
                     passes_optional_bounds(
                         value=transient_metrics.get("interference_transient_presence_minus_mid_db_mean", float("nan")),
@@ -528,15 +579,20 @@ def main() -> None:
                 ] + [
                     transient_checks[2]
                     for _ in [0]
+                    if args.min_target_energy_ratio is not None
+                    or args.max_target_energy_ratio is not None
+                ] + [
+                    transient_checks[3]
+                    for _ in [0]
                     if args.min_interference_transient_presence_minus_mid_db_mean is not None
                     or args.max_interference_transient_presence_minus_mid_db_mean is not None
                 ] + [
-                    transient_checks[3]
+                    transient_checks[4]
                     for _ in [0]
                     if args.min_interference_transient_presence_share_mean is not None
                     or args.max_interference_transient_presence_share_mean is not None
                 ] + [
-                    transient_checks[4]
+                    transient_checks[5]
                     for _ in [0]
                     if args.min_target_interference_logspec_cosine is not None
                     or args.max_target_interference_logspec_cosine is not None
@@ -606,6 +662,8 @@ def main() -> None:
             "temporal_patterns": sorted(temporal_patterns),
             "min_target_ratio": args.min_target_ratio,
             "max_target_ratio": args.max_target_ratio,
+            "min_target_energy_ratio": args.min_target_energy_ratio,
+            "max_target_energy_ratio": args.max_target_energy_ratio,
             "min_overlap_ratio": args.min_overlap_ratio,
             "max_overlap_ratio": args.max_overlap_ratio,
             "min_interference_gain_db": args.min_interference_gain_db,
