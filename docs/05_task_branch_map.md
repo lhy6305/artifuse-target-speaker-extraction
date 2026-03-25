@@ -5167,3 +5167,25 @@
     - 不再大规模听旧家族全量 checkpoint
     - 只在 `near_real_0003 / 0006 / 0007 / 0008 / 0009 / 0010` 这 6 条边界样本上，
       判断 `v49 / v54 / v59` 是否有人耳上真正超过 `v32`
+- 2026-03-26：`silence-over-leak frontier v1` 听审解盲已完成，记录在 `reports/daily/2026-03-26_silence_over_leak_frontier_v1_listening_review.md`。
+  - 真实结果：
+    - `tie = 6`
+  - 当前前沿关系：
+    - `v32 / v49 / v54 / v59` = 主观并列前沿
+  - 当前用途修正：
+    - 这包不再承担“选新基座”任务
+    - 它的作用已经变成：
+      - 证明 objective triage 能筛掉明显差的候选；
+      - 但当 frontier 全部主观打平时，不能再靠 objective 单独裁决
+- 2026-03-26：下一条 active 子题已切换为 `residual_speech_leak_floor_v1`，记录在 `reports/daily/2026-03-26_frontier_imperfection_taxonomy_and_next_subproblem.md`。
+  - focused manifest：
+    - `data/references/real_eval_manifest_residual_speech_leak_floor_v1.jsonl`
+  - 当前主锚点：
+    - `near_real_0006`
+  - 当前辅助样本：
+    - `near_real_0003`
+    - `near_real_0007`
+    - `near_real_0009`
+  - 当前用途：
+    - 不再继续做 `v32 / v49 / v54 / v59` 的多候选选型
+    - 转而把共同未解缺陷“残余语音泄漏下限”作为下一轮真正的研究目标

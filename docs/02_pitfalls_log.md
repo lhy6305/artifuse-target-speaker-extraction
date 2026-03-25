@@ -7238,3 +7238,10 @@
 - 2026-03-25：raw-target-only backstop 不能用 `retention_minus_leak_db` 直接打分，因为这类样本没有 interference 分量，会让 present score 变成空值。当前固定口径是：
   - 有 interference 时看 `retention_minus_leak_db`
   - 无 interference 时回退到 `target_capture_db`
+- 2026-03-26：即使 objective 在 frontier 小包上能稳定排出 `v54 > v59 > v49 > v32`，也不能默认这些差异已经有主观意义。本次 `silence-over-leak frontier v1` 的 6 条样本全部听成 `tie`，说明：
+  - objective 适合做大规模排雷；
+  - 但在已进入 perceptual tie 区间的前沿候选之间，不能仅凭客观分数切基座或放行训练。
+- 2026-03-26：当一组 frontier 候选被人耳全部听成 `tie`，但你仍能明显感到“都不够好”，下一步不应该继续做候选排序，而应把任务改写成“共同缺陷归因”。本次最典型的例子就是：
+  - `0003 / 0006 / 0007 / 0009`
+    里所有前沿候选都还有 speech leak；
+  - 因此真正该立的新题不是“谁更强”，而是“怎么把 residual speech leak floor 再压下去”。

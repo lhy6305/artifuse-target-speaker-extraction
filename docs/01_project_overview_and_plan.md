@@ -6413,3 +6413,24 @@
   - 候选：`v32 / v49_adaptermask / v54_dualdecoder_exactguard / v59_dualdecoder_basedeltaproj_w005`
   - 样本：`near_real_0003 / 0006 / 0007 / 0008 / 0009 / 0010`
   - pack objective 摘要：`v54` 和 `v59` 在 absent rank 与 present rank 上都领先 `v32`，因此后续人耳只需复核这 6 条样本，而不再回到大包全听。
+- 2026-03-26 续记：`silence-over-leak frontier v1` GUI 听审已完成，记录在 `reports/daily/2026-03-26_silence_over_leak_frontier_v1_listening_review.md`。
+  - 解盲结果：`tie = 6`
+  - `near_real_0003 / 0006 / 0007 / 0008 / 0009 / 0010` 全部无可感知差异
+  - 这意味着：
+    - `v32 / v49 / v54 / v59` 形成主观并列前沿
+    - objective 排名 `v54 > v59 > v49 > v32` 没有转化成可听优势
+  - 当前裁决：
+    - 不切研究基座
+    - 不基于这轮 frontier 结果起训练
+    - `silence-over-leak` 子题当前可以视为“已完成有效排雷，但尚未发现可听新赢家”
+- 2026-03-26 续记：已把 frontier 共同缺陷整理成 taxonomy，记录在 `reports/daily/2026-03-26_frontier_imperfection_taxonomy_and_next_subproblem.md`。
+  - 结论：最值得继续推进的不是 checkpoint 选型，而是新子题
+    - `residual_speech_leak_floor_v1`
+  - 新 focused manifest：
+    - `data/references/real_eval_manifest_residual_speech_leak_floor_v1.jsonl`
+  - 当前最核心未解缺陷：
+    - `near_real_0006` 上四个前沿候选仍全部为 `heavy leak`
+    - `near_real_0003 / 0007 / 0009` 仍全部停留在 `moderate leak`
+  - 当前阶段判断：
+    - `silence-over-leak` 选型分支可以收口
+    - 项目若继续推进，应直接转向“残余语音泄漏下限”这条新的缺陷子题
