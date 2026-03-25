@@ -6434,3 +6434,37 @@
   - 当前阶段判断：
     - `silence-over-leak` 选型分支可以收口
     - 项目若继续推进，应直接转向“残余语音泄漏下限”这条新的缺陷子题
+- 2026-03-26 续记：已对“弱目标直接闭嘴”和“按音色/共振峰过滤”两条思路做严谨评估，记录在 `reports/daily/2026-03-26_overlap_abstention_feasibility_and_plan.md`。
+  - 当前判断：
+    - `weak-target overlap abstention`
+      = 高可行性主线
+    - `formant / timbre post-filter`
+      = 低优先级旁路诊断
+  - 关键依据：
+    - 当前模型和 loss selector 已原生支持
+      `target_ratio / overlap_ratio / interference pool`
+      这类 focused 切片
+  - 当前未解主问题集中在
+      `0006 / 0007 / 0009`
+      的 overlap speech leak floor
+  - 下一步默认执行：
+    - 先物化 overlap-abstention focused proxy / selector
+    - 再从 `v54` 或 `v59` 起一轮极小训练
+- 2026-03-26 续记：overlap-abstention 的 focused 资产与两轮 pilot 已完成，记录在 `reports/daily/2026-03-26_overlap_abstention_assets_and_v68_v69_pilots.md`。
+  - 新资产：
+    - `train/val_manifest_overlap_abstention_bundle_v1.jsonl`
+    - `train/val_manifest_overlap_abstention_backstop_union_v1.jsonl`
+    - `sample_ids_overlap_abstention_*`
+  - 初始化选择：
+    - `v54` 优于 `v59`
+  - `v68`：
+    - synthetic 大幅改善
+    - near-real `0009` 更安静
+    - 但 `0003 / 0006` 出现 present guardrail violation
+  - `v69`：
+    - synthetic 更强
+    - 但 near-real guardrail 仍未通过，且 `0007` 也被拖入 violation
+  - 当前更新后的默认下一步：
+    - 不再扫 `v68 / v69` 附近权重
+    - 先收窄 `overlap_abstention_proxy_v1`
+    - 构建更贴近低可辨目标的 `proxy_v2`

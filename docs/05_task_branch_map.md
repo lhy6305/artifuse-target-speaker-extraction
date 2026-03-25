@@ -5189,3 +5189,24 @@
   - 当前用途：
     - 不再继续做 `v32 / v49 / v54 / v59` 的多候选选型
     - 转而把共同未解缺陷“残余语音泄漏下限”作为下一轮真正的研究目标
+- 2026-03-26：该子题的执行策略已进一步收敛为 `weak-target overlap abstention`，记录在 `reports/daily/2026-03-26_overlap_abstention_feasibility_and_plan.md`。
+  - 主判断：
+    - 优先做“弱目标时闭嘴”
+    - 不优先做“手工 formant / 音色后处理”
+  - 当前下一步：
+    - 先构建 overlap-abstention focused proxy / selector
+    - 再从 `v54 / v59` 启动小训练验证
+- 2026-03-26：该分支已完成 focused assetization 与两轮小训练 pilot，记录在 `reports/daily/2026-03-26_overlap_abstention_assets_and_v68_v69_pilots.md`。
+  - 新资产：
+    - `overlap_abstention_bundle_v1`
+    - `overlap_abstention_backstop_union_v1`
+    - 对应 `sample_ids_overlap_abstention_*`
+  - 新 checkpoint：
+    - `v68_v54_overlap_abstention_bundle_v1_ft1`
+    - `v69_v68_overlap_abstention_rebalance_v1_ft1`
+  - 当前分支状态：
+    - synthetic objective = 明显可驱动
+    - near-real guardrail = 仍未通过
+  - 当前默认下一步：
+    - 不再继续扫 `v68 / v69` 的权重近邻
+    - 先把 `overlap_abstention_proxy_v1` 收窄成更贴近低可辨目标的 `proxy_v2`

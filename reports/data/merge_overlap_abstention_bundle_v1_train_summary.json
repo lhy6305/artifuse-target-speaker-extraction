@@ -1,0 +1,82 @@
+{
+  "input_manifests": [
+    "data/synthetic/train_manifest_overlap_abstention_proxy_v1.jsonl",
+    "data/synthetic/train_manifest_overlap_abstention_backstop_v1.jsonl",
+    "data/synthetic/train_manifest_overlap_abstention_mixed_backstop_v1.jsonl"
+  ],
+  "output_manifest": "data/synthetic/train_manifest_overlap_abstention_bundle_v1.jsonl",
+  "sample_ids_output": "data/synthetic/sample_ids_overlap_abstention_bundle_v1_train.txt",
+  "dedupe_key": "sample_id",
+  "duplicate_key_count": 0,
+  "duplicate_keys": [],
+  "input_summaries": [
+    {
+      "manifest": "data/synthetic/train_manifest_overlap_abstention_proxy_v1.jsonl",
+      "summary": {
+        "count": 127,
+        "recipe_counts": {
+          "target_clean_speech": 52,
+          "target_hard_speech": 75
+        },
+        "temporal_pattern_counts": {
+          "target_absent_head": 35,
+          "target_absent_tail": 51,
+          "target_intermittent": 41
+        },
+        "interference_pool_counts": {
+          "": 127
+        }
+      }
+    },
+    {
+      "manifest": "data/synthetic/train_manifest_overlap_abstention_backstop_v1.jsonl",
+      "summary": {
+        "count": 122,
+        "recipe_counts": {
+          "target_clean_speech": 64,
+          "target_hard_speech": 58
+        },
+        "temporal_pattern_counts": {
+          "target_full": 122
+        },
+        "interference_pool_counts": {
+          "": 122
+        }
+      }
+    },
+    {
+      "manifest": "data/synthetic/train_manifest_overlap_abstention_mixed_backstop_v1.jsonl",
+      "summary": {
+        "count": 89,
+        "recipe_counts": {
+          "target_clean_plus_music": 46,
+          "target_hard_plus_music": 43
+        },
+        "temporal_pattern_counts": {
+          "target_full": 89
+        },
+        "interference_pool_counts": {
+          "": 89
+        }
+      }
+    }
+  ],
+  "output_summary": {
+    "count": 338,
+    "recipe_counts": {
+      "target_clean_plus_music": 46,
+      "target_clean_speech": 116,
+      "target_hard_plus_music": 43,
+      "target_hard_speech": 133
+    },
+    "temporal_pattern_counts": {
+      "target_absent_head": 35,
+      "target_absent_tail": 51,
+      "target_full": 211,
+      "target_intermittent": 41
+    },
+    "interference_pool_counts": {
+      "": 338
+    }
+  }
+}

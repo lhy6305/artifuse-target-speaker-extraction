@@ -7245,3 +7245,7 @@
   - `0003 / 0006 / 0007 / 0009`
     里所有前沿候选都还有 speech leak；
   - 因此真正该立的新题不是“谁更强”，而是“怎么把 residual speech leak floor 再压下去”。
+- 2026-03-26：`weak-target overlap abstention` 的 synthetic proxy 即使能被训练显著拉动，也不等于 near-real 已经可用。本次 `v68 / v69` 在 `overlap_abstention_bundle_v1` 上都大幅优于 `v54`，但 near-real `residual_speech_leak_floor_v1` 仍触发了 present guardrail violation。结论：
+  - 当前 `proxy_v1` selector 仍然过宽；
+  - 它不仅在学“弱目标时闭嘴”，也在学“把部分仍应保留的 present case 一起压静”；
+  - 因此下一步优先改 selector，而不是继续扫 loss 权重。
