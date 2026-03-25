@@ -16,10 +16,25 @@
 - `reports/eval/decision_gate_listening_pack_near_real_v1_stage2_vs_v32_blind`
 - `reports/eval/decision_gate_listening_pack_near_real_v1_stage2_vs_v64_blind`
 
+磁盘上另有一个后续合并导出的多候选盲包：
+
+- `reports/eval/decision_gate_listening_pack_near_real_v1_stage2_v32_v64_blind_v2`
+
+它的用途不是改变决策问题，
+而是把
+`legacy stage2 / v32 / v64`
+三者合到同一 GUI 里一次性盲听，
+减少分两包来回切换造成的口径漂移。
+当前若直接开始人工听审，
+默认优先使用这个 `v2` 合并包。
+
 建议先听：
 
-1. `stage2_vs_v64`
-2. `stage2_vs_v32`
+1. 若使用旧双包口径：
+   - `stage2_vs_v64`
+   - 再 `stage2_vs_v32`
+2. 若使用当前默认口径：
+   - 直接听 `stage2_v32_v64_blind_v2`
 
 样本集固定为：
 

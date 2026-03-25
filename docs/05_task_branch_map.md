@@ -4613,15 +4613,23 @@
   - 已导出的两组盲包：
     - `reports/eval/decision_gate_listening_pack_near_real_v1_stage2_vs_v64_blind`
     - `reports/eval/decision_gate_listening_pack_near_real_v1_stage2_vs_v32_blind`
+  - 磁盘上另有后续合并导出的三候选盲包：
+    - `reports/eval/decision_gate_listening_pack_near_real_v1_stage2_v32_v64_blind_v2`
+    - 当前人工听审默认优先用它，
+      避免两包之间来回切换
   - 固定样本口径：
     - `data/references/real_eval_manifest_near_real_v1.jsonl`
     - 共 `10` 条：
       - `near_real_0001` 到 `near_real_0010`
   - 当前更关键的新约束是：
-    - 默认先听
-      `stage2 vs v64`
-    - 再听
-      `stage2 vs v32`
+    - 当前默认先听：
+      `stage2_v32_v64_blind_v2`
+    - 若不用合并包，
+      再退回：
+      - 先听
+        `stage2 vs v64`
+      - 再听
+        `stage2 vs v32`
     - 在这轮听审完成前，
       不继续自动开新训练，
       也不继续默认沿
@@ -4687,6 +4695,8 @@
      - `reports/daily/2026-03-24_decision_gate_listening_pack_export.md`
    - 当前决策关卡听审包总说明：
      - `docs/06_decision_gate_listening_pack.md`
+   - 当前默认待听合并盲包：
+     - `reports/eval/decision_gate_listening_pack_near_real_v1_stage2_v32_v64_blind_v2`
    - 当前两组待听盲包：
      - `reports/eval/decision_gate_listening_pack_near_real_v1_stage2_vs_v64_blind`
      - `reports/eval/decision_gate_listening_pack_near_real_v1_stage2_vs_v32_blind`

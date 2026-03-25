@@ -5950,6 +5950,14 @@
   - 两组盲包：
     - `reports/eval/decision_gate_listening_pack_near_real_v1_stage2_vs_v32_blind`
     - `reports/eval/decision_gate_listening_pack_near_real_v1_stage2_vs_v64_blind`
+  - 后续又额外导出一个三候选合并盲包，
+    当前磁盘实际最新入口为：
+    - `reports/eval/decision_gate_listening_pack_near_real_v1_stage2_v32_v64_blind_v2`
+    - 作用：
+      - 把
+        `legacy stage2 / v32 / v64`
+        放进同一份 blind GUI
+      - 减少分两包听带来的标尺漂移
   - 使用固定样本：
     - `data/references/real_eval_manifest_near_real_v1.jsonl`
     - 共 `10` 条：
@@ -5965,10 +5973,14 @@
       `candidate_v7`
       细分链路下钻
   - 当前建议的听审顺序：
-    - 先听
-      `stage2 vs v64`
-    - 再听
-      `stage2 vs v32`
+    - 当前默认直接听：
+      `stage2_v32_v64_blind_v2`
+    - 若回退到旧双包口径，
+      仍保持：
+      - 先听
+        `stage2 vs v64`
+      - 再听
+        `stage2 vs v32`
   - 本轮仍未启动新训练
 
 ## 9. 文档入口
