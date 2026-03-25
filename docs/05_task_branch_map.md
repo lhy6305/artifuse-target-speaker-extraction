@@ -4908,6 +4908,27 @@
       或 bandwidth guardrail
       出现明显回退，
       就不进入下一轮 near-real gate
+107. 已把 `same_gender_reverb_proxy_v2` 的下一步固定成 target-present GUI 听审 gate；当前分支图默认不应再停在 objective summary，而应先做人耳确认这条 proxy family 是否真的可听成立：
+  - 新日报：
+    - `reports/daily/2026-03-25_same_gender_reverb_proxy_v2_targetpresent_listening_gate.md`
+  - 新导包：
+    - `reports/eval/ab_listening_pack_same_gender_reverb_proxy_v2_stage2_vs_v32_blind`
+  - 当前 pack 规模：
+    - `10` 条
+  - 当前导包口径：
+    - `target_clean_speech`
+    - `target_full`
+    - high-overlap
+    - speech-side reverb
+  - 当前资产 QA：
+    - mono 通过
+    - `target.wav` 齐全
+  - 当前默认动作：
+    - 先听这包
+    - 再决定
+      `same_gender_reverb_proxy_v2`
+      是只留作 pre-screen，
+      还是可以支持第一轮 focused training
 
 ## 6. 忘线检查表
 

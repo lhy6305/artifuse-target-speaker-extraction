@@ -6236,6 +6236,27 @@
       可保留为 focused pre-screen
     - 但它仍不能单独替代
       near-real target-present same-gender 听审 gate
+295. 已把 `same_gender_reverb_proxy_v2` 的下一步收缩成一个真正可听的 target-present GUI gate；当前不是继续停在 manifest / compare summary 上，而是已经有一个 10 条样本、mono/target 资产审计通过的小型 blind 包可直接听：
+  - 新日报：
+    - `reports/daily/2026-03-25_same_gender_reverb_proxy_v2_targetpresent_listening_gate.md`
+  - 新导出的 blind 包：
+    - `reports/eval/ab_listening_pack_same_gender_reverb_proxy_v2_stage2_vs_v32_blind`
+  - 当前 pack 构成：
+    - `10` 条
+    - 全部来自
+      `target_clean_speech + target_full + high-overlap + speech-side reverb`
+  - 当前资产审计：
+    - `all_mono = true`
+    - `all_have_target = true`
+  - 当前 bandwidth 预分析：
+    - `9` 条未触发明确窄带判定
+    - `1` 条触发 heuristic yellow flag
+  - 当前默认下一步应固定成：
+    - 先听这包
+    - 再决定
+      `same_gender_reverb_proxy_v2`
+      是否只保留为 synthetic pre-screen，
+      还是够资格支持第一轮 focused training
 
 ## 9. 文档入口
 
@@ -6356,3 +6377,4 @@
 - 本轮 focused 评估分析补层与裁决口径：`reports/daily/2026-03-25_focused_eval_analysis_and_decision_ready.md`
 - 本轮 focused GUI 听审解盲与裁决：`reports/daily/2026-03-25_focused_eval_gui_listening_review.md`
 - 本轮 `same_gender_reverb_proxy_v2` 资产物化：`reports/daily/2026-03-25_same_gender_reverb_proxy_v2_materialization.md`
+- 本轮 `same_gender_reverb_proxy_v2` target-present 听审 gate：`reports/daily/2026-03-25_same_gender_reverb_proxy_v2_targetpresent_listening_gate.md`
