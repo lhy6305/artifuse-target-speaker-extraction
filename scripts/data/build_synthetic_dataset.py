@@ -27,6 +27,7 @@ class LayerSpec:
     audio_path: Path
     gain_db: float
     start_offset_sec: float
+    speaker_id: str | None = None
     reverb: "ReverbSpec | None" = None
 
 
@@ -82,16 +83,24 @@ RECIPE_PROFILES: dict[str, list[tuple[str, int]]] = {
         ("target_hard_plus_music", 2),
         ("target_singing_vocal", 1),
     ],
+    "clean_speech_only": [
+        ("target_clean_speech", 1),
+    ],
 }
 
-TEMPORAL_PATTERNS: list[tuple[str, int]] = [
-    ("target_full", 5),
-    ("target_absent_head", 2),
-    ("target_absent_tail", 2),
-    ("target_intermittent", 3),
-]
+TEMPORAL_PATTERN_PROFILES: dict[str, list[tuple[str, int]]] = {
+    "default": [
+        ("target_full", 5),
+        ("target_absent_head", 2),
+        ("target_absent_tail", 2),
+        ("target_intermittent", 3),
+    ],
+    "target_full_only": [
+        ("target_full", 1),
+    ],
+}
 
-POOL_FILE_MAP = {
+DEFAULT_POOL_FILE_MAP = {
     "target_speech_pool": MANIFEST_DIR / "target_speech_pool.jsonl",
     "target_reference_pool": MANIFEST_DIR / "target_reference_pool.jsonl",
     "speech_interference_clean_pool": (
@@ -125,6 +134,16 @@ def parse_args() -> argparse.Namespace:
         default="default",
     )
     parser.add_argument(
+        "--train-temporal-pattern-profile",
+        choices=sorted(TEMPORAL_PATTERN_PROFILES),
+        default="default",
+    )
+    parser.add_argument(
+        "--val-temporal-pattern-profile",
+        choices=sorted(TEMPORAL_PATTERN_PROFILES),
+        default="default",
+    )
+    parser.add_argument(
         "--force-clean",
         action="store_true",
         help="Remove existing sample directories before writing new outputs.",
@@ -147,6 +166,15 @@ def parse_args() -> argparse.Namespace:
         default="",
         help="Optional tag to write split directories and manifests to isolated names under data/synthetic.",
     )
+    parser.add_argument(
+        "--pool-manifest-override",
+        action="append",
+        default=[],
+        help=(
+            "Override a default manifest path in the form "
+            "pool_name=relative/or/absolute/path. Can be passed multiple times."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -163,6 +191,14 @@ def load_jsonl(path: Path) -> list[dict[str, Any]]:
 
 def relpath(path: Path) -> str:
     return path.resolve().relative_to(ROOT.resolve()).as_posix()
+
+
+def serialize_repo_path(path: Path) -> str:
+    resolved = path.resolve()
+    try:
+        return resolved.relative_to(ROOT.resolve()).as_posix()
+    except ValueError:
+        return resolved.as_posix()
 
 
 def normalize_output_tag(value: str) -> str:
@@ -264,17 +300,22 @@ def choose_recipe(recipe_profile: str, rng: random.Random) -> str:
 def choose_temporal_pattern_name(
     target_duration_sec: float,
     rng: random.Random,
+    temporal_pattern_profile: str,
 ) -> str:
-    eligible: list[tuple[str, int]] = [("target_full", 1)]
-    if target_duration_sec >= 1.25:
-        eligible.extend(
-            [
-                ("target_absent_head", 2),
-                ("target_absent_tail", 2),
-            ]
-        )
-    if target_duration_sec >= 1.4:
-        eligible.append(("target_intermittent", 3))
+    eligible: list[tuple[str, int]] = []
+    for pattern_name, weight in TEMPORAL_PATTERN_PROFILES[temporal_pattern_profile]:
+        if pattern_name == "target_full":
+            eligible.append((pattern_name, weight))
+            continue
+        if pattern_name in {"target_absent_head", "target_absent_tail"}:
+            if target_duration_sec >= 1.25:
+                eligible.append((pattern_name, weight))
+            continue
+        if pattern_name == "target_intermittent":
+            if target_duration_sec >= 1.4:
+                eligible.append((pattern_name, weight))
+            continue
+        raise ValueError(f"Unsupported temporal pattern profile entry: {pattern_name}")
     names = [name for name, _ in eligible]
     weights = [weight for _, weight in eligible]
     return rng.choices(names, weights=weights, k=1)[0]
@@ -339,8 +380,13 @@ def serialize_reverb_spec(spec: ReverbSpec | None) -> dict[str, Any] | None:
 def build_target_pattern(
     total_duration_sec: float,
     rng: random.Random,
+    temporal_pattern_profile: str,
 ) -> TargetPattern:
-    pattern_name = choose_temporal_pattern_name(total_duration_sec, rng)
+    pattern_name = choose_temporal_pattern_name(
+        total_duration_sec,
+        rng,
+        temporal_pattern_profile=temporal_pattern_profile,
+    )
 
     if pattern_name == "target_full":
         return TargetPattern(
@@ -487,6 +533,7 @@ def build_layers(
                 audio_path=ROOT / row["audio_path"],
                 gain_db=choose_gain_db(pool_name, rng),
                 start_offset_sec=start_offset_sec,
+                speaker_id=row.get("speaker_id"),
                 reverb=choose_light_reverb_spec(rng) if use_reverb else None,
             )
         )
@@ -658,6 +705,7 @@ def build_sample(
     split_dir_path: Path,
     pools: dict[str, list[dict[str, Any]]],
     recipe_profile: str,
+    temporal_pattern_profile: str,
     rng: random.Random,
     target_reverb_prob: float,
     speech_reverb_prob: float,
@@ -677,7 +725,11 @@ def build_sample(
     )
 
     recipe = choose_recipe(recipe_profile, rng)
-    target_pattern = build_target_pattern(target_duration_sec, rng)
+    target_pattern = build_target_pattern(
+        target_duration_sec,
+        rng,
+        temporal_pattern_profile=temporal_pattern_profile,
+    )
     layers = build_layers(
         recipe,
         pools,
@@ -745,6 +797,7 @@ def build_sample(
         "sample_id": sample_id,
         "split": split,
         "recipe_profile": recipe_profile,
+        "temporal_pattern_profile": temporal_pattern_profile,
         "recipe": recipe,
         "target_present_ratio": round(
             target_present_duration_sec / target_duration_sec,
@@ -769,6 +822,7 @@ def build_sample(
             {
                 "pool": layer.pool_name,
                 "audio_path": relpath(layer.audio_path),
+                "speaker_id": layer.speaker_id,
                 "gain_db": round(layer.gain_db, 3),
                 "start_offset_sec": round(layer.start_offset_sec, 3),
                 "reverb": serialize_reverb_spec(layer.reverb),
@@ -797,6 +851,7 @@ def build_sample(
         "sample_id": sample_id,
         "split": split,
         "recipe_profile": recipe_profile,
+        "temporal_pattern_profile": temporal_pattern_profile,
         "recipe": recipe,
         "temporal_pattern": target_pattern.name,
         "target_present_ratio": round(
@@ -810,8 +865,33 @@ def build_sample(
     }
 
 
-def load_pools() -> dict[str, list[dict[str, Any]]]:
-    pools = {name: load_jsonl(path) for name, path in POOL_FILE_MAP.items()}
+def parse_pool_manifest_overrides(values: list[str]) -> dict[str, Path]:
+    overrides: dict[str, Path] = {}
+    for value in values:
+        if "=" not in value:
+            raise ValueError(f"Invalid --pool-manifest-override value: {value!r}")
+        pool_name, raw_path = value.split("=", 1)
+        pool_name = pool_name.strip()
+        raw_path = raw_path.strip()
+        if pool_name not in DEFAULT_POOL_FILE_MAP:
+            raise ValueError(f"Unknown pool name in override: {pool_name!r}")
+        if not raw_path:
+            raise ValueError(f"Empty override path for pool: {pool_name!r}")
+        path = Path(raw_path)
+        if not path.is_absolute():
+            path = ROOT / path
+        overrides[pool_name] = path
+    return overrides
+
+
+def build_pool_file_map(overrides: dict[str, Path]) -> dict[str, Path]:
+    pool_file_map = dict(DEFAULT_POOL_FILE_MAP)
+    pool_file_map.update(overrides)
+    return pool_file_map
+
+
+def load_pools(pool_file_map: dict[str, Path]) -> dict[str, list[dict[str, Any]]]:
+    pools = {name: load_jsonl(path) for name, path in pool_file_map.items()}
     for pool_name, rows in pools.items():
         if not rows:
             raise RuntimeError(f"Manifest is empty: {pool_name}")
@@ -823,6 +903,7 @@ def build_split(
     sample_count: int,
     pools: dict[str, list[dict[str, Any]]],
     recipe_profile: str,
+    temporal_pattern_profile: str,
     rng: random.Random,
     force_clean: bool,
     target_reverb_prob: float,
@@ -840,6 +921,7 @@ def build_split(
                 split_dir_path,
                 pools,
                 recipe_profile,
+                temporal_pattern_profile,
                 rng,
                 target_reverb_prob=target_reverb_prob,
                 speech_reverb_prob=speech_reverb_prob,
@@ -854,20 +936,29 @@ def build_summary(
     val_rows: list[dict[str, Any]],
     train_recipe_profile: str,
     val_recipe_profile: str,
+    train_temporal_pattern_profile: str,
+    val_temporal_pattern_profile: str,
     target_reverb_prob: float,
     speech_reverb_prob: float,
     output_tag: str,
+    pool_file_map: dict[str, Path],
 ) -> None:
     summary = {
         "train_count": len(train_rows),
         "val_count": len(val_rows),
         "train_recipe_profile": train_recipe_profile,
         "val_recipe_profile": val_recipe_profile,
+        "train_temporal_pattern_profile": train_temporal_pattern_profile,
+        "val_temporal_pattern_profile": val_temporal_pattern_profile,
         "target_reverb_prob": target_reverb_prob,
         "speech_reverb_prob": speech_reverb_prob,
         "output_tag": output_tag,
         "train_manifest": relpath(split_manifest_path("train", output_tag)),
         "val_manifest": relpath(split_manifest_path("val", output_tag)),
+        "pool_manifests": {
+            name: serialize_repo_path(path)
+            for name, path in sorted(pool_file_map.items())
+        },
     }
     write_json(summary_path(output_tag), summary)
 
@@ -875,7 +966,11 @@ def build_summary(
 def main() -> None:
     args = parse_args()
     output_tag = normalize_output_tag(args.output_tag)
-    pools = load_pools()
+    pool_manifest_overrides = parse_pool_manifest_overrides(
+        args.pool_manifest_override
+    )
+    pool_file_map = build_pool_file_map(pool_manifest_overrides)
+    pools = load_pools(pool_file_map)
 
     rng = random.Random(args.seed)
     SYNTHETIC_DIR.mkdir(parents=True, exist_ok=True)
@@ -885,6 +980,7 @@ def main() -> None:
         sample_count=args.train_count,
         pools=pools,
         recipe_profile=args.train_recipe_profile,
+        temporal_pattern_profile=args.train_temporal_pattern_profile,
         rng=rng,
         force_clean=args.force_clean,
         target_reverb_prob=args.target_reverb_prob,
@@ -896,6 +992,7 @@ def main() -> None:
         sample_count=args.val_count,
         pools=pools,
         recipe_profile=args.val_recipe_profile,
+        temporal_pattern_profile=args.val_temporal_pattern_profile,
         rng=rng,
         force_clean=args.force_clean,
         target_reverb_prob=args.target_reverb_prob,
@@ -907,9 +1004,12 @@ def main() -> None:
         val_rows,
         train_recipe_profile=args.train_recipe_profile,
         val_recipe_profile=args.val_recipe_profile,
+        train_temporal_pattern_profile=args.train_temporal_pattern_profile,
+        val_temporal_pattern_profile=args.val_temporal_pattern_profile,
         target_reverb_prob=args.target_reverb_prob,
         speech_reverb_prob=args.speech_reverb_prob,
         output_tag=output_tag,
+        pool_file_map=pool_file_map,
     )
 
     print(
@@ -919,9 +1019,19 @@ def main() -> None:
                 "val_count": len(val_rows),
                 "train_recipe_profile": args.train_recipe_profile,
                 "val_recipe_profile": args.val_recipe_profile,
+                "train_temporal_pattern_profile": (
+                    args.train_temporal_pattern_profile
+                ),
+                "val_temporal_pattern_profile": (
+                    args.val_temporal_pattern_profile
+                ),
                 "target_reverb_prob": args.target_reverb_prob,
                 "speech_reverb_prob": args.speech_reverb_prob,
                 "output_tag": output_tag,
+                "pool_manifest_overrides": {
+                    name: serialize_repo_path(path)
+                    for name, path in sorted(pool_manifest_overrides.items())
+                },
                 "summary_path": relpath(summary_path(output_tag)),
             },
             ensure_ascii=False,

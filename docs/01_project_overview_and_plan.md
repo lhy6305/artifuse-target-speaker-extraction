@@ -6132,6 +6132,110 @@
     - 后续若继续，
       已经不再缺“该先听哪几条、该先跑哪几个检查”
       的执行入口
+292. 已把 `guodegang probe / guodegang proxy / same_gender_reverb_like pack / bandwidth_guardrail pack` 这四类 focused 资产补齐分析层；当前不再只是“目录已生成”，而是已经能直接区分 objective 通过项、需人耳终裁项与默认 stop rule：
+  - 新日报：
+    - `reports/daily/2026-03-25_focused_eval_analysis_and_decision_ready.md`
+  - 当前已能直接判定：
+    - `v32`
+      继续保留为 focused follow-up 唯一基座
+    - `guodegang_proxy_v1`
+      保留为 focused synthetic pre-screen baseline
+    - `near_real_guodegang_transient_probe_v1`
+      保留为 focused objective guardrail
+  - 当前两包 focused 听审资产都已通过：
+    - mono / target.wav
+      资产 QA
+    - 且已补齐：
+      - `tradeoff_analysis`
+      - `bandwidth_analysis`
+  - 当前必须带着黄灯进入听审的新事实是：
+    - `bandwidth_guardrail_v1`
+      上的
+      `near_real_0001`
+      已被结构化标成：
+      - `v32`
+        更窄带
+    - 因此不能把
+      `v32`
+      直接判成 focused guardrail 全通过
+  - 当前默认裁决顺序应固定为：
+    - 先听
+      `bandwidth_guardrail_v1`
+      包，
+      优先检查
+      `0001 / 0002`
+      是否电话音
+    - 再听
+      `same_gender_reverb_like_v1`
+      包，
+      核对
+      `0006 / 0009`
+      是不是真的
+      “少泄漏但不更空 / 不更薄”
+    - 只要任一包不过，
+      就不启动下一轮训练
+293. 已完成两组 focused pack 的 GUI 听审并解盲；当前必须把表面上的“两包各赢一次”还原成“唯一样本里只有 `near_real_0009` 这一条对 `v32` 有可感知收益”，不能把重复出现在两个 pack 中的同一条样本算成两条独立证据：
+  - 新日报：
+    - `reports/daily/2026-03-25_focused_eval_gui_listening_review.md`
+  - 两包解盲后表面计数分别为：
+    - `bandwidth_guardrail_v1`
+      ：`v32 = 1 / tie = 3`
+    - `same_gender_reverb_like_v1`
+      ：`v32 = 1 / tie = 1`
+  - 但这两个 `v32 win`
+    实际都落在：
+    - `near_real_0009`
+      target absent / external speech only
+  - 唯一样本 union
+    的真实结果应写成：
+    - `near_real_0001 = tie`
+    - `near_real_0002 = tie`
+    - `near_real_0006 = tie`
+    - `near_real_0009 = v32 > legacy stage2`
+  - 当前应下调此前的 bandwidth 黄灯强度：
+    - `near_real_0001`
+      objective 上虽仍有窄带黄灯，
+      但人耳未形成稳定回退，
+      当前口径应改成：
+      - objective yellow flag
+      - not yet an audible fail
+ - 当前最终裁决应固定成：
+    - `v32`
+      继续保留为研究基座
+    - 但这轮 focused 听审
+      仍不足以支持
+      现在就重开训练
+294. 已把 `same_gender_reverb_proxy_v2` 从预案推进成正式可复用资产；当前 focused synthetic pre-screen 不再只有 `guodegang_proxy_v1` 一条 seed，而是新增了一条更贴近“同类男声 + speech-side light reverb”风险家族的 proxy：
+  - 新日报：
+    - `reports/daily/2026-03-25_same_gender_reverb_proxy_v2_materialization.md`
+  - 新增 male-only clean pool：
+    - `data/manifests/speech_interference_clean_pool_same_gender_male_v1.jsonl`
+    - `1175` rows / `38` speakers
+  - 新增 first-pass male allowlist：
+    - `data/references/genshin_same_gender_male_speaker_ids_v1.txt`
+  - 新增 focused proxy manifest：
+    - `data/synthetic/train_manifest_same_gender_reverb_proxy_v2.jsonl`
+      ：`190`
+    - `data/synthetic/val_manifest_same_gender_reverb_proxy_v2.jsonl`
+      ：`100`
+  - 这批新 proxy 当前固定约束为：
+    - male-only clean speech interference
+    - `target_clean_speech`
+    - `target_full`
+    - `overlap >= 0.75`
+    - interference 必带 reverb
+    - target 不带 reverb
+  - 当前 objective baseline 已补跑：
+    - `reports/eval/compare_stage2_vs_v32_on_same_gender_reverb_proxy_v2/summary.json`
+    - `avg_sisdr_delta_db = +0.670015`
+    - `improved_count = 55`
+    - `regressed_count = 37`
+    - `near_tie_count = 8`
+  - 当前口径应固定成：
+    - `same_gender_reverb_proxy_v2`
+      可保留为 focused pre-screen
+    - 但它仍不能单独替代
+      near-real target-present same-gender 听审 gate
 
 ## 9. 文档入口
 
@@ -6249,3 +6353,6 @@
 - 本轮决策关卡听审复盘：`reports/daily/2026-03-25_decision_gate_listening_review.md`
 - 本轮阶段结题与 `guodegang` 下一步建议：`reports/daily/2026-03-25_phase_closeout_and_guodegang_next_step.md`
 - 本轮定向评估资产物化：`reports/daily/2026-03-25_targeted_eval_asset_materialization.md`
+- 本轮 focused 评估分析补层与裁决口径：`reports/daily/2026-03-25_focused_eval_analysis_and_decision_ready.md`
+- 本轮 focused GUI 听审解盲与裁决：`reports/daily/2026-03-25_focused_eval_gui_listening_review.md`
+- 本轮 `same_gender_reverb_proxy_v2` 资产物化：`reports/daily/2026-03-25_same_gender_reverb_proxy_v2_materialization.md`

@@ -136,8 +136,20 @@
 2. 确认盲听包目录下已经更新：
    - `listening_sheet.csv`
    - `listening_results_summary.json`
-3. 听完整包之前，不要先看 `blind_key.json`
-4. 整包评分结束后，再解盲看 A/B 对应的真实模型
+3. 若后续要做解盲汇总或交给自动分析脚本继续处理，
+   优先直接跑：
+
+```powershell
+.\python.exe scripts\eval\decode_listening_gui_export.py --pack-dir <pack_dir>
+```
+
+这一步会额外生成：
+
+- `listening_review_decoded_summary.json`
+
+里面是基于 `blind_key.json` 解回真实标签后的统计与样本级摘要。
+4. 听完整包之前，不要先看 `blind_key.json`
+5. 整包评分结束后，再解盲看 A/B 对应的真实模型
 
 ## 9. 当前建议的复核策略
 

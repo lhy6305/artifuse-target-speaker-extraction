@@ -185,6 +185,176 @@
    - bandwidth
    不能只盯其中一边。
 
+### 198. focused pack 已经补齐 objective / audit / tradeoff / bandwidth 分析时，不要再把它当“只是目录待以后再看”；但如果 `listening_sheet.csv` 还没填，也不能把它误写成已完成人耳裁决
+
+现象：
+
+- 本轮 focused follow-up
+  相关目录已经同时带有：
+  - `asset_audit_summary.json`
+  - `tradeoff_analysis/summary.json`
+  - `bandwidth_analysis/summary.json`
+- 这意味着：
+  - 资产是否可听
+  - objective 先验偏向谁
+  - 是否已有窄带黄灯
+  已经可以先判；
+- 但当前两个 focused 包的：
+  - `listening_sheet.csv`
+  仍为空，
+  人耳结论尚未填写。
+
+影响：
+
+- 如果继续把这类目录写成：
+  - “只是资产目录，之后再分析”
+  会让已存在的裁决信息继续悬空；
+- 反过来，
+  如果看到分析文件齐了，
+  就直接写成：
+  - “听审已通过”
+  又会把 objective 预判
+  与人耳终裁混成一件事。
+
+处理：
+
+- 已把本轮 focused 评估的直接裁决项、
+  待听审项和 stop rule
+  集中落盘到：
+  - `reports/daily/2026-03-25_focused_eval_analysis_and_decision_ready.md`
+
+后续要求：
+
+1. 以后 focused pack 一旦补齐：
+   - audit
+   - tradeoff
+   - bandwidth
+   就应立刻补一份“当前已能先判什么”的日报或 summary。
+2. summary 里必须显式拆开：
+   - objective 已通过 / 已失败
+   - 待人耳终裁
+3. 若 `listening_sheet.csv` 仍为空，
+   禁止把 pack 写成：
+   - 已听完
+   - 已通过
+   - 已最终裁决
+   只能写成：
+   - ready for listening
+   - pending human adjudication
+
+### 199. 当两个 focused pack 复用了同一条关键样本时，不要把“每包各赢一次”直接累加成两条独立听感证据；先按唯一样本 union 去重
+
+现象：
+
+- 本轮 focused GUI 听审里：
+  - `bandwidth_guardrail_v1`
+    包
+    解盲后是：
+    - `v32 = 1`
+    - `tie = 3`
+  - `same_gender_reverb_like_v1`
+    包
+    解盲后是：
+    - `v32 = 1`
+    - `tie = 1`
+- 但这两个
+  `v32 win`
+  实际都落在：
+  - `near_real_0009`
+
+影响：
+
+- 如果直接按 pack 胜场相加，
+  很容易误写成：
+  - `v32`
+    在两类 focused 问题上
+    各新增一条独立可听优势；
+- 实际上更准确的 union 口径只有：
+  - `near_real_0009`
+    这一条 absent external speech
+    样本转正
+- 其余唯一样本：
+  - `0001 / 0002 / 0006`
+    都仍是 tie。
+
+处理：
+
+- 已把这轮 GUI 听审的真实 union 口径
+  集中落盘到：
+  - `reports/daily/2026-03-25_focused_eval_gui_listening_review.md`
+
+后续要求：
+
+1. 以后只要多个 focused pack
+   共享样本，
+   最终裁决时默认先做 sample-id 去重。
+2. pack 级胜场只能作为盲态表面计数，
+   不能直接当成独立证据数量。
+3. 若重合样本正好是唯一有差异的样本，
+   结论应收紧成：
+   - 单一样本收益
+   而不是：
+   - family 级稳定收益
+
+### 200. 不要再从 interference 音频路径的最后一级目录名猜 speaker；原神 clean 子集会把说话人名污染成“战斗语音 / Placeholder / Others”这类分类目录
+
+现象：
+
+- 在本轮
+  `same_gender_reverb_proxy_v2`
+  物化时，
+  旧逻辑是从
+  interference `audio_path`
+  的 parent 目录
+  反推 speaker 名；
+- 但原神 clean 子集里
+  部分音频位于：
+  - speaker / category / file
+  这种层级；
+- 结果 speaker 统计里
+  会误冒出：
+  - `战斗语音 - Battle`
+  - `带变量语音 - Placeholder`
+  - `其它语音 - Others`
+  这类假 speaker。
+
+影响：
+
+- 会把本来已经按
+  male allowlist
+  严格过滤过的子池，
+  在后续 summary / 过滤阶段
+  又重新污染；
+- 进一步会让：
+  - speaker coverage
+  - focused metadata filter
+  - proxy 解释
+  出现假分布。
+
+处理：
+
+- 已修改：
+  - `scripts/data/build_synthetic_dataset.py`
+    在 interference layer metadata
+    里显式写入
+    `speaker_id`
+- 已修改：
+  - `scripts/data/build_metadata_focused_manifest.py`
+    优先读取显式 `speaker_id`，
+    不再默认依赖路径 parent 猜名
+
+后续要求：
+
+1. 以后凡是需要按
+   interference speaker
+   做筛选、统计或报告，
+   默认优先使用：
+   - manifest 中的 `speaker_id`
+   - 或 metadata 中显式落盘的 `speaker_id`
+2. 路径目录名
+   只能作为兜底，
+   不能再当主真值来源
+
 ## 2026-03-16
 
 ### 119. 对 dual-head 来说，exact-family `SI-SDR guard` 依然很容易把训练推成 exact overfit；`v55` 证明“exact 更好”并不等于 near-real protect 真成立

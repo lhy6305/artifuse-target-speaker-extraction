@@ -47,6 +47,26 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--interference-pools", nargs="*", default=[])
     parser.add_argument("--interference-speaker-names", nargs="*", default=[])
     parser.add_argument(
+        "--require-interference-reverb",
+        action="store_true",
+        help="Keep only rows whose first interference layer has a serialized reverb spec.",
+    )
+    parser.add_argument(
+        "--forbid-interference-reverb",
+        action="store_true",
+        help="Keep only rows whose first interference layer has no serialized reverb spec.",
+    )
+    parser.add_argument(
+        "--require-target-reverb",
+        action="store_true",
+        help="Keep only rows whose rendered target track has a serialized reverb spec.",
+    )
+    parser.add_argument(
+        "--forbid-target-reverb",
+        action="store_true",
+        help="Keep only rows whose rendered target track has no serialized reverb spec.",
+    )
+    parser.add_argument(
         "--min-target-transient-presence-minus-mid-db-mean",
         type=float,
         default=None,
@@ -345,6 +365,14 @@ def summarize(rows: list[dict[str, Any]], enriched: list[dict[str, Any]]) -> dic
 
 def main() -> None:
     args = parse_args()
+    if args.require_interference_reverb and args.forbid_interference_reverb:
+        raise ValueError(
+            "Cannot require and forbid interference reverb at the same time."
+        )
+    if args.require_target_reverb and args.forbid_target_reverb:
+        raise ValueError(
+            "Cannot require and forbid target reverb at the same time."
+        )
     rng = random.Random(args.seed)
     recipe_caps = parse_recipe_caps(args.recipe_cap)
     allowed_sample_ids = load_sample_ids(args.sample_ids_file)
@@ -398,8 +426,15 @@ def main() -> None:
         first_layer = layers[0] if layers else None
         interference_gain_db = None if first_layer is None else float(first_layer["gain_db"])
         interference_pool = None if first_layer is None else str(first_layer["pool"])
+        interference_has_reverb = bool(
+            first_layer is not None and first_layer.get("reverb") is not None
+        )
+        target_has_reverb = bool(metadata.get("target_reverb") is not None)
         interference_speaker_name = (
-            None if first_layer is None else infer_interference_speaker_name(str(first_layer.get("audio_path", "")))
+            None
+            if first_layer is None
+            else str(first_layer.get("speaker_id") or "").strip()
+            or infer_interference_speaker_name(str(first_layer.get("audio_path", "")))
         )
         if args.min_interference_gain_db is not None and (
             interference_gain_db is None or interference_gain_db < args.min_interference_gain_db
@@ -412,6 +447,14 @@ def main() -> None:
         if interference_pools and interference_pool not in interference_pools:
             continue
         if interference_speaker_names and interference_speaker_name not in interference_speaker_names:
+            continue
+        if args.require_interference_reverb and not interference_has_reverb:
+            continue
+        if args.forbid_interference_reverb and interference_has_reverb:
+            continue
+        if args.require_target_reverb and not target_has_reverb:
+            continue
+        if args.forbid_target_reverb and target_has_reverb:
             continue
 
         transient_metrics: dict[str, float] = {}
@@ -510,7 +553,9 @@ def main() -> None:
                 "overlap_ratio": overlap_ratio,
                 "interference_gain_db": interference_gain_db,
                 "interference_pool": interference_pool,
+                "interference_has_reverb": interference_has_reverb,
                 "interference_speaker_name": interference_speaker_name,
+                "target_has_reverb": target_has_reverb,
                 **transient_metrics,
             }
         )
@@ -538,7 +583,9 @@ def main() -> None:
                 "overlap_ratio",
                 "interference_gain_db",
                 "interference_pool",
+                "interference_has_reverb",
                 "interference_speaker_name",
+                "target_has_reverb",
             }
         }
         for row in selected_rows
@@ -565,6 +612,10 @@ def main() -> None:
             "max_interference_gain_db": args.max_interference_gain_db,
             "interference_pools": sorted(interference_pools),
             "interference_speaker_names": sorted(interference_speaker_names),
+            "require_interference_reverb": bool(args.require_interference_reverb),
+            "forbid_interference_reverb": bool(args.forbid_interference_reverb),
+            "require_target_reverb": bool(args.require_target_reverb),
+            "forbid_target_reverb": bool(args.forbid_target_reverb),
             "min_target_transient_presence_minus_mid_db_mean": args.min_target_transient_presence_minus_mid_db_mean,
             "max_target_transient_presence_minus_mid_db_mean": args.max_target_transient_presence_minus_mid_db_mean,
             "min_target_transient_presence_share_mean": args.min_target_transient_presence_share_mean,
