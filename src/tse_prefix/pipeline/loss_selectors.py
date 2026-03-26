@@ -32,7 +32,14 @@ SELECTOR_BRANCH_NAMES = ("", "extra_")
 
 
 def selector_config_keys(
-    prefixes: tuple[str, ...] = ("reconstruction", "transient", "interference", "absent", "branch_protect")
+    prefixes: tuple[str, ...] = (
+        "reconstruction",
+        "transient",
+        "interference",
+        "overlap_interference",
+        "absent",
+        "branch_protect",
+    )
 ) -> set[str]:
     return {
         f"{prefix}_{branch_name}{suffix}"

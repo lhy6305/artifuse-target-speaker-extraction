@@ -41,6 +41,104 @@ def _compute_overlap_ratio(metadata: dict[str, Any]) -> float:
     return float(min(max(overlap, 0.0), 1.0))
 
 
+def _intervals_from_target_segments(
+    target_segments: list[dict[str, Any]],
+    overlap_start_sec: float,
+    overlap_end_sec: float,
+) -> list[dict[str, float]]:
+    intervals: list[dict[str, float]] = []
+    for segment in target_segments:
+        segment_start = float(segment.get("output_start_sec", 0.0))
+        segment_duration = float(segment.get("duration_sec", 0.0))
+        segment_end = segment_start + max(segment_duration, 0.0)
+        start_sec = max(overlap_start_sec, segment_start)
+        end_sec = min(overlap_end_sec, segment_end)
+        if end_sec <= start_sec:
+            continue
+        intervals.append(
+            {
+                "start_sec": start_sec,
+                "end_sec": end_sec,
+                "duration_sec": end_sec - start_sec,
+            }
+        )
+    return intervals
+
+
+def _subtract_interval(
+    base_intervals: list[dict[str, float]],
+    subtract_start_sec: float,
+    subtract_end_sec: float,
+) -> list[dict[str, float]]:
+    if subtract_end_sec <= subtract_start_sec:
+        return list(base_intervals)
+
+    updated: list[dict[str, float]] = []
+    for interval in base_intervals:
+        base_start = float(interval["start_sec"])
+        base_end = float(interval["end_sec"])
+        if subtract_end_sec <= base_start or subtract_start_sec >= base_end:
+            updated.append(interval)
+            continue
+        if subtract_start_sec > base_start:
+            updated.append(
+                {
+                    "start_sec": base_start,
+                    "end_sec": subtract_start_sec,
+                    "duration_sec": subtract_start_sec - base_start,
+                }
+            )
+        if subtract_end_sec < base_end:
+            updated.append(
+                {
+                    "start_sec": subtract_end_sec,
+                    "end_sec": base_end,
+                    "duration_sec": base_end - subtract_end_sec,
+                }
+            )
+    return updated
+
+
+def _compute_target_overlap_intervals(metadata: dict[str, Any]) -> list[dict[str, float]]:
+    duration_sec = float(metadata.get("target_duration_sec", 0.0))
+    if duration_sec <= 0.0:
+        return []
+
+    layers = list(metadata.get("interference_layers", []))
+    if not layers:
+        return []
+    overlap_start_sec = min(float(layer.get("start_offset_sec", 0.0)) for layer in layers)
+    overlap_start_sec = min(max(overlap_start_sec, 0.0), duration_sec)
+    overlap_end_sec = duration_sec
+    if overlap_end_sec <= overlap_start_sec:
+        return []
+
+    target_segments = list(metadata.get("target_segments", []))
+    if target_segments:
+        return _intervals_from_target_segments(
+            target_segments=target_segments,
+            overlap_start_sec=overlap_start_sec,
+            overlap_end_sec=overlap_end_sec,
+        )
+
+    overlap_intervals = [
+        {
+            "start_sec": overlap_start_sec,
+            "end_sec": overlap_end_sec,
+            "duration_sec": overlap_end_sec - overlap_start_sec,
+        }
+    ]
+    for interval in list(metadata.get("target_absent_intervals", [])):
+        overlap_intervals = _subtract_interval(
+            base_intervals=overlap_intervals,
+            subtract_start_sec=float(interval.get("start_sec", 0.0)),
+            subtract_end_sec=float(interval.get("end_sec", 0.0)),
+        )
+        if not overlap_intervals:
+            break
+    return overlap_intervals
+
+
 def _infer_interference_speaker_name(audio_path: str | None) -> str:
     if not audio_path:
         return ""
@@ -175,6 +273,7 @@ class SyntheticTSEDataset(Dataset[dict[str, Any]]):
                 str(first_layer.get("audio_path", ""))
             ),
             "target_absent_intervals": list(metadata.get("target_absent_intervals", [])),
+            "target_overlap_intervals": _compute_target_overlap_intervals(metadata),
             "metadata_path": _serialize_repo_path(sample.metadata_path, self.root),
         }
 
@@ -247,5 +346,6 @@ def synthetic_collate_fn(batch: list[dict[str, Any]]) -> dict[str, Any]:
         "interference_pools": [item["interference_pool"] for item in batch],
         "interference_speaker_names": [item["interference_speaker_name"] for item in batch],
         "target_absent_intervals": [item["target_absent_intervals"] for item in batch],
+        "target_overlap_intervals": [item["target_overlap_intervals"] for item in batch],
         "metadata_paths": [item["metadata_path"] for item in batch],
     }

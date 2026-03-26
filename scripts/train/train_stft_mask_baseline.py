@@ -121,10 +121,29 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--loss-transient-extra-weight", type=float, default=0.0)
     parser.add_argument("--loss-interference-weight", type=float, default=0.0)
     parser.add_argument("--loss-interference-extra-weight", type=float, default=0.0)
+    parser.add_argument("--loss-overlap-interference-weight", type=float, default=0.0)
+    parser.add_argument("--loss-overlap-interference-extra-weight", type=float, default=0.0)
     parser.add_argument("--loss-absent-weight", type=float, default=0.0)
     parser.add_argument("--loss-absent-extra-weight", type=float, default=0.0)
     parser.add_argument("--loss-gate-abstain-weight", type=float, default=0.0)
     parser.add_argument("--loss-gate-keep-weight", type=float, default=0.0)
+    parser.add_argument("--loss-gate-target-weight", type=float, default=0.0)
+    parser.add_argument(
+        "--loss-gate-target-mode",
+        choices=["none", "audibility"],
+        default="none",
+    )
+    parser.add_argument("--loss-gate-target-energy-center", type=float, default=0.13)
+    parser.add_argument("--loss-gate-target-energy-scale", type=float, default=0.035)
+    parser.add_argument("--loss-gate-target-transient-share-center", type=float, default=0.01)
+    parser.add_argument("--loss-gate-target-transient-share-scale", type=float, default=0.006)
+    parser.add_argument("--loss-gate-target-transient-db-center", type=float, default=-13.0)
+    parser.add_argument("--loss-gate-target-transient-db-scale", type=float, default=2.5)
+    parser.add_argument("--loss-gate-target-energy-weight", type=float, default=0.75)
+    parser.add_argument("--loss-gate-target-transient-share-weight", type=float, default=0.15)
+    parser.add_argument("--loss-gate-target-transient-db-weight", type=float, default=0.10)
+    parser.add_argument("--loss-gate-target-min-value", type=float, default=0.0)
+    parser.add_argument("--loss-gate-target-max-value", type=float, default=1.0)
     parser.add_argument("--loss-reconstruction-waveform-weight", type=float, default=0.0)
     parser.add_argument("--loss-reconstruction-stft-weight", type=float, default=0.0)
     parser.add_argument("--loss-reconstruction-extra-waveform-weight", type=float, default=0.0)
@@ -139,9 +158,20 @@ def parse_args() -> argparse.Namespace:
         choices=INTERFERENCE_LOSS_MODES,
         default="prediction_projection_ratio",
     )
+    parser.add_argument(
+        "--loss-overlap-interference-mode",
+        choices=INTERFERENCE_LOSS_MODES,
+        default="prediction_projection_ratio",
+    )
+    parser.add_argument(
+        "--loss-overlap-interference-extra-mode",
+        choices=INTERFERENCE_LOSS_MODES,
+        default="prediction_projection_ratio",
+    )
     add_selector_args(parser, "reconstruction")
     add_selector_args(parser, "transient")
     add_selector_args(parser, "interference")
+    add_selector_args(parser, "overlap_interference")
     add_selector_args(parser, "absent")
     add_selector_args(parser, "branch_protect")
     return parser.parse_args()
@@ -317,12 +347,29 @@ def build_loss_config(args: argparse.Namespace) -> dict[str, float]:
         "transient_extra_weight": args.loss_transient_extra_weight,
         "interference_weight": args.loss_interference_weight,
         "interference_extra_weight": args.loss_interference_extra_weight,
+        "overlap_interference_weight": args.loss_overlap_interference_weight,
+        "overlap_interference_extra_weight": args.loss_overlap_interference_extra_weight,
         "absent_weight": args.loss_absent_weight,
         "absent_extra_weight": args.loss_absent_extra_weight,
         "gate_abstain_weight": args.loss_gate_abstain_weight,
         "gate_keep_weight": args.loss_gate_keep_weight,
+        "gate_target_weight": args.loss_gate_target_weight,
+        "gate_target_mode": args.loss_gate_target_mode,
+        "gate_target_energy_center": args.loss_gate_target_energy_center,
+        "gate_target_energy_scale": args.loss_gate_target_energy_scale,
+        "gate_target_transient_share_center": args.loss_gate_target_transient_share_center,
+        "gate_target_transient_share_scale": args.loss_gate_target_transient_share_scale,
+        "gate_target_transient_db_center": args.loss_gate_target_transient_db_center,
+        "gate_target_transient_db_scale": args.loss_gate_target_transient_db_scale,
+        "gate_target_energy_weight": args.loss_gate_target_energy_weight,
+        "gate_target_transient_share_weight": args.loss_gate_target_transient_share_weight,
+        "gate_target_transient_db_weight": args.loss_gate_target_transient_db_weight,
+        "gate_target_min_value": args.loss_gate_target_min_value,
+        "gate_target_max_value": args.loss_gate_target_max_value,
         "interference_loss_mode": args.loss_interference_mode,
         "interference_extra_loss_mode": args.loss_interference_extra_mode,
+        "overlap_interference_loss_mode": args.loss_overlap_interference_mode,
+        "overlap_interference_extra_loss_mode": args.loss_overlap_interference_extra_mode,
         "transient_top_ratio": 0.12,
         "transient_min_count": 8,
         "transient_mid_low_hz": 800.0,
@@ -331,7 +378,14 @@ def build_loss_config(args: argparse.Namespace) -> dict[str, float]:
         "transient_presence_high_hz": 8000.0,
         "transient_ratio_weight": 0.5,
     }
-    for prefix in ("reconstruction", "transient", "interference", "absent", "branch_protect"):
+    for prefix in (
+        "reconstruction",
+        "transient",
+        "interference",
+        "overlap_interference",
+        "absent",
+        "branch_protect",
+    ):
         for branch_name in ("", "extra_"):
             config_prefix = f"{prefix}_" if not branch_name else f"{prefix}_{branch_name}"
             attr_prefix = f"loss_{prefix}_" if not branch_name else f"loss_{prefix}_{branch_name}"
@@ -368,11 +422,83 @@ def build_loss_config(args: argparse.Namespace) -> dict[str, float]:
 
 
 def build_compute_loss_kwargs(loss_config: dict) -> dict:
+    gate_target_config_keys = {
+        "gate_target_mode",
+        "gate_target_energy_center",
+        "gate_target_energy_scale",
+        "gate_target_transient_share_center",
+        "gate_target_transient_share_scale",
+        "gate_target_transient_db_center",
+        "gate_target_transient_db_scale",
+        "gate_target_energy_weight",
+        "gate_target_transient_share_weight",
+        "gate_target_transient_db_weight",
+        "gate_target_min_value",
+        "gate_target_max_value",
+    }
     return {
         key: value
         for key, value in loss_config.items()
-        if key not in selector_config_keys()
+        if key not in selector_config_keys() and key not in gate_target_config_keys
     }
+
+
+def _sigmoid_score(values: torch.Tensor, center: float, scale: float) -> torch.Tensor:
+    return torch.sigmoid((values - float(center)) / max(float(scale), 1e-6))
+
+
+def build_gate_target_values(
+    batch: dict,
+    device: torch.device,
+    loss_config: dict[str, float],
+) -> torch.Tensor | None:
+    if float(loss_config.get("gate_target_weight", 0.0)) <= 0.0:
+        return None
+    if str(loss_config.get("gate_target_mode", "none")) != "audibility":
+        return None
+
+    feature_specs = (
+        (
+            batch["target_energy_ratios"].to(device=device, dtype=torch.float32),
+            float(loss_config.get("gate_target_energy_center", 0.13)),
+            float(loss_config.get("gate_target_energy_scale", 0.035)),
+            float(loss_config.get("gate_target_energy_weight", 0.75)),
+        ),
+        (
+            batch["target_transient_presence_share_means"].to(device=device, dtype=torch.float32),
+            float(loss_config.get("gate_target_transient_share_center", 0.01)),
+            float(loss_config.get("gate_target_transient_share_scale", 0.006)),
+            float(loss_config.get("gate_target_transient_share_weight", 0.15)),
+        ),
+        (
+            batch["target_transient_presence_minus_mid_db_means"].to(device=device, dtype=torch.float32),
+            float(loss_config.get("gate_target_transient_db_center", -13.0)),
+            float(loss_config.get("gate_target_transient_db_scale", 2.5)),
+            float(loss_config.get("gate_target_transient_db_weight", 0.10)),
+        ),
+    )
+
+    weighted_sum = torch.zeros(len(batch["sample_ids"]), dtype=torch.float32, device=device)
+    weight_sum = torch.zeros(len(batch["sample_ids"]), dtype=torch.float32, device=device)
+    for values, center, scale, weight in feature_specs:
+        if weight <= 0.0:
+            continue
+        valid_mask = ~torch.isnan(values)
+        if not torch.any(valid_mask):
+            continue
+        scores = _sigmoid_score(values, center=center, scale=scale)
+        weighted_sum = weighted_sum + (torch.where(valid_mask, scores, torch.zeros_like(scores)) * weight)
+        weight_sum = weight_sum + (valid_mask.float() * weight)
+
+    base_scores = torch.where(
+        weight_sum > 0.0,
+        weighted_sum / weight_sum.clamp_min(1e-6),
+        torch.zeros_like(weighted_sum),
+    )
+    min_value = float(loss_config.get("gate_target_min_value", 0.0))
+    max_value = float(loss_config.get("gate_target_max_value", 1.0))
+    target_values = min_value + (base_scores * max(0.0, max_value - min_value))
+    return torch.clamp(target_values, min=min_value, max=max_value)
 
 
 def resolve_branch_extra_prediction(outputs: dict[str, torch.Tensor]) -> torch.Tensor | None:
@@ -543,10 +669,13 @@ def evaluate(
     total_transient_extra = 0.0
     total_interference = 0.0
     total_interference_extra = 0.0
+    total_overlap_interference = 0.0
+    total_overlap_interference_extra = 0.0
     total_absent = 0.0
     total_absent_extra = 0.0
     total_gate_abstain = 0.0
     total_gate_keep = 0.0
+    total_gate_target = 0.0
     batch_count = 0
     compute_loss_kwargs = build_compute_loss_kwargs(loss_config)
     selector_totals = {
@@ -558,6 +687,8 @@ def evaluate(
             "transient_extra",
             "interference",
             "interference_extra",
+            "overlap_interference",
+            "overlap_interference_extra",
             "absent",
             "absent_extra",
             "branch_protect",
@@ -604,6 +735,18 @@ def evaluate(
                     ),
                 )
             )
+            overlap_interference_sample_weights, overlap_interference_extra_sample_weights, overlap_interference_union_sample_weights = (
+                resolve_selector_sample_weights(
+                    batch=batch,
+                    device=device,
+                    loss_config=loss_config,
+                    prefix="overlap_interference",
+                    extra_weight_keys=(
+                        "overlap_interference_weight",
+                        "overlap_interference_extra_weight",
+                    ),
+                )
+            )
             absent_sample_weights, absent_extra_sample_weights, absent_union_sample_weights = (
                 resolve_selector_sample_weights(
                     batch=batch,
@@ -619,6 +762,12 @@ def evaluate(
                 loss_config=loss_config,
                 prefix="branch_protect",
             )
+            gate_target_values = build_gate_target_values(batch=batch, device=device, loss_config=loss_config)
+            gate_target_sample_weights = (
+                torch.ones(len(batch["sample_ids"]), dtype=torch.float32, device=device)
+                if gate_target_values is not None
+                else None
+            )
             for prefix, weights in (
                 ("reconstruction", reconstruction_union_sample_weights),
                 ("reconstruction_extra", reconstruction_extra_sample_weights),
@@ -626,6 +775,8 @@ def evaluate(
                 ("transient_extra", transient_extra_sample_weights),
                 ("interference", interference_union_sample_weights),
                 ("interference_extra", interference_extra_sample_weights),
+                ("overlap_interference", overlap_interference_union_sample_weights),
+                ("overlap_interference_extra", overlap_interference_extra_sample_weights),
                 ("absent", absent_union_sample_weights),
                 ("absent_extra", absent_extra_sample_weights),
                 ("branch_protect", branch_protect_sample_weights),
@@ -642,6 +793,7 @@ def evaluate(
                 target=batch["target"],
                 lengths=batch["target_lengths"],
                 absent_intervals=batch["target_absent_intervals"],
+                overlap_intervals=batch["target_overlap_intervals"],
                 model=model,
                 gate_values=outputs.get("branch_decoder_frame_gate"),
                 reconstruction_sample_weights=reconstruction_sample_weights,
@@ -650,11 +802,15 @@ def evaluate(
                 transient_extra_sample_weights=transient_extra_sample_weights,
                 interference_sample_weights=interference_sample_weights,
                 interference_extra_sample_weights=interference_extra_sample_weights,
+                overlap_interference_sample_weights=overlap_interference_sample_weights,
+                overlap_interference_extra_sample_weights=overlap_interference_extra_sample_weights,
                 branch_protect_sample_weights=branch_protect_sample_weights,
                 absent_sample_weights=absent_sample_weights,
                 absent_extra_sample_weights=absent_extra_sample_weights,
                 gate_abstain_sample_weights=interference_extra_sample_weights,
                 gate_keep_sample_weights=branch_protect_sample_weights,
+                gate_target_sample_weights=gate_target_sample_weights,
+                gate_target_values=gate_target_values,
                 **compute_loss_kwargs,
             )
             total_loss += float(losses.total.item())
@@ -676,10 +832,13 @@ def evaluate(
             total_transient_extra += float(losses.transient_extra_presence_l1.item())
             total_interference += float(losses.interference_projection_ratio.item())
             total_interference_extra += float(losses.interference_extra_projection_ratio.item())
+            total_overlap_interference += float(losses.overlap_interference_projection_ratio.item())
+            total_overlap_interference_extra += float(losses.overlap_interference_extra_projection_ratio.item())
             total_absent += float(losses.absent_interval_l1.item())
             total_absent_extra += float(losses.absent_extra_interval_l1.item())
             total_gate_abstain += float(losses.gate_abstain_mean.item())
             total_gate_keep += float(losses.gate_keep_mean.item())
+            total_gate_target += float(losses.gate_target_l1.item())
             batch_count += 1
     if batch_count == 0:
         metrics = {
@@ -700,10 +859,13 @@ def evaluate(
             "transient_extra_presence_l1": 0.0,
             "interference_projection_ratio": 0.0,
             "interference_extra_projection_ratio": 0.0,
+            "overlap_interference_projection_ratio": 0.0,
+            "overlap_interference_extra_projection_ratio": 0.0,
             "absent_interval_l1": 0.0,
             "absent_extra_interval_l1": 0.0,
             "gate_abstain_mean": 0.0,
             "gate_keep_mean": 0.0,
+            "gate_target_l1": 0.0,
         }
     else:
         metrics = {
@@ -726,10 +888,13 @@ def evaluate(
             "transient_extra_presence_l1": total_transient_extra / batch_count,
             "interference_projection_ratio": total_interference / batch_count,
             "interference_extra_projection_ratio": total_interference_extra / batch_count,
+            "overlap_interference_projection_ratio": total_overlap_interference / batch_count,
+            "overlap_interference_extra_projection_ratio": total_overlap_interference_extra / batch_count,
             "absent_interval_l1": total_absent / batch_count,
             "absent_extra_interval_l1": total_absent_extra / batch_count,
             "gate_abstain_mean": total_gate_abstain / batch_count,
             "gate_keep_mean": total_gate_keep / batch_count,
+            "gate_target_l1": total_gate_target / batch_count,
         }
     selector_metrics = {}
     for prefix, totals in selector_totals.items():
@@ -824,10 +989,13 @@ def main() -> None:
         epoch_transient_extra = 0.0
         epoch_interference = 0.0
         epoch_interference_extra = 0.0
+        epoch_overlap_interference = 0.0
+        epoch_overlap_interference_extra = 0.0
         epoch_absent = 0.0
         epoch_absent_extra = 0.0
         epoch_gate_abstain = 0.0
         epoch_gate_keep = 0.0
+        epoch_gate_target = 0.0
         step_count = 0
         train_selector_totals = {
             prefix: {"active": False, "selected_count": 0, "total_count": 0}
@@ -838,6 +1006,8 @@ def main() -> None:
                 "transient_extra",
                 "interference",
                 "interference_extra",
+                "overlap_interference",
+                "overlap_interference_extra",
                 "absent",
                 "absent_extra",
                 "branch_protect",
@@ -884,6 +1054,18 @@ def main() -> None:
                     ),
                 )
             )
+            overlap_interference_sample_weights, overlap_interference_extra_sample_weights, overlap_interference_union_sample_weights = (
+                resolve_selector_sample_weights(
+                    batch=batch,
+                    device=device,
+                    loss_config=loss_config,
+                    prefix="overlap_interference",
+                    extra_weight_keys=(
+                        "overlap_interference_weight",
+                        "overlap_interference_extra_weight",
+                    ),
+                )
+            )
             absent_sample_weights, absent_extra_sample_weights, absent_union_sample_weights = (
                 resolve_selector_sample_weights(
                     batch=batch,
@@ -899,6 +1081,12 @@ def main() -> None:
                 loss_config=loss_config,
                 prefix="branch_protect",
             )
+            gate_target_values = build_gate_target_values(batch=batch, device=device, loss_config=loss_config)
+            gate_target_sample_weights = (
+                torch.ones(len(batch["sample_ids"]), dtype=torch.float32, device=device)
+                if gate_target_values is not None
+                else None
+            )
             for prefix, weights in (
                 ("reconstruction", reconstruction_union_sample_weights),
                 ("reconstruction_extra", reconstruction_extra_sample_weights),
@@ -906,6 +1094,8 @@ def main() -> None:
                 ("transient_extra", transient_extra_sample_weights),
                 ("interference", interference_union_sample_weights),
                 ("interference_extra", interference_extra_sample_weights),
+                ("overlap_interference", overlap_interference_union_sample_weights),
+                ("overlap_interference_extra", overlap_interference_extra_sample_weights),
                 ("absent", absent_union_sample_weights),
                 ("absent_extra", absent_extra_sample_weights),
                 ("branch_protect", branch_protect_sample_weights),
@@ -922,6 +1112,7 @@ def main() -> None:
                 target=batch["target"],
                 lengths=batch["target_lengths"],
                 absent_intervals=batch["target_absent_intervals"],
+                overlap_intervals=batch["target_overlap_intervals"],
                 model=model,
                 gate_values=outputs.get("branch_decoder_frame_gate"),
                 reconstruction_sample_weights=reconstruction_sample_weights,
@@ -930,11 +1121,15 @@ def main() -> None:
                 transient_extra_sample_weights=transient_extra_sample_weights,
                 interference_sample_weights=interference_sample_weights,
                 interference_extra_sample_weights=interference_extra_sample_weights,
+                overlap_interference_sample_weights=overlap_interference_sample_weights,
+                overlap_interference_extra_sample_weights=overlap_interference_extra_sample_weights,
                 branch_protect_sample_weights=branch_protect_sample_weights,
                 absent_sample_weights=absent_sample_weights,
                 absent_extra_sample_weights=absent_extra_sample_weights,
                 gate_abstain_sample_weights=interference_extra_sample_weights,
                 gate_keep_sample_weights=branch_protect_sample_weights,
+                gate_target_sample_weights=gate_target_sample_weights,
+                gate_target_values=gate_target_values,
                 **compute_loss_kwargs,
             )
 
@@ -965,10 +1160,15 @@ def main() -> None:
             epoch_transient_extra += float(losses.transient_extra_presence_l1.item())
             epoch_interference += float(losses.interference_projection_ratio.item())
             epoch_interference_extra += float(losses.interference_extra_projection_ratio.item())
+            epoch_overlap_interference += float(losses.overlap_interference_projection_ratio.item())
+            epoch_overlap_interference_extra += float(
+                losses.overlap_interference_extra_projection_ratio.item()
+            )
             epoch_absent += float(losses.absent_interval_l1.item())
             epoch_absent_extra += float(losses.absent_extra_interval_l1.item())
             epoch_gate_abstain += float(losses.gate_abstain_mean.item())
             epoch_gate_keep += float(losses.gate_keep_mean.item())
+            epoch_gate_target += float(losses.gate_target_l1.item())
 
             if global_step % args.log_every == 0:
                 print(
@@ -1013,12 +1213,19 @@ def main() -> None:
                             "interference_extra_projection_ratio": round(
                                 float(losses.interference_extra_projection_ratio.item()), 6
                             ),
+                            "overlap_interference_projection_ratio": round(
+                                float(losses.overlap_interference_projection_ratio.item()), 6
+                            ),
+                            "overlap_interference_extra_projection_ratio": round(
+                                float(losses.overlap_interference_extra_projection_ratio.item()), 6
+                            ),
                             "absent_interval_l1": round(float(losses.absent_interval_l1.item()), 6),
                             "absent_extra_interval_l1": round(
                                 float(losses.absent_extra_interval_l1.item()), 6
                             ),
                             "gate_abstain_mean": round(float(losses.gate_abstain_mean.item()), 6),
                             "gate_keep_mean": round(float(losses.gate_keep_mean.item()), 6),
+                            "gate_target_l1": round(float(losses.gate_target_l1.item()), 6),
                         },
                         ensure_ascii=False,
                     )
@@ -1047,10 +1254,15 @@ def main() -> None:
             "transient_extra_presence_l1": epoch_transient_extra / max(1, step_count),
             "interference_projection_ratio": epoch_interference / max(1, step_count),
             "interference_extra_projection_ratio": epoch_interference_extra / max(1, step_count),
+            "overlap_interference_projection_ratio": epoch_overlap_interference / max(1, step_count),
+            "overlap_interference_extra_projection_ratio": (
+                epoch_overlap_interference_extra / max(1, step_count)
+            ),
             "absent_interval_l1": epoch_absent / max(1, step_count),
             "absent_extra_interval_l1": epoch_absent_extra / max(1, step_count),
             "gate_abstain_mean": epoch_gate_abstain / max(1, step_count),
             "gate_keep_mean": epoch_gate_keep / max(1, step_count),
+            "gate_target_l1": epoch_gate_target / max(1, step_count),
         }
         train_selector_metrics = {
             prefix: {
@@ -1089,10 +1301,17 @@ def main() -> None:
                 "train_transient_extra_presence_l1": train_metrics["transient_extra_presence_l1"],
                 "train_interference_projection_ratio": train_metrics["interference_projection_ratio"],
                 "train_interference_extra_projection_ratio": train_metrics["interference_extra_projection_ratio"],
+                "train_overlap_interference_projection_ratio": (
+                    train_metrics["overlap_interference_projection_ratio"]
+                ),
+                "train_overlap_interference_extra_projection_ratio": (
+                    train_metrics["overlap_interference_extra_projection_ratio"]
+                ),
                 "train_absent_interval_l1": train_metrics["absent_interval_l1"],
                 "train_absent_extra_interval_l1": train_metrics["absent_extra_interval_l1"],
                 "train_gate_abstain_mean": train_metrics["gate_abstain_mean"],
                 "train_gate_keep_mean": train_metrics["gate_keep_mean"],
+                "train_gate_target_l1": train_metrics["gate_target_l1"],
                 "train_selector_metrics": train_selector_metrics,
                 "val_loss": val_metrics["loss"],
                 "val_waveform_l1": val_metrics["waveform_l1"],
@@ -1113,10 +1332,17 @@ def main() -> None:
                 "val_transient_extra_presence_l1": val_metrics["transient_extra_presence_l1"],
                 "val_interference_projection_ratio": val_metrics["interference_projection_ratio"],
                 "val_interference_extra_projection_ratio": val_metrics["interference_extra_projection_ratio"],
+                "val_overlap_interference_projection_ratio": (
+                    val_metrics["overlap_interference_projection_ratio"]
+                ),
+                "val_overlap_interference_extra_projection_ratio": (
+                    val_metrics["overlap_interference_extra_projection_ratio"]
+                ),
                 "val_absent_interval_l1": val_metrics["absent_interval_l1"],
                 "val_absent_extra_interval_l1": val_metrics["absent_extra_interval_l1"],
                 "val_gate_abstain_mean": val_metrics["gate_abstain_mean"],
                 "val_gate_keep_mean": val_metrics["gate_keep_mean"],
+                "val_gate_target_l1": val_metrics["gate_target_l1"],
                 "val_selector_metrics": val_selector_metrics,
             }
         )

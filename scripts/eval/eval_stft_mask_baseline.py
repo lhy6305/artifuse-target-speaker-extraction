@@ -113,10 +113,24 @@ def target_present_ratio_bucket(ratio: float) -> str:
 
 
 def build_compute_loss_kwargs(loss_config: dict) -> dict:
+    gate_target_config_keys = {
+        "gate_target_mode",
+        "gate_target_energy_center",
+        "gate_target_energy_scale",
+        "gate_target_transient_share_center",
+        "gate_target_transient_share_scale",
+        "gate_target_transient_db_center",
+        "gate_target_transient_db_scale",
+        "gate_target_energy_weight",
+        "gate_target_transient_share_weight",
+        "gate_target_transient_db_weight",
+        "gate_target_min_value",
+        "gate_target_max_value",
+    }
     return {
         key: value
         for key, value in loss_config.items()
-        if key not in selector_config_keys()
+        if key not in selector_config_keys() and key not in gate_target_config_keys
     }
 
 
@@ -346,6 +360,18 @@ def main() -> None:
                     ),
                 )
             )
+            overlap_interference_sample_weights, overlap_interference_extra_sample_weights, _ = (
+                resolve_selector_sample_weights(
+                    batch=batch,
+                    device=device,
+                    loss_config=loss_config,
+                    prefix="overlap_interference",
+                    extra_weight_keys=(
+                        "overlap_interference_weight",
+                        "overlap_interference_extra_weight",
+                    ),
+                )
+            )
             absent_sample_weights, absent_extra_sample_weights, absent_union_sample_weights = (
                 resolve_selector_sample_weights(
                     batch=batch,
@@ -369,6 +395,7 @@ def main() -> None:
                 target=batch["target"],
                 lengths=batch["target_lengths"],
                 absent_intervals=batch["target_absent_intervals"],
+                overlap_intervals=batch["target_overlap_intervals"],
                 model=model,
                 reconstruction_sample_weights=reconstruction_sample_weights,
                 reconstruction_extra_sample_weights=reconstruction_extra_sample_weights,
@@ -376,6 +403,8 @@ def main() -> None:
                 transient_extra_sample_weights=transient_extra_sample_weights,
                 interference_sample_weights=interference_sample_weights,
                 interference_extra_sample_weights=interference_extra_sample_weights,
+                overlap_interference_sample_weights=overlap_interference_sample_weights,
+                overlap_interference_extra_sample_weights=overlap_interference_extra_sample_weights,
                 branch_protect_sample_weights=branch_protect_sample_weights,
                 absent_sample_weights=absent_sample_weights,
                 absent_extra_sample_weights=absent_extra_sample_weights,

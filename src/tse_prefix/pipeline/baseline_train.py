@@ -25,10 +25,13 @@ class LossBreakdown:
     transient_extra_presence_l1: torch.Tensor
     interference_projection_ratio: torch.Tensor
     interference_extra_projection_ratio: torch.Tensor
+    overlap_interference_projection_ratio: torch.Tensor
+    overlap_interference_extra_projection_ratio: torch.Tensor
     absent_interval_l1: torch.Tensor
     absent_extra_interval_l1: torch.Tensor
     gate_abstain_mean: torch.Tensor
     gate_keep_mean: torch.Tensor
+    gate_target_l1: torch.Tensor
 
 
 INTERFERENCE_LOSS_MODES = (
@@ -352,6 +355,82 @@ def absent_interval_l1_loss(
     return average_sample_losses(sample_losses, sample_weights, prediction)
 
 
+def overlap_interval_interference_projection_loss(
+    prediction: torch.Tensor,
+    mixture: torch.Tensor,
+    target: torch.Tensor,
+    lengths: torch.Tensor,
+    overlap_intervals: list[list[dict[str, float]]],
+    sample_rate: int = 16000,
+    sample_weights: torch.Tensor | None = None,
+    mode: str = "prediction_projection_ratio",
+) -> torch.Tensor:
+    if mode not in INTERFERENCE_LOSS_MODES:
+        raise ValueError(
+            f"Unsupported interference loss mode: {mode}. Expected one of {INTERFERENCE_LOSS_MODES}."
+        )
+
+    prediction, target, lengths = align_waveforms(prediction, target, lengths)
+    common_length = min(prediction.shape[-1], mixture.shape[-1])
+    prediction = prediction[..., :common_length]
+    target = target[..., :common_length]
+    lengths = torch.clamp(lengths, max=common_length)
+    mixture = mixture[..., :common_length]
+
+    eps = 1e-8
+    sample_losses: list[torch.Tensor] = []
+    for pred, mix, tgt, length, intervals in zip(prediction, mixture, target, lengths, overlap_intervals):
+        length_int = int(length.item())
+        if length_int <= 0 or not intervals:
+            sample_losses.append(prediction.new_tensor(0.0))
+            continue
+
+        pred = pred[:length_int]
+        mix = mix[:length_int]
+        tgt = tgt[:length_int]
+
+        pred_slices: list[torch.Tensor] = []
+        tgt_slices: list[torch.Tensor] = []
+        mix_slices: list[torch.Tensor] = []
+        for interval in intervals:
+            start_index = int(round(float(interval["start_sec"]) * sample_rate))
+            end_index = int(round(float(interval["end_sec"]) * sample_rate))
+            start_index = max(0, min(start_index, length_int))
+            end_index = max(start_index, min(end_index, length_int))
+            if end_index <= start_index:
+                continue
+            pred_slices.append(pred[start_index:end_index])
+            tgt_slices.append(tgt[start_index:end_index])
+            mix_slices.append(mix[start_index:end_index])
+
+        if not pred_slices:
+            sample_losses.append(prediction.new_tensor(0.0))
+            continue
+
+        pred_overlap = torch.cat(pred_slices, dim=0)
+        tgt_overlap = torch.cat(tgt_slices, dim=0)
+        mix_overlap = torch.cat(mix_slices, dim=0)
+        interference = mix_overlap - tgt_overlap
+        interference_energy = torch.sum(interference * interference)
+        if float(interference_energy.item()) <= eps:
+            sample_losses.append(prediction.new_tensor(0.0))
+            continue
+
+        if mode == "prediction_projection_ratio":
+            signal = pred_overlap
+            normalizer = torch.sum(signal * signal).clamp_min(eps)
+        else:
+            signal = pred_overlap - tgt_overlap
+            normalizer = interference_energy.clamp_min(eps)
+
+        projection_scale = torch.sum(signal * interference) / interference_energy.clamp_min(eps)
+        projection = projection_scale * interference
+        projection_ratio = torch.sum(projection * projection) / normalizer
+        sample_losses.append(projection_ratio)
+
+    return average_sample_losses(sample_losses, sample_weights, prediction)
+
+
 def masked_sisdr(
     prediction: torch.Tensor,
     target: torch.Tensor,
@@ -412,7 +491,8 @@ def weighted_gate_target_loss(
     lengths: torch.Tensor,
     model,
     *,
-    target_value: float,
+    target_value: float | None = None,
+    target_values: torch.Tensor | None = None,
     sample_weights: torch.Tensor | None = None,
 ) -> torch.Tensor:
     if gate_values is None or sample_weights is None:
@@ -421,19 +501,28 @@ def weighted_gate_target_loss(
 
     if gate_values.ndim != 3 or gate_values.shape[1] != 1:
         raise ValueError("gate_values must have shape [batch, 1, frames]")
+    if target_values is not None:
+        if target_values.ndim != 1 or target_values.shape[0] != gate_values.shape[0]:
+            raise ValueError("target_values must be a 1-D tensor with one entry per batch item")
+        target_values = target_values.to(device=gate_values.device, dtype=gate_values.dtype)
+    elif target_value is None:
+        raise ValueError("Either target_value or target_values must be provided")
 
     frame_lengths = model.waveform_lengths_to_frame_lengths(lengths, max_frames=gate_values.shape[-1])
     if frame_lengths is None:
         return gate_values.new_tensor(0.0)
 
     sample_losses: list[torch.Tensor] = []
-    target_scalar = float(target_value)
-    for gate_item, frame_length in zip(gate_values[:, 0, :], frame_lengths):
+    target_scalar = float(target_value) if target_value is not None else None
+    for sample_index, (gate_item, frame_length) in enumerate(zip(gate_values[:, 0, :], frame_lengths)):
         valid_frames = int(frame_length.item())
         if valid_frames <= 0:
             sample_losses.append(gate_values.new_tensor(0.0))
             continue
-        target = torch.full_like(gate_item[:valid_frames], fill_value=target_scalar)
+        if target_values is not None:
+            target = torch.full_like(gate_item[:valid_frames], fill_value=float(target_values[sample_index].item()))
+        else:
+            target = torch.full_like(gate_item[:valid_frames], fill_value=target_scalar)
         sample_losses.append(F.l1_loss(gate_item[:valid_frames], target))
 
     return average_sample_losses(sample_losses, sample_weights, gate_values)
@@ -445,6 +534,7 @@ def compute_losses(
     target: torch.Tensor,
     lengths: torch.Tensor,
     absent_intervals: list[list[dict[str, float]]],
+    overlap_intervals: list[list[dict[str, float]]],
     model,
     gate_values: torch.Tensor | None = None,
     reconstruction_extra_prediction: torch.Tensor | None = None,
@@ -455,11 +545,15 @@ def compute_losses(
     transient_extra_sample_weights: torch.Tensor | None = None,
     interference_sample_weights: torch.Tensor | None = None,
     interference_extra_sample_weights: torch.Tensor | None = None,
+    overlap_interference_sample_weights: torch.Tensor | None = None,
+    overlap_interference_extra_sample_weights: torch.Tensor | None = None,
     branch_protect_sample_weights: torch.Tensor | None = None,
     absent_sample_weights: torch.Tensor | None = None,
     absent_extra_sample_weights: torch.Tensor | None = None,
     gate_abstain_sample_weights: torch.Tensor | None = None,
     gate_keep_sample_weights: torch.Tensor | None = None,
+    gate_target_sample_weights: torch.Tensor | None = None,
+    gate_target_values: torch.Tensor | None = None,
     sample_rate: int = 16000,
     stft_weight: float = 0.5,
     reconstruction_waveform_weight: float = 0.0,
@@ -475,12 +569,17 @@ def compute_losses(
     transient_extra_weight: float = 0.0,
     interference_weight: float = 0.0,
     interference_extra_weight: float = 0.0,
+    overlap_interference_weight: float = 0.0,
+    overlap_interference_extra_weight: float = 0.0,
     absent_weight: float = 0.0,
     absent_extra_weight: float = 0.0,
     gate_abstain_weight: float = 0.0,
     gate_keep_weight: float = 0.0,
+    gate_target_weight: float = 0.0,
     interference_loss_mode: str = "prediction_projection_ratio",
     interference_extra_loss_mode: str = "prediction_projection_ratio",
+    overlap_interference_loss_mode: str = "prediction_projection_ratio",
+    overlap_interference_extra_loss_mode: str = "prediction_projection_ratio",
     transient_top_ratio: float = 0.12,
     transient_min_count: int = 8,
     transient_mid_low_hz: float = 800.0,
@@ -603,6 +702,26 @@ def compute_losses(
         sample_weights=interference_extra_sample_weights,
         mode=interference_extra_loss_mode,
     )
+    overlap_interference_term = overlap_interval_interference_projection_loss(
+        prediction=prediction,
+        mixture=mixture,
+        target=target,
+        lengths=lengths,
+        overlap_intervals=overlap_intervals,
+        sample_rate=sample_rate,
+        sample_weights=overlap_interference_sample_weights,
+        mode=overlap_interference_loss_mode,
+    )
+    overlap_interference_extra_term = overlap_interval_interference_projection_loss(
+        prediction=extra_prediction,
+        mixture=mixture,
+        target=target,
+        lengths=lengths,
+        overlap_intervals=overlap_intervals,
+        sample_rate=sample_rate,
+        sample_weights=overlap_interference_extra_sample_weights,
+        mode=overlap_interference_extra_loss_mode,
+    )
     absent_term = absent_interval_l1_loss(
         prediction=prediction,
         target=target,
@@ -633,6 +752,13 @@ def compute_losses(
         target_value=1.0,
         sample_weights=gate_keep_sample_weights,
     )
+    gate_target_term = weighted_gate_target_loss(
+        gate_values=gate_values,
+        lengths=lengths,
+        model=model,
+        target_values=gate_target_values,
+        sample_weights=gate_target_sample_weights,
+    )
     total = (
         waveform_term
         + (stft_term * stft_weight)
@@ -649,10 +775,13 @@ def compute_losses(
         + (transient_extra_term * transient_extra_weight)
         + (interference_term * interference_weight)
         + (interference_extra_term * interference_extra_weight)
+        + (overlap_interference_term * overlap_interference_weight)
+        + (overlap_interference_extra_term * overlap_interference_extra_weight)
         + (absent_term * absent_weight)
         + (absent_extra_term * absent_extra_weight)
         + (gate_abstain_term * gate_abstain_weight)
         + (gate_keep_term * gate_keep_weight)
+        + (gate_target_term * gate_target_weight)
     )
     return LossBreakdown(
         total=total,
@@ -672,8 +801,11 @@ def compute_losses(
         transient_extra_presence_l1=transient_extra_term,
         interference_projection_ratio=interference_term,
         interference_extra_projection_ratio=interference_extra_term,
+        overlap_interference_projection_ratio=overlap_interference_term,
+        overlap_interference_extra_projection_ratio=overlap_interference_extra_term,
         absent_interval_l1=absent_term,
         absent_extra_interval_l1=absent_extra_term,
         gate_abstain_mean=gate_abstain_term,
         gate_keep_mean=gate_keep_term,
+        gate_target_l1=gate_target_term,
     )

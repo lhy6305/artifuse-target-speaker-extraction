@@ -206,13 +206,20 @@
   - `near_real_0006 / 0009` 更静
   - 但 `same_gender / hard_present keep guardrail` 仍分别是 `11 / 16` 条 violation
   - `near_real_0007` 反而比 `v79` 更坏
+- `v81`
+  - 改成 `audibility-conditioned gate target v1`
+  - `same_gender keep violation`
+    - `11 -> 4`
+  - `hard_present keep violation`
+    - `16 -> 12`
+  - near-real 重新回到 `0` present violation
 
 结论：
 
 - 问题已经从“缺 gate supervision”推进到：
-  - 当前 gate supervision 的目标语义仍然过于二元
-- 下一步不该继续扫 gate loss 权重，也不该继续扩大 keep union，而应改：
-  - `audibility-conditioned gate target`
+  - 当前 gate supervision 的目标语义确实是关键杠杆
+- 继续扩大 keep union 本身不够
+- 但 `audibility-conditioned gate target` 已经证明是有效方向
 
 ### 12. train sample-id selector 不能直接充当 val keep 监控
 
@@ -242,6 +249,44 @@
   - 可跨 train / val 共享的 metadata / target 语义
   - 而不是只靠 train sample-id selector
 
+### 13. near-real 已回到安全，不等于 synthetic keep 风险已经消失
+
+事实：
+
+- `v81`
+  - near-real residual leak floor 已回到 `0` violation
+  - 但 synthetic keep guardrail 仍有残余：
+    - `same_gender = 4`
+    - `hard_present = 12`
+
+结论：
+
+- `v81` 已经值得进 focused 听审关；
+- 但还不该直接凭 objective / near-real 自动升格为默认线。
+
+### 14. objective / guardrail 变健康，不等于已经形成可听优势
+
+事实：
+
+- `v81`
+  - 相对 `v79 / v80`
+    - synthetic abstention 回正
+    - keep guardrail 明显回拉
+    - near-real residual leak floor 回到 `0` violation
+- 但 `v54 vs v81` GUI 听审解盲后仍是：
+  - `4 / 4 tie`
+  - 且备注明确指出：
+    - 分离仍不干净
+    - 干扰泄漏仍存在
+
+结论：
+
+- 当前问题已经从 calibration 题推进到：
+  - `overlap residual leak floor`
+- 后续不应再默认做：
+  - `v54 / v81 / v82` 之间的 checkpoint 选美
+- 而应直接开新的机制子题，去打残余泄漏本身
+
 ## 近期关键案例入口
 
 - `reports/daily/2026-03-26_overlap_abstention_proxy_v3_v4_and_v71_v72_followup.md`
@@ -249,3 +294,5 @@
 - `reports/daily/2026-03-26_audibility_conditioned_v1_and_abstention_gate_v1_v75_v76_v77.md`
 - `reports/daily/2026-03-26_abstention_gate_proxy_v1_and_v78_v79_followup.md`
 - `reports/daily/2026-03-26_hard_present_gate_keep_guardrail_v1_and_v80_followup.md`
+- `reports/daily/2026-03-26_audibility_gate_target_v1_and_v81_followup.md`
+- `reports/daily/2026-03-26_v54_vs_v81_listening_review.md`

@@ -51,6 +51,9 @@
   - `v80`
     - 含义：`v79 + keep_union_v2`
     - 状态：`0006 / 0009` 更静，但 synthetic / near-real keep 都没有修好
+  - `v81`
+    - 含义：`v79 + audibility-conditioned gate target v1`
+    - 状态：near-real 重新回到 `0` violation，但 `v54 vs v81` 听审为 `4 / 4 tie`
 - 已验证失败：
   - `v73`
     - broad keep-guardrail 修正
@@ -62,7 +65,7 @@
 当前结论：
 
 - `legacy stage2` 仍是默认可用线。
-- `v72 / v73 / v74 / v75 / v76 / v77 / v78 / v79 / v80` 都不能替代默认线。
+- `v72 / v73 / v74 / v75 / v76 / v77 / v78 / v79 / v80 / v81` 都不能替代默认线。
 
 ## 当前核心子题
 
@@ -187,7 +190,9 @@
 - `v77` 证明 gate-only 若没有专属监督，会退回 safe/no-op；
 - `v78 / v79` 证明 gate 专属监督有效，但 keep backstop 曾缺 `0007` 风格 hard present 覆盖；
 - `v80` 进一步说明：即使补了更宽的 keep union，当前二元 gate target 仍会继续滑向 over-silence；
-- 所以下一步不是继续扫权重，而是把 gate supervision 从二元 keep / abstain 改成 audibility-conditioned target。
+- `v81` 进一步证明：把 gate supervision 从二元 keep / abstain 改成 audibility-conditioned target，确实能把 `0007` 拉回，同时保留一部分 `0006 / 0009` 收益；
+- `v54 vs v81` focused 听审已经完成，但结果是 `4 / 4 tie`，残余泄漏问题仍无可听改善；
+- 当前下一步不再是继续选 checkpoint，而是直接转到 residual leak 机制题。
 
 ## 当前最可靠的阶段结论
 
@@ -196,7 +201,7 @@
    - keep
    - abstain
    虽然已经拆出 gate，但 gate 的监督目标仍然过于二元。
-3. 继续做 `v72` 附近的普通权重 sweep，预期收益很低。
+3. `v81` 已经是当前最健康的 gate 机制候选，但听审显示它还没有形成可听优势，不能放行。
 
 ## 下一步默认计划
 
@@ -205,15 +210,16 @@
 优先顺序：
 
 1. 不再继续做 `v80` 同结构 sweep。
-2. 下一步优先改成：
-   - `audibility-conditioned gate target`
-   - 把 hard-present keep、medium present keep、weak-target abstain 从完全二元监督改成分层目标
-3. 后续 gate 训练固定保留四条训练/验收约束：
+2. `v54 vs v81` 选型题先收口，不再继续追加同类听审。
+3. 下一步优先改成新的机制子题：
+   - `present_overlap_residual_leak_purification`
+   - 目标直接降低重叠段 residual speech leak，而不是继续微调 gate calibration
+4. 后续 gate 训练固定保留四条训练/验收约束：
    - `abstention_gate_proxy_v1`
    - `same_gender_present_keep_guardrail_v1`
    - `hard_present_gate_keep_guardrail_v1`
    - `gate_keep_union_v2`
-4. 在任何新训练前，固定保留以下四条验收：
+5. 在任何新训练前，固定保留以下四条验收：
    - `real_eval_manifest_residual_speech_leak_floor_v1`
    - `same_gender_present_keep_guardrail_v1`
    - `hard_present_gate_keep_guardrail_v1`
@@ -227,6 +233,8 @@
 - `reports/daily/2026-03-26_audibility_conditioned_v1_and_abstention_gate_v1_v75_v76_v77.md`
 - `reports/daily/2026-03-26_abstention_gate_proxy_v1_and_v78_v79_followup.md`
 - `reports/daily/2026-03-26_hard_present_gate_keep_guardrail_v1_and_v80_followup.md`
+- `reports/daily/2026-03-26_audibility_gate_target_v1_and_v81_followup.md`
+- `reports/daily/2026-03-26_v54_vs_v81_listening_review.md`
 
 ## 文档维护规则
 

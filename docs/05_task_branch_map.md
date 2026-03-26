@@ -53,6 +53,11 @@
   - 状态：
     - wider keep union follow-up
     - 不能放行
+- `v81`
+  - `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v81_v79_audibility_gate_target_v1_ft1`
+  - 状态：
+    - audibility-conditioned gate target first pilot
+    - 听审已完成，不能直接放行
 
 ## 当前活跃问题树
 
@@ -288,6 +293,33 @@
 
 - `failed_binary_gate_target`
 
+### 10. `v81`
+
+含义：
+
+- `v79 + audibility-conditioned gate target v1`
+
+结果：
+
+- `overlap_abstention_proxy_v4`
+  - 相对 `v79` 是 `+1.9569 dB`
+- `same_gender keep guardrail`
+  - `11 -> 4` violations
+- `hard_present keep guardrail`
+  - `16 -> 12` violations
+- near-real residual leak floor
+  - 回到 `0` violation
+  - `0007` 已明显拉回
+  - `0006 / 0009` 仍保留部分更静收益
+- `v54 vs v81` focused 听审
+  - `4 / 4 tie`
+  - 无任何可感知差异
+  - 两侧都仍有明显 residual leak
+
+裁决：
+
+- `promising_but_not_audibly_better`
+
 ## 当前有效训练与验收入口
 
 ### 训练侧
@@ -341,10 +373,11 @@
 
 如果没有新的用户决策，当前默认下一步是：
 
-- 不再继续扫 `v80` 同结构权重；
-- 直接改机制层目标语义：
-  - `audibility-conditioned gate target`
-  - 目标是把 hard-present keep、medium present keep、weak-target abstain 从完全二元监督改成分层目标
+- `v54 vs v81` 选型题先收口；
+- 不再继续做同类 checkpoint 听审；
+- 直接开新的机制子题：
+  - `present_overlap_residual_leak_purification`
+  - 目标直打重叠段 residual leak
 
 执行前必须保持四条验收同时在场：
 
@@ -361,6 +394,8 @@
 - `reports/daily/2026-03-26_audibility_conditioned_v1_and_abstention_gate_v1_v75_v76_v77.md`
 - `reports/daily/2026-03-26_abstention_gate_proxy_v1_and_v78_v79_followup.md`
 - `reports/daily/2026-03-26_hard_present_gate_keep_guardrail_v1_and_v80_followup.md`
+- `reports/daily/2026-03-26_audibility_gate_target_v1_and_v81_followup.md`
+- `reports/daily/2026-03-26_v54_vs_v81_listening_review.md`
 
 ## 文档维护规则
 
