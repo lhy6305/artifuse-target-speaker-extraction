@@ -20,7 +20,7 @@ SRC_DIR = ROOT / "src"
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
-from tse_prefix.data.synthetic_dataset import SyntheticTSEDataset, load_jsonl
+from tse_prefix.data.synthetic_dataset import load_json, load_jsonl
 from tse_prefix.models import STFTMaskBaseline
 from tse_prefix.pipeline import masked_sisdr
 
@@ -153,6 +153,15 @@ def save_audio(path: Path, waveform: torch.Tensor, sample_rate: int) -> None:
     torchaudio.save(str(path), waveform.detach().cpu().unsqueeze(0), sample_rate)
 
 
+def load_audio_mono(path: Path, sample_rate: int) -> torch.Tensor:
+    waveform, sr = torchaudio.load(str(path))
+    if waveform.shape[0] > 1:
+        waveform = waveform.mean(dim=0, keepdim=True)
+    if sr != sample_rate:
+        waveform = torchaudio.functional.resample(waveform, sr, sample_rate)
+    return waveform.squeeze(0).contiguous()
+
+
 def rms_value(waveform: torch.Tensor) -> float:
     return float(torch.sqrt(torch.mean(torch.square(waveform)) + 1e-12).item())
 
@@ -170,21 +179,53 @@ def compute_shared_export_gain(tracks: list[torch.Tensor]) -> float:
     return gain
 
 
+def infer_manifest_defaults(row: dict[str, Any], root: Path) -> tuple[str, str, float, Path]:
+    mixture_audio_path = root / row["mixture_audio_path"]
+    metadata_path = root / row.get("metadata_path", mixture_audio_path.parent / "sample_meta.json")
+    recipe = row.get("recipe")
+    temporal_pattern = row.get("temporal_pattern")
+    target_present_ratio = row.get("target_present_ratio")
+
+    if metadata_path.exists():
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+        scenario = str(metadata.get("scenario", "near_real"))
+        has_target_component = any(
+            str(component.get("kind", "")).startswith("target")
+            for component in metadata.get("components", [])
+            if isinstance(component, dict)
+        )
+        if recipe is None:
+            recipe = scenario
+        if temporal_pattern is None:
+            temporal_pattern = "target_present" if has_target_component else "target_absent"
+        if target_present_ratio is None:
+            target_present_ratio = 1.0 if has_target_component else 0.0
+
+    if recipe is None:
+        recipe = "near_real"
+    if temporal_pattern is None:
+        temporal_pattern = "unknown"
+    if target_present_ratio is None:
+        target_present_ratio = 0.0
+    return str(recipe), str(temporal_pattern), float(target_present_ratio), metadata_path
+
+
 def read_manifest_samples(manifest_path: Path) -> list[CandidateSample]:
     root = manifest_path.resolve().parents[2]
     rows = load_jsonl(manifest_path)
     samples: list[CandidateSample] = []
     for row in rows:
+        recipe, temporal_pattern, target_present_ratio, metadata_path = infer_manifest_defaults(row, root)
         samples.append(
             CandidateSample(
                 sample_id=row["sample_id"],
-                recipe=row["recipe"],
-                temporal_pattern=row["temporal_pattern"],
-                target_present_ratio=float(row["target_present_ratio"]),
+                recipe=recipe,
+                temporal_pattern=temporal_pattern,
+                target_present_ratio=target_present_ratio,
                 mixture_audio_path=root / row["mixture_audio_path"],
                 target_audio_path=root / row["target_audio_path"],
                 reference_audio_path=root / row["reference_audio_path"],
-                metadata_path=root / row["metadata_path"],
+                metadata_path=metadata_path,
             )
         )
     return samples
@@ -287,8 +328,6 @@ def main() -> None:
 
     manifest_samples = read_manifest_samples(args.manifest)
     manifest_by_id = {sample.sample_id: sample for sample in manifest_samples}
-    dataset = SyntheticTSEDataset(args.manifest, sample_rate=args.sample_rate)
-
     model_a, model_config_a, loss_config_a = build_model_from_checkpoint(args.checkpoint_a, device)
     model_b, model_config_b, loss_config_b = build_model_from_checkpoint(args.checkpoint_b, device)
 
@@ -297,18 +336,20 @@ def main() -> None:
     recipe_counter: dict[str, int] = defaultdict(int)
 
     with torch.no_grad():
-        for index in range(len(dataset)):
-            item = dataset[index]
-            sample = manifest_by_id[item["sample_id"]]
+        for sample in manifest_samples:
             if focus_recipes and sample.recipe not in focus_recipes:
                 continue
 
-            mixture = item["mixture"].unsqueeze(0).to(device)
-            target = item["target"].unsqueeze(0).to(device)
-            reference = item["reference"].unsqueeze(0).to(device)
-            target_lengths = torch.tensor([item["target"].shape[-1]], device=device, dtype=torch.long)
-            reference_lengths = torch.tensor([item["reference"].shape[-1]], device=device, dtype=torch.long)
-            mixture_lengths = torch.tensor([item["mixture"].shape[-1]], device=device, dtype=torch.long)
+            mixture_waveform = load_audio_mono(sample.mixture_audio_path, args.sample_rate)
+            target_waveform = load_audio_mono(sample.target_audio_path, args.sample_rate)
+            reference_waveform = load_audio_mono(sample.reference_audio_path, args.sample_rate)
+
+            mixture = mixture_waveform.unsqueeze(0).to(device)
+            target = target_waveform.unsqueeze(0).to(device)
+            reference = reference_waveform.unsqueeze(0).to(device)
+            target_lengths = torch.tensor([target_waveform.shape[-1]], device=device, dtype=torch.long)
+            reference_lengths = torch.tensor([reference_waveform.shape[-1]], device=device, dtype=torch.long)
+            mixture_lengths = torch.tensor([mixture_waveform.shape[-1]], device=device, dtype=torch.long)
 
             outputs_a = model_a(
                 mixture=mixture,
@@ -343,9 +384,9 @@ def main() -> None:
                     "waveform_l1_a": waveform_l1_a,
                     "waveform_l1_b": waveform_l1_b,
                     "waveform_l1_delta": waveform_l1_b - waveform_l1_a,
-                    "mixture": item["mixture"].cpu(),
-                    "target": item["target"].cpu(),
-                    "reference": item["reference"].cpu(),
+                    "mixture": mixture_waveform.cpu(),
+                    "target": target_waveform.cpu(),
+                    "reference": reference_waveform.cpu(),
                     "estimate_a": pred_a[0, : lengths[0].item()].cpu(),
                     "estimate_b": pred_b[0, : lengths[0].item()].cpu(),
                     "metadata_path": serialize_repo_path(sample.metadata_path),
@@ -364,6 +405,7 @@ def main() -> None:
     score_sheet_rows: list[dict[str, Any]] = []
     for row in selected_rows:
         sample = manifest_by_id[row["sample_id"]]
+        source_metadata = load_json(sample.metadata_path) if sample.metadata_path.exists() else {}
         if args.blind:
             if blind_rng.random() < 0.5:
                 export_name_a = "candidate_a"
@@ -394,6 +436,12 @@ def main() -> None:
             "recipe": row["recipe"],
             "temporal_pattern": row["temporal_pattern"],
             "target_present_ratio": row["target_present_ratio"],
+            "scenario": str(source_metadata.get("scenario", "")),
+            "note": str(source_metadata.get("note", "")),
+            "audio_layout": str(source_metadata.get("audio_layout", "mono")),
+            "mixture_audio_path": serialize_repo_path(sample.mixture_audio_path),
+            "target_audio_path": serialize_repo_path(sample.target_audio_path),
+            "reference_audio_path": serialize_repo_path(sample.reference_audio_path),
             "metadata_path": row["metadata_path"],
             "comparison": {
                 args.label_a: {
@@ -419,6 +467,10 @@ def main() -> None:
                 "estimate_a": f"{export_name_a}.wav",
                 "estimate_b": f"{export_name_b}.wav",
             },
+            "exports": {
+                "estimate_a": f"{export_name_a}.wav",
+                "estimate_b": f"{export_name_b}.wav",
+            },
         }
         export_sample_bundle(
             output_dir=args.output_dir,
@@ -437,8 +489,8 @@ def main() -> None:
         blind_rows.append(
             {
                 "sample_id": row["sample_id"],
-                "candidate_a": blind_mapping["candidate_a"],
-                "candidate_b": blind_mapping["candidate_b"],
+                "candidate_a": blind_mapping.get("candidate_a", args.label_a),
+                "candidate_b": blind_mapping.get("candidate_b", args.label_b),
             }
         )
         score_sheet_rows.append(

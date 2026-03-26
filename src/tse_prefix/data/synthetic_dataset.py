@@ -146,6 +146,53 @@ def _infer_interference_speaker_name(audio_path: str | None) -> str:
     return parent_name
 
 
+def _categorize_interference_pool(pool_name: str) -> str:
+    normalized = pool_name.strip().lower()
+    if not normalized:
+        return ""
+    if "speech" in normalized:
+        return "speech"
+    if "music" in normalized:
+        return "music"
+    return "other"
+
+
+def _summarize_interference_layers(metadata: dict[str, Any]) -> dict[str, Any]:
+    layers = list(metadata.get("interference_layers", []))
+    categories: set[str] = set()
+    pools: list[str] = []
+    speaker_names: list[str] = []
+
+    for layer in layers:
+        pool_name = str(layer.get("pool", "")).strip()
+        if pool_name:
+            pools.append(pool_name)
+            category = _categorize_interference_pool(pool_name)
+            if category:
+                categories.add(category)
+
+        speaker_name = _infer_interference_speaker_name(str(layer.get("audio_path", "")))
+        if speaker_name:
+            speaker_names.append(speaker_name)
+
+    ordered_categories = [name for name in ("speech", "music", "other") if name in categories]
+    if not ordered_categories:
+        profile = "none"
+    elif len(ordered_categories) == 1:
+        profile = f"{ordered_categories[0]}_only"
+    else:
+        profile = "_plus_".join(ordered_categories)
+    return {
+        "layer_count": len(layers),
+        "profile": profile,
+        "has_speech": "speech" in categories,
+        "has_music": "music" in categories,
+        "has_other": "other" in categories,
+        "pools": sorted(set(pools)),
+        "speaker_names": sorted(set(speaker_names)),
+    }
+
+
 def load_json(path: Path) -> dict[str, Any]:
     with path.open("r", encoding="utf-8") as fh:
         return json.load(fh)
@@ -228,6 +275,7 @@ class SyntheticTSEDataset(Dataset[dict[str, Any]]):
         metadata = load_json(sample.metadata_path)
         layers = list(metadata.get("interference_layers", []))
         first_layer = layers[0] if layers else {}
+        interference_summary = _summarize_interference_layers(metadata)
         return {
             "sample_id": sample.sample_id,
             "mixture": _load_audio_mono(sample.mixture_audio_path, self.sample_rate),
@@ -272,6 +320,13 @@ class SyntheticTSEDataset(Dataset[dict[str, Any]]):
             "interference_speaker_name": _infer_interference_speaker_name(
                 str(first_layer.get("audio_path", ""))
             ),
+            "interference_layer_count": int(interference_summary["layer_count"]),
+            "interference_profile": str(interference_summary["profile"]),
+            "has_speech_interference": bool(interference_summary["has_speech"]),
+            "has_music_interference": bool(interference_summary["has_music"]),
+            "has_other_interference": bool(interference_summary["has_other"]),
+            "interference_pools_all": list(interference_summary["pools"]),
+            "interference_speaker_names_all": list(interference_summary["speaker_names"]),
             "target_absent_intervals": list(metadata.get("target_absent_intervals", [])),
             "target_overlap_intervals": _compute_target_overlap_intervals(metadata),
             "metadata_path": _serialize_repo_path(sample.metadata_path, self.root),
@@ -345,6 +400,13 @@ def synthetic_collate_fn(batch: list[dict[str, Any]]) -> dict[str, Any]:
         ),
         "interference_pools": [item["interference_pool"] for item in batch],
         "interference_speaker_names": [item["interference_speaker_name"] for item in batch],
+        "interference_layer_counts": [item["interference_layer_count"] for item in batch],
+        "interference_profiles": [item["interference_profile"] for item in batch],
+        "has_speech_interference": [item["has_speech_interference"] for item in batch],
+        "has_music_interference": [item["has_music_interference"] for item in batch],
+        "has_other_interference": [item["has_other_interference"] for item in batch],
+        "interference_pools_all": [item["interference_pools_all"] for item in batch],
+        "interference_speaker_names_all": [item["interference_speaker_names_all"] for item in batch],
         "target_absent_intervals": [item["target_absent_intervals"] for item in batch],
         "target_overlap_intervals": [item["target_overlap_intervals"] for item in batch],
         "metadata_paths": [item["metadata_path"] for item in batch],

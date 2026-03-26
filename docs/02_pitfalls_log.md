@@ -889,6 +889,76 @@
   - `listening_sheet.csv + blind_key.json`
 - 否则会把已经完成的听审资产误判成“没人耳标签”。
 
+### 36. synthetic selector 只看第一层 `interference_pool` 会把 `speech_plus_music` 错分成 `speech-only`
+
+事实：
+
+- 旧版 `SyntheticTSEDataset`
+  - 在 `__getitem__`
+  - 只暴露第一层：
+    - `interference_pool`
+    - `interference_speaker_name`
+- 但 `target_hard_plus_music` / `target_clean_plus_music`
+  - 实际 `interference_layers` 是：
+    - 第一层 speech
+    - 第二层 music
+- 因此任何只基于第一层 pool 的 selector
+  - 都会把这类样本误当成纯 speech 干扰。
+
+结论：
+
+- 这不是单纯的阈值问题，而是 selector 元数据表达不够；
+- 如果不先补 interference profile，后续所谓 `speech-only local residual` 训练会在样本定义上自相矛盾。
+
+要求：
+
+- selector 不能再只依赖第一层 `interference_pool`；
+- 后续必须改用：
+  - `interference_profile`
+  - `has_speech_interference`
+  - `has_music_interference`
+  - `interference_layer_count`
+  这类派生字段来定义纯 speech overlap 子域。
+
+### 37. 把 overlap-local selector 收窄到 `speech_only`，能保住 synthetic 主收益，但不会自动修好 `0007`
+
+事实：
+
+- `v102`
+  - 在 `v82` 基础上把 overlap-local selector 收窄到真正的 `speech_only`
+- relative `v81`
+  - synthetic 三条主验收仍为正：
+    - abstention `+2.829 dB`
+    - same-gender keep `+1.252 dB`
+    - hard-present keep `+1.022 dB`
+- 但 near-real 上：
+  - `0003`
+    - 变成明确正 tradeoff
+  - `0006`
+    - localized speech-only 指标更好
+    - whole-utterance 却没有同步转正
+  - `0007`
+    - whole-utterance 黄灯只略收窄
+    - localized `retention-minus-speech-leak` 仍明显更差
+  - `0009`
+    - absent 近乎打平，没有形成明确收益
+
+结论：
+
+- selector 污染确实是问题的一部分；
+- 但 `0007` 的 blocker 不只是 selector 污染，
+  仍包含 hard-present artifact / preservation 难题本身；
+- 因此 `speech_only selector` 不是终解，只是把问题重新压缩回更明确的 target-present speech 子域。
+
+要求：
+
+- `v102` 不应自动升格；
+- 必须先做 `v81 vs v102` focused 听审；
+- 若听审确认：
+  - `0003 / 0006` 有真实收益，
+  - 且 `0007 / 0009` 代价可接受，
+  才值得继续做后续 `v103+`。
+
 ## 近期关键案例入口
 
 - `reports/daily/2026-03-26_overlap_abstention_proxy_v3_v4_and_v71_v72_followup.md`
@@ -905,3 +975,5 @@
 - `reports/daily/2026-03-26_overlap_cancel_deltablend_v1_v101_followup.md`
 - `reports/daily/2026-03-26_v81_vs_v101_listening_review.md`
 - `reports/daily/2026-03-26_overlap_local_benchmark_v81_v88_v95_v100_v101_followup.md`
+- `reports/daily/2026-03-27_speech_only_selector_profile_prework.md`
+- `reports/daily/2026-03-27_overlap_purify_v2_speechonly_v102_followup.md`

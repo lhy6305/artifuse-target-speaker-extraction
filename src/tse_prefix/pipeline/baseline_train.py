@@ -650,6 +650,7 @@ def compute_losses(
     overlap_cancel_sample_weights: torch.Tensor | None = None,
     overlap_dual_sample_weights: torch.Tensor | None = None,
     branch_protect_sample_weights: torch.Tensor | None = None,
+    branch_protect_teacher_sample_weights: torch.Tensor | None = None,
     absent_sample_weights: torch.Tensor | None = None,
     absent_extra_sample_weights: torch.Tensor | None = None,
     gate_abstain_sample_weights: torch.Tensor | None = None,
@@ -765,7 +766,11 @@ def compute_losses(
             lengths=lengths,
             intervals_batch=overlap_intervals,
             sample_rate=sample_rate,
-            sample_weights=branch_protect_sample_weights,
+            sample_weights=(
+                branch_protect_teacher_sample_weights
+                if branch_protect_teacher_sample_weights is not None
+                else branch_protect_sample_weights
+            ),
         )
     interference_extra_guard_sisdr_term = weighted_sisdr_loss(
         prediction=extra_prediction,

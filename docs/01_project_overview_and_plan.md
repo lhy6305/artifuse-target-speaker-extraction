@@ -401,6 +401,86 @@
   - 应优先看 localized `speech-leak / retention-minus-speech-leak / artifact-share`，
   - 不再把 whole-utterance leak tradeoff 当终裁依据。
 
+### 7. speech-only selector 前置条件
+
+已完成：
+
+- `src/tse_prefix/data/synthetic_dataset.py`
+  - 新增 interference 派生字段：
+    - `interference_profile`
+    - `interference_layer_count`
+    - `has_speech_interference`
+    - `has_music_interference`
+    - `has_other_interference`
+- `src/tse_prefix/pipeline/loss_selectors.py`
+  - 新增 selector 键：
+    - `focus_interference_profiles`
+    - `require_speech_interference`
+    - `require_music_interference`
+    - `require_other_interference`
+    - `min_interference_layer_count`
+    - `max_interference_layer_count`
+- `scripts/train/train_stft_mask_baseline.py`
+  - 已暴露对应训练 CLI 参数
+
+自检结论：
+
+- 在 `data/synthetic/train_manifest_abstention_gate_bundle_v2.jsonl` 上：
+  - `target_clean_speech = 34`
+  - `target_hard_speech = 17`
+  - 全部被标为 `speech_only`
+- `target_clean_plus_music = 30`
+  - `target_hard_plus_music = 21`
+  - 全部被标为 `speech_plus_music`
+- 用：
+  - `focus_interference_profiles = speech_only`
+  - `require_speech_interference = true`
+  - `require_music_interference = false`
+  可稳定选中纯 speech 样本 `51` 条，误选 `plus_music = 0`
+
+结论：
+
+- 下一步不需要先物化新的 speech-only manifest；
+- 直接用现有 synthetic manifest + selector，就能定义“纯 speech overlap”训练子域；
+- 后续 pilot 可以直接基于 `v81` 开做。
+
+### 8. `v102` speech-only overlap pilot
+
+已完成：
+
+- `v102 = v81 + overlap_purify_v2_speechonly_selector_ft1`
+- checkpoint：
+  - `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v102_v81_overlap_purify_v2_speechonly_ft1`
+
+训练口径：
+
+- 结构、权重、trainable head 全部复用 `v82`
+- 唯一实质改动：
+  - 把 overlap-local loss 的 selector
+  - 从“第一层 speech pool”改成真正的 `speech_only`
+
+结果：
+
+- synthetic 四条固定验收 relative `v81` 仍保持正收益：
+  - abstention `+2.829 dB`
+  - same-gender keep `+1.252 dB`
+  - hard-present keep `+1.022 dB`
+- near-real whole-utterance：
+  - `overall_pass = true`
+  - 但只在 `0003` 上给出清晰正 tradeoff
+  - `0007` 仍是 hard-present 黄灯
+  - `0009` absent 近乎打平
+- overlap-local：
+  - `0003 / 0006`
+    的 `retention-minus-speech-leak` 都优于 `v81`
+  - `0007` 仍明显更差
+
+当前裁决：
+
+- `v102` 不能自动升格；
+- 但已经值得进入 focused 听审，
+  因为它是第一条把 `speech_only` selector 落到实训并跑通完整验收的 pilot。
+
 ## 下一步默认计划
 
 当前默认状态不是继续当前 refiner 家族自动扩树。
@@ -451,6 +531,13 @@
    - `same_gender_present_keep_guardrail_v1`
    - `hard_present_gate_keep_guardrail_v1`
    - `overlap_abstention_proxy_v4_audibility_v1`
+14. 当前新的默认前置条件已就绪：
+   - `speech_only` vs `speech_plus_music` 已可通过 selector 稳定分离
+   - 下一步可直接进入 `v81` 基座上的 speech-only local residual pilot 配置阶段
+15. `v102` speech-only pilot 已完成自动验收：
+   - 当前默认下一步不再是继续扫 `v102 / v103` 权重
+   - 而是先做 `v81 vs v102` focused 听审
+   - 听审重点固定看 `0003 / 0006 / 0007 / 0009`
 
 ## 近期关键日报入口
 
@@ -477,6 +564,8 @@
 - `reports/daily/2026-03-26_v81_vs_v95_listening_review.md`
 - `reports/daily/2026-03-26_overlap_canceller_phasepreserve_v96_v97_v98_followup.md`
 - `reports/daily/2026-03-26_overlap_local_benchmark_v81_v88_v95_v100_v101_followup.md`
+- `reports/daily/2026-03-27_speech_only_selector_profile_prework.md`
+- `reports/daily/2026-03-27_overlap_purify_v2_speechonly_v102_followup.md`
 
 ## 文档维护规则
 

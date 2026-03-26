@@ -8,7 +8,11 @@ SELECTOR_SUFFIXES = (
     "focus_recipes",
     "focus_patterns",
     "focus_interference_pools",
+    "focus_interference_profiles",
     "focus_interference_speaker_names",
+    "require_speech_interference",
+    "require_music_interference",
+    "require_other_interference",
     "min_target_ratio",
     "max_target_ratio",
     "min_target_energy_ratio",
@@ -17,6 +21,8 @@ SELECTOR_SUFFIXES = (
     "max_overlap_ratio",
     "min_interference_gain_db",
     "max_interference_gain_db",
+    "min_interference_layer_count",
+    "max_interference_layer_count",
     "min_target_transient_presence_minus_mid_db_mean",
     "max_target_transient_presence_minus_mid_db_mean",
     "min_target_transient_presence_share_mean",
@@ -31,6 +37,21 @@ SELECTOR_SUFFIXES = (
 SELECTOR_BRANCH_NAMES = ("", "extra_")
 
 
+def _normalize_optional_bool(value: Any) -> bool | None:
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return bool(value)
+    normalized = str(value).strip().lower()
+    if normalized in {"1", "true", "yes"}:
+        return True
+    if normalized in {"0", "false", "no"}:
+        return False
+    raise ValueError(f"Unsupported optional bool selector value: {value!r}")
+
+
 def selector_config_keys(
     prefixes: tuple[str, ...] = (
         "reconstruction",
@@ -39,6 +60,7 @@ def selector_config_keys(
         "overlap_interference",
         "absent",
         "branch_protect",
+        "branch_protect_teacher",
     )
 ) -> set[str]:
     return {
@@ -61,7 +83,17 @@ def _build_branch_selector_sample_weights(
     recipes = set(loss_config.get(f"{key_prefix}focus_recipes", []))
     patterns = set(loss_config.get(f"{key_prefix}focus_patterns", []))
     pools = set(loss_config.get(f"{key_prefix}focus_interference_pools", []))
+    profiles = set(loss_config.get(f"{key_prefix}focus_interference_profiles", []))
     speaker_names = set(loss_config.get(f"{key_prefix}focus_interference_speaker_names", []))
+    require_speech_interference = _normalize_optional_bool(
+        loss_config.get(f"{key_prefix}require_speech_interference")
+    )
+    require_music_interference = _normalize_optional_bool(
+        loss_config.get(f"{key_prefix}require_music_interference")
+    )
+    require_other_interference = _normalize_optional_bool(
+        loss_config.get(f"{key_prefix}require_other_interference")
+    )
     min_ratio = loss_config.get(f"{key_prefix}min_target_ratio")
     max_ratio = loss_config.get(f"{key_prefix}max_target_ratio")
     min_target_energy_ratio = loss_config.get(f"{key_prefix}min_target_energy_ratio")
@@ -70,6 +102,8 @@ def _build_branch_selector_sample_weights(
     max_overlap = loss_config.get(f"{key_prefix}max_overlap_ratio")
     min_gain = loss_config.get(f"{key_prefix}min_interference_gain_db")
     max_gain = loss_config.get(f"{key_prefix}max_interference_gain_db")
+    min_interference_layer_count = loss_config.get(f"{key_prefix}min_interference_layer_count")
+    max_interference_layer_count = loss_config.get(f"{key_prefix}max_interference_layer_count")
     min_transient_minus_mid = loss_config.get(f"{key_prefix}min_target_transient_presence_minus_mid_db_mean")
     max_transient_minus_mid = loss_config.get(f"{key_prefix}max_target_transient_presence_minus_mid_db_mean")
     min_transient_share = loss_config.get(f"{key_prefix}min_target_transient_presence_share_mean")
@@ -90,7 +124,11 @@ def _build_branch_selector_sample_weights(
         recipes
         or patterns
         or pools
+        or profiles
         or speaker_names
+        or require_speech_interference is not None
+        or require_music_interference is not None
+        or require_other_interference is not None
         or min_ratio is not None
         or max_ratio is not None
         or min_target_energy_ratio is not None
@@ -99,6 +137,8 @@ def _build_branch_selector_sample_weights(
         or max_overlap is not None
         or min_gain is not None
         or max_gain is not None
+        or min_interference_layer_count is not None
+        or max_interference_layer_count is not None
         or min_transient_minus_mid is not None
         or max_transient_minus_mid is not None
         or min_transient_share is not None
@@ -138,6 +178,12 @@ def _build_branch_selector_sample_weights(
             dtype=torch.float32,
             device=device,
         )
+    if profiles:
+        weights = weights * torch.tensor(
+            [1.0 if profile in profiles else 0.0 for profile in batch["interference_profiles"]],
+            dtype=torch.float32,
+            device=device,
+        )
     if speaker_names:
         weights = weights * torch.tensor(
             [1.0 if name in speaker_names else 0.0 for name in batch["interference_speaker_names"]],
@@ -163,6 +209,26 @@ def _build_branch_selector_sample_weights(
     )
     overlaps = batch["overlap_ratios"].to(device=device, dtype=torch.float32)
     gains = batch["interference_gain_dbs"].to(device=device, dtype=torch.float32)
+    interference_layer_counts = torch.as_tensor(
+        batch["interference_layer_counts"],
+        dtype=torch.float32,
+        device=device,
+    )
+    has_speech_interference = torch.as_tensor(
+        batch["has_speech_interference"],
+        dtype=torch.bool,
+        device=device,
+    )
+    has_music_interference = torch.as_tensor(
+        batch["has_music_interference"],
+        dtype=torch.bool,
+        device=device,
+    )
+    has_other_interference = torch.as_tensor(
+        batch["has_other_interference"],
+        dtype=torch.bool,
+        device=device,
+    )
     if min_ratio is not None:
         weights = weights * (ratios >= float(min_ratio)).float()
     if max_ratio is not None:
@@ -183,6 +249,16 @@ def _build_branch_selector_sample_weights(
         weights = weights * ((~torch.isnan(gains)) & (gains >= float(min_gain))).float()
     if max_gain is not None:
         weights = weights * ((~torch.isnan(gains)) & (gains <= float(max_gain))).float()
+    if min_interference_layer_count is not None:
+        weights = weights * (interference_layer_counts >= float(min_interference_layer_count)).float()
+    if max_interference_layer_count is not None:
+        weights = weights * (interference_layer_counts <= float(max_interference_layer_count)).float()
+    if require_speech_interference is not None:
+        weights = weights * (has_speech_interference == require_speech_interference).float()
+    if require_music_interference is not None:
+        weights = weights * (has_music_interference == require_music_interference).float()
+    if require_other_interference is not None:
+        weights = weights * (has_other_interference == require_other_interference).float()
     if min_transient_minus_mid is not None:
         weights = weights * (
             (~torch.isnan(transient_minus_mid)) & (transient_minus_mid >= float(min_transient_minus_mid))

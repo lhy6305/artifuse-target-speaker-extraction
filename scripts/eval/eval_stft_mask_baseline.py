@@ -150,6 +150,7 @@ def build_compute_loss_kwargs(loss_config: dict) -> dict:
                 "overlap_dual",
                 "absent",
                 "branch_protect",
+                "branch_protect_teacher",
             )
         )
         and key not in gate_target_config_keys
@@ -510,6 +511,12 @@ def main() -> None:
                 loss_config=loss_config,
                 prefix="branch_protect",
             )
+            branch_protect_teacher_sample_weights = build_selector_sample_weights(
+                batch=batch,
+                device=device,
+                loss_config=loss_config,
+                prefix="branch_protect_teacher",
+            )
             gate_target_values = build_gate_target_values(batch=batch, device=device, loss_config=loss_config)
             gate_target_sample_weights = (
                 torch.ones(len(batch["sample_ids"]), dtype=torch.float32, device=device)
@@ -546,6 +553,7 @@ def main() -> None:
                 overlap_cancel_prediction=outputs.get("branch_overlap_cancel_estimate_waveform"),
                 overlap_cancel_sample_weights=overlap_cancel_sample_weights,
                 branch_protect_sample_weights=branch_protect_sample_weights,
+                branch_protect_teacher_sample_weights=branch_protect_teacher_sample_weights,
                 absent_sample_weights=absent_sample_weights,
                 absent_extra_sample_weights=absent_extra_sample_weights,
                 gate_abstain_sample_weights=interference_extra_sample_weights,

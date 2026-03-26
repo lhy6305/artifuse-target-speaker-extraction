@@ -872,6 +872,14 @@
   - `data/synthetic/val_manifest_gate_keep_union_v2.jsonl`
   - `data/synthetic/train_manifest_abstention_gate_bundle_v2.jsonl`
   - `data/synthetic/val_manifest_abstention_gate_bundle_v2.jsonl`
+- speech-only overlap selector 前置条件：
+  - 不需要新 manifest
+  - 直接复用现有 synthetic manifest
+  - 通过以下派生字段筛纯 speech overlap：
+    - `interference_profile`
+    - `has_speech_interference`
+    - `has_music_interference`
+    - `interference_layer_count`
 
 ### 验收侧
 
@@ -937,6 +945,15 @@
   - localized `speech leak / retention-minus-speech-leak / artifact proxy`
     比 whole-utterance leak tradeoff 更接近已知听审裁决；
   - 这条 benchmark 现已成为后续 overlap frontier 的固定诊断链；
+- `speech-only overlap` 的 selector 前置条件已完成，当前结论是：
+  - `speech_only`
+    可稳定筛出：
+    - `target_clean_speech`
+    - `target_hard_speech`
+  - 不会再把：
+    - `target_clean_plus_music`
+    - `target_hard_plus_music`
+    误选进来；
 - 不再继续做 `v83` 式宽触发 refiner，也不做 `v84` 附近小权重 sweep；
 - 不再继续做 `v85 / v86` 同家族小步 sweep；
 - 不再继续做 `v87 / v88` 同家族小步 sweep；
@@ -948,6 +965,24 @@
   - 新的机制子题
   - 并优先显式处理 `hard-present artifact risk`
   - 而不是继续让当前 auxiliary-only / direct dual path / phase-preserve overlap-canceller 家族扩树
+- 当前最直接的下一步变成：
+  - 基于 `v81`
+  - 配一个 `speech_only local residual suppressor` 首个 pilot
+  - 再用四条固定验收 + overlap-local benchmark 回放
+- `v102` 首个 `speech_only local residual suppressor` pilot 已完成：
+  - `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v102_v81_overlap_purify_v2_speechonly_ft1`
+  - synthetic relative `v81` 仍保持三条主验收正收益
+  - near-real `overall_pass = true`
+  - 但 `0007` 仍未自动修好，`0009` 也未形成明确收益
+  - 当前不自动升格，先走 focused 听审
+- 当前新的默认下一步变成：
+  - `v81 vs v102` focused 听审
+  - 重点看：
+    - `0003`
+    - `0006`
+    - `0007`
+    - `0009`
+  - 而不是立刻继续做 `v103` sweep
 
 执行前必须保持四条验收同时在场：
 
@@ -980,6 +1015,8 @@
 - `reports/daily/2026-03-26_overlap_aux_interference_decoder_v2_v3_v4_and_v93_v94_v95_followup.md`
 - `reports/daily/2026-03-26_v81_vs_v95_listening_review.md`
 - `reports/daily/2026-03-26_overlap_canceller_phasepreserve_v96_v97_v98_followup.md`
+- `reports/daily/2026-03-27_speech_only_selector_profile_prework.md`
+- `reports/daily/2026-03-27_overlap_purify_v2_speechonly_v102_followup.md`
 
 ## 文档维护规则
 

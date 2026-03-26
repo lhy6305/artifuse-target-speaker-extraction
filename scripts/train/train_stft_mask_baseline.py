@@ -273,6 +273,7 @@ def parse_args() -> argparse.Namespace:
     add_selector_args(parser, "overlap_dual")
     add_selector_args(parser, "absent")
     add_selector_args(parser, "branch_protect")
+    add_selector_args(parser, "branch_protect_teacher")
     return parser.parse_args()
 
 
@@ -534,6 +535,7 @@ def build_loss_config(args: argparse.Namespace) -> dict[str, float]:
         "overlap_dual",
         "absent",
         "branch_protect",
+        "branch_protect_teacher",
     ):
         for branch_name in ("", "extra_"):
             config_prefix = f"{prefix}_" if not branch_name else f"{prefix}_{branch_name}"
@@ -606,6 +608,7 @@ def build_compute_loss_kwargs(loss_config: dict) -> dict:
                 "overlap_dual",
                 "absent",
                 "branch_protect",
+                "branch_protect_teacher",
             )
         )
         and key not in gate_target_config_keys
@@ -883,11 +886,11 @@ def evaluate(
     compute_loss_kwargs = build_compute_loss_kwargs(loss_config)
     selector_totals = {
         prefix: {"active": False, "selected_count": 0, "total_count": 0}
-        for prefix in (
-            "reconstruction",
-            "reconstruction_extra",
-            "transient",
-            "transient_extra",
+             for prefix in (
+                 "reconstruction",
+                 "reconstruction_extra",
+                 "transient",
+                 "transient_extra",
             "interference",
             "interference_extra",
             "overlap_interference",
@@ -897,6 +900,7 @@ def evaluate(
             "absent",
             "absent_extra",
             "branch_protect",
+            "branch_protect_teacher",
         )
     }
     with torch.no_grad():
@@ -988,6 +992,12 @@ def evaluate(
                 loss_config=loss_config,
                 prefix="branch_protect",
             )
+            branch_protect_teacher_sample_weights = build_selector_sample_weights(
+                batch=batch,
+                device=device,
+                loss_config=loss_config,
+                prefix="branch_protect_teacher",
+            )
             gate_target_values = build_gate_target_values(batch=batch, device=device, loss_config=loss_config)
             gate_target_sample_weights = (
                 torch.ones(len(batch["sample_ids"]), dtype=torch.float32, device=device)
@@ -1008,6 +1018,7 @@ def evaluate(
                 ("absent", absent_union_sample_weights),
                 ("absent_extra", absent_extra_sample_weights),
                 ("branch_protect", branch_protect_sample_weights),
+                ("branch_protect_teacher", branch_protect_teacher_sample_weights),
             ):
                 stats = summarize_selector_weights(weights, len(batch["sample_ids"]))
                 selector_totals[prefix]["active"] = selector_totals[prefix]["active"] or bool(stats["active"])
@@ -1042,6 +1053,7 @@ def evaluate(
                 overlap_cancel_sample_weights=overlap_cancel_sample_weights,
                 overlap_dual_sample_weights=overlap_dual_sample_weights,
                 branch_protect_sample_weights=branch_protect_sample_weights,
+                branch_protect_teacher_sample_weights=branch_protect_teacher_sample_weights,
                 absent_sample_weights=absent_sample_weights,
                 absent_extra_sample_weights=absent_extra_sample_weights,
                 gate_abstain_sample_weights=interference_extra_sample_weights,
@@ -1300,12 +1312,13 @@ def main() -> None:
                 "overlap_interference",
                 "overlap_interference_extra",
                 "overlap_cancel",
-                "overlap_dual",
-                "absent",
-                "absent_extra",
-                "branch_protect",
-            )
-        }
+                 "overlap_dual",
+                 "absent",
+                 "absent_extra",
+                 "branch_protect",
+                 "branch_protect_teacher",
+             )
+         }
 
         for batch in train_loader:
             batch = move_batch_to_device(batch, device)
@@ -1396,6 +1409,12 @@ def main() -> None:
                 loss_config=loss_config,
                 prefix="branch_protect",
             )
+            branch_protect_teacher_sample_weights = build_selector_sample_weights(
+                batch=batch,
+                device=device,
+                loss_config=loss_config,
+                prefix="branch_protect_teacher",
+            )
             gate_target_values = build_gate_target_values(batch=batch, device=device, loss_config=loss_config)
             gate_target_sample_weights = (
                 torch.ones(len(batch["sample_ids"]), dtype=torch.float32, device=device)
@@ -1416,6 +1435,7 @@ def main() -> None:
                 ("absent", absent_union_sample_weights),
                 ("absent_extra", absent_extra_sample_weights),
                 ("branch_protect", branch_protect_sample_weights),
+                ("branch_protect_teacher", branch_protect_teacher_sample_weights),
             ):
                 stats = summarize_selector_weights(weights, len(batch["sample_ids"]))
                 train_selector_totals[prefix]["active"] = train_selector_totals[prefix]["active"] or bool(stats["active"])
@@ -1450,6 +1470,7 @@ def main() -> None:
                 overlap_cancel_sample_weights=overlap_cancel_sample_weights,
                 overlap_dual_sample_weights=overlap_dual_sample_weights,
                 branch_protect_sample_weights=branch_protect_sample_weights,
+                branch_protect_teacher_sample_weights=branch_protect_teacher_sample_weights,
                 absent_sample_weights=absent_sample_weights,
                 absent_extra_sample_weights=absent_extra_sample_weights,
                 gate_abstain_sample_weights=interference_extra_sample_weights,
