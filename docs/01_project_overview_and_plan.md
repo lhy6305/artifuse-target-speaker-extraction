@@ -32,6 +32,21 @@
   - `v81`
     - 含义：当前 gate 机制线里最健康的 guardrail-safe 研究基座
     - 状态：研究用，不可放行
+  - `v87`
+    - 含义：`v81 + overlap canceller v1`
+    - 状态：objective 与 near-real 都更强，但基本退化成 `v86` 的近等价体，不升格
+  - `v88`
+    - 含义：`v87 + overlap canceller v2 target-orthogonality`
+    - 状态：当前 overlap canceller 家族最强自动候选，但 `v81 vs v88` 听审结果为 `tie = 2, v81 = 2, v88 = 0`，不升格
+  - `v89`
+    - 含义：`v81 + overlap dual-source consistency v1`
+    - 状态：relative `v81` 的 synthetic / near-real 都更强，但自动上仍落后 `v88`，不进入 focused 听审
+  - `v90`
+    - 含义：`v81 + overlap dual decoder v1`
+    - 状态：失败，direct dual-target 输出导致大幅回退，自动与 near-real 都落到 `v54` 后面
+  - `v91`
+    - 含义：`v90 + dual blend cap 0.25`
+    - 状态：比 `v90` 更稳定，但仍显著差于 `v81`，不进入 focused 听审
   - `v82`
     - 含义：`present_overlap_residual_leak_purification v1` 首轮 mask pilot
     - 状态：objective 前进明显，但 `v81 vs v82` 听审为 `4 / 4 tie`
@@ -86,6 +101,7 @@
 - `v72 / v73 / v74 / v75 / v76 / v77 / v78 / v79 / v80 / v81` 都不能替代默认线。
 - `v72 / v73 / v74 / v75 / v76 / v77 / v78 / v79 / v80 / v81 / v82 / v83 / v84 / v85` 都不能替代默认线。
 - `v72 / v73 / v74 / v75 / v76 / v77 / v78 / v79 / v80 / v81 / v82 / v83 / v84 / v85 / v86` 都不能替代默认线。
+- `v72 / v73 / v74 / v75 / v76 / v77 / v78 / v79 / v80 / v81 / v82 / v83 / v84 / v85 / v86 / v87 / v88 / v89 / v90 / v91` 都不能替代默认线。
 
 ## 当前核心子题
 
@@ -316,6 +332,9 @@
    - 用 `gate-complement`
    - 而不是 `gate`
 3. `v81` 仍是当前最健康、最稳妥的研究基座；`v85 / v86` 虽然自动与 guardrail 都更强，但两轮 focused 听审都没有转正。
+4. `v87 / v88` 进一步证明 overlap canceller 机制可训练、可带来自动收益，但 `v81 vs v88` 听审仍是 `v81 >= v88`，说明这条线也还没有推进到可听层胜出。
+5. `v89` 说明在现有 overlap canceller head 上继续叠 `dual-source consistency` 约束，能得到一个介于 `v81` 和 `v88` 之间的 checkpoint，但还不足以越过 `v88` 平台。
+6. `v90 / v91` 说明“显式估计干扰，再直接用 `mixture - interference_est` 作为最终目标路径”这个接法不可用；问题不是 dual-source idea 本身，而是 direct final-output integration point 错了。
 
 ## 下一步默认计划
 
@@ -336,12 +355,18 @@
 5. 若后续继续推进，默认应改成：
    - 开新的机制子题
    - 而不是继续做当前 overlap refiner 家族的小步变体
-6. 后续训练固定保留四条训练/验收约束：
+6. 当前也不再继续做：
+   - `v89` 同家族 weight sweep
+   - `v81 vs v89` 听审导包
+7. 当前也不再继续做：
+   - `v90 / v91` direct dual-target 输出线的同家族 sweep
+   - `v90 / v91` 听审导包
+8. 后续训练固定保留四条训练/验收约束：
    - `abstention_gate_proxy_v1`
    - `same_gender_present_keep_guardrail_v1`
    - `hard_present_gate_keep_guardrail_v1`
    - `gate_keep_union_v2`
-7. 在任何新训练前，固定保留以下四条验收：
+9. 在任何新训练前，固定保留以下四条验收：
    - `real_eval_manifest_residual_speech_leak_floor_v1`
    - `same_gender_present_keep_guardrail_v1`
    - `hard_present_gate_keep_guardrail_v1`
@@ -364,6 +389,10 @@
 - `reports/daily/2026-03-26_v81_vs_v85_listening_review.md`
 - `reports/daily/2026-03-26_overlap_refiner_v4_residualsource_and_v86_followup.md`
 - `reports/daily/2026-03-26_v81_vs_v86_listening_review.md`
+- `reports/daily/2026-03-26_overlap_canceller_v1_v2_and_v87_v88_followup.md`
+- `reports/daily/2026-03-26_v81_vs_v88_listening_review.md`
+- `reports/daily/2026-03-26_overlap_dualsource_consistency_v1_and_v89_followup.md`
+- `reports/daily/2026-03-26_overlap_dual_decoder_v1_v90_v91_followup.md`
 
 ## 文档维护规则
 

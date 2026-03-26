@@ -86,6 +86,36 @@
     - relative `v81` 仍保持三条 synthetic 正收益
     - near-real 仍为 `0` present violation
     - `v81 vs v86` 听审已完成，但仍未转正
+- `v87`
+  - `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v87_v81_overlap_canceller_v1_ft1`
+  - 状态：
+    - overlap canceller first pilot
+    - synthetic / near-real 都正向，但后验确认基本只是 `v86` 的近等价体
+    - 不进入 focused 听审终裁
+- `v88`
+  - `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v88_v87_overlap_canceller_v2_targetorth_ft1`
+  - 状态：
+    - overlap canceller target-orthogonality follow-up
+    - 当前 canceller 家族最强自动候选
+    - `v81 vs v88` 听审已完成，但仍未转正
+- `v89`
+  - `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v89_v81_overlap_dualsource_consistency_v1_ft1`
+  - 状态：
+    - overlap dual-source consistency v1
+    - relative `v81` 更强，但仍低于 `v88`
+    - 不进入 focused 听审
+- `v90`
+  - `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v90_v81_overlap_dual_decoder_v1_ft1`
+  - 状态：
+    - overlap dual decoder v1
+    - direct dual-target 输出导致整体大幅回退
+    - 不进入 focused 听审
+- `v91`
+  - `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v91_v81_overlap_dual_decoder_v1_blendcap025_ft1`
+  - 状态：
+    - `v90 + max_blend 0.25`
+    - 比 `v90` 更稳定，但仍整体差于 `v81`
+    - 不进入 focused 听审
 
 ## 当前活跃问题树
 
@@ -149,6 +179,10 @@
   - `active`
 - `overlap refiner`
   - `active_guardrail_safe_but_not_audibly_better`
+- `overlap dual-source consistency`
+  - `failed_to_cross_v88_plateau`
+- `overlap dual decoder`
+  - `failed_as_direct_output_path`
 
 ### C. same-gender present keep
 
@@ -491,6 +525,125 @@
 
 - `objective_guardrail_better_but_not_audibly_better`
 
+### 16. `v87`
+
+含义：
+
+- `v81 + overlap canceller v1`
+
+结果：
+
+- relative `v81`
+  - synthetic 三条线都是正收益
+  - near-real residual leak floor 也保持 `0` violation
+- 但 direct compare `v86 vs v87`
+  - 几乎是完全近等价
+  - 没有形成新的行为层级
+
+裁决：
+
+- `near_equivalent_to_v86`
+
+### 17. `v88`
+
+含义：
+
+- `v87 + overlap canceller v2 target-orthogonality`
+
+结果：
+
+- relative `v87`
+  - abstention `+1.0108 dB`
+  - same-gender keep `+0.5571 dB`
+  - hard-present keep `+0.5978 dB`
+- near-real residual leak floor
+  - `guardrail_filtered_rank = 1st`
+  - `present_guardrail_violation_count = 0`
+- focused 包已导出：
+  - `reports/eval/ab_listening_pack_residual_speech_leak_floor_v1_v81_vs_v88_blind`
+- focused 听审结果：
+  - `tie = 2`
+  - `v81 = 2`
+  - `v88 = 0`
+  - 仅有的细微可感知差异都没有指向 `v88`
+
+裁决：
+
+- `objective_frontier_but_not_audibly_better`
+
+### 18. `v89`
+
+含义：
+
+- `v81 + overlap dual-source consistency v1`
+
+结果：
+
+- relative `v81`
+  - `overlap_dualsource_proxy_v1 = +3.6070 dB`
+  - `same_gender_present_keep_guardrail_v1 = +1.6128 dB`
+  - `hard_present_gate_keep_guardrail_v1 = +1.7024 dB`
+- relative `v88`
+  - overlap-abstention `-1.0070 dB`
+  - same-gender keep `-0.5562 dB`
+  - hard-present keep `-0.5994 dB`
+- near-real residual leak floor
+  - `combined_rank = v88 > v89 > v81 > v54`
+  - `guardrail_filtered_rank = v88 > v89 > v81 > v54`
+- 样本级上：
+  - `0003 / 0006 / 0009`
+    - 都是 `v81 < v89 < v88`
+  - `0007`
+    - 也是更接近 `v88` 的 softened 版本，而不是新行为层级
+- 因此不导：
+  - `v81 vs v89` focused 听审
+
+裁决：
+
+- `intermediate_checkpoint_not_new_frontier`
+
+### 19. `v90`
+
+含义：
+
+- `v81 + overlap dual decoder v1`
+
+结果：
+
+- relative `v81`
+  - overlap-abstention `-6.8556 dB`
+  - same-gender keep `-4.7200 dB`
+  - hard-present keep `-11.6327 dB`
+- near-real residual leak floor
+  - `v88 > v81 > v54 > v90`
+- 失败模式：
+  - direct dual-target 路径过度替换 `branch_base`
+  - 四个 near-real 锚点一起变成更大泄漏 / 更大音量
+
+裁决：
+
+- `failed_direct_dual_target_takeover`
+
+### 20. `v91`
+
+含义：
+
+- `v90 + overlap dual decoder blend cap 0.25`
+
+结果：
+
+- relative `v81`
+  - overlap-abstention `-5.1942 dB`
+  - same-gender keep `-5.2723 dB`
+  - hard-present keep `-5.0749 dB`
+- near-real residual leak floor
+  - `v88 > v81 > v54 > v91`
+- 比 `v90` 更稳定，但仍没有回到 `v81` 邻域
+
+裁决：
+
+- `stabilized_but_still_failed`
+
 ## 当前有效训练与验收入口
 
 ### 训练侧
@@ -553,9 +706,24 @@
 - `v81 vs v86` 听审也已完成，当前结论是：
   - `v86` 不升格
   - `v81` 继续作为研究基座
+- `v87` 已确认只是 `v86` 的近等价体，不再单独推进
+- `v81 vs v88` 听审也已完成，当前结论是：
+  - `v88` 不升格
+  - `v81` 继续作为研究基座
+- `v89` 已完成自动验收，当前结论是：
+  - `v89` 也不升格
+  - 不进入 focused 听审
+- `v90 / v91` 已完成自动验收，当前结论是：
+  - direct dual-target output 线先收口
+  - 不进入 focused 听审
 - 不再继续做 `v83` 式宽触发 refiner，也不做 `v84` 附近小权重 sweep；
 - 不再继续做 `v85 / v86` 同家族小步 sweep；
-- 若后续继续推进，默认应切到新的机制子题，而不是直接开 `v87+`
+- 不再继续做 `v87 / v88` 同家族小步 sweep；
+- 不再继续做 `v89` 同家族小步 sweep；
+- 不再继续做 `v90 / v91` 同家族小步 sweep；
+- 若后续继续推进，默认应切到：
+  - `overlap interference auxiliary decoder v1`
+  而不是继续让显式 dual path 直接接管最终输出
 
 执行前必须保持四条验收同时在场：
 
@@ -581,6 +749,10 @@
 - `reports/daily/2026-03-26_v81_vs_v85_listening_review.md`
 - `reports/daily/2026-03-26_overlap_refiner_v4_residualsource_and_v86_followup.md`
 - `reports/daily/2026-03-26_v81_vs_v86_listening_review.md`
+- `reports/daily/2026-03-26_overlap_canceller_v1_v2_and_v87_v88_followup.md`
+- `reports/daily/2026-03-26_v81_vs_v88_listening_review.md`
+- `reports/daily/2026-03-26_overlap_dualsource_consistency_v1_and_v89_followup.md`
+- `reports/daily/2026-03-26_overlap_dual_decoder_v1_v90_v91_followup.md`
 
 ## 文档维护规则
 

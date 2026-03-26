@@ -147,6 +147,7 @@ def build_compute_loss_kwargs(loss_config: dict) -> dict:
                 "interference",
                 "overlap_interference",
                 "overlap_cancel",
+                "overlap_dual",
                 "absent",
                 "branch_protect",
             )

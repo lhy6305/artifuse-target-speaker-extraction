@@ -537,6 +537,106 @@
   当成默认继续微调的理由；
 - 若继续推进，应优先换机制题，不再做当前 refiner 家族的小步 sweep。
 
+### 23. overlap canceller 的自动收益，也可能仍然无法转化为人耳正收益
+
+事实：
+
+- `v87`
+  - 虽然 relative `v81` 在 synthetic / near-real 都是正收益；
+  - 但直接对比后基本只是 `v86` 的 objective 近等价体
+- `v88`
+  - 是当前 overlap canceller 家族最强自动候选
+  - `tradeoff_analysis` 里：
+    - `3 / 4` 样本显示 `v81` 更漏
+  - near-real rank 里也排到这条小 family 第一
+  - 但 `v81 vs v88` focused 听审解盲后：
+    - `tie = 2`
+    - `v81 = 2`
+    - `v88 = 0`
+
+结论：
+
+- overlap canceller 机制不是伪方向；
+- 但当前这条 `v87 / v88` 线和之前的 `v85 / v86` 一样，仍停留在：
+  - 自动变强
+  - 人耳不转正
+
+要求：
+
+- 不要把 `tradeoff / near-real rank` 的继续改善，直接当成这条 family 可以继续微调扩树的理由；
+- 当前主观裁决仍优先于自动排名；
+- 只要听审结果没有出现 `v88 > v81`，就不能升格研究基座。
+
+### 24. 在现有 overlap canceller head 上继续叠 dual-source consistency，可能只会得到 `v81` 和 `v88` 之间的中间解
+
+事实：
+
+- `v89`
+  - 在现有 overlap canceller head 上新增：
+    - `overlap_dual_mix_consistency_l1`
+    - `overlap_dual_residual_target_projection_ratio`
+  - relative `v81`
+    - `overlap_dualsource_proxy_v1 = +3.6070 dB`
+    - `same_gender_present_keep_guardrail_v1 = +1.6128 dB`
+    - `hard_present_gate_keep_guardrail_v1 = +1.7024 dB`
+  - 但 relative `v88`
+    - overlap-abstention `-1.0070 dB`
+    - same-gender keep `-0.5562 dB`
+    - hard-present keep `-0.5994 dB`
+  - near-real rank 也只是：
+    - `v88 > v89 > v81 > v54`
+
+结论：
+
+- 这说明当前 `dual-source consistency v1` 更像：
+  - 对既有 overlap canceller 的 regularization
+- 而不是：
+  - 真正引入了一个更强的双源分解机制
+
+要求：
+
+- 不要再把“在同一个 overlap canceller head 上继续叠一致性损失”当成默认下一步；
+- 只要它仍然过不了 `v88`，就不值得再导新的 focused 听审包；
+- 若继续推进，应换到新的机制类，而不是在 `v89` 周围继续做轻量 sweep。
+
+### 25. 显式 dual-source 分解如果直接接管最终 target 输出，会非常危险
+
+事实：
+
+- `v90`
+  - 新增 `overlap dual decoder v1`
+  - 直接走：
+    - `interference_est -> dual_target = mixture - interference_est -> final output`
+  - relative `v81`
+    - overlap-abstention `-6.8556 dB`
+    - same-gender keep `-4.7200 dB`
+    - hard-present keep `-11.6327 dB`
+  - near-real 也掉到：
+    - `v88 > v81 > v54 > v90`
+- `v91`
+  - 只加了 `max_blend = 0.25`
+  - 虽然比 `v90` 稳定，但 relative `v81` 仍是：
+    - overlap-abstention `-5.1942 dB`
+    - same-gender keep `-5.2723 dB`
+    - hard-present keep `-5.0749 dB`
+  - near-real 仍是：
+    - `v88 > v81 > v54 > v91`
+
+结论：
+
+- dual-source decomposition 这个想法本身不一定错；
+- 真正错的是：
+  - 让 dual path 直接接管最终 target output
+
+要求：
+
+- 不要再做：
+  - `v90 / v91` 这类 direct dual-target output sweep
+- 如果保留显式干扰分解思路，默认应该改成：
+  - `auxiliary interference decoder`
+  - 只做训练辅助 / regularizer
+  - 不直接替代最终输出路径
+
 ## 近期关键案例入口
 
 - `reports/daily/2026-03-26_overlap_abstention_proxy_v3_v4_and_v71_v72_followup.md`

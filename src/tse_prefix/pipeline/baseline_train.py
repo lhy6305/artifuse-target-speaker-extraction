@@ -29,6 +29,8 @@ class LossBreakdown:
     overlap_interference_extra_projection_ratio: torch.Tensor
     overlap_cancel_waveform_l1: torch.Tensor
     overlap_cancel_target_projection_ratio: torch.Tensor
+    overlap_dual_mix_consistency_l1: torch.Tensor
+    overlap_dual_residual_target_projection_ratio: torch.Tensor
     absent_interval_l1: torch.Tensor
     absent_extra_interval_l1: torch.Tensor
     gate_abstain_mean: torch.Tensor
@@ -643,6 +645,7 @@ def compute_losses(
     overlap_interference_sample_weights: torch.Tensor | None = None,
     overlap_interference_extra_sample_weights: torch.Tensor | None = None,
     overlap_cancel_sample_weights: torch.Tensor | None = None,
+    overlap_dual_sample_weights: torch.Tensor | None = None,
     branch_protect_sample_weights: torch.Tensor | None = None,
     absent_sample_weights: torch.Tensor | None = None,
     absent_extra_sample_weights: torch.Tensor | None = None,
@@ -669,6 +672,8 @@ def compute_losses(
     overlap_interference_extra_weight: float = 0.0,
     overlap_cancel_waveform_weight: float = 0.0,
     overlap_cancel_target_projection_weight: float = 0.0,
+    overlap_dual_mix_consistency_weight: float = 0.0,
+    overlap_dual_residual_target_projection_weight: float = 0.0,
     absent_weight: float = 0.0,
     absent_extra_weight: float = 0.0,
     gate_abstain_weight: float = 0.0,
@@ -689,7 +694,9 @@ def compute_losses(
     reconstruction_extra_prediction = prediction if reconstruction_extra_prediction is None else reconstruction_extra_prediction
     extra_prediction = prediction if extra_prediction is None else extra_prediction
     overlap_cancel_prediction = (
-        prediction if overlap_cancel_prediction is None else overlap_cancel_prediction
+        prediction.new_zeros(prediction.shape)
+        if overlap_cancel_prediction is None
+        else overlap_cancel_prediction
     )
     waveform_term = waveform_l1_loss(prediction, target, lengths)
     stft_term = stft_l1_loss(prediction, target, model)
@@ -823,6 +830,7 @@ def compute_losses(
         sample_weights=overlap_interference_extra_sample_weights,
         mode=overlap_interference_extra_loss_mode,
     )
+    prediction_aligned, _, _ = align_waveforms(prediction, target, lengths)
     mixture_aligned, target_aligned, _ = align_waveforms(mixture, target, lengths)
     overlap_cancel_target = mixture_aligned - target_aligned
     overlap_cancel_term = interval_waveform_l1_loss(
@@ -840,6 +848,22 @@ def compute_losses(
         intervals_batch=overlap_intervals,
         sample_rate=sample_rate,
         sample_weights=overlap_cancel_sample_weights,
+    )
+    overlap_dual_mix_consistency_term = interval_waveform_l1_loss(
+        prediction=prediction + overlap_cancel_prediction,
+        target=mixture,
+        lengths=lengths,
+        intervals_batch=overlap_intervals,
+        sample_rate=sample_rate,
+        sample_weights=overlap_dual_sample_weights,
+    )
+    overlap_dual_residual_target_projection_term = interval_projection_ratio_loss(
+        prediction=mixture_aligned - prediction_aligned,
+        target=target_aligned,
+        lengths=lengths,
+        intervals_batch=overlap_intervals,
+        sample_rate=sample_rate,
+        sample_weights=overlap_dual_sample_weights,
     )
     absent_term = absent_interval_l1_loss(
         prediction=prediction,
@@ -898,6 +922,11 @@ def compute_losses(
         + (overlap_interference_extra_term * overlap_interference_extra_weight)
         + (overlap_cancel_term * overlap_cancel_waveform_weight)
         + (overlap_cancel_target_projection_term * overlap_cancel_target_projection_weight)
+        + (overlap_dual_mix_consistency_term * overlap_dual_mix_consistency_weight)
+        + (
+            overlap_dual_residual_target_projection_term
+            * overlap_dual_residual_target_projection_weight
+        )
         + (absent_term * absent_weight)
         + (absent_extra_term * absent_extra_weight)
         + (gate_abstain_term * gate_abstain_weight)
@@ -926,6 +955,8 @@ def compute_losses(
         overlap_interference_extra_projection_ratio=overlap_interference_extra_term,
         overlap_cancel_waveform_l1=overlap_cancel_term,
         overlap_cancel_target_projection_ratio=overlap_cancel_target_projection_term,
+        overlap_dual_mix_consistency_l1=overlap_dual_mix_consistency_term,
+        overlap_dual_residual_target_projection_ratio=overlap_dual_residual_target_projection_term,
         absent_interval_l1=absent_term,
         absent_extra_interval_l1=absent_extra_term,
         gate_abstain_mean=gate_abstain_term,

@@ -109,6 +109,14 @@ def parse_args() -> argparse.Namespace:
         help="Add a dedicated overlap residual canceller head on top of the branch decoder output.",
     )
     parser.add_argument(
+        "--model-enable-branch-overlap-dual-decoder-head",
+        action="store_true",
+        help=(
+            "Add a dedicated overlap dual decoder that explicitly estimates residual interference "
+            "and reconstructs target as mixture minus interference inside the selected overlap subdomain."
+        ),
+    )
+    parser.add_argument(
         "--model-enable-adapter-temporal-model",
         action="store_true",
         help="Add a dedicated bidirectional GRU inside the adapter branch before adapter mask prediction.",
@@ -143,6 +151,18 @@ def parse_args() -> argparse.Namespace:
         choices=["mixture", "branch_base", "residual"],
         default="residual",
     )
+    parser.add_argument("--model-branch-overlap-dual-decoder-max-delta", type=float, default=0.15)
+    parser.add_argument(
+        "--model-branch-overlap-dual-decoder-gate-mode",
+        choices=["none", "gate", "complement"],
+        default="complement",
+    )
+    parser.add_argument(
+        "--model-branch-overlap-dual-decoder-source-mode",
+        choices=["mixture", "branch_base", "residual"],
+        default="residual",
+    )
+    parser.add_argument("--model-branch-overlap-dual-decoder-max-blend", type=float, default=1.0)
     parser.add_argument("--loss-stft-weight", type=float, default=0.5)
     parser.add_argument("--loss-sisdr-weight", type=float, default=0.0)
     parser.add_argument("--loss-branch-protect-guard-sisdr-weight", type=float, default=0.0)
@@ -157,6 +177,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--loss-overlap-interference-extra-weight", type=float, default=0.0)
     parser.add_argument("--loss-overlap-cancel-waveform-weight", type=float, default=0.0)
     parser.add_argument("--loss-overlap-cancel-target-projection-weight", type=float, default=0.0)
+    parser.add_argument("--loss-overlap-dual-mix-consistency-weight", type=float, default=0.0)
+    parser.add_argument("--loss-overlap-dual-residual-target-projection-weight", type=float, default=0.0)
     parser.add_argument("--loss-absent-weight", type=float, default=0.0)
     parser.add_argument("--loss-absent-extra-weight", type=float, default=0.0)
     parser.add_argument("--loss-gate-abstain-weight", type=float, default=0.0)
@@ -215,6 +237,7 @@ def parse_args() -> argparse.Namespace:
     add_selector_args(parser, "interference")
     add_selector_args(parser, "overlap_interference")
     add_selector_args(parser, "overlap_cancel")
+    add_selector_args(parser, "overlap_dual")
     add_selector_args(parser, "absent")
     add_selector_args(parser, "branch_protect")
     return parser.parse_args()
@@ -354,6 +377,7 @@ def build_model_config(args: argparse.Namespace) -> dict[str, int]:
         "enable_branch_abstention_gate": args.model_enable_branch_abstention_gate,
         "enable_branch_overlap_refine_head": args.model_enable_branch_overlap_refine_head,
         "enable_branch_overlap_cancel_head": args.model_enable_branch_overlap_cancel_head,
+        "enable_branch_overlap_dual_decoder_head": args.model_enable_branch_overlap_dual_decoder_head,
         "enable_adapter_temporal_model": args.model_enable_adapter_temporal_model,
         "adapter_gru_layers": args.model_adapter_gru_layers,
         "adapter_conditioning_mode": args.model_adapter_conditioning_mode,
@@ -364,6 +388,10 @@ def build_model_config(args: argparse.Namespace) -> dict[str, int]:
         "branch_overlap_cancel_max_delta": args.model_branch_overlap_cancel_max_delta,
         "branch_overlap_cancel_gate_mode": args.model_branch_overlap_cancel_gate_mode,
         "branch_overlap_cancel_source_mode": args.model_branch_overlap_cancel_source_mode,
+        "branch_overlap_dual_decoder_max_delta": args.model_branch_overlap_dual_decoder_max_delta,
+        "branch_overlap_dual_decoder_gate_mode": args.model_branch_overlap_dual_decoder_gate_mode,
+        "branch_overlap_dual_decoder_source_mode": args.model_branch_overlap_dual_decoder_source_mode,
+        "branch_overlap_dual_decoder_max_blend": args.model_branch_overlap_dual_decoder_max_blend,
     }
 
 
@@ -402,6 +430,10 @@ def build_loss_config(args: argparse.Namespace) -> dict[str, float]:
         "overlap_interference_extra_weight": args.loss_overlap_interference_extra_weight,
         "overlap_cancel_waveform_weight": args.loss_overlap_cancel_waveform_weight,
         "overlap_cancel_target_projection_weight": args.loss_overlap_cancel_target_projection_weight,
+        "overlap_dual_mix_consistency_weight": args.loss_overlap_dual_mix_consistency_weight,
+        "overlap_dual_residual_target_projection_weight": (
+            args.loss_overlap_dual_residual_target_projection_weight
+        ),
         "absent_weight": args.loss_absent_weight,
         "absent_extra_weight": args.loss_absent_extra_weight,
         "gate_abstain_weight": args.loss_gate_abstain_weight,
@@ -438,6 +470,7 @@ def build_loss_config(args: argparse.Namespace) -> dict[str, float]:
         "interference",
         "overlap_interference",
         "overlap_cancel",
+        "overlap_dual",
         "absent",
         "branch_protect",
     ):
@@ -503,6 +536,7 @@ def build_compute_loss_kwargs(loss_config: dict) -> dict:
                 "interference",
                 "overlap_interference",
                 "overlap_cancel",
+                "overlap_dual",
                 "absent",
                 "branch_protect",
             )
@@ -643,6 +677,8 @@ def load_model_state_dict_for_init(model: nn.Module, checkpoint_state_dict: dict
         "branch_decoder_gate_head.",
         "branch_overlap_refine_head.",
         "branch_overlap_cancel_head.",
+        "branch_overlap_dual_decoder_temporal_model.",
+        "branch_overlap_dual_decoder_head.",
         "adapter_mask_head.",
         "adapter_condition_proj.",
         "adapter_condition_scale.",
@@ -659,6 +695,11 @@ def load_model_state_dict_for_init(model: nn.Module, checkpoint_state_dict: dict
         )
     if any(key.startswith("branch_decoder_") for key in missing_keys) and hasattr(model, "reset_branch_decoder_from_base"):
         model.reset_branch_decoder_from_base()
+    if any(key.startswith("branch_overlap_dual_decoder_") for key in missing_keys) and hasattr(
+        model,
+        "reset_branch_overlap_dual_decoder_from_branch",
+    ):
+        model.reset_branch_overlap_dual_decoder_from_branch()
 
 
 def _matches_module_prefix(parameter_name: str, module_prefix: str) -> bool:
@@ -752,6 +793,8 @@ def evaluate(
     total_overlap_interference_extra = 0.0
     total_overlap_cancel = 0.0
     total_overlap_cancel_target_projection = 0.0
+    total_overlap_dual_mix_consistency = 0.0
+    total_overlap_dual_residual_target_projection = 0.0
     total_absent = 0.0
     total_absent_extra = 0.0
     total_gate_abstain = 0.0
@@ -771,6 +814,7 @@ def evaluate(
             "overlap_interference",
             "overlap_interference_extra",
             "overlap_cancel",
+            "overlap_dual",
             "absent",
             "absent_extra",
             "branch_protect",
@@ -835,6 +879,12 @@ def evaluate(
                 loss_config=loss_config,
                 prefix="overlap_cancel",
             )
+            overlap_dual_sample_weights = build_selector_sample_weights(
+                batch=batch,
+                device=device,
+                loss_config=loss_config,
+                prefix="overlap_dual",
+            )
             absent_sample_weights, absent_extra_sample_weights, absent_union_sample_weights = (
                 resolve_selector_sample_weights(
                     batch=batch,
@@ -866,6 +916,7 @@ def evaluate(
                 ("overlap_interference", overlap_interference_union_sample_weights),
                 ("overlap_interference_extra", overlap_interference_extra_sample_weights),
                 ("overlap_cancel", overlap_cancel_sample_weights),
+                ("overlap_dual", overlap_dual_sample_weights),
                 ("absent", absent_union_sample_weights),
                 ("absent_extra", absent_extra_sample_weights),
                 ("branch_protect", branch_protect_sample_weights),
@@ -900,6 +951,7 @@ def evaluate(
                 overlap_interference_sample_weights=overlap_interference_sample_weights,
                 overlap_interference_extra_sample_weights=overlap_interference_extra_sample_weights,
                 overlap_cancel_sample_weights=overlap_cancel_sample_weights,
+                overlap_dual_sample_weights=overlap_dual_sample_weights,
                 branch_protect_sample_weights=branch_protect_sample_weights,
                 absent_sample_weights=absent_sample_weights,
                 absent_extra_sample_weights=absent_extra_sample_weights,
@@ -934,6 +986,10 @@ def evaluate(
             total_overlap_cancel_target_projection += float(
                 losses.overlap_cancel_target_projection_ratio.item()
             )
+            total_overlap_dual_mix_consistency += float(losses.overlap_dual_mix_consistency_l1.item())
+            total_overlap_dual_residual_target_projection += float(
+                losses.overlap_dual_residual_target_projection_ratio.item()
+            )
             total_absent += float(losses.absent_interval_l1.item())
             total_absent_extra += float(losses.absent_extra_interval_l1.item())
             total_gate_abstain += float(losses.gate_abstain_mean.item())
@@ -963,6 +1019,8 @@ def evaluate(
             "overlap_interference_extra_projection_ratio": 0.0,
             "overlap_cancel_waveform_l1": 0.0,
             "overlap_cancel_target_projection_ratio": 0.0,
+            "overlap_dual_mix_consistency_l1": 0.0,
+            "overlap_dual_residual_target_projection_ratio": 0.0,
             "absent_interval_l1": 0.0,
             "absent_extra_interval_l1": 0.0,
             "gate_abstain_mean": 0.0,
@@ -995,6 +1053,12 @@ def evaluate(
             "overlap_cancel_waveform_l1": total_overlap_cancel / batch_count,
             "overlap_cancel_target_projection_ratio": (
                 total_overlap_cancel_target_projection / batch_count
+            ),
+            "overlap_dual_mix_consistency_l1": (
+                total_overlap_dual_mix_consistency / batch_count
+            ),
+            "overlap_dual_residual_target_projection_ratio": (
+                total_overlap_dual_residual_target_projection / batch_count
             ),
             "absent_interval_l1": total_absent / batch_count,
             "absent_extra_interval_l1": total_absent_extra / batch_count,
@@ -1099,6 +1163,8 @@ def main() -> None:
         epoch_overlap_interference_extra = 0.0
         epoch_overlap_cancel = 0.0
         epoch_overlap_cancel_target_projection = 0.0
+        epoch_overlap_dual_mix_consistency = 0.0
+        epoch_overlap_dual_residual_target_projection = 0.0
         epoch_absent = 0.0
         epoch_absent_extra = 0.0
         epoch_gate_abstain = 0.0
@@ -1117,6 +1183,7 @@ def main() -> None:
                 "overlap_interference",
                 "overlap_interference_extra",
                 "overlap_cancel",
+                "overlap_dual",
                 "absent",
                 "absent_extra",
                 "branch_protect",
@@ -1181,6 +1248,12 @@ def main() -> None:
                 loss_config=loss_config,
                 prefix="overlap_cancel",
             )
+            overlap_dual_sample_weights = build_selector_sample_weights(
+                batch=batch,
+                device=device,
+                loss_config=loss_config,
+                prefix="overlap_dual",
+            )
             absent_sample_weights, absent_extra_sample_weights, absent_union_sample_weights = (
                 resolve_selector_sample_weights(
                     batch=batch,
@@ -1212,6 +1285,7 @@ def main() -> None:
                 ("overlap_interference", overlap_interference_union_sample_weights),
                 ("overlap_interference_extra", overlap_interference_extra_sample_weights),
                 ("overlap_cancel", overlap_cancel_sample_weights),
+                ("overlap_dual", overlap_dual_sample_weights),
                 ("absent", absent_union_sample_weights),
                 ("absent_extra", absent_extra_sample_weights),
                 ("branch_protect", branch_protect_sample_weights),
@@ -1246,6 +1320,7 @@ def main() -> None:
                 overlap_interference_sample_weights=overlap_interference_sample_weights,
                 overlap_interference_extra_sample_weights=overlap_interference_extra_sample_weights,
                 overlap_cancel_sample_weights=overlap_cancel_sample_weights,
+                overlap_dual_sample_weights=overlap_dual_sample_weights,
                 branch_protect_sample_weights=branch_protect_sample_weights,
                 absent_sample_weights=absent_sample_weights,
                 absent_extra_sample_weights=absent_extra_sample_weights,
@@ -1290,6 +1365,10 @@ def main() -> None:
             epoch_overlap_cancel += float(losses.overlap_cancel_waveform_l1.item())
             epoch_overlap_cancel_target_projection += float(
                 losses.overlap_cancel_target_projection_ratio.item()
+            )
+            epoch_overlap_dual_mix_consistency += float(losses.overlap_dual_mix_consistency_l1.item())
+            epoch_overlap_dual_residual_target_projection += float(
+                losses.overlap_dual_residual_target_projection_ratio.item()
             )
             epoch_absent += float(losses.absent_interval_l1.item())
             epoch_absent_extra += float(losses.absent_extra_interval_l1.item())
@@ -1352,6 +1431,12 @@ def main() -> None:
                             "overlap_cancel_target_projection_ratio": round(
                                 float(losses.overlap_cancel_target_projection_ratio.item()), 6
                             ),
+                            "overlap_dual_mix_consistency_l1": round(
+                                float(losses.overlap_dual_mix_consistency_l1.item()), 6
+                            ),
+                            "overlap_dual_residual_target_projection_ratio": round(
+                                float(losses.overlap_dual_residual_target_projection_ratio.item()), 6
+                            ),
                             "absent_interval_l1": round(float(losses.absent_interval_l1.item()), 6),
                             "absent_extra_interval_l1": round(
                                 float(losses.absent_extra_interval_l1.item()), 6
@@ -1394,6 +1479,12 @@ def main() -> None:
             "overlap_cancel_waveform_l1": epoch_overlap_cancel / max(1, step_count),
             "overlap_cancel_target_projection_ratio": (
                 epoch_overlap_cancel_target_projection / max(1, step_count)
+            ),
+            "overlap_dual_mix_consistency_l1": (
+                epoch_overlap_dual_mix_consistency / max(1, step_count)
+            ),
+            "overlap_dual_residual_target_projection_ratio": (
+                epoch_overlap_dual_residual_target_projection / max(1, step_count)
             ),
             "absent_interval_l1": epoch_absent / max(1, step_count),
             "absent_extra_interval_l1": epoch_absent_extra / max(1, step_count),
@@ -1448,6 +1539,12 @@ def main() -> None:
                 "train_overlap_cancel_target_projection_ratio": (
                     train_metrics["overlap_cancel_target_projection_ratio"]
                 ),
+                "train_overlap_dual_mix_consistency_l1": (
+                    train_metrics["overlap_dual_mix_consistency_l1"]
+                ),
+                "train_overlap_dual_residual_target_projection_ratio": (
+                    train_metrics["overlap_dual_residual_target_projection_ratio"]
+                ),
                 "train_absent_interval_l1": train_metrics["absent_interval_l1"],
                 "train_absent_extra_interval_l1": train_metrics["absent_extra_interval_l1"],
                 "train_gate_abstain_mean": train_metrics["gate_abstain_mean"],
@@ -1482,6 +1579,12 @@ def main() -> None:
                 "val_overlap_cancel_waveform_l1": val_metrics["overlap_cancel_waveform_l1"],
                 "val_overlap_cancel_target_projection_ratio": (
                     val_metrics["overlap_cancel_target_projection_ratio"]
+                ),
+                "val_overlap_dual_mix_consistency_l1": (
+                    val_metrics["overlap_dual_mix_consistency_l1"]
+                ),
+                "val_overlap_dual_residual_target_projection_ratio": (
+                    val_metrics["overlap_dual_residual_target_projection_ratio"]
                 ),
                 "val_absent_interval_l1": val_metrics["absent_interval_l1"],
                 "val_absent_extra_interval_l1": val_metrics["absent_extra_interval_l1"],
