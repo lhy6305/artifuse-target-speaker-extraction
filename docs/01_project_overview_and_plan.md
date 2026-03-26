@@ -68,7 +68,7 @@
     - 状态：比 `v83` 更受控，但 near-real 仍有 `present_guardrail_violation_count = 1`，不可放行
   - `v85`
     - 含义：`v81 + overlap refiner v3 gate-complement`
-    - 状态：当前第一条 near-real `0` violation 的 refiner checkpoint，已进入 focused 听审关
+    - 状态：当前第一条 near-real `0` violation 的 refiner checkpoint，但 `v81 vs v85` 听审未转正，不可放行
 - 已验证失败：
   - `v73`
     - broad keep-guardrail 修正
@@ -279,6 +279,11 @@
     - `v85 > v81 > v54 > v84 > v82 > v83`
   - 当前已经导出 focused 包：
     - `reports/eval/ab_listening_pack_residual_speech_leak_floor_v1_v81_vs_v85_blind`
+  - 但 `v81 vs v85` focused 听审现已完成：
+    - `3 / 4 tie`
+    - `1 / 4 = v81`
+    - `v85 = 0`
+    - `near_real_0009` 被人耳明确判为 `v81` 更好
 
 ## 当前最可靠的阶段结论
 
@@ -286,28 +291,24 @@
 2. overlap refiner 机制已经成立，当前最有效的收窄方式是：
    - 用 `gate-complement`
    - 而不是 `gate`
-3. `v85` 是当前第一条同时满足：
-   - synthetic 全面正收益
-   - near-real `0` violation
-   的 refiner 候选，已值得进入 focused 听审。
+3. `v81` 仍是当前最健康、最稳妥的研究基座；`v85` 虽然自动上最强，但本轮听审没有转正。
 
 ## 下一步默认计划
 
-当前默认下一步不是继续扫 checkpoint，而是直接做 `v81 vs v85` focused 听审。
+当前默认状态不是继续自动推进，而是停在结论层，等待用户给出新的方向。
 
 优先顺序：
 
 1. `v54 vs v81` 选型题已经收口，不再继续追加同类听审。
 2. `v81 vs v82` 选型题已收口，不再继续追加同类听审。
-3. 当前默认下一步：
-   - 先听 `reports/eval/ab_listening_pack_residual_speech_leak_floor_v1_v81_vs_v85_blind`
-   - 核心确认：
-     - `0006 / 0009` 的 suppression 收益是否推进到可听层
-     - `0007` 是否没有被一起压坏
-4. 听审前默认不再继续做：
+3. 当前阶段结论已经收口：
+   - `v85` 不升格
+   - `v81` 继续保留为研究基座
+4. 当前默认不再继续做：
    - `v83` 式宽触发 refiner
    - `v84` 附近轻量 sweep
    - `v85` 之后的自动 checkpoint 扩树
+   直到用户明确指定下一步
 5. 后续训练固定保留四条训练/验收约束：
    - `abstention_gate_proxy_v1`
    - `same_gender_present_keep_guardrail_v1`
@@ -333,6 +334,7 @@
 - `reports/daily/2026-03-26_v81_vs_v82_listening_review.md`
 - `reports/daily/2026-03-26_overlap_refiner_v1_v2_and_v83_v84_followup.md`
 - `reports/daily/2026-03-26_overlap_refiner_v3_gatecomplement_and_v85_followup.md`
+- `reports/daily/2026-03-26_v81_vs_v85_listening_review.md`
 
 ## 文档维护规则
 

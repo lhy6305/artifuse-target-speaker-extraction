@@ -31,6 +31,12 @@ from tse_prefix.pipeline import (
     weighted_stft_l1_loss,
     weighted_waveform_l1_loss,
 )
+from tse_prefix.pipeline.baseline_train import (
+    base_delta_interference_projection_loss,
+    overlap_interval_interference_projection_loss,
+    weighted_gate_target_loss,
+    weighted_sisdr_loss,
+)
 from tse_prefix.pipeline.loss_selectors import (
     build_branch_selector_sample_weights,
     build_selector_sample_weights,
@@ -126,6 +132,7 @@ def build_compute_loss_kwargs(loss_config: dict) -> dict:
         "gate_target_transient_db_weight",
         "gate_target_min_value",
         "gate_target_max_value",
+        "use_branch_prerefine_as_primary_prediction",
     }
     return {
         key: value
@@ -134,10 +141,77 @@ def build_compute_loss_kwargs(loss_config: dict) -> dict:
     }
 
 
+def _sigmoid_score(values: torch.Tensor, center: float, scale: float) -> torch.Tensor:
+    return torch.sigmoid((values - float(center)) / max(float(scale), 1e-6))
+
+
+def build_gate_target_values(
+    batch: dict,
+    device: torch.device,
+    loss_config: dict[str, float],
+) -> torch.Tensor | None:
+    if float(loss_config.get("gate_target_weight", 0.0)) <= 0.0:
+        return None
+    if str(loss_config.get("gate_target_mode", "none")) != "audibility":
+        return None
+
+    feature_specs = (
+        (
+            batch["target_energy_ratios"].to(device=device, dtype=torch.float32),
+            float(loss_config.get("gate_target_energy_center", 0.13)),
+            float(loss_config.get("gate_target_energy_scale", 0.035)),
+            float(loss_config.get("gate_target_energy_weight", 0.75)),
+        ),
+        (
+            batch["target_transient_presence_share_means"].to(device=device, dtype=torch.float32),
+            float(loss_config.get("gate_target_transient_share_center", 0.18)),
+            float(loss_config.get("gate_target_transient_share_scale", 0.08)),
+            float(loss_config.get("gate_target_transient_share_weight", 0.15)),
+        ),
+        (
+            batch["target_transient_presence_minus_mid_db_means"].to(device=device, dtype=torch.float32),
+            float(loss_config.get("gate_target_transient_db_center", 3.5)),
+            float(loss_config.get("gate_target_transient_db_scale", 2.5)),
+            float(loss_config.get("gate_target_transient_db_weight", 0.10)),
+        ),
+    )
+
+    weighted_sum = torch.zeros(len(batch["sample_ids"]), dtype=torch.float32, device=device)
+    weight_sum = torch.zeros(len(batch["sample_ids"]), dtype=torch.float32, device=device)
+    for values, center, scale, weight in feature_specs:
+        if weight <= 0.0:
+            continue
+        valid_mask = ~torch.isnan(values)
+        if not torch.any(valid_mask):
+            continue
+        scores = _sigmoid_score(values, center=center, scale=scale)
+        weighted_sum = weighted_sum + (torch.where(valid_mask, scores, torch.zeros_like(scores)) * weight)
+        weight_sum = weight_sum + (valid_mask.float() * weight)
+
+    base_scores = torch.where(
+        weight_sum > 0.0,
+        weighted_sum / weight_sum.clamp_min(1e-6),
+        torch.zeros_like(weighted_sum),
+    )
+    min_value = float(loss_config.get("gate_target_min_value", 0.0))
+    max_value = float(loss_config.get("gate_target_max_value", 1.0))
+    target_values = min_value + (base_scores * max(0.0, max_value - min_value))
+    return torch.clamp(target_values, min=min_value, max=max_value)
+
+
 def resolve_branch_extra_prediction(outputs: dict[str, torch.Tensor]) -> torch.Tensor | None:
     if outputs.get("branch_decoder_mask") is not None:
         return outputs["estimated_waveform"]
     return None
+
+
+def resolve_primary_prediction(
+    outputs: dict[str, torch.Tensor],
+    use_branch_prerefine_as_primary_prediction: bool,
+) -> torch.Tensor:
+    if use_branch_prerefine_as_primary_prediction and outputs.get("estimated_waveform_branch_base") is not None:
+        return outputs["estimated_waveform_branch_base"]
+    return outputs.get("estimated_waveform_base", outputs["estimated_waveform"])
 
 
 def resolve_selector_sample_weights(
@@ -251,8 +325,13 @@ def main() -> None:
         "transient_extra_presence_l1": 0.0,
         "interference_projection_ratio": 0.0,
         "interference_extra_projection_ratio": 0.0,
+        "overlap_interference_projection_ratio": 0.0,
+        "overlap_interference_extra_projection_ratio": 0.0,
         "absent_interval_l1": 0.0,
         "absent_extra_interval_l1": 0.0,
+        "gate_abstain_mean": 0.0,
+        "gate_keep_mean": 0.0,
+        "gate_target_l1": 0.0,
     }
     batch_count = 0
     pattern_metrics: dict[str, dict[str, float | int]] = defaultdict(
@@ -268,11 +347,16 @@ def main() -> None:
             "transient_extra_presence_l1": 0.0,
             "interference_projection_ratio": 0.0,
             "interference_extra_projection_ratio": 0.0,
+            "overlap_interference_projection_ratio": 0.0,
+            "overlap_interference_extra_projection_ratio": 0.0,
             "absent_interval_l1": 0.0,
             "absent_extra_interval_l1": 0.0,
             "branch_protect_guard_sisdr_loss": 0.0,
             "interference_extra_base_align_l1": 0.0,
             "interference_extra_base_delta_projection_ratio": 0.0,
+            "gate_abstain_mean": 0.0,
+            "gate_keep_mean": 0.0,
+            "gate_target_l1": 0.0,
         }
     )
     recipe_metrics: dict[str, dict[str, float | int]] = defaultdict(
@@ -288,11 +372,16 @@ def main() -> None:
             "transient_extra_presence_l1": 0.0,
             "interference_projection_ratio": 0.0,
             "interference_extra_projection_ratio": 0.0,
+            "overlap_interference_projection_ratio": 0.0,
+            "overlap_interference_extra_projection_ratio": 0.0,
             "absent_interval_l1": 0.0,
             "absent_extra_interval_l1": 0.0,
             "branch_protect_guard_sisdr_loss": 0.0,
             "interference_extra_base_align_l1": 0.0,
             "interference_extra_base_delta_projection_ratio": 0.0,
+            "gate_abstain_mean": 0.0,
+            "gate_keep_mean": 0.0,
+            "gate_target_l1": 0.0,
         }
     )
     ratio_bucket_metrics: dict[str, dict[str, float | int]] = defaultdict(
@@ -308,11 +397,16 @@ def main() -> None:
             "transient_extra_presence_l1": 0.0,
             "interference_projection_ratio": 0.0,
             "interference_extra_projection_ratio": 0.0,
+            "overlap_interference_projection_ratio": 0.0,
+            "overlap_interference_extra_projection_ratio": 0.0,
             "absent_interval_l1": 0.0,
             "absent_extra_interval_l1": 0.0,
             "branch_protect_guard_sisdr_loss": 0.0,
             "interference_extra_base_align_l1": 0.0,
             "interference_extra_base_delta_projection_ratio": 0.0,
+            "gate_abstain_mean": 0.0,
+            "gate_keep_mean": 0.0,
+            "gate_target_l1": 0.0,
         }
     )
     saved = 0
@@ -387,16 +481,31 @@ def main() -> None:
                 loss_config=loss_config,
                 prefix="branch_protect",
             )
+            gate_target_values = build_gate_target_values(batch=batch, device=device, loss_config=loss_config)
+            gate_target_sample_weights = (
+                torch.ones(len(batch["sample_ids"]), dtype=torch.float32, device=device)
+                if gate_target_values is not None
+                else None
+            )
+            primary_prediction = resolve_primary_prediction(
+                outputs,
+                use_branch_prerefine_as_primary_prediction=bool(
+                    loss_config.get("use_branch_prerefine_as_primary_prediction", False)
+                ),
+            )
+            reconstruction_extra_prediction = outputs["estimated_waveform"]
+            extra_prediction = resolve_branch_extra_prediction(outputs)
             losses = compute_losses(
-                prediction=outputs.get("estimated_waveform_base", outputs["estimated_waveform"]),
-                reconstruction_extra_prediction=outputs["estimated_waveform"],
-                extra_prediction=resolve_branch_extra_prediction(outputs),
+                prediction=primary_prediction,
+                reconstruction_extra_prediction=reconstruction_extra_prediction,
+                extra_prediction=extra_prediction,
                 mixture=batch["mixture"],
                 target=batch["target"],
                 lengths=batch["target_lengths"],
                 absent_intervals=batch["target_absent_intervals"],
                 overlap_intervals=batch["target_overlap_intervals"],
                 model=model,
+                gate_values=outputs.get("branch_decoder_frame_gate"),
                 reconstruction_sample_weights=reconstruction_sample_weights,
                 reconstruction_extra_sample_weights=reconstruction_extra_sample_weights,
                 transient_sample_weights=transient_sample_weights,
@@ -408,12 +517,11 @@ def main() -> None:
                 branch_protect_sample_weights=branch_protect_sample_weights,
                 absent_sample_weights=absent_sample_weights,
                 absent_extra_sample_weights=absent_extra_sample_weights,
+                gate_abstain_sample_weights=interference_extra_sample_weights,
+                gate_keep_sample_weights=branch_protect_sample_weights,
+                gate_target_sample_weights=gate_target_sample_weights,
+                gate_target_values=gate_target_values,
                 **compute_loss_kwargs,
-            )
-            sisdr = masked_sisdr(
-                prediction=outputs["estimated_waveform"],
-                target=batch["target"],
-                lengths=batch["target_lengths"],
             )
 
             totals["loss"] += float(losses.total.item())
@@ -423,7 +531,7 @@ def main() -> None:
             totals["reconstruction_stft_l1"] += float(losses.reconstruction_stft_l1.item())
             totals["reconstruction_extra_waveform_l1"] += float(losses.reconstruction_extra_waveform_l1.item())
             totals["reconstruction_extra_stft_l1"] += float(losses.reconstruction_extra_stft_l1.item())
-            totals["sisdr_db"] += float(sisdr.item())
+            totals["sisdr_db"] += float(losses.sisdr_db.item())
             totals["branch_protect_guard_sisdr_loss"] += float(losses.branch_protect_guard_sisdr_loss.item())
             totals["interference_extra_guard_sisdr_loss"] += float(losses.interference_extra_guard_sisdr_loss.item())
             totals["interference_extra_base_align_l1"] += float(losses.interference_extra_base_align_l1.item())
@@ -436,12 +544,32 @@ def main() -> None:
             totals["interference_extra_projection_ratio"] += float(
                 losses.interference_extra_projection_ratio.item()
             )
+            totals["overlap_interference_projection_ratio"] += float(
+                losses.overlap_interference_projection_ratio.item()
+            )
+            totals["overlap_interference_extra_projection_ratio"] += float(
+                losses.overlap_interference_extra_projection_ratio.item()
+            )
             totals["absent_interval_l1"] += float(losses.absent_interval_l1.item())
             totals["absent_extra_interval_l1"] += float(losses.absent_extra_interval_l1.item())
+            totals["gate_abstain_mean"] += float(losses.gate_abstain_mean.item())
+            totals["gate_keep_mean"] += float(losses.gate_keep_mean.item())
+            totals["gate_target_l1"] += float(losses.gate_target_l1.item())
             batch_count += 1
 
-            predictions, targets, lengths = align_waveforms(
-                outputs["estimated_waveform"],
+            primary_predictions, targets, lengths = align_waveforms(
+                primary_prediction,
+                batch["target"],
+                batch["target_lengths"],
+            )
+            reconstruction_extra_predictions, _, _ = align_waveforms(
+                reconstruction_extra_prediction,
+                batch["target"],
+                batch["target_lengths"],
+            )
+            resolved_extra_prediction = primary_prediction if extra_prediction is None else extra_prediction
+            extra_predictions, _, _ = align_waveforms(
+                resolved_extra_prediction,
                 batch["target"],
                 batch["target_lengths"],
             )
@@ -449,7 +577,7 @@ def main() -> None:
             for idx, pattern in enumerate(batch["temporal_patterns"]):
                 length_int = int(lengths[idx].item())
                 sample_loss = torch.mean(
-                    torch.abs(predictions[idx, :length_int] - targets[idx, :length_int])
+                    torch.abs(primary_predictions[idx, :length_int] - targets[idx, :length_int])
                 )
                 recipe = batch["recipes"][idx]
                 ratio_bucket = target_present_ratio_bucket(
@@ -457,14 +585,14 @@ def main() -> None:
                 )
                 sample_sisdr = float(
                     masked_sisdr(
-                        predictions[idx : idx + 1],
+                        primary_predictions[idx : idx + 1],
                         targets[idx : idx + 1],
                         lengths[idx : idx + 1],
                     ).item()
                 )
                 sample_reconstruction = float(
                     weighted_waveform_l1_loss(
-                        prediction=predictions[idx : idx + 1],
+                        prediction=primary_predictions[idx : idx + 1],
                         target=targets[idx : idx + 1],
                         lengths=lengths[idx : idx + 1],
                         sample_weights=(
@@ -476,7 +604,7 @@ def main() -> None:
                 )
                 sample_reconstruction_stft = float(
                     weighted_stft_l1_loss(
-                        prediction=predictions[idx : idx + 1],
+                        prediction=primary_predictions[idx : idx + 1],
                         target=targets[idx : idx + 1],
                         lengths=lengths[idx : idx + 1],
                         model=model,
@@ -489,7 +617,7 @@ def main() -> None:
                 )
                 sample_reconstruction_extra = float(
                     weighted_waveform_l1_loss(
-                        prediction=predictions[idx : idx + 1],
+                        prediction=reconstruction_extra_predictions[idx : idx + 1],
                         target=targets[idx : idx + 1],
                         lengths=lengths[idx : idx + 1],
                         sample_weights=(
@@ -501,7 +629,7 @@ def main() -> None:
                 )
                 sample_reconstruction_extra_stft = float(
                     weighted_stft_l1_loss(
-                        prediction=predictions[idx : idx + 1],
+                        prediction=reconstruction_extra_predictions[idx : idx + 1],
                         target=targets[idx : idx + 1],
                         lengths=lengths[idx : idx + 1],
                         model=model,
@@ -514,7 +642,7 @@ def main() -> None:
                 )
                 sample_transient = float(
                     transient_presence_l1_loss(
-                        prediction=predictions[idx : idx + 1],
+                        prediction=primary_predictions[idx : idx + 1],
                         target=targets[idx : idx + 1],
                         lengths=lengths[idx : idx + 1],
                         model=model,
@@ -530,7 +658,7 @@ def main() -> None:
                 )
                 sample_transient_extra = float(
                     transient_presence_l1_loss(
-                        prediction=predictions[idx : idx + 1],
+                        prediction=extra_predictions[idx : idx + 1],
                         target=targets[idx : idx + 1],
                         lengths=lengths[idx : idx + 1],
                         model=model,
@@ -551,7 +679,7 @@ def main() -> None:
                 )
                 sample_interference = float(
                     interference_projection_loss(
-                        prediction=predictions[idx : idx + 1],
+                        prediction=primary_predictions[idx : idx + 1],
                         mixture=batch["mixture"][idx : idx + 1],
                         target=targets[idx : idx + 1],
                         lengths=lengths[idx : idx + 1],
@@ -560,16 +688,48 @@ def main() -> None:
                 )
                 sample_interference_extra = float(
                     interference_projection_loss(
-                        prediction=predictions[idx : idx + 1],
+                        prediction=extra_predictions[idx : idx + 1],
                         mixture=batch["mixture"][idx : idx + 1],
                         target=targets[idx : idx + 1],
                         lengths=lengths[idx : idx + 1],
                         mode=str(loss_config.get("interference_extra_loss_mode", "prediction_projection_ratio")),
                     ).item()
                 )
+                sample_overlap_interference = float(
+                    overlap_interval_interference_projection_loss(
+                        prediction=primary_predictions[idx : idx + 1],
+                        mixture=batch["mixture"][idx : idx + 1],
+                        target=targets[idx : idx + 1],
+                        lengths=lengths[idx : idx + 1],
+                        overlap_intervals=[batch["target_overlap_intervals"][idx]],
+                        sample_rate=int(loss_config.get("sample_rate", args.sample_rate)),
+                        sample_weights=(
+                            overlap_interference_sample_weights[idx : idx + 1]
+                            if overlap_interference_sample_weights is not None
+                            else None
+                        ),
+                        mode=str(loss_config.get("overlap_interference_loss_mode", "prediction_projection_ratio")),
+                    ).item()
+                )
+                sample_overlap_interference_extra = float(
+                    overlap_interval_interference_projection_loss(
+                        prediction=extra_predictions[idx : idx + 1],
+                        mixture=batch["mixture"][idx : idx + 1],
+                        target=targets[idx : idx + 1],
+                        lengths=lengths[idx : idx + 1],
+                        overlap_intervals=[batch["target_overlap_intervals"][idx]],
+                        sample_rate=int(loss_config.get("sample_rate", args.sample_rate)),
+                        sample_weights=(
+                            overlap_interference_extra_sample_weights[idx : idx + 1]
+                            if overlap_interference_extra_sample_weights is not None
+                            else None
+                        ),
+                        mode=str(loss_config.get("overlap_interference_extra_loss_mode", "prediction_projection_ratio")),
+                    ).item()
+                )
                 sample_absent = float(
                     absent_interval_l1_loss(
-                        prediction=predictions[idx : idx + 1],
+                        prediction=primary_predictions[idx : idx + 1],
                         target=targets[idx : idx + 1],
                         lengths=lengths[idx : idx + 1],
                         absent_intervals=[batch["target_absent_intervals"][idx]],
@@ -578,7 +738,7 @@ def main() -> None:
                 )
                 sample_absent_extra = float(
                     absent_interval_l1_loss(
-                        prediction=predictions[idx : idx + 1],
+                        prediction=extra_predictions[idx : idx + 1],
                         target=targets[idx : idx + 1],
                         lengths=lengths[idx : idx + 1],
                         absent_intervals=[batch["target_absent_intervals"][idx]],
@@ -586,6 +746,101 @@ def main() -> None:
                         sample_weights=(
                             absent_extra_sample_weights[idx : idx + 1]
                             if absent_union_sample_weights is not None and absent_extra_sample_weights is not None
+                            else None
+                        ),
+                    ).item()
+                )
+                sample_branch_protect_guard = float(
+                    weighted_sisdr_loss(
+                        prediction=extra_predictions[idx : idx + 1],
+                        target=targets[idx : idx + 1],
+                        lengths=lengths[idx : idx + 1],
+                        sample_weights=(
+                            branch_protect_sample_weights[idx : idx + 1]
+                            if branch_protect_sample_weights is not None
+                            else None
+                        ),
+                        zero_mean=True,
+                    ).item()
+                )
+                sample_interference_extra_base_align = float(
+                    weighted_waveform_l1_loss(
+                        prediction=extra_predictions[idx : idx + 1],
+                        target=primary_predictions[idx : idx + 1],
+                        lengths=lengths[idx : idx + 1],
+                        sample_weights=(
+                            interference_extra_sample_weights[idx : idx + 1]
+                            if interference_extra_sample_weights is not None
+                            else None
+                        ),
+                    ).item()
+                )
+                sample_interference_extra_base_delta_projection = float(
+                    base_delta_interference_projection_loss(
+                        prediction=extra_predictions[idx : idx + 1],
+                        reference_prediction=primary_predictions[idx : idx + 1],
+                        mixture=batch["mixture"][idx : idx + 1],
+                        target=targets[idx : idx + 1],
+                        lengths=lengths[idx : idx + 1],
+                        sample_weights=(
+                            interference_extra_sample_weights[idx : idx + 1]
+                            if interference_extra_sample_weights is not None
+                            else None
+                        ),
+                    ).item()
+                )
+                sample_gate_abstain = float(
+                    weighted_gate_target_loss(
+                        gate_values=(
+                            outputs["branch_decoder_frame_gate"][idx : idx + 1]
+                            if outputs.get("branch_decoder_frame_gate") is not None
+                            else None
+                        ),
+                        lengths=lengths[idx : idx + 1],
+                        model=model,
+                        target_value=0.0,
+                        sample_weights=(
+                            interference_extra_sample_weights[idx : idx + 1]
+                            if interference_extra_sample_weights is not None
+                            else None
+                        ),
+                    ).item()
+                )
+                sample_gate_keep = float(
+                    weighted_gate_target_loss(
+                        gate_values=(
+                            outputs["branch_decoder_frame_gate"][idx : idx + 1]
+                            if outputs.get("branch_decoder_frame_gate") is not None
+                            else None
+                        ),
+                        lengths=lengths[idx : idx + 1],
+                        model=model,
+                        target_value=1.0,
+                        sample_weights=(
+                            branch_protect_sample_weights[idx : idx + 1]
+                            if branch_protect_sample_weights is not None
+                            else None
+                        ),
+                    ).item()
+                )
+                sample_gate_target = float(
+                    weighted_gate_target_loss(
+                        gate_values=(
+                            outputs["branch_decoder_frame_gate"][idx : idx + 1]
+                            if outputs.get("branch_decoder_frame_gate") is not None
+                            else None
+                        ),
+                        lengths=lengths[idx : idx + 1],
+                        model=model,
+                        target_values=(
+                            gate_target_values[idx : idx + 1]
+                            if gate_target_values is not None
+                            else None
+                        ),
+                        target_value=0.0 if gate_target_values is None else None,
+                        sample_weights=(
+                            gate_target_sample_weights[idx : idx + 1]
+                            if gate_target_sample_weights is not None
                             else None
                         ),
                     ).item()
@@ -601,17 +856,20 @@ def main() -> None:
                 pattern_metrics[pattern]["transient_extra_presence_l1"] += sample_transient_extra
                 pattern_metrics[pattern]["interference_projection_ratio"] += sample_interference
                 pattern_metrics[pattern]["interference_extra_projection_ratio"] += sample_interference_extra
+                pattern_metrics[pattern]["overlap_interference_projection_ratio"] += sample_overlap_interference
+                pattern_metrics[pattern]["overlap_interference_extra_projection_ratio"] += (
+                    sample_overlap_interference_extra
+                )
                 pattern_metrics[pattern]["absent_interval_l1"] += sample_absent
                 pattern_metrics[pattern]["absent_extra_interval_l1"] += sample_absent_extra
-                pattern_metrics[pattern]["branch_protect_guard_sisdr_loss"] += float(
-                    losses.branch_protect_guard_sisdr_loss.item()
+                pattern_metrics[pattern]["branch_protect_guard_sisdr_loss"] += sample_branch_protect_guard
+                pattern_metrics[pattern]["interference_extra_base_align_l1"] += sample_interference_extra_base_align
+                pattern_metrics[pattern]["interference_extra_base_delta_projection_ratio"] += (
+                    sample_interference_extra_base_delta_projection
                 )
-                pattern_metrics[pattern]["interference_extra_base_align_l1"] += float(
-                    losses.interference_extra_base_align_l1.item()
-                )
-                pattern_metrics[pattern]["interference_extra_base_delta_projection_ratio"] += float(
-                    losses.interference_extra_base_delta_projection_ratio.item()
-                )
+                pattern_metrics[pattern]["gate_abstain_mean"] += sample_gate_abstain
+                pattern_metrics[pattern]["gate_keep_mean"] += sample_gate_keep
+                pattern_metrics[pattern]["gate_target_l1"] += sample_gate_target
                 recipe_metrics[recipe]["count"] += 1
                 recipe_metrics[recipe]["loss"] += float(sample_loss.item())
                 recipe_metrics[recipe]["sisdr_db"] += sample_sisdr
@@ -623,17 +881,20 @@ def main() -> None:
                 recipe_metrics[recipe]["transient_extra_presence_l1"] += sample_transient_extra
                 recipe_metrics[recipe]["interference_projection_ratio"] += sample_interference
                 recipe_metrics[recipe]["interference_extra_projection_ratio"] += sample_interference_extra
+                recipe_metrics[recipe]["overlap_interference_projection_ratio"] += sample_overlap_interference
+                recipe_metrics[recipe]["overlap_interference_extra_projection_ratio"] += (
+                    sample_overlap_interference_extra
+                )
                 recipe_metrics[recipe]["absent_interval_l1"] += sample_absent
                 recipe_metrics[recipe]["absent_extra_interval_l1"] += sample_absent_extra
-                recipe_metrics[recipe]["branch_protect_guard_sisdr_loss"] += float(
-                    losses.branch_protect_guard_sisdr_loss.item()
+                recipe_metrics[recipe]["branch_protect_guard_sisdr_loss"] += sample_branch_protect_guard
+                recipe_metrics[recipe]["interference_extra_base_align_l1"] += sample_interference_extra_base_align
+                recipe_metrics[recipe]["interference_extra_base_delta_projection_ratio"] += (
+                    sample_interference_extra_base_delta_projection
                 )
-                recipe_metrics[recipe]["interference_extra_base_align_l1"] += float(
-                    losses.interference_extra_base_align_l1.item()
-                )
-                recipe_metrics[recipe]["interference_extra_base_delta_projection_ratio"] += float(
-                    losses.interference_extra_base_delta_projection_ratio.item()
-                )
+                recipe_metrics[recipe]["gate_abstain_mean"] += sample_gate_abstain
+                recipe_metrics[recipe]["gate_keep_mean"] += sample_gate_keep
+                recipe_metrics[recipe]["gate_target_l1"] += sample_gate_target
                 ratio_bucket_metrics[ratio_bucket]["count"] += 1
                 ratio_bucket_metrics[ratio_bucket]["loss"] += float(sample_loss.item())
                 ratio_bucket_metrics[ratio_bucket]["sisdr_db"] += sample_sisdr
@@ -645,24 +906,29 @@ def main() -> None:
                 ratio_bucket_metrics[ratio_bucket]["transient_extra_presence_l1"] += sample_transient_extra
                 ratio_bucket_metrics[ratio_bucket]["interference_projection_ratio"] += sample_interference
                 ratio_bucket_metrics[ratio_bucket]["interference_extra_projection_ratio"] += sample_interference_extra
+                ratio_bucket_metrics[ratio_bucket]["overlap_interference_projection_ratio"] += sample_overlap_interference
+                ratio_bucket_metrics[ratio_bucket]["overlap_interference_extra_projection_ratio"] += (
+                    sample_overlap_interference_extra
+                )
                 ratio_bucket_metrics[ratio_bucket]["absent_interval_l1"] += sample_absent
                 ratio_bucket_metrics[ratio_bucket]["absent_extra_interval_l1"] += sample_absent_extra
-                ratio_bucket_metrics[ratio_bucket]["branch_protect_guard_sisdr_loss"] += float(
-                    losses.branch_protect_guard_sisdr_loss.item()
+                ratio_bucket_metrics[ratio_bucket]["branch_protect_guard_sisdr_loss"] += sample_branch_protect_guard
+                ratio_bucket_metrics[ratio_bucket]["interference_extra_base_align_l1"] += (
+                    sample_interference_extra_base_align
                 )
-                ratio_bucket_metrics[ratio_bucket]["interference_extra_base_align_l1"] += float(
-                    losses.interference_extra_base_align_l1.item()
+                ratio_bucket_metrics[ratio_bucket]["interference_extra_base_delta_projection_ratio"] += (
+                    sample_interference_extra_base_delta_projection
                 )
-                ratio_bucket_metrics[ratio_bucket]["interference_extra_base_delta_projection_ratio"] += float(
-                    losses.interference_extra_base_delta_projection_ratio.item()
-                )
+                ratio_bucket_metrics[ratio_bucket]["gate_abstain_mean"] += sample_gate_abstain
+                ratio_bucket_metrics[ratio_bucket]["gate_keep_mean"] += sample_gate_keep
+                ratio_bucket_metrics[ratio_bucket]["gate_target_l1"] += sample_gate_target
 
                 if saved < args.save_audio_count:
                     sample_id = batch["sample_ids"][idx]
                     sample_dir = sample_output_dir / sample_id
                     save_audio(
                         sample_dir / "estimate.wav",
-                        predictions[idx, :length_int],
+                        reconstruction_extra_predictions[idx, :length_int],
                         args.sample_rate,
                     )
                     save_audio(
@@ -692,8 +958,18 @@ def main() -> None:
                                 "transient_extra_presence_l1": sample_transient_extra,
                                 "interference_projection_ratio": sample_interference,
                                 "interference_extra_projection_ratio": sample_interference_extra,
+                                "overlap_interference_projection_ratio": sample_overlap_interference,
+                                "overlap_interference_extra_projection_ratio": sample_overlap_interference_extra,
                                 "absent_interval_l1": sample_absent,
                                 "absent_extra_interval_l1": sample_absent_extra,
+                                "branch_protect_guard_sisdr_loss": sample_branch_protect_guard,
+                                "interference_extra_base_align_l1": sample_interference_extra_base_align,
+                                "interference_extra_base_delta_projection_ratio": (
+                                    sample_interference_extra_base_delta_projection
+                                ),
+                                "gate_abstain_mean": sample_gate_abstain,
+                                "gate_keep_mean": sample_gate_keep,
+                                "gate_target_l1": sample_gate_target,
                                 "metadata_path": batch["metadata_paths"][idx],
                             },
                             ensure_ascii=False,
@@ -748,6 +1024,12 @@ def main() -> None:
                 "avg_interference_extra_projection_ratio": (
                     values["interference_extra_projection_ratio"] / max(1, int(values["count"]))
                 ),
+                "avg_overlap_interference_projection_ratio": (
+                    values["overlap_interference_projection_ratio"] / max(1, int(values["count"]))
+                ),
+                "avg_overlap_interference_extra_projection_ratio": (
+                    values["overlap_interference_extra_projection_ratio"] / max(1, int(values["count"]))
+                ),
                 "avg_branch_protect_guard_sisdr_loss": (
                     values["branch_protect_guard_sisdr_loss"] / max(1, int(values["count"]))
                 ),
@@ -761,6 +1043,9 @@ def main() -> None:
                 "avg_absent_extra_interval_l1": (
                     values["absent_extra_interval_l1"] / max(1, int(values["count"]))
                 ),
+                "avg_gate_abstain_mean": values["gate_abstain_mean"] / max(1, int(values["count"])),
+                "avg_gate_keep_mean": values["gate_keep_mean"] / max(1, int(values["count"])),
+                "avg_gate_target_l1": values["gate_target_l1"] / max(1, int(values["count"])),
             }
             for pattern, values in sorted(pattern_metrics.items())
         },
@@ -789,6 +1074,12 @@ def main() -> None:
                 "avg_interference_extra_projection_ratio": (
                     values["interference_extra_projection_ratio"] / max(1, int(values["count"]))
                 ),
+                "avg_overlap_interference_projection_ratio": (
+                    values["overlap_interference_projection_ratio"] / max(1, int(values["count"]))
+                ),
+                "avg_overlap_interference_extra_projection_ratio": (
+                    values["overlap_interference_extra_projection_ratio"] / max(1, int(values["count"]))
+                ),
                 "avg_branch_protect_guard_sisdr_loss": (
                     values["branch_protect_guard_sisdr_loss"] / max(1, int(values["count"]))
                 ),
@@ -802,6 +1093,9 @@ def main() -> None:
                 "avg_absent_extra_interval_l1": (
                     values["absent_extra_interval_l1"] / max(1, int(values["count"]))
                 ),
+                "avg_gate_abstain_mean": values["gate_abstain_mean"] / max(1, int(values["count"])),
+                "avg_gate_keep_mean": values["gate_keep_mean"] / max(1, int(values["count"])),
+                "avg_gate_target_l1": values["gate_target_l1"] / max(1, int(values["count"])),
             }
             for recipe, values in sorted(recipe_metrics.items())
         },
@@ -830,6 +1124,12 @@ def main() -> None:
                 "avg_interference_extra_projection_ratio": (
                     values["interference_extra_projection_ratio"] / max(1, int(values["count"]))
                 ),
+                "avg_overlap_interference_projection_ratio": (
+                    values["overlap_interference_projection_ratio"] / max(1, int(values["count"]))
+                ),
+                "avg_overlap_interference_extra_projection_ratio": (
+                    values["overlap_interference_extra_projection_ratio"] / max(1, int(values["count"]))
+                ),
                 "avg_branch_protect_guard_sisdr_loss": (
                     values["branch_protect_guard_sisdr_loss"] / max(1, int(values["count"]))
                 ),
@@ -843,6 +1143,9 @@ def main() -> None:
                 "avg_absent_extra_interval_l1": (
                     values["absent_extra_interval_l1"] / max(1, int(values["count"]))
                 ),
+                "avg_gate_abstain_mean": values["gate_abstain_mean"] / max(1, int(values["count"])),
+                "avg_gate_keep_mean": values["gate_keep_mean"] / max(1, int(values["count"])),
+                "avg_gate_target_l1": values["gate_target_l1"] / max(1, int(values["count"])),
             }
             for bucket, values in sorted(ratio_bucket_metrics.items())
         },

@@ -477,6 +477,32 @@
   - `branch_overlap_refine_gate_mode = gate`
   作为默认起点。
 
+### 21. absent-case 的自动 suppression 优势，可能不会转化成人耳更优
+
+事实：
+
+- `v85`
+  - 自动上相对 `v81`
+    - `near_real_0009`
+      - `delta_interference_capture_db_b_minus_a = -11.124 dB`
+      - tradeoff 标成：
+        - `more_interference_leaky = v81`
+- 但 `v81 vs v85` GUI 听审里：
+  - `near_real_0009`
+    - 人耳明确选了 `v81`
+    - 决策标签：
+      - `less_interference_leak`
+
+结论：
+
+- 当前 absent-case 的 objective / tradeoff 指标，还不能单独代表真实听感；
+- 数值上“更静”并不自动等于主观更好。
+
+要求：
+
+- 这类 absent / silence-over-leak 前沿，不要只靠自动指标切研究基座；
+- 只要进入 frontier 区间，仍必须回到人耳终裁。
+
 ## 近期关键案例入口
 
 - `reports/daily/2026-03-26_overlap_abstention_proxy_v3_v4_and_v71_v72_followup.md`

@@ -92,6 +92,12 @@ def infer_candidate_sources(summary: dict[str, Any], sample_meta: dict[str, Any]
             str(summary["label_a"]): str(exports["estimate_a"]),
             str(summary["label_b"]): str(exports["estimate_b"]),
         }
+    if "label_a" in summary and "label_b" in summary and "export_names" in sample_meta:
+        export_names = sample_meta["export_names"]
+        return {
+            str(summary["label_a"]): str(export_names["estimate_a"]),
+            str(summary["label_b"]): str(export_names["estimate_b"]),
+        }
     raise ValueError("Unsupported pack summary/sample_meta format for merge.")
 
 

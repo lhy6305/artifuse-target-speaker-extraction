@@ -123,7 +123,7 @@ def compute_overlap_ratio(metadata: dict[str, Any]) -> float | None:
     if not layers:
         return None
     duration = float(metadata["target_duration_sec"])
-    start_offset = float(layers[0]["start_offset_sec"])
+    start_offset = min(float(layer.get("start_offset_sec", 0.0)) for layer in layers)
     overlap = max(0.0, duration - start_offset) / max(duration, 1e-9)
     return float(min(max(overlap, 0.0), 1.0))
 

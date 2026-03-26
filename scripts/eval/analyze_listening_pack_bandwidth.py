@@ -171,6 +171,46 @@ def load_listening_sheet(path: Path) -> dict[str, dict[str, str]]:
     return rows
 
 
+def resolve_pair_candidate_info(
+    pack_summary: dict[str, Any],
+    sample_meta: dict[str, Any],
+    sheet_row: dict[str, str],
+    blind_mapping_row: dict[str, Any],
+) -> dict[str, str]:
+    file_a_name = str(sheet_row.get("file_a_name", "")).strip()
+    file_b_name = str(sheet_row.get("file_b_name", "")).strip()
+    exports = sample_meta.get("exports", {})
+    export_names = sample_meta.get("export_names", {})
+    if not exports and export_names:
+        exports = export_names
+    if not file_a_name:
+        file_a_name = str(exports.get("estimate_a", "candidate_a.wav")).strip()
+    if not file_b_name:
+        file_b_name = str(exports.get("estimate_b", "candidate_b.wav")).strip()
+
+    if blind_mapping_row:
+        file_a_key = Path(file_a_name).stem
+        file_b_key = Path(file_b_name).stem
+        file_a_label = str(blind_mapping_row.get(file_a_key, file_a_key))
+        file_b_label = str(blind_mapping_row.get(file_b_key, file_b_key))
+    else:
+        label_a = str(pack_summary.get("label_a", "")).strip()
+        label_b = str(pack_summary.get("label_b", "")).strip()
+        if label_a and label_b:
+            file_a_label = label_a if file_a_name == str(exports.get("estimate_a", "")).strip() else label_b
+            file_b_label = label_b if file_b_name == str(exports.get("estimate_b", "")).strip() else label_a
+        else:
+            file_a_label = Path(file_a_name).stem
+            file_b_label = Path(file_b_name).stem
+
+    return {
+        "file_a_name": file_a_name,
+        "file_b_name": file_b_name,
+        "file_a_label": file_a_label,
+        "file_b_label": file_b_label,
+    }
+
+
 def compare_pair(
     file_a_metrics: dict[str, Any],
     file_b_metrics: dict[str, Any],
@@ -236,6 +276,8 @@ def main() -> None:
     output_dir = args.output_dir or (args.pack_dir / "bandwidth_analysis")
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    pack_summary_path = args.pack_dir / "summary.json"
+    pack_summary = load_json(pack_summary_path) if pack_summary_path.exists() else {}
     blind_key_path = args.pack_dir / "blind_key.json"
     blind_key = load_json(blind_key_path) if blind_key_path.exists() else None
     blind_mapping = {}
@@ -253,14 +295,21 @@ def main() -> None:
     for sample_dir in sample_dirs:
         sample_meta = load_json(sample_dir / "sample_meta.json")
         sample_id = sample_meta["sample_id"]
+        sheet_row = listening_sheet.get(sample_id, {})
+        candidate_info = resolve_pair_candidate_info(
+            pack_summary=pack_summary,
+            sample_meta=sample_meta,
+            sheet_row=sheet_row,
+            blind_mapping_row=blind_mapping.get(sample_id, {}),
+        )
         file_a_metrics = analyze_audio(
-            sample_dir / "candidate_a.wav",
+            sample_dir / candidate_info["file_a_name"],
             n_fft=args.n_fft,
             hop_length=args.hop_length,
             rolloff_percent=args.rolloff_percent,
         )
         file_b_metrics = analyze_audio(
-            sample_dir / "candidate_b.wav",
+            sample_dir / candidate_info["file_b_name"],
             n_fft=args.n_fft,
             hop_length=args.hop_length,
             rolloff_percent=args.rolloff_percent,
@@ -277,10 +326,10 @@ def main() -> None:
             "sample_id": sample_id,
             "note": sample_meta.get("note", ""),
             "better_output": listening_sheet.get(sample_id, {}).get("better_output", ""),
-            "file_a_name": "candidate_a.wav",
-            "file_b_name": "candidate_b.wav",
-            "file_a_label": blind_mapping.get(sample_id, {}).get("candidate_a", "candidate_a"),
-            "file_b_label": blind_mapping.get(sample_id, {}).get("candidate_b", "candidate_b"),
+            "file_a_name": candidate_info["file_a_name"],
+            "file_b_name": candidate_info["file_b_name"],
+            "file_a_label": candidate_info["file_a_label"],
+            "file_b_label": candidate_info["file_b_label"],
             "file_a_metrics": file_a_metrics,
             "file_b_metrics": file_b_metrics,
             **pair_cmp,

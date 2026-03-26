@@ -171,8 +171,17 @@ def count_choices(rows: list[dict[str, Any]], key: str) -> dict[str, int]:
     return counts
 
 
-def attach_pair_analysis(pack_dir: Path, sample_id: str) -> dict[str, Any]:
-    attached: dict[str, Any] = {}
+def decode_pair_choice(value: Any, row: dict[str, Any]) -> str:
+    normalized = str(value)
+    if normalized == "file_a":
+        return str(row.get("file_a_label", "file_a"))
+    if normalized == "file_b":
+        return str(row.get("file_b_label", "file_b"))
+    return normalized
+
+
+def load_pair_analysis_by_sample(pack_dir: Path) -> dict[str, dict[str, Any]]:
+    by_sample: dict[str, dict[str, Any]] = {}
     for analysis_name in ("tradeoff_analysis", "bandwidth_analysis", "transient_analysis"):
         per_sample_jsonl = pack_dir / analysis_name / "per_sample_pair_metrics.jsonl"
         if not per_sample_jsonl.exists():
@@ -181,14 +190,32 @@ def attach_pair_analysis(pack_dir: Path, sample_id: str) -> dict[str, Any]:
             if not line.strip():
                 continue
             row = json.loads(line)
-            if str(row.get("sample_id")) != sample_id:
+            sample_id = str(row.get("sample_id", "")).strip()
+            if not sample_id:
                 continue
+            attached = by_sample.setdefault(sample_id, {})
             if analysis_name == "tradeoff_analysis":
                 attached[analysis_name] = {
                     "better_source_retention_candidate": row.get("better_source_retention_candidate"),
+                    "better_source_retention_label": decode_pair_choice(
+                        row.get("better_source_retention_candidate"),
+                        row,
+                    ),
                     "more_interference_leaky_candidate": row.get("more_interference_leaky_candidate"),
+                    "more_interference_leaky_label": decode_pair_choice(
+                        row.get("more_interference_leaky_candidate"),
+                        row,
+                    ),
                     "more_residual_heavy_candidate": row.get("more_residual_heavy_candidate"),
+                    "more_residual_heavy_label": decode_pair_choice(
+                        row.get("more_residual_heavy_candidate"),
+                        row,
+                    ),
                     "better_retention_minus_leak_candidate": row.get("better_retention_minus_leak_candidate"),
+                    "better_retention_minus_leak_label": decode_pair_choice(
+                        row.get("better_retention_minus_leak_candidate"),
+                        row,
+                    ),
                     "delta_target_capture_db_b_minus_a": row.get("delta_target_capture_db_b_minus_a"),
                     "delta_interference_capture_db_b_minus_a": row.get("delta_interference_capture_db_b_minus_a"),
                     "delta_retention_minus_leak_db_b_minus_a": row.get("delta_retention_minus_leak_db_b_minus_a"),
@@ -196,14 +223,20 @@ def attach_pair_analysis(pack_dir: Path, sample_id: str) -> dict[str, Any]:
             elif analysis_name == "bandwidth_analysis":
                 attached[analysis_name] = {
                     "narrower_candidate": row.get("narrower_candidate"),
+                    "narrower_label": decode_pair_choice(row.get("narrower_candidate"), row),
                     "delta_rolloff_hz_b_minus_a": row.get("delta_rolloff_hz_b_minus_a"),
                     "delta_upper_vs_mid_db_b_minus_a": row.get("delta_upper_vs_mid_db_b_minus_a"),
                     "delta_frame_upper_share_p90_b_minus_a": row.get("delta_frame_upper_share_p90_b_minus_a"),
                 }
             else:
-                attached[analysis_name] = row
-            break
-    return attached
+                attached[analysis_name] = {
+                    **row,
+                    "more_transient_lossy_label": decode_pair_choice(
+                        row.get("more_transient_lossy_candidate"),
+                        row,
+                    ),
+                }
+    return by_sample
 
 
 def main() -> None:
@@ -219,6 +252,7 @@ def main() -> None:
     mapping_by_sample = build_mapping(blind_key)
     gui_summary_path = pack_dir / "listening_results_summary.json"
     gui_summary = load_json(gui_summary_path) if gui_summary_path.exists() else None
+    pair_analysis_by_sample = load_pair_analysis_by_sample(pack_dir)
 
     decoded_rows: list[dict[str, Any]] = []
     for row in rows:
@@ -242,7 +276,7 @@ def main() -> None:
                     for candidate_id in candidate_ids
                 },
                 "decoded_candidate_ratings": decode_candidate_ratings(candidate_ids, candidate_ratings, sample_mapping),
-                "pair_analysis": attach_pair_analysis(pack_dir, sample_id),
+                "pair_analysis": pair_analysis_by_sample.get(sample_id, {}),
             }
         )
 

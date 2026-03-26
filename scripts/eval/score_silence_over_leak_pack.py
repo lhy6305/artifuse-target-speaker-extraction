@@ -135,31 +135,65 @@ def sum_or_zero(values: list[int]) -> int:
     return int(sum(values))
 
 
+def resolve_sample_summaries(summary: dict[str, Any]) -> list[dict[str, Any]]:
+    if isinstance(summary.get("samples"), list):
+        return list(summary["samples"])
+    if isinstance(summary.get("exported_samples"), list):
+        return list(summary["exported_samples"])
+    raise ValueError("summary.json is missing both 'samples' and 'exported_samples'.")
+
+
 def resolve_candidate_audio_map(
+    pack_summary: dict[str, Any],
     sample_summary: dict[str, Any],
     sample_mapping: dict[str, str],
 ) -> dict[str, str]:
     exports = sample_summary.get("exports", {})
     if sample_mapping:
-        return {
-            real_label: str(exports[candidate_id])
+        if exports:
+            return {
+                real_label: str(exports[candidate_id])
+                for candidate_id, real_label in sample_mapping.items()
+                if candidate_id in exports
+            }
+        export_names = sample_summary.get("export_names", {})
+        label_a = str(pack_summary.get("label_a", ""))
+        label_b = str(pack_summary.get("label_b", ""))
+        blind_to_export_key = {
+            candidate_id: "estimate_a" if real_label == label_a else "estimate_b" if real_label == label_b else ""
             for candidate_id, real_label in sample_mapping.items()
-            if candidate_id in exports
+        }
+        return {
+            real_label: str(export_names[export_key])
+            for candidate_id, real_label in sample_mapping.items()
+            for export_key in [blind_to_export_key.get(candidate_id, "")]
+            if export_key and export_key in export_names
         }
 
-    comparison = sample_summary.get("comparison", {})
-    if "label_a" in sample_summary and "label_b" in sample_summary:
-        label_a = str(sample_summary["label_a"])
-        label_b = str(sample_summary["label_b"])
+    if exports:
+        comparison = sample_summary.get("comparison", {})
+        if pack_summary.get("label_a") and pack_summary.get("label_b"):
+            label_a = str(pack_summary["label_a"])
+            label_b = str(pack_summary["label_b"])
+            return {
+                label_a: str(exports["estimate_a"]),
+                label_b: str(exports["estimate_b"]),
+            }
+        if comparison:
+            fallback: dict[str, str] = {}
+            for key, value in exports.items():
+                fallback[str(key)] = str(value)
+            return fallback
+
+    export_names = sample_summary.get("export_names", {})
+    if export_names and pack_summary.get("label_a") and pack_summary.get("label_b"):
+        label_a = str(pack_summary["label_a"])
+        label_b = str(pack_summary["label_b"])
         return {
-            label_a: str(exports["estimate_a"]),
-            label_b: str(exports["estimate_b"]),
+            label_a: str(export_names["estimate_a"]),
+            label_b: str(export_names["estimate_b"]),
         }
-    if comparison and exports:
-        fallback: dict[str, str] = {}
-        for key, value in exports.items():
-            fallback[str(key)] = str(value)
-        return fallback
+
     raise ValueError(f"Could not resolve candidate audio names for sample {sample_summary.get('sample_id')}")
 
 
@@ -171,12 +205,13 @@ def main() -> None:
     blind_key = load_json(blind_key_path) if blind_key_path.exists() else None
     blind_mapping_by_sample = build_blind_mapping(blind_key)
     output_json = args.output_json or (pack_dir / "silence_over_leak_objective_summary.json")
+    sample_summaries = resolve_sample_summaries(summary)
 
     per_sample_rows: list[dict[str, Any]] = []
     per_label_absent: dict[str, list[dict[str, Any]]] = {}
     per_label_present: dict[str, list[dict[str, Any]]] = {}
 
-    for sample_summary in summary.get("samples", []):
+    for sample_summary in sample_summaries:
         sample_id = str(sample_summary["sample_id"])
         sample_dir = pack_dir / sample_id
         mixture, sample_rate = load_audio(sample_dir / "mixture.wav")
@@ -196,7 +231,7 @@ def main() -> None:
         target_present = target_energy_ratio > args.target_present_energy_threshold
 
         sample_mapping = blind_mapping_by_sample.get(sample_id, {})
-        candidate_audio_map = resolve_candidate_audio_map(sample_summary, sample_mapping)
+        candidate_audio_map = resolve_candidate_audio_map(summary, sample_summary, sample_mapping)
         candidate_metrics: dict[str, dict[str, Any]] = {}
 
         for label, audio_name in sorted(candidate_audio_map.items()):

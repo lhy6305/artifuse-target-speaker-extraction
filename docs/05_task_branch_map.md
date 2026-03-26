@@ -78,6 +78,7 @@
   - 状态：
     - overlap refiner gate-complement pilot
     - 当前第一条已过 near-real guardrail 的 refiner 候选
+    - 但 `v81 vs v85` 听审未转正
 
 ## 当前活跃问题树
 
@@ -441,10 +442,15 @@
   - `guardrail_filtered_rank = 1st`
 - focused 包已导出：
   - `reports/eval/ab_listening_pack_residual_speech_leak_floor_v1_v81_vs_v85_blind`
+- focused 听审结果：
+  - `3 / 4 tie`
+  - `1 / 4 = v81`
+  - `v85 = 0`
+  - `near_real_0009` 被人耳明确判为 `v81` 更好
 
 裁决：
 
-- `listening_gate_ready`
+- `objective_frontier_but_not_audibly_better`
 
 ## 当前有效训练与验收入口
 
@@ -502,11 +508,11 @@
 - `v54 vs v81` 选型题已收口；
 - `v81 vs v82` 选型题也已收口；
 - `v81 vs v84` 当前不导听审，因为 near-real guardrail 尚未过线；
-- `v85` 已经过 near-real guardrail，当前默认下一步是：
-  - `v81 vs v85` focused GUI 听审
+- `v81 vs v85` 听审已完成，当前结论是：
+  - `v85` 不升格
+  - `v81` 继续作为研究基座
 - 不再继续做 `v83` 式宽触发 refiner，也不做 `v84` 附近小权重 sweep；
-- 若 `v85` 听审仍无可感知差异，再决定是否继续开：
-  - `overlap refiner v4`
+- 当前停止自动推进，等待用户下一步指示
 
 执行前必须保持四条验收同时在场：
 
@@ -529,6 +535,7 @@
 - `reports/daily/2026-03-26_v81_vs_v82_listening_review.md`
 - `reports/daily/2026-03-26_overlap_refiner_v1_v2_and_v83_v84_followup.md`
 - `reports/daily/2026-03-26_overlap_refiner_v3_gatecomplement_and_v85_followup.md`
+- `reports/daily/2026-03-26_v81_vs_v85_listening_review.md`
 
 ## 文档维护规则
 
