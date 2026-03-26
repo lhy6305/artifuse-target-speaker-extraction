@@ -79,6 +79,13 @@
     - overlap refiner gate-complement pilot
     - 当前第一条已过 near-real guardrail 的 refiner 候选
     - 但 `v81 vs v85` 听审未转正
+- `v86`
+  - `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v86_v81_overlap_refiner_v4_residualsource_gatecomplement_ft1`
+  - 状态：
+    - overlap refiner residual-source gate-complement follow-up
+    - relative `v81` 仍保持三条 synthetic 正收益
+    - near-real 仍为 `0` present violation
+    - 当前等待 `v81 vs v86` focused 听审终裁
 
 ## 当前活跃问题树
 
@@ -452,6 +459,32 @@
 
 - `objective_frontier_but_not_audibly_better`
 
+### 15. `v86`
+
+含义：
+
+- `v81 + overlap refiner v4 residual-source gate-complement`
+
+结果：
+
+- relative `v81`
+  - overlap-abstention `+3.5979 dB`
+  - same-gender keep `+1.6103 dB`
+  - hard-present keep `+1.7029 dB`
+- relative `v85`
+  - objective 会让回一部分
+  - 但 absent 侧不再像 `v85` 那样激进
+- near-real residual leak floor
+  - `present_guardrail_violation_count = 0`
+  - `near_real_0007` 未再被推过 guardrail
+  - `near_real_0006 / 0009` 仍保留更静趋势
+- focused 包已导出：
+  - `reports/eval/ab_listening_pack_residual_speech_leak_floor_v1_v81_vs_v86_blind`
+
+裁决：
+
+- `awaiting_human_listening`
+
 ## 当前有效训练与验收入口
 
 ### 训练侧
@@ -511,8 +544,10 @@
 - `v81 vs v85` 听审已完成，当前结论是：
   - `v85` 不升格
   - `v81` 继续作为研究基座
+- `v81 vs v86` focused 包已导出，当前默认下一步是先做人耳终裁：
+  - `reports/eval/ab_listening_pack_residual_speech_leak_floor_v1_v81_vs_v86_blind`
 - 不再继续做 `v83` 式宽触发 refiner，也不做 `v84` 附近小权重 sweep；
-- 当前停止自动推进，等待用户下一步指示
+- 在 `v81 vs v86` 听审完成前，不继续开 `v87+`
 
 执行前必须保持四条验收同时在场：
 
@@ -536,6 +571,7 @@
 - `reports/daily/2026-03-26_overlap_refiner_v1_v2_and_v83_v84_followup.md`
 - `reports/daily/2026-03-26_overlap_refiner_v3_gatecomplement_and_v85_followup.md`
 - `reports/daily/2026-03-26_v81_vs_v85_listening_review.md`
+- `reports/daily/2026-03-26_overlap_refiner_v4_residualsource_and_v86_followup.md`
 
 ## 文档维护规则
 

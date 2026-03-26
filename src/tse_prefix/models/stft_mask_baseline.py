@@ -26,6 +26,7 @@ class STFTMaskBaseline(nn.Module):
         adapter_mask_max_delta: float = 0.25,
         branch_overlap_refine_max_delta: float = 0.15,
         branch_overlap_refine_gate_mode: str = "gate",
+        branch_overlap_refine_source_mode: str = "mixture",
     ) -> None:
         super().__init__()
         self.n_fft = n_fft
@@ -42,6 +43,7 @@ class STFTMaskBaseline(nn.Module):
         self.adapter_mask_max_delta = adapter_mask_max_delta
         self.branch_overlap_refine_max_delta = branch_overlap_refine_max_delta
         self.branch_overlap_refine_gate_mode = branch_overlap_refine_gate_mode
+        self.branch_overlap_refine_source_mode = branch_overlap_refine_source_mode
 
         if enable_adapter_mask_head and enable_branch_decoder_head:
             raise ValueError("Adapter mask head and branch decoder head are mutually exclusive for now.")
@@ -52,6 +54,10 @@ class STFTMaskBaseline(nn.Module):
         if branch_overlap_refine_gate_mode not in ("none", "gate", "complement"):
             raise ValueError(
                 "branch_overlap_refine_gate_mode must be one of: none, gate, complement."
+            )
+        if branch_overlap_refine_source_mode not in ("mixture", "branch_base", "residual"):
+            raise ValueError(
+                "branch_overlap_refine_source_mode must be one of: mixture, branch_base, residual."
             )
 
         if conditioning_mode == "legacy_bias":
@@ -364,7 +370,12 @@ class STFTMaskBaseline(nn.Module):
                         branch_overlap_refine_ratio = branch_overlap_refine_ratio * branch_decoder_frame_gate
                     elif self.branch_overlap_refine_gate_mode == "complement":
                         branch_overlap_refine_ratio = branch_overlap_refine_ratio * (1.0 - branch_decoder_frame_gate)
-                estimated_stft = estimated_stft - (mix_stft * branch_overlap_refine_ratio)
+                refine_source_stft = mix_stft
+                if self.branch_overlap_refine_source_mode == "branch_base":
+                    refine_source_stft = estimated_stft_branch_base
+                elif self.branch_overlap_refine_source_mode == "residual":
+                    refine_source_stft = mix_stft - estimated_stft_branch_base
+                estimated_stft = estimated_stft - (refine_source_stft * branch_overlap_refine_ratio)
             estimated_waveform = self.istft(estimated_stft, mixture_lengths)
         elif self.adapter_mask_head is not None:
             estimated_stft = mix_stft * mask

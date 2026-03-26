@@ -122,6 +122,11 @@ def parse_args() -> argparse.Namespace:
         choices=["none", "gate", "complement"],
         default="gate",
     )
+    parser.add_argument(
+        "--model-branch-overlap-refine-source-mode",
+        choices=["mixture", "branch_base", "residual"],
+        default="mixture",
+    )
     parser.add_argument("--loss-stft-weight", type=float, default=0.5)
     parser.add_argument("--loss-sisdr-weight", type=float, default=0.0)
     parser.add_argument("--loss-branch-protect-guard-sisdr-weight", type=float, default=0.0)
@@ -335,6 +340,7 @@ def build_model_config(args: argparse.Namespace) -> dict[str, int]:
         "adapter_mask_max_delta": args.model_adapter_mask_max_delta,
         "branch_overlap_refine_max_delta": args.model_branch_overlap_refine_max_delta,
         "branch_overlap_refine_gate_mode": args.model_branch_overlap_refine_gate_mode,
+        "branch_overlap_refine_source_mode": args.model_branch_overlap_refine_source_mode,
     }
 
 

@@ -69,6 +69,9 @@
   - `v85`
     - 含义：`v81 + overlap refiner v3 gate-complement`
     - 状态：当前第一条 near-real `0` violation 的 refiner checkpoint，但 `v81 vs v85` 听审未转正，不可放行
+  - `v86`
+    - 含义：`v81 + overlap refiner v4 residual-source gate-complement`
+    - 状态：relative `v81` 仍全量 objective 改善、near-real 仍 `0` violation；自动上弱于 `v85`，但更值得做人耳确认
 - 已验证失败：
   - `v73`
     - broad keep-guardrail 修正
@@ -82,6 +85,7 @@
 - `legacy stage2` 仍是默认可用线。
 - `v72 / v73 / v74 / v75 / v76 / v77 / v78 / v79 / v80 / v81` 都不能替代默认线。
 - `v72 / v73 / v74 / v75 / v76 / v77 / v78 / v79 / v80 / v81 / v82 / v83 / v84 / v85` 都不能替代默认线。
+- `v72 / v73 / v74 / v75 / v76 / v77 / v78 / v79 / v80 / v81 / v82 / v83 / v84 / v85 / v86` 都不能替代默认线。
 
 ## 当前核心子题
 
@@ -284,6 +288,20 @@
     - `1 / 4 = v81`
     - `v85 = 0`
     - `near_real_0009` 被人耳明确判为 `v81` 更好
+- `v86` 进一步证明 residual-source refiner 是成立的新机制：
+  - synthetic relative `v81`
+    - abstention `+3.5979 dB`
+    - same-gender keep `+1.6103 dB`
+    - hard-present keep `+1.7029 dB`
+  - near-real residual leak floor
+    - 仍是 `present_guardrail_violation_count = 0`
+    - absent suppression 介于 `v81` 和 `v85` 之间
+    - `0007` keep-side tradeoff 相对 `v81` 继续前进
+  - 当前已导出 focused 包：
+    - `reports/eval/ab_listening_pack_residual_speech_leak_floor_v1_v81_vs_v86_blind`
+  - 当前最合理的下一步已变成：
+    - 先听 `v81 vs v86`
+    - 不再继续自动扩树
 
 ## 当前最可靠的阶段结论
 
@@ -295,20 +313,21 @@
 
 ## 下一步默认计划
 
-当前默认状态不是继续自动推进，而是停在结论层，等待用户给出新的方向。
+当前默认状态不是继续自动扩树，而是先完成 `v81 vs v86` focused 听审。
 
 优先顺序：
 
 1. `v54 vs v81` 选型题已经收口，不再继续追加同类听审。
 2. `v81 vs v82` 选型题已收口，不再继续追加同类听审。
-3. 当前阶段结论已经收口：
+3. 当前阶段结论已更新为：
    - `v85` 不升格
    - `v81` 继续保留为研究基座
+   - `v86` 进入下一道 focused 听审
 4. 当前默认不再继续做：
    - `v83` 式宽触发 refiner
    - `v84` 附近轻量 sweep
    - `v85` 之后的自动 checkpoint 扩树
-   直到用户明确指定下一步
+   直到 `v81 vs v86` 听审给出结果
 5. 后续训练固定保留四条训练/验收约束：
    - `abstention_gate_proxy_v1`
    - `same_gender_present_keep_guardrail_v1`
@@ -335,6 +354,7 @@
 - `reports/daily/2026-03-26_overlap_refiner_v1_v2_and_v83_v84_followup.md`
 - `reports/daily/2026-03-26_overlap_refiner_v3_gatecomplement_and_v85_followup.md`
 - `reports/daily/2026-03-26_v81_vs_v85_listening_review.md`
+- `reports/daily/2026-03-26_overlap_refiner_v4_residualsource_and_v86_followup.md`
 
 ## 文档维护规则
 
