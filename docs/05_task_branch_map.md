@@ -17,13 +17,14 @@
   - 默认可用线
   - 当前不被任何研究分支替代
 
-### 当前 overlap-abstention 研究基座
+### 当前研究基座
 
-- `v72`
+- `v81`
 - checkpoint：
-  - `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v72_v54_overlap_abstention_proxy_v4_audibility_v1_ft1`
+  - `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v81_v79_audibility_gate_target_v1_ft1`
 - 状态：
-  - objective 研究基座
+  - 当前最稳的 guardrail-safe 研究基座
+  - 听审已完成，但未形成可听胜出
   - 不能放行
 
 ### 当前 gate 机制探针
@@ -116,6 +117,42 @@
     - `v90 + max_blend 0.25`
     - 比 `v90` 更稳定，但仍整体差于 `v81`
     - 不进入 focused 听审
+- `v93`
+  - `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v93_v88_overlap_aux_interference_decoder_v2_priortransfer_ft1`
+  - 状态：
+    - overlap auxiliary decoder v2
+    - synthetic 提升明显，但 near-real 重新伤到 `0003 / 0007`
+    - 不进入 focused 听审终裁
+- `v94`
+  - `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v94_v88_overlap_aux_interference_decoder_v3_maskheadtransfer_ft1`
+  - 状态：
+    - overlap auxiliary decoder v3
+    - failure 收窄到 `0007`
+    - 仍不过 near-real guardrail
+- `v95`
+  - `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v95_v94_overlap_aux_interference_decoder_v4_hardpresentprotect_ft1`
+  - 状态：
+    - overlap auxiliary decoder v4
+    - automatic suppression 更强，但 `v81 vs v95` 听审为 `tie = 3, v81 = 1, v95 = 0`
+    - 唯一可感知差异是 `0007` 上 `v95` 伪影更重
+- `v96`
+  - `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v96_v81_overlap_aux_interference_decoder_v5_phasepreserve_ft1`
+  - 状态：
+    - `phase_preserve` overlap cancel head first probe
+    - 但 `auxiliary_only + overlap_cancel_head-only` 结构性 output-inactive
+    - 不构成真实候选
+- `v97`
+  - `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v97_v81_overlap_aux_interference_decoder_v5_phasepreserve_fixgrad_ft1`
+  - 状态：
+    - `v96` 的 startup/gradient 修正版复跑
+    - 仍是结构性 no-op probe
+    - 不构成真实候选
+- `v98`
+  - `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v98_v81_overlap_canceller_v3_phasepreserve_subtract_ft1`
+  - 状态：
+    - 首个有效的 `phase-preserving subtractive overlap canceller`
+    - synthetic / near-real tradeoff / bandwidth 都近乎与 `v81` 全 tie
+    - 不进入 focused 听审
 
 ## 当前活跃问题树
 
@@ -183,6 +220,8 @@
   - `failed_to_cross_v88_plateau`
 - `overlap dual decoder`
   - `failed_as_direct_output_path`
+- `overlap auxiliary interference decoder`
+  - `objective_positive_but_not_audibly_better`
 
 ### C. same-gender present keep
 
@@ -644,6 +683,146 @@
 
 - `stabilized_but_still_failed`
 
+### 21. `v93`
+
+含义：
+
+- `v88 -> auxiliary_only` prior transfer through `branch_decoder_temporal_model`
+
+结果：
+
+- relative `v81`
+  - overlap-abstention `+2.0561 dB`
+  - same-gender keep `+0.7050 dB`
+  - hard-present keep `+0.9061 dB`
+- near-real residual leak floor
+  - `combined_rank = v88 > v93 > v81 > v54 > v92`
+  - 但 `present_guardrail_violation_count = 2`
+  - 回退样本：
+    - `near_real_0003`
+    - `near_real_0007`
+
+裁决：
+
+- `failed_temporal_transfer_too_wide`
+
+### 22. `v94`
+
+含义：
+
+- `v88 -> auxiliary_only` narrower transfer through `branch_decoder_mask_head`
+
+结果：
+
+- relative `v81`
+  - overlap-abstention `+2.8521 dB`
+  - same-gender keep `+1.2026 dB`
+  - hard-present keep `+1.0078 dB`
+- near-real residual leak floor
+  - `present_guardrail_violation_count = 1`
+  - 唯一回退样本：
+    - `near_real_0007`
+
+裁决：
+
+- `narrower_but_still_not_safe`
+
+### 23. `v95`
+
+含义：
+
+- `v94 + hard-present protect`
+
+结果：
+
+- relative `v81`
+  - overlap-abstention `+3.6205 dB`
+  - same-gender keep `+1.6459 dB`
+  - hard-present keep `+1.2283 dB`
+- near-real residual leak floor
+  - `present_guardrail_violation_count = 1`
+  - 唯一自动黄灯仍是：
+    - `near_real_0007`
+- focused 包：
+  - `reports/eval/ab_listening_pack_residual_speech_leak_floor_v1_v81_vs_v95_blind`
+- focused 听审结果：
+  - `tie = 3`
+  - `v81 = 1`
+  - `v95 = 0`
+  - 唯一可感知差异：
+    - `near_real_0007 = v81 > v95`
+    - 原因：
+      - `v95` 伪影更重
+
+裁决：
+
+- `objective_gain_but_artifact_regression`
+
+### 24. `v96`
+
+含义：
+
+- `v81 + phase_preserve overlap cancel head`
+- 但接法是：
+  - `auxiliary_only`
+  - 只训练 `branch_overlap_cancel_head`
+
+结果：
+
+- 三条 synthetic 全部 exact tie
+- 没有真实输出变化
+
+裁决：
+
+- `structurally_output_inactive_probe`
+
+### 25. `v97`
+
+含义：
+
+- `v96` 的 `phase_preserve` gradient-startup 修正版复跑
+
+结果：
+
+- 虽然修掉了 dead-zone 风险
+- 但三条 synthetic 仍然全部 exact tie
+- 原因仍是结构性 output-inactive
+
+裁决：
+
+- `fixed_probe_but_still_noop`
+
+### 26. `v98`
+
+含义：
+
+- `v81 + overlap canceller v3 phasepreserve subtract`
+
+结果：
+
+- relative `v81`
+  - overlap-abstention `-0.0028 dB`
+  - same-gender keep `+0.0005 dB`
+  - hard-present keep `+0.0004 dB`
+- near-real tradeoff pack：
+  - `reports/eval/ab_listening_pack_residual_speech_leak_floor_v1_v81_vs_v98_blind`
+  - `better_source_retention = tie 3 + not_applicable 1`
+  - `more_interference_leaky = tie 4`
+  - `more_residual_heavy = tie 4`
+  - `better_retention_minus_leak = tie 3 + not_applicable 1`
+- bandwidth：
+  - `tie = 4`
+
+解释：
+
+- 这是第一条真正有效的 `phase-preserving subtractive` pilot；
+- 但它和 `v81` 基本是近等价体，没有形成新的行为层级；
+- 因而不导 focused 听审。
+
+裁决：
+
+- `valid_but_near_exact_tie_to_v81`
+
 ## 当前有效训练与验收入口
 
 ### 训练侧
@@ -716,14 +895,25 @@
 - `v90 / v91` 已完成自动验收，当前结论是：
   - direct dual-target output 线先收口
   - 不进入 focused 听审
+- `v93 / v94 / v95` 也已完成当前轮探索，当前结论是：
+  - auxiliary-only 线暂不继续做小步 sweep
+  - `v95` 不升格
+  - `v81` 继续作为研究基座
+- `v96 / v97 / v98` 也已完成当前轮探索，当前结论是：
+  - `phase_preserve` 代码路径保留
+  - 但这条 overlap-canceller 线当前不构成新的前沿
+  - `v98` 不进入 focused 听审
 - 不再继续做 `v83` 式宽触发 refiner，也不做 `v84` 附近小权重 sweep；
 - 不再继续做 `v85 / v86` 同家族小步 sweep；
 - 不再继续做 `v87 / v88` 同家族小步 sweep；
 - 不再继续做 `v89` 同家族小步 sweep；
 - 不再继续做 `v90 / v91` 同家族小步 sweep；
+- 不再继续做 `v93 / v94 / v95` 同家族小步 sweep；
+- 不再继续做 `v98` 附近的 `phase_preserve` overlap-canceller ratio sweep；
 - 若后续继续推进，默认应切到：
-  - `overlap interference auxiliary decoder v1`
-  而不是继续让显式 dual path 直接接管最终输出
+  - 新的机制子题
+  - 并优先显式处理 `hard-present artifact risk`
+  - 而不是继续让当前 auxiliary-only / direct dual path / phase-preserve overlap-canceller 家族扩树
 
 执行前必须保持四条验收同时在场：
 
@@ -753,6 +943,9 @@
 - `reports/daily/2026-03-26_v81_vs_v88_listening_review.md`
 - `reports/daily/2026-03-26_overlap_dualsource_consistency_v1_and_v89_followup.md`
 - `reports/daily/2026-03-26_overlap_dual_decoder_v1_v90_v91_followup.md`
+- `reports/daily/2026-03-26_overlap_aux_interference_decoder_v2_v3_v4_and_v93_v94_v95_followup.md`
+- `reports/daily/2026-03-26_v81_vs_v95_listening_review.md`
+- `reports/daily/2026-03-26_overlap_canceller_phasepreserve_v96_v97_v98_followup.md`
 
 ## 文档维护规则
 

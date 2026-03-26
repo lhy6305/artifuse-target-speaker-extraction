@@ -156,6 +156,11 @@ def parse_args() -> argparse.Namespace:
         choices=["subtract", "auxiliary_only"],
         default="subtract",
     )
+    parser.add_argument(
+        "--model-branch-overlap-cancel-ratio-mode",
+        choices=["complex", "phase_preserve"],
+        default="complex",
+    )
     parser.add_argument("--model-branch-overlap-dual-decoder-max-delta", type=float, default=0.15)
     parser.add_argument(
         "--model-branch-overlap-dual-decoder-gate-mode",
@@ -394,6 +399,7 @@ def build_model_config(args: argparse.Namespace) -> dict[str, int]:
         "branch_overlap_cancel_gate_mode": args.model_branch_overlap_cancel_gate_mode,
         "branch_overlap_cancel_source_mode": args.model_branch_overlap_cancel_source_mode,
         "branch_overlap_cancel_apply_mode": args.model_branch_overlap_cancel_apply_mode,
+        "branch_overlap_cancel_ratio_mode": args.model_branch_overlap_cancel_ratio_mode,
         "branch_overlap_dual_decoder_max_delta": args.model_branch_overlap_dual_decoder_max_delta,
         "branch_overlap_dual_decoder_gate_mode": args.model_branch_overlap_dual_decoder_gate_mode,
         "branch_overlap_dual_decoder_source_mode": args.model_branch_overlap_dual_decoder_source_mode,

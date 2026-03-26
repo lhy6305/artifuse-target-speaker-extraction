@@ -47,6 +47,24 @@
   - `v91`
     - 含义：`v90 + dual blend cap 0.25`
     - 状态：比 `v90` 更稳定，但仍显著差于 `v81`，不进入 focused 听审
+  - `v93`
+    - 含义：`v88 -> auxiliary_only` prior transfer through `branch_decoder_temporal_model`
+    - 状态：synthetic 明显变强，但 near-real 重新伤到 `0003 / 0007`，不升格
+  - `v94`
+    - 含义：`v88 -> auxiliary_only` narrower transfer through `branch_decoder_mask_head`
+    - 状态：把 failure 收窄到 `0007` 单点，但仍不过 near-real guardrail，不升格
+  - `v95`
+    - 含义：`v94 + hard-present protect`
+    - 状态：automatic suppression 更强，但 `v81 vs v95` 听审为 `tie = 3, v81 = 1, v95 = 0`，且唯一差异是 `0007` 上 `v95` 伪影更重，不升格
+  - `v96`
+    - 含义：`v81 + phase_preserve overlap cancel head`，但 `auxiliary_only + overlap_cancel_head-only`
+    - 状态：结构性 no-op probe，不构成真实输出候选
+  - `v97`
+    - 含义：`v96` 的 `phase_preserve` startup/gradient 修正版复跑
+    - 状态：代码正确性 probe，结果仍是结构性 no-op，不升格
+  - `v98`
+    - 含义：`v81 + overlap canceller v3 phase_preserve subtract`
+    - 状态：首个有效的 phase-preserving subtractive pilot，但 synthetic / near-real / bandwidth 都与 `v81` 近乎全 tie，不进入 focused 听审
   - `v82`
     - 含义：`present_overlap_residual_leak_purification v1` 首轮 mask pilot
     - 状态：objective 前进明显，但 `v81 vs v82` 听审为 `4 / 4 tie`
@@ -101,7 +119,7 @@
 - `v72 / v73 / v74 / v75 / v76 / v77 / v78 / v79 / v80 / v81` 都不能替代默认线。
 - `v72 / v73 / v74 / v75 / v76 / v77 / v78 / v79 / v80 / v81 / v82 / v83 / v84 / v85` 都不能替代默认线。
 - `v72 / v73 / v74 / v75 / v76 / v77 / v78 / v79 / v80 / v81 / v82 / v83 / v84 / v85 / v86` 都不能替代默认线。
-- `v72 / v73 / v74 / v75 / v76 / v77 / v78 / v79 / v80 / v81 / v82 / v83 / v84 / v85 / v86 / v87 / v88 / v89 / v90 / v91` 都不能替代默认线。
+- `v72 / v73 / v74 / v75 / v76 / v77 / v78 / v79 / v80 / v81 / v82 / v83 / v84 / v85 / v86 / v87 / v88 / v89 / v90 / v91 / v93 / v94 / v95` 都不能替代默认线。
 
 ## 当前核心子题
 
@@ -335,6 +353,11 @@
 4. `v87 / v88` 进一步证明 overlap canceller 机制可训练、可带来自动收益，但 `v81 vs v88` 听审仍是 `v81 >= v88`，说明这条线也还没有推进到可听层胜出。
 5. `v89` 说明在现有 overlap canceller head 上继续叠 `dual-source consistency` 约束，能得到一个介于 `v81` 和 `v88` 之间的 checkpoint，但还不足以越过 `v88` 平台。
 6. `v90 / v91` 说明“显式估计干扰，再直接用 `mixture - interference_est` 作为最终目标路径”这个接法不可用；问题不是 dual-source idea 本身，而是 direct final-output integration point 错了。
+7. `v93 / v94 / v95` 说明 auxiliary interference decoder 作为训练辅助是可学习的，但当前收益仍停留在自动层；一旦跨到可听差异，先暴露出来的是 `near_real_0007` 上更重的伪影，而不是核心痛点的可听解决。
+8. `v96 / v97 / v98` 说明“只把 overlap canceller 改成 phase-preserving”不是当前突破口：
+   - `v96 / v97` 暴露了 `auxiliary_only + overlap_cancel_head-only` 的结构性 output-inactive 问题；
+   - `v98` 虽然是有效 subtractive pilot，但 synthetic、near-real tradeoff、bandwidth 全都近乎与 `v81` 打平；
+   - 这条 `phase-preserving overlap canceller` 线本轮可视为已自动收口，不值得进入 focused 听审。
 
 ## 下一步默认计划
 
@@ -361,12 +384,22 @@
 7. 当前也不再继续做：
    - `v90 / v91` direct dual-target 输出线的同家族 sweep
    - `v90 / v91` 听审导包
-8. 后续训练固定保留四条训练/验收约束：
+8. 当前也不再继续做：
+   - `v93 / v94 / v95` auxiliary-only 小步 sweep
+   - `v81 vs v95` 之后的同家族追加听审
+9. 当前也不再继续做：
+   - `v96 / v97` 这类 `auxiliary_only + overlap_cancel_head-only` probe
+   - `v98` 附近的 `phase_preserve` overlap-canceller ratio mode 小步 sweep
+9. 后续训练固定保留四条训练/验收约束：
    - `abstention_gate_proxy_v1`
    - `same_gender_present_keep_guardrail_v1`
    - `hard_present_gate_keep_guardrail_v1`
    - `gate_keep_union_v2`
-9. 在任何新训练前，固定保留以下四条验收：
+10. 当前若继续推进，默认应切到：
+   - 新的机制层表示或监督语义
+   - 并显式处理 `hard-present artifact risk`
+   - 而不是继续改同一个 multiplicative overlap-cancel head 的 ratio parameterization
+11. 在任何新训练前，固定保留以下四条验收：
    - `real_eval_manifest_residual_speech_leak_floor_v1`
    - `same_gender_present_keep_guardrail_v1`
    - `hard_present_gate_keep_guardrail_v1`
@@ -393,6 +426,9 @@
 - `reports/daily/2026-03-26_v81_vs_v88_listening_review.md`
 - `reports/daily/2026-03-26_overlap_dualsource_consistency_v1_and_v89_followup.md`
 - `reports/daily/2026-03-26_overlap_dual_decoder_v1_v90_v91_followup.md`
+- `reports/daily/2026-03-26_overlap_aux_interference_decoder_v2_v3_v4_and_v93_v94_v95_followup.md`
+- `reports/daily/2026-03-26_v81_vs_v95_listening_review.md`
+- `reports/daily/2026-03-26_overlap_canceller_phasepreserve_v96_v97_v98_followup.md`
 
 ## 文档维护规则
 

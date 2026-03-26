@@ -637,6 +637,103 @@
   - 只做训练辅助 / regularizer
   - 不直接替代最终输出路径
 
+### 26. auxiliary interference decoder 的自动收益，仍可能只在 `0007` 上转化成更重伪影
+
+事实：
+
+- `v93`
+  - 通过 `branch_decoder_temporal_model` 转移 `v88` prior
+  - synthetic 明显变强
+  - 但 near-real 重新伤到：
+    - `near_real_0003`
+    - `near_real_0007`
+- `v94`
+  - 收窄到 `branch_decoder_mask_head`
+  - failure 被压到：
+    - `near_real_0007`
+- `v95`
+  - 再加 hard-present protect
+  - automatic suppression 更强
+  - 但 `v81 vs v95` focused 听审解盲后：
+    - `tie = 3`
+    - `v81 = 1`
+    - `v95 = 0`
+  - 唯一可感知差异正是：
+    - `near_real_0007 = v81 > v95`
+    - 原因是 `v95` 伪影更重
+
+结论：
+
+- `auxiliary interference decoder` 不是伪方向；
+- 但当前 `v93 / v94 / v95` 这条家族，仍然没有把：
+  - `0006 / 0009` 的 suppression 收益
+  转化为可听优势；
+- 一旦跨过人耳阈值，先暴露出来的是：
+  - `0007` hard-present case 上更重的伪影
+
+要求：
+
+- 不要再把 `v95` 附近的小步 sweep 当作默认下一步；
+- 新机制若继续沿显式干扰辅助方向推进，必须优先把：
+  - `hard-present artifact risk`
+  当成一等 guardrail，
+  而不是只看 suppression objective 继续上升。
+
+### 27. `auxiliary_only + overlap_cancel_head-only` 是结构性 output-inactive probe，不应误当真实候选
+
+事实：
+
+- `v96 / v97`
+  - 都使用：
+    - `branch_overlap_cancel_apply_mode = auxiliary_only`
+    - 只训练 `branch_overlap_cancel_head`
+- 结果三条 synthetic 全是：
+  - `0 improve / 0 regress / all near tie`
+
+结论：
+
+- 在这类接线下，overlap cancel estimate 会被监督；
+- 但不会真正改变最终 `estimated_waveform`；
+- 所以这只适合拿来验证接线或梯度，不适合当真实候选做自动裁决。
+
+要求：
+
+- 后续只要是：
+  - `auxiliary_only`
+  - 且只训练 `overlap_cancel_head`
+- 默认标记为：
+  - `mechanism_probe`
+  - 不是 `candidate`
+
+### 28. `phase_preserve` 能把 overlap canceller 变安全，但当前表示下很容易退化成 near-noop
+
+事实：
+
+- `v98`
+  - 是第一条有效的 `phase-preserving subtractive overlap canceller` pilot
+  - 但相对 `v81`：
+    - abstention `-0.0028 dB`
+    - same-gender keep `+0.0005 dB`
+    - hard-present keep `+0.0004 dB`
+  - near-real tradeoff 四条也全部 `tie`
+
+结论：
+
+- 当前问题不只是“complex ratio 太激进”；
+- 单纯把 overlap canceller 改成 phase-preserving，只会把它推向：
+  - 更安全
+  - 但几乎不再产生可感知行为变化
+
+要求：
+
+- 不要继续把：
+  - `phase-preserving overlap-canceller ratio mode`
+  当成默认突破口；
+- 若继续推进，应优先改：
+  - 表示方式
+  - 或监督语义
+  - 并显式处理 `hard-present artifact risk`
+
 ## 近期关键案例入口
 
 - `reports/daily/2026-03-26_overlap_abstention_proxy_v3_v4_and_v71_v72_followup.md`
@@ -646,3 +743,5 @@
 - `reports/daily/2026-03-26_hard_present_gate_keep_guardrail_v1_and_v80_followup.md`
 - `reports/daily/2026-03-26_audibility_gate_target_v1_and_v81_followup.md`
 - `reports/daily/2026-03-26_v54_vs_v81_listening_review.md`
+- `reports/daily/2026-03-26_overlap_aux_interference_decoder_v2_v3_v4_and_v93_v94_v95_followup.md`
+- `reports/daily/2026-03-26_v81_vs_v95_listening_review.md`

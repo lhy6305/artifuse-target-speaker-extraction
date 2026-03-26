@@ -174,3 +174,43 @@ Run GUI listening on:
 ```powershell
 .\python.exe scripts\eval\listening_pack_gui.py --pack-dir reports\eval\ab_listening_pack_residual_speech_leak_floor_v1_v81_vs_v95_blind
 ```
+
+## Focused listening result
+
+Pack:
+
+- `reports/eval/ab_listening_pack_residual_speech_leak_floor_v1_v81_vs_v95_blind`
+
+Decoded result:
+
+- `tie = 3`
+- `v81 = 1`
+- `v95 = 0`
+
+Decoded review:
+
+- `reports/daily/2026-03-26_v81_vs_v95_listening_review.md`
+
+Critical sample:
+
+- `near_real_0007`
+  - `v81 > v95`
+  - decisive reason:
+    - `less_artifact`
+  - decoded ratings:
+    - `v81`
+      - `artifact = moderate`
+    - `v95`
+      - `artifact = heavy`
+
+Meaning:
+
+- `v95` does not convert its stronger automatic suppression into audible improvement.
+- The only audible delta is negative, and it lands exactly on the existing hard-present risk anchor `near_real_0007`.
+- `near_real_0006` and `near_real_0009` still do not clear the audible threshold.
+
+Final judgment for this family:
+
+- `v95` is not promoted.
+- `v81` remains the research base.
+- `overlap auxiliary interference decoder v2 / v3 / v4` is now considered explored enough for this round and should not be continued with another small sweep from `v95`.

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import math
+
 import torch
 from torch import nn
 from torch.nn import functional as F
@@ -33,6 +35,7 @@ class STFTMaskBaseline(nn.Module):
         branch_overlap_cancel_gate_mode: str = "complement",
         branch_overlap_cancel_source_mode: str = "residual",
         branch_overlap_cancel_apply_mode: str = "subtract",
+        branch_overlap_cancel_ratio_mode: str = "complex",
         branch_overlap_dual_decoder_max_delta: float = 0.15,
         branch_overlap_dual_decoder_gate_mode: str = "complement",
         branch_overlap_dual_decoder_source_mode: str = "residual",
@@ -60,6 +63,7 @@ class STFTMaskBaseline(nn.Module):
         self.branch_overlap_cancel_gate_mode = branch_overlap_cancel_gate_mode
         self.branch_overlap_cancel_source_mode = branch_overlap_cancel_source_mode
         self.branch_overlap_cancel_apply_mode = branch_overlap_cancel_apply_mode
+        self.branch_overlap_cancel_ratio_mode = branch_overlap_cancel_ratio_mode
         self.branch_overlap_dual_decoder_max_delta = branch_overlap_dual_decoder_max_delta
         self.branch_overlap_dual_decoder_gate_mode = branch_overlap_dual_decoder_gate_mode
         self.branch_overlap_dual_decoder_source_mode = branch_overlap_dual_decoder_source_mode
@@ -98,6 +102,10 @@ class STFTMaskBaseline(nn.Module):
         if branch_overlap_cancel_apply_mode not in ("subtract", "auxiliary_only"):
             raise ValueError(
                 "branch_overlap_cancel_apply_mode must be one of: subtract, auxiliary_only."
+            )
+        if branch_overlap_cancel_ratio_mode not in ("complex", "phase_preserve"):
+            raise ValueError(
+                "branch_overlap_cancel_ratio_mode must be one of: complex, phase_preserve."
             )
         if branch_overlap_dual_decoder_gate_mode not in ("none", "gate", "complement"):
             raise ValueError(
@@ -191,10 +199,15 @@ class STFTMaskBaseline(nn.Module):
             else:
                 self.branch_overlap_refine_head = None
             if enable_branch_overlap_cancel_head:
+                cancel_head_out_dim = (
+                    self.freq_bins * 2
+                    if self.branch_overlap_cancel_ratio_mode == "complex"
+                    else self.freq_bins
+                )
                 self.branch_overlap_cancel_head = nn.Sequential(
                     nn.Linear(hidden_dim * 2, hidden_dim),
                     nn.ReLU(),
-                    nn.Linear(hidden_dim, self.freq_bins * 2),
+                    nn.Linear(hidden_dim, cancel_head_out_dim),
                 )
                 self.reset_branch_overlap_cancel_head()
             else:
@@ -294,7 +307,10 @@ class STFTMaskBaseline(nn.Module):
             return
         final_layer = self.branch_overlap_cancel_head[-1]
         nn.init.zeros_(final_layer.weight)
-        nn.init.zeros_(final_layer.bias)
+        if self.branch_overlap_cancel_ratio_mode == "phase_preserve":
+            nn.init.constant_(final_layer.bias, -8.0)
+        else:
+            nn.init.zeros_(final_layer.bias)
 
     def reset_branch_overlap_dual_decoder_from_branch(self) -> None:
         if (
@@ -484,12 +500,21 @@ class STFTMaskBaseline(nn.Module):
                     refine_source_stft = mix_stft - estimated_stft_branch_base
                 estimated_stft = estimated_stft - (refine_source_stft * branch_overlap_refine_ratio)
             if self.branch_overlap_cancel_head is not None:
-                branch_overlap_cancel_params = (
-                    torch.tanh(self.branch_overlap_cancel_head(branch_encoded)).transpose(1, 2)
-                    * self.branch_overlap_cancel_max_delta
-                )
-                cancel_real, cancel_imag = torch.chunk(branch_overlap_cancel_params, 2, dim=1)
-                branch_overlap_cancel_ratio = torch.complex(cancel_real, cancel_imag)
+                branch_overlap_cancel_logits = self.branch_overlap_cancel_head(branch_encoded).transpose(1, 2)
+                if self.branch_overlap_cancel_ratio_mode == "phase_preserve":
+                    branch_overlap_cancel_params = (
+                        torch.sigmoid(branch_overlap_cancel_logits) * self.branch_overlap_cancel_max_delta
+                    )
+                    branch_overlap_cancel_ratio = torch.complex(
+                        branch_overlap_cancel_params,
+                        torch.zeros_like(branch_overlap_cancel_params),
+                    )
+                else:
+                    branch_overlap_cancel_params = (
+                        torch.tanh(branch_overlap_cancel_logits) * self.branch_overlap_cancel_max_delta
+                    )
+                    cancel_real, cancel_imag = torch.chunk(branch_overlap_cancel_params, 2, dim=1)
+                    branch_overlap_cancel_ratio = torch.complex(cancel_real, cancel_imag)
                 if branch_decoder_frame_gate is not None:
                     if self.branch_overlap_cancel_gate_mode == "gate":
                         branch_overlap_cancel_ratio = branch_overlap_cancel_ratio * branch_decoder_frame_gate
