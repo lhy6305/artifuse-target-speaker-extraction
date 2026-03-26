@@ -32,6 +32,7 @@ class STFTMaskBaseline(nn.Module):
         branch_overlap_cancel_max_delta: float = 0.15,
         branch_overlap_cancel_gate_mode: str = "complement",
         branch_overlap_cancel_source_mode: str = "residual",
+        branch_overlap_cancel_apply_mode: str = "subtract",
         branch_overlap_dual_decoder_max_delta: float = 0.15,
         branch_overlap_dual_decoder_gate_mode: str = "complement",
         branch_overlap_dual_decoder_source_mode: str = "residual",
@@ -58,6 +59,7 @@ class STFTMaskBaseline(nn.Module):
         self.branch_overlap_cancel_max_delta = branch_overlap_cancel_max_delta
         self.branch_overlap_cancel_gate_mode = branch_overlap_cancel_gate_mode
         self.branch_overlap_cancel_source_mode = branch_overlap_cancel_source_mode
+        self.branch_overlap_cancel_apply_mode = branch_overlap_cancel_apply_mode
         self.branch_overlap_dual_decoder_max_delta = branch_overlap_dual_decoder_max_delta
         self.branch_overlap_dual_decoder_gate_mode = branch_overlap_dual_decoder_gate_mode
         self.branch_overlap_dual_decoder_source_mode = branch_overlap_dual_decoder_source_mode
@@ -92,6 +94,10 @@ class STFTMaskBaseline(nn.Module):
         if branch_overlap_cancel_source_mode not in ("mixture", "branch_base", "residual"):
             raise ValueError(
                 "branch_overlap_cancel_source_mode must be one of: mixture, branch_base, residual."
+            )
+        if branch_overlap_cancel_apply_mode not in ("subtract", "auxiliary_only"):
+            raise ValueError(
+                "branch_overlap_cancel_apply_mode must be one of: subtract, auxiliary_only."
             )
         if branch_overlap_dual_decoder_gate_mode not in ("none", "gate", "complement"):
             raise ValueError(
@@ -495,7 +501,8 @@ class STFTMaskBaseline(nn.Module):
                 elif self.branch_overlap_cancel_source_mode == "residual":
                     cancel_source_stft = mix_stft - estimated_stft_branch_base
                 branch_overlap_cancel_estimate_stft = cancel_source_stft * branch_overlap_cancel_ratio
-                estimated_stft = estimated_stft - branch_overlap_cancel_estimate_stft
+                if self.branch_overlap_cancel_apply_mode == "subtract":
+                    estimated_stft = estimated_stft - branch_overlap_cancel_estimate_stft
             if (
                 self.branch_overlap_dual_decoder_temporal_model is not None
                 and self.branch_overlap_dual_decoder_head is not None
