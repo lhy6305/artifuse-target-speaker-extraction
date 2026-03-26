@@ -26,6 +26,19 @@
   - objective 研究基座
   - 不能放行
 
+### 当前 gate 机制探针
+
+- `v76`
+  - `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v76_v72_audibility_conditioned_v1_gate_v1_ft1`
+  - 状态：
+    - 证明 gate 机制有信号
+    - 不能放行
+- `v77`
+  - `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v77_v72_audibility_conditioned_v1_gateonly_v1_ft1`
+  - 状态：
+    - gate-only isolate probe
+    - 不能放行
+
 ## 当前活跃问题树
 
 ### A. silence-over-leak / absent frontier
@@ -76,6 +89,13 @@
 
 - `active`
 
+当前子方向：
+
+- `audibility-conditioned objective`
+  - `failed_as_loss_only`
+- `branch abstention gate`
+  - `active_mechanism_probe`
+
 ### C. same-gender present keep
 
 目的：
@@ -121,7 +141,53 @@
 
 - `research_base_keep`
 
-### 2. `v73`
+### 2. `v75`
+
+含义：
+
+- `v72 + audibility-conditioned objective v1`
+
+结果：
+
+- combined rank 看起来更强
+- 但 synthetic abstention 回退
+- keep / near-real guardrail 都更差
+
+裁决：
+
+- `failed_loss_only`
+
+### 3. `v76`
+
+含义：
+
+- `v72 + audibility-conditioned objective v1 + branch abstention gate`
+
+结果：
+
+- `0009 / 0006` 有真实更静收益
+- 但 `0007` 被 gate 一起压坏
+
+裁决：
+
+- `failed_joint_gate_drift`
+
+### 4. `v77`
+
+含义：
+
+- `v72 + gate-only isolate probe`
+
+结果：
+
+- present guardrail 恢复安全
+- abstention 收益基本消失
+
+裁决：
+
+- `failed_safe_noop`
+
+### 5. `v73`
 
 含义：
 
@@ -137,7 +203,7 @@
 
 - `failed_tradeoff`
 
-### 3. `v74`
+### 6. `v74`
 
 含义：
 
@@ -166,6 +232,9 @@
 - keep guardrail：
   - `data/synthetic/train_manifest_same_gender_present_keep_guardrail_v1.jsonl`
   - `data/synthetic/val_manifest_same_gender_present_keep_guardrail_v1.jsonl`
+- gate 机制 follow-up：
+  - `data/synthetic/train_manifest_audibility_conditioned_bundle_v1.jsonl`
+  - `data/synthetic/val_manifest_audibility_conditioned_bundle_v1.jsonl`
 
 ### 验收侧
 
@@ -194,10 +263,11 @@
 
 如果没有新的用户决策，当前默认下一步是：
 
-- 不再继续扫同结构 branch-only 权重；
-- 优先实现机制层方案：
-  - `audibility-conditioned objective`
-  - 或轻量 `abstention gate`
+- 不再继续扫 `v76 / v77` 附近权重；
+- 直接做 gate 专属监督：
+  - `abstention_gate_proxy_v1`
+  - `gate-level loss`
+  - 默认先固定 `v72` mask，只训 gate 分支
 
 执行前必须保持三条验收同时在场：
 
@@ -210,6 +280,7 @@
 - `reports/daily/2026-03-26_overlap_abstention_proxy_v3_v4_and_v71_v72_followup.md`
 - `reports/daily/2026-03-26_present_keep_guardrail_v1_v2_and_v73_v74_followup.md`
 - `reports/daily/2026-03-26_frontier_imperfection_taxonomy_and_next_subproblem.md`
+- `reports/daily/2026-03-26_audibility_conditioned_v1_and_abstention_gate_v1_v75_v76_v77.md`
 
 ## 文档维护规则
 

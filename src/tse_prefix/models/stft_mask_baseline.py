@@ -18,6 +18,7 @@ class STFTMaskBaseline(nn.Module):
         conditioning_mode: str = "ref_film",
         enable_adapter_mask_head: bool = False,
         enable_branch_decoder_head: bool = False,
+        enable_branch_abstention_gate: bool = False,
         enable_adapter_temporal_model: bool = False,
         adapter_gru_layers: int = 1,
         adapter_conditioning_mode: str = "none",
@@ -31,12 +32,15 @@ class STFTMaskBaseline(nn.Module):
         self.conditioning_mode = conditioning_mode
         self.enable_adapter_mask_head = enable_adapter_mask_head
         self.enable_branch_decoder_head = enable_branch_decoder_head
+        self.enable_branch_abstention_gate = enable_branch_abstention_gate
         self.enable_adapter_temporal_model = enable_adapter_temporal_model
         self.adapter_conditioning_mode = adapter_conditioning_mode
         self.adapter_mask_max_delta = adapter_mask_max_delta
 
         if enable_adapter_mask_head and enable_branch_decoder_head:
             raise ValueError("Adapter mask head and branch decoder head are mutually exclusive for now.")
+        if enable_branch_abstention_gate and not enable_branch_decoder_head:
+            raise ValueError("Branch abstention gate requires enable_branch_decoder_head.")
 
         if conditioning_mode == "legacy_bias":
             self.mix_proj = nn.Linear(self.freq_bins, hidden_dim)
@@ -102,10 +106,20 @@ class STFTMaskBaseline(nn.Module):
                 nn.Linear(hidden_dim, self.freq_bins),
                 nn.Sigmoid(),
             )
+            if enable_branch_abstention_gate:
+                self.branch_decoder_gate_head = nn.Sequential(
+                    nn.Linear(hidden_dim * 2, hidden_dim),
+                    nn.ReLU(),
+                    nn.Linear(hidden_dim, 1),
+                )
+                self.reset_branch_abstention_gate()
+            else:
+                self.branch_decoder_gate_head = None
             self.reset_branch_decoder_from_base()
         else:
             self.branch_decoder_temporal_model = None
             self.branch_decoder_mask_head = None
+            self.branch_decoder_gate_head = None
         if enable_adapter_mask_head:
             adapter_hidden_dim = hidden_dim * 2
             if enable_adapter_temporal_model:
@@ -154,6 +168,13 @@ class STFTMaskBaseline(nn.Module):
             return
         self.branch_decoder_temporal_model.load_state_dict(self.temporal_model.state_dict())
         self.branch_decoder_mask_head.load_state_dict(self.mask_head.state_dict())
+
+    def reset_branch_abstention_gate(self) -> None:
+        if self.branch_decoder_gate_head is None:
+            return
+        final_layer = self.branch_decoder_gate_head[-1]
+        nn.init.zeros_(final_layer.weight)
+        nn.init.constant_(final_layer.bias, 4.0)
 
     def stft(self, waveform: torch.Tensor) -> torch.Tensor:
         return torch.stft(
@@ -287,11 +308,16 @@ class STFTMaskBaseline(nn.Module):
         estimated_stft = estimated_stft_base
         estimated_waveform = estimated_waveform_base
         branch_decoder_mask = None
+        branch_decoder_frame_gate = None
         if self.branch_decoder_temporal_model is not None and self.branch_decoder_mask_head is not None:
             branch_encoded, _ = self.branch_decoder_temporal_model(temporal_input)
             branch_decoder_mask = self.branch_decoder_mask_head(branch_encoded).transpose(1, 2)
-            mask = branch_decoder_mask
-            estimated_stft = mix_stft * branch_decoder_mask
+            if self.branch_decoder_gate_head is not None:
+                branch_decoder_frame_gate = torch.sigmoid(self.branch_decoder_gate_head(branch_encoded)).transpose(1, 2)
+                mask = branch_decoder_mask * branch_decoder_frame_gate
+            else:
+                mask = branch_decoder_mask
+            estimated_stft = mix_stft * mask
             estimated_waveform = self.istft(estimated_stft, mixture_lengths)
         elif self.adapter_mask_head is not None:
             estimated_stft = mix_stft * mask
@@ -304,6 +330,7 @@ class STFTMaskBaseline(nn.Module):
             "base_mask": base_mask,
             "adapter_mask_delta": adapter_mask_delta,
             "branch_decoder_mask": branch_decoder_mask,
+            "branch_decoder_frame_gate": branch_decoder_frame_gate,
             "mixture_stft": mix_stft,
             "estimated_stft": estimated_stft,
             "estimated_stft_base": estimated_stft_base,

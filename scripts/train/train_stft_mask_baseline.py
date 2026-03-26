@@ -94,6 +94,11 @@ def parse_args() -> argparse.Namespace:
         help="Enable a second decoder branch with its own temporal model and mask head.",
     )
     parser.add_argument(
+        "--model-enable-branch-abstention-gate",
+        action="store_true",
+        help="Add a per-frame scalar gate on top of the branch decoder mask for overlap abstention.",
+    )
+    parser.add_argument(
         "--model-enable-adapter-temporal-model",
         action="store_true",
         help="Add a dedicated bidirectional GRU inside the adapter branch before adapter mask prediction.",
@@ -271,6 +276,7 @@ def build_model_config(args: argparse.Namespace) -> dict[str, int]:
         "conditioning_mode": args.model_conditioning_mode,
         "enable_adapter_mask_head": args.model_enable_adapter_mask_head,
         "enable_branch_decoder_head": args.model_enable_branch_decoder_head,
+        "enable_branch_abstention_gate": args.model_enable_branch_abstention_gate,
         "enable_adapter_temporal_model": args.model_enable_adapter_temporal_model,
         "adapter_gru_layers": args.model_adapter_gru_layers,
         "adapter_conditioning_mode": args.model_adapter_conditioning_mode,
@@ -427,6 +433,7 @@ def load_model_state_dict_for_init(model: nn.Module, checkpoint_state_dict: dict
     allowed_missing_prefixes = (
         "branch_decoder_temporal_model.",
         "branch_decoder_mask_head.",
+        "branch_decoder_gate_head.",
         "adapter_mask_head.",
         "adapter_condition_proj.",
         "adapter_condition_scale.",

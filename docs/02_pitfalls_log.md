@@ -135,7 +135,7 @@
 
 不能只看 objective summary。
 
-### 8. 当前真正的瓶颈已经从 selector 转到机制
+### 8. 当前真正的瓶颈已经从 selector 转到 gate 专属监督
 
 事实：
 
@@ -149,17 +149,48 @@
 - keep
 - abstain
 
-共享同一条输出自由度。
+虽然已经不必完全共享同一条输出自由度，但 `gate` 还没有自己的监督目标。
 
 要求：
 
 - 下一步优先尝试：
-  - `audibility-conditioned objective`
-  - 或轻量 `abstention gate`
+  - `abstention_gate_proxy_v1`
+  - `gate-level loss`
 - 不再默认继续扫普通权重组合。
+
+### 9. `audibility-conditioned objective v1` 单独不够
+
+事实：
+
+- `v75`
+  - synthetic abstention 回退
+  - keep / near-real guardrail 都比 `v72` 更差
+
+结论：
+
+- `target_energy_ratio` selector 要保留
+- 但不能再假设“只要按能量分段调权重就能自然解决”
+
+### 10. joint gate 和 gate-only 都已跑过第一轮反例
+
+事实：
+
+- `v76`
+  - joint gate + mask
+  - `0009 / 0006` 有真实收益
+  - 但把 `0007` 一起压坏
+- `v77`
+  - gate-only
+  - 不再误伤 present
+  - 但 abstention 基本退回 safe/no-op
+
+结论：
+
+- gate 机制本身不是伪方向
+- 当前缺的是 gate 的专属监督，而不是更多 gate 学习率 sweep
 
 ## 近期关键案例入口
 
 - `reports/daily/2026-03-26_overlap_abstention_proxy_v3_v4_and_v71_v72_followup.md`
 - `reports/daily/2026-03-26_present_keep_guardrail_v1_v2_and_v73_v74_followup.md`
-
+- `reports/daily/2026-03-26_audibility_conditioned_v1_and_abstention_gate_v1_v75_v76_v77.md`
