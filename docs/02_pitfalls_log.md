@@ -959,6 +959,42 @@
   - 且 `0007 / 0009` 代价可接受，
   才值得继续做后续 `v103+`。
 
+### 38. `export_ab_listening_pack.py` 不能再假设 near-real manifest 具备 synthetic 全字段
+
+事实：
+
+- `data/references/real_eval_manifest_residual_speech_leak_floor_v1.jsonl`
+  只有：
+  - `sample_id`
+  - `mixture_audio_path`
+  - `target_audio_path`
+  - `reference_audio_path`
+  - `note`
+- 如果 `export_ab_listening_pack.py` 继续硬取：
+  - `recipe`
+  - `temporal_pattern`
+  - `metadata_path`
+  - 或直接走 `SyntheticTSEDataset`
+  就会在 near-real pack 导出时崩掉，或写出缺字段的 `sample_meta.json`，
+  进一步把：
+  - `analyze_listening_pack_tradeoff.py`
+  - `analyze_overlap_local_benchmark.py`
+  一起带崩。
+
+要求：
+
+- near-real pack 导出必须：
+  - 从样本同目录 `sample_meta.json` 回填缺省字段；
+  - 直接按 manifest 音频路径读取 `mixture / target / reference`；
+  - 在导出的 `sample_meta.json` 里补写：
+    - `mixture_audio_path`
+    - `target_audio_path`
+    - `reference_audio_path`
+    - `exports`
+- 对 near-real manifest 导包时，默认要显式传：
+  - `--focus-recipes`
+  以清空 synthetic 默认 recipe 过滤。
+
 ## 近期关键案例入口
 
 - `reports/daily/2026-03-26_overlap_abstention_proxy_v3_v4_and_v71_v72_followup.md`
@@ -977,3 +1013,4 @@
 - `reports/daily/2026-03-26_overlap_local_benchmark_v81_v88_v95_v100_v101_followup.md`
 - `reports/daily/2026-03-27_speech_only_selector_profile_prework.md`
 - `reports/daily/2026-03-27_overlap_purify_v2_speechonly_v102_followup.md`
+- `reports/daily/2026-03-27_plusmusic_teacher_veto_v103_followup.md`

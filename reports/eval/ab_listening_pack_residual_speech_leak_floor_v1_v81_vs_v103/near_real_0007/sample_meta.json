@@ -1,19 +1,19 @@
 {
-  "sample_id": "near_real_0003",
-  "recipe": "target_plus_friend_speech",
+  "sample_id": "near_real_0007",
+  "recipe": "target_plus_friend_plus_music",
   "temporal_pattern": "target_present",
   "target_present_ratio": 1.0,
-  "scenario": "target_plus_friend_speech",
-  "note": "raw target clip mixed with domain-matched friend speech",
+  "scenario": "target_plus_friend_plus_music",
+  "note": "harder near-real case with raw target, friend speech, and music together",
   "audio_layout": "mono",
-  "mixture_audio_path": "data/references/real_eval_near_real_v1/near_real_0003/mixture.wav",
-  "target_audio_path": "data/references/real_eval_near_real_v1/near_real_0003/target.wav",
-  "reference_audio_path": "data/references/real_eval_near_real_v1/near_real_0003/reference.wav",
-  "metadata_path": "data/references/real_eval_near_real_v1/near_real_0003/sample_meta.json",
+  "mixture_audio_path": "data/references/real_eval_near_real_v1/near_real_0007/mixture.wav",
+  "target_audio_path": "data/references/real_eval_near_real_v1/near_real_0007/target.wav",
+  "reference_audio_path": "data/references/real_eval_near_real_v1/near_real_0007/reference.wav",
+  "metadata_path": "data/references/real_eval_near_real_v1/near_real_0007/sample_meta.json",
   "comparison": {
     "v81": {
-      "sisdr_db": -2.6525349617004395,
-      "waveform_l1": 0.004374930635094643,
+      "sisdr_db": -3.3812451362609863,
+      "waveform_l1": 0.007197382394224405,
       "checkpoint": "experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v81_v79_audibility_gate_target_v1_ft1/best.pt",
       "model_config": {
         "n_fft": 512,
@@ -434,8 +434,8 @@
       }
     },
     "v103": {
-      "sisdr_db": -3.555717945098877,
-      "waveform_l1": 0.004534329287707806,
+      "sisdr_db": -4.569679260253906,
+      "waveform_l1": 0.00741872563958168,
       "checkpoint": "experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v103_v102_speechonly_plusmusic_teacher_veto_ft1/best.pt",
       "model_config": {
         "n_fft": 512,
@@ -1185,8 +1185,8 @@
     }
   },
   "delta": {
-    "sisdr_db": -0.9031829833984375,
-    "waveform_l1": 0.000159398652613163
+    "sisdr_db": -1.18843412399292,
+    "waveform_l1": 0.000221343245357275
   },
   "export_names": {
     "estimate_a": "v81.wav",

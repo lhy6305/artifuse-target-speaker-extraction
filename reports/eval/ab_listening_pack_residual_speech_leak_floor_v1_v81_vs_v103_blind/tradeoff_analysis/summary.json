@@ -1,5 +1,5 @@
 {
-  "pack_dir": "reports/eval/ab_listening_pack_residual_speech_leak_floor_v1_v81_vs_v103",
+  "pack_dir": "reports/eval/ab_listening_pack_residual_speech_leak_floor_v1_v81_vs_v103_blind",
   "num_samples": 4,
   "sample_rate": 16000,
   "source_retention_threshold_db": 0.75,
@@ -22,10 +22,21 @@
     "not_applicable": 1
   },
   "decoded_label_counts": {
-    "better_source_retention_label": {},
-    "more_interference_leaky_label": {},
-    "more_residual_heavy_label": {},
-    "better_retention_minus_leak_label": {}
+    "better_source_retention_label": {
+      "v81": 3,
+      "not_applicable": 1
+    },
+    "more_interference_leaky_label": {
+      "v81": 4
+    },
+    "more_residual_heavy_label": {
+      "tie": 4
+    },
+    "better_retention_minus_leak_label": {
+      "v103": 1,
+      "tie": 2,
+      "not_applicable": 1
+    }
   },
   "decoded_mean_metrics_by_label": {
     "v81": {
@@ -466,8 +477,8 @@
       "target_status": "target_present",
       "interference_profile": "speech",
       "target_interference_bucket": "target_present__speech",
-      "file_a_name": "v81.wav",
-      "file_b_name": "v103.wav",
+      "file_a_name": "candidate_a.wav",
+      "file_b_name": "candidate_b.wav",
       "file_a_label": "v81",
       "file_b_label": "v103",
       "component_kinds": [
@@ -523,8 +534,8 @@
       "target_status": "target_present",
       "interference_profile": "music_plus_speech",
       "target_interference_bucket": "target_present__music_plus_speech",
-      "file_a_name": "v81.wav",
-      "file_b_name": "v103.wav",
+      "file_a_name": "candidate_a.wav",
+      "file_b_name": "candidate_b.wav",
       "file_a_label": "v81",
       "file_b_label": "v103",
       "component_kinds": [
@@ -581,8 +592,8 @@
       "target_status": "target_present",
       "interference_profile": "speech",
       "target_interference_bucket": "target_present__speech",
-      "file_a_name": "v81.wav",
-      "file_b_name": "v103.wav",
+      "file_a_name": "candidate_a.wav",
+      "file_b_name": "candidate_b.wav",
       "file_a_label": "v81",
       "file_b_label": "v103",
       "component_kinds": [
@@ -640,8 +651,8 @@
       "target_status": "target_present",
       "interference_profile": "speech",
       "target_interference_bucket": "target_present__speech",
-      "file_a_name": "v81.wav",
-      "file_b_name": "v103.wav",
+      "file_a_name": "candidate_a.wav",
+      "file_b_name": "candidate_b.wav",
       "file_a_label": "v81",
       "file_b_label": "v103",
       "component_kinds": [
@@ -697,8 +708,8 @@
       "target_status": "target_present",
       "interference_profile": "music_plus_speech",
       "target_interference_bucket": "target_present__music_plus_speech",
-      "file_a_name": "v81.wav",
-      "file_b_name": "v103.wav",
+      "file_a_name": "candidate_a.wav",
+      "file_b_name": "candidate_b.wav",
       "file_a_label": "v81",
       "file_b_label": "v103",
       "component_kinds": [
@@ -755,8 +766,8 @@
       "target_status": "target_absent",
       "interference_profile": "speech",
       "target_interference_bucket": "target_absent__speech",
-      "file_a_name": "v81.wav",
-      "file_b_name": "v103.wav",
+      "file_a_name": "candidate_a.wav",
+      "file_b_name": "candidate_b.wav",
       "file_a_label": "v81",
       "file_b_label": "v103",
       "component_kinds": [
@@ -809,8 +820,8 @@
       "target_status": "target_present",
       "interference_profile": "speech",
       "target_interference_bucket": "target_present__speech",
-      "file_a_name": "v81.wav",
-      "file_b_name": "v103.wav",
+      "file_a_name": "candidate_a.wav",
+      "file_b_name": "candidate_b.wav",
       "file_a_label": "v81",
       "file_b_label": "v103",
       "component_kinds": [
@@ -868,8 +879,8 @@
       "target_status": "target_present",
       "interference_profile": "speech",
       "target_interference_bucket": "target_present__speech",
-      "file_a_name": "v81.wav",
-      "file_b_name": "v103.wav",
+      "file_a_name": "candidate_a.wav",
+      "file_b_name": "candidate_b.wav",
       "file_a_label": "v81",
       "file_b_label": "v103",
       "component_kinds": [
@@ -925,8 +936,8 @@
       "target_status": "target_present",
       "interference_profile": "music_plus_speech",
       "target_interference_bucket": "target_present__music_plus_speech",
-      "file_a_name": "v81.wav",
-      "file_b_name": "v103.wav",
+      "file_a_name": "candidate_a.wav",
+      "file_b_name": "candidate_b.wav",
       "file_a_label": "v81",
       "file_b_label": "v103",
       "component_kinds": [
@@ -983,8 +994,8 @@
       "target_status": "target_present",
       "interference_profile": "speech",
       "target_interference_bucket": "target_present__speech",
-      "file_a_name": "v81.wav",
-      "file_b_name": "v103.wav",
+      "file_a_name": "candidate_a.wav",
+      "file_b_name": "candidate_b.wav",
       "file_a_label": "v81",
       "file_b_label": "v103",
       "component_kinds": [
@@ -1040,8 +1051,8 @@
       "target_status": "target_absent",
       "interference_profile": "speech",
       "target_interference_bucket": "target_absent__speech",
-      "file_a_name": "v81.wav",
-      "file_b_name": "v103.wav",
+      "file_a_name": "candidate_a.wav",
+      "file_b_name": "candidate_b.wav",
       "file_a_label": "v81",
       "file_b_label": "v103",
       "component_kinds": [
@@ -1096,8 +1107,8 @@
       "target_status": "target_present",
       "interference_profile": "speech",
       "target_interference_bucket": "target_present__speech",
-      "file_a_name": "v81.wav",
-      "file_b_name": "v103.wav",
+      "file_a_name": "candidate_a.wav",
+      "file_b_name": "candidate_b.wav",
       "file_a_label": "v81",
       "file_b_label": "v103",
       "component_kinds": [
@@ -1153,8 +1164,8 @@
       "target_status": "target_present",
       "interference_profile": "music_plus_speech",
       "target_interference_bucket": "target_present__music_plus_speech",
-      "file_a_name": "v81.wav",
-      "file_b_name": "v103.wav",
+      "file_a_name": "candidate_a.wav",
+      "file_b_name": "candidate_b.wav",
       "file_a_label": "v81",
       "file_b_label": "v103",
       "component_kinds": [
@@ -1211,8 +1222,8 @@
       "target_status": "target_present",
       "interference_profile": "speech",
       "target_interference_bucket": "target_present__speech",
-      "file_a_name": "v81.wav",
-      "file_b_name": "v103.wav",
+      "file_a_name": "candidate_a.wav",
+      "file_b_name": "candidate_b.wav",
       "file_a_label": "v81",
       "file_b_label": "v103",
       "component_kinds": [

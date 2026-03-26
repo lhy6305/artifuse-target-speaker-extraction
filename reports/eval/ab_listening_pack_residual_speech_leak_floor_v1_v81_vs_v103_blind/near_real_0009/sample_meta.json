@@ -1,19 +1,19 @@
 {
-  "sample_id": "near_real_0003",
-  "recipe": "target_plus_friend_speech",
-  "temporal_pattern": "target_present",
-  "target_present_ratio": 1.0,
-  "scenario": "target_plus_friend_speech",
-  "note": "raw target clip mixed with domain-matched friend speech",
+  "sample_id": "near_real_0009",
+  "recipe": "target_absent_guodegang_only",
+  "temporal_pattern": "target_absent",
+  "target_present_ratio": 0.0,
+  "scenario": "target_absent_guodegang_only",
+  "note": "target absent; only external speech is present",
   "audio_layout": "mono",
-  "mixture_audio_path": "data/references/real_eval_near_real_v1/near_real_0003/mixture.wav",
-  "target_audio_path": "data/references/real_eval_near_real_v1/near_real_0003/target.wav",
-  "reference_audio_path": "data/references/real_eval_near_real_v1/near_real_0003/reference.wav",
-  "metadata_path": "data/references/real_eval_near_real_v1/near_real_0003/sample_meta.json",
+  "mixture_audio_path": "data/references/real_eval_near_real_v1/near_real_0009/mixture.wav",
+  "target_audio_path": "data/references/real_eval_near_real_v1/near_real_0009/target.wav",
+  "reference_audio_path": "data/references/real_eval_near_real_v1/near_real_0009/reference.wav",
+  "metadata_path": "data/references/real_eval_near_real_v1/near_real_0009/sample_meta.json",
   "comparison": {
     "v81": {
-      "sisdr_db": -2.6525349617004395,
-      "waveform_l1": 0.004374930635094643,
+      "sisdr_db": -78.32945251464844,
+      "waveform_l1": 0.0021622562780976295,
       "checkpoint": "experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v81_v79_audibility_gate_target_v1_ft1/best.pt",
       "model_config": {
         "n_fft": 512,
@@ -434,8 +434,8 @@
       }
     },
     "v103": {
-      "sisdr_db": -3.555717945098877,
-      "waveform_l1": 0.004534329287707806,
+      "sisdr_db": -77.62643432617188,
+      "waveform_l1": 0.0017701858887448907,
       "checkpoint": "experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v103_v102_speechonly_plusmusic_teacher_veto_ft1/best.pt",
       "model_config": {
         "n_fft": 512,
@@ -1185,15 +1185,15 @@
     }
   },
   "delta": {
-    "sisdr_db": -0.9031829833984375,
-    "waveform_l1": 0.000159398652613163
+    "sisdr_db": 0.7030181884765625,
+    "waveform_l1": -0.00039207038935273886
   },
   "export_names": {
-    "estimate_a": "v81.wav",
-    "estimate_b": "v103.wav"
+    "estimate_a": "candidate_a.wav",
+    "estimate_b": "candidate_b.wav"
   },
   "exports": {
-    "estimate_a": "v81.wav",
-    "estimate_b": "v103.wav"
+    "estimate_a": "candidate_a.wav",
+    "estimate_b": "candidate_b.wav"
   }
 }

@@ -134,9 +134,12 @@
 
 ## 当前默认下一步
 
-- `overlap cancel delta blend v1` 这条分支先收口；
-- 不继续做 `v101 / v102` 同家族小步 sweep；
-- 如继续推进，应切到新的机制题，而不是继续在当前 subtractive canceller 家族里做安全校准微调。
+- `v103` 已完成自动验收与 near-real 包导出；
+- 不继续做 `v103+` 同结构小步权重 sweep；
+- 当前默认下一步改为：
+  - `v81 vs v103` focused 听审
+  - 重点固定看 `0007` 是否仍有更重 artifact
+  - 再复核 `0003 / 0006 / 0009` 的代价是否可接受
 
 ## 当前核心子题
 
@@ -481,6 +484,59 @@
 - 但已经值得进入 focused 听审，
   因为它是第一条把 `speech_only` selector 落到实训并跑通完整验收的 pilot。
 
+### 9. `v103` plus-music teacher veto pilot
+
+已完成：
+
+- `v103 = v102 + speech_only overlap residual + plus_music hard-risk teacher veto`
+- checkpoint：
+  - `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v103_v102_speechonly_plusmusic_teacher_veto_ft1`
+
+训练口径：
+
+- 初始化：
+  - `v102`
+- frozen teacher：
+  - `v81`
+- 保持 `v102` 的：
+  - `speech_only overlap_interference_extra`
+- 新增：
+  - `branch_protect_teacher_overlap_weight = 0.04`
+  - selector 只打：
+    - `target_full`
+    - `speech_plus_music`
+    - `interference_layer_count = 2`
+    - `overlap_ratio >= 0.6`
+    - `0.05 <= target_energy_ratio <= 0.12`
+    - `target_transient_presence_share_mean <= 0.04`
+
+结果：
+
+- teacher selector 确实激活：
+  - train `14 / 102`
+  - val `4 / 33`
+- synthetic relative `v81` 三条主验收全部更强：
+  - abstention `+3.774 dB`
+  - same-gender keep `+1.913 dB`
+  - hard-present keep `+1.354 dB`
+- near-real whole-utterance：
+  - `overall_pass = true`
+  - `0003` 的 `retention-minus-leak` 继续转正
+  - `0009` absent suppression 也优于 `v81`
+- overlap-local：
+  - `0003 / 0006`
+    - `retention-minus-speech-leak` 仍优于 `v81`
+  - `0007`
+    - `better_retention_minus_speech_leak = v81`
+    - `more_artifact_proxy_heavy = v103`
+    - 当前痛点仍未真正修好
+
+当前裁决：
+
+- `v103` 是这一小家族里目前最值得继续听审的自动候选；
+- 但仍不能自动升格，
+  因为 `0007` 的局部 artifact / retention 问题没有消失。
+
 ## 下一步默认计划
 
 当前默认状态不是继续当前 refiner 家族自动扩树。
@@ -532,12 +588,17 @@
    - `hard_present_gate_keep_guardrail_v1`
    - `overlap_abstention_proxy_v4_audibility_v1`
 14. 当前新的默认前置条件已就绪：
-   - `speech_only` vs `speech_plus_music` 已可通过 selector 稳定分离
-   - 下一步可直接进入 `v81` 基座上的 speech-only local residual pilot 配置阶段
+    - `speech_only` vs `speech_plus_music` 已可通过 selector 稳定分离
+    - 下一步可直接进入 `v81` 基座上的 speech-only local residual pilot 配置阶段
 15. `v102` speech-only pilot 已完成自动验收：
    - 当前默认下一步不再是继续扫 `v102 / v103` 权重
-   - 而是先做 `v81 vs v102` focused 听审
-   - 听审重点固定看 `0003 / 0006 / 0007 / 0009`
+   - 先做了 `v81 vs v102` focused 听审后，确认 `0007` 仍是唯一明确痛点
+16. `v103` plus-music teacher veto pilot 已完成自动验收：
+   - `v81 vs v103` 的 whole-utterance gate 已回到 `overall_pass = true`
+   - 但 overlap-local 仍显示 `0007` artifact proxy 更重
+   - 当前默认下一步改成：
+     - `v81 vs v103` focused 听审
+     - 听审重点仍固定看 `0003 / 0006 / 0007 / 0009`
 
 ## 近期关键日报入口
 
@@ -566,6 +627,7 @@
 - `reports/daily/2026-03-26_overlap_local_benchmark_v81_v88_v95_v100_v101_followup.md`
 - `reports/daily/2026-03-27_speech_only_selector_profile_prework.md`
 - `reports/daily/2026-03-27_overlap_purify_v2_speechonly_v102_followup.md`
+- `reports/daily/2026-03-27_plusmusic_teacher_veto_v103_followup.md`
 
 ## 文档维护规则
 

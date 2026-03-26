@@ -983,6 +983,21 @@
     - `0007`
     - `0009`
   - 而不是立刻继续做 `v103` sweep
+- `v103` plus-music teacher veto pilot 已完成：
+  - `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v103_v102_speechonly_plusmusic_teacher_veto_ft1`
+  - 相对 `v81`：
+    - synthetic 三条主验收继续更强
+    - near-real whole-utterance `overall_pass = true`
+    - `0009` absent suppression 也更好
+  - 但 overlap-local 仍显示：
+    - `0003 / 0006`
+      - `retention-minus-speech-leak = v103`
+    - `0007`
+      - `better_retention_minus_speech_leak = v81`
+      - `more_artifact_proxy_heavy = v103`
+  - 当前不自动升格，先走：
+    - `v81 vs v103` focused 听审
+  - 不继续做 `v103+` 同结构小步 sweep
 
 执行前必须保持四条验收同时在场：
 
@@ -1017,6 +1032,7 @@
 - `reports/daily/2026-03-26_overlap_canceller_phasepreserve_v96_v97_v98_followup.md`
 - `reports/daily/2026-03-27_speech_only_selector_profile_prework.md`
 - `reports/daily/2026-03-27_overlap_purify_v2_speechonly_v102_followup.md`
+- `reports/daily/2026-03-27_plusmusic_teacher_veto_v103_followup.md`
 
 ## 文档维护规则
 
