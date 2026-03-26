@@ -1,0 +1,96 @@
+{
+  "input_manifests": [
+    "data/synthetic/train_manifest_abstention_gate_proxy_v1.jsonl",
+    "data/synthetic/train_manifest_gate_keep_union_v2.jsonl"
+  ],
+  "output_manifest": "data/synthetic/train_manifest_abstention_gate_bundle_v2.jsonl",
+  "sample_ids_output": "data/synthetic/sample_ids_abstention_gate_bundle_v2_train.txt",
+  "dedupe_key": "sample_id",
+  "duplicate_key_count": 31,
+  "duplicate_keys": [
+    "train_000076",
+    "train_000085",
+    "train_000115",
+    "train_000176",
+    "train_000192",
+    "train_000260",
+    "train_000314",
+    "train_000436",
+    "train_000474",
+    "train_000565",
+    "train_000618",
+    "train_000732",
+    "train_000740",
+    "train_000778",
+    "train_000789",
+    "train_000874",
+    "train_001160",
+    "train_001193",
+    "train_001203",
+    "train_001300",
+    "train_001305",
+    "train_001421",
+    "train_001472",
+    "train_001553",
+    "train_001624",
+    "train_001658",
+    "train_001690",
+    "train_001701",
+    "train_001812",
+    "train_001984",
+    "train_001990"
+  ],
+  "input_summaries": [
+    {
+      "manifest": "data/synthetic/train_manifest_abstention_gate_proxy_v1.jsonl",
+      "summary": {
+        "count": 70,
+        "recipe_counts": {
+          "target_clean_plus_music": 20,
+          "target_clean_speech": 25,
+          "target_hard_plus_music": 15,
+          "target_hard_speech": 10
+        },
+        "temporal_pattern_counts": {
+          "target_full": 70
+        },
+        "interference_pool_counts": {
+          "": 70
+        }
+      }
+    },
+    {
+      "manifest": "data/synthetic/train_manifest_gate_keep_union_v2.jsonl",
+      "summary": {
+        "count": 63,
+        "recipe_counts": {
+          "target_clean_plus_music": 22,
+          "target_clean_speech": 9,
+          "target_hard_plus_music": 17,
+          "target_hard_speech": 15
+        },
+        "temporal_pattern_counts": {
+          "target_full": 63
+        },
+        "interference_pool_counts": {
+          "": 63
+        }
+      }
+    }
+  ],
+  "output_summary": {
+    "count": 102,
+    "recipe_counts": {
+      "target_clean_plus_music": 30,
+      "target_clean_speech": 34,
+      "target_hard_plus_music": 21,
+      "target_hard_speech": 17
+    },
+    "temporal_pattern_counts": {
+      "target_full": 102
+    },
+    "interference_pool_counts": {
+      "": 102
+    }
+  }
+}

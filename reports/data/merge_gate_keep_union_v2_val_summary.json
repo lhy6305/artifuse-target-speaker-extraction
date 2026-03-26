@@ -1,0 +1,60 @@
+{
+  "input_manifests": [
+    "data/synthetic/val_manifest_same_gender_present_keep_guardrail_v1.jsonl",
+    "data/synthetic/val_manifest_hard_present_gate_keep_guardrail_v1.jsonl"
+  ],
+  "output_manifest": "data/synthetic/val_manifest_gate_keep_union_v2.jsonl",
+  "sample_ids_output": "data/synthetic/sample_ids_gate_keep_union_v2_val.txt",
+  "dedupe_key": "sample_id",
+  "duplicate_key_count": 0,
+  "duplicate_keys": [],
+  "input_summaries": [
+    {
+      "manifest": "data/synthetic/val_manifest_same_gender_present_keep_guardrail_v1.jsonl",
+      "summary": {
+        "count": 11,
+        "recipe_counts": {
+          "target_clean_speech": 11
+        },
+        "temporal_pattern_counts": {
+          "target_full": 11
+        },
+        "interference_pool_counts": {
+          "": 11
+        }
+      }
+    },
+    {
+      "manifest": "data/synthetic/val_manifest_hard_present_gate_keep_guardrail_v1.jsonl",
+      "summary": {
+        "count": 16,
+        "recipe_counts": {
+          "target_clean_plus_music": 5,
+          "target_hard_plus_music": 4,
+          "target_hard_speech": 7
+        },
+        "temporal_pattern_counts": {
+          "target_full": 16
+        },
+        "interference_pool_counts": {
+          "": 16
+        }
+      }
+    }
+  ],
+  "output_summary": {
+    "count": 27,
+    "recipe_counts": {
+      "target_clean_plus_music": 5,
+      "target_clean_speech": 11,
+      "target_hard_plus_music": 4,
+      "target_hard_speech": 7
+    },
+    "temporal_pattern_counts": {
+      "target_full": 27
+    },
+    "interference_pool_counts": {
+      "": 27
+    }
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "input_manifests": [
+    "data/synthetic/val_manifest_abstention_gate_proxy_v1.jsonl",
+    "data/synthetic/val_manifest_gate_keep_union_v2.jsonl"
+  ],
+  "output_manifest": "data/synthetic/val_manifest_abstention_gate_bundle_v2.jsonl",
+  "sample_ids_output": "data/synthetic/sample_ids_abstention_gate_bundle_v2_val.txt",
+  "dedupe_key": "sample_id",
+  "duplicate_key_count": 8,
+  "duplicate_keys": [
+    "val_000027",
+    "val_000049",
+    "val_000074",
+    "val_000104",
+    "val_000113",
+    "val_000280",
+    "val_000391",
+    "val_000426"
+  ],
+  "input_summaries": [
+    {
+      "manifest": "data/synthetic/val_manifest_abstention_gate_proxy_v1.jsonl",
+      "summary": {
+        "count": 14,
+        "recipe_counts": {
+          "target_clean_plus_music": 4,
+          "target_clean_speech": 5,
+          "target_hard_plus_music": 1,
+          "target_hard_speech": 4
+        },
+        "temporal_pattern_counts": {
+          "target_full": 14
+        },
+        "interference_pool_counts": {
+          "": 14
+        }
+      }
+    },
+    {
+      "manifest": "data/synthetic/val_manifest_gate_keep_union_v2.jsonl",
+      "summary": {
+        "count": 27,
+        "recipe_counts": {
+          "target_clean_plus_music": 5,
+          "target_clean_speech": 11,
+          "target_hard_plus_music": 4,
+          "target_hard_speech": 7
+        },
+        "temporal_pattern_counts": {
+          "target_full": 27
+        },
+        "interference_pool_counts": {
+          "": 27
+        }
+      }
+    }
+  ],
+  "output_summary": {
+    "count": 33,
+    "recipe_counts": {
+      "target_clean_plus_music": 6,
+      "target_clean_speech": 16,
+      "target_hard_plus_music": 4,
+      "target_hard_speech": 7
+    },
+    "temporal_pattern_counts": {
+      "target_full": 33
+    },
+    "interference_pool_counts": {
+      "": 33
+    }
+  }
+}

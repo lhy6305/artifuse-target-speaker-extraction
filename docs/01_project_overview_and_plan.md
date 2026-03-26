@@ -48,6 +48,9 @@
   - `v79`
     - 含义：`v78` 的 stronger gate push
     - 状态：absent 更静，但重新伤到 hard present backstop
+  - `v80`
+    - 含义：`v79 + keep_union_v2`
+    - 状态：`0006 / 0009` 更静，但 synthetic / near-real keep 都没有修好
 - 已验证失败：
   - `v73`
     - broad keep-guardrail 修正
@@ -59,7 +62,7 @@
 当前结论：
 
 - `legacy stage2` 仍是默认可用线。
-- `v72 / v73 / v74 / v75 / v76 / v77 / v78 / v79` 都不能替代默认线。
+- `v72 / v73 / v74 / v75 / v76 / v77 / v78 / v79 / v80` 都不能替代默认线。
 
 ## 当前核心子题
 
@@ -105,11 +108,13 @@
 ### present-keep synthetic guardrail
 
 - `data/synthetic/val_manifest_same_gender_present_keep_guardrail_v1.jsonl`
+- `data/synthetic/val_manifest_hard_present_gate_keep_guardrail_v1.jsonl`
 
 作用：
 
 - 这是当前最重要的新 guardrail；
 - 它能复现 `near_real_0003` 风格 failure；
+- `hard_present_gate_keep_guardrail_v1` 则覆盖 `near_real_0007` 风格 hard-present failure；
 - 后续凡是 overlap-abstention 分支继续训练，都必须同时看这条。
 
 ## 本阶段已完成事项
@@ -167,25 +172,30 @@
 - `branch abstention gate` 结构
 - `v76`
 - `v77`
- - `abstention_gate_proxy_v1`
- - `v78`
- - `v79`
+- `abstention_gate_proxy_v1`
+- `v78`
+- `v79`
+- `hard_present_gate_keep_guardrail_v1`
+- `gate_keep_union_v2`
+- `abstention_gate_bundle_v2`
+- `v80`
 
 结论：
 
 - `v75` 证明 loss-only 仍不够；
 - `v76` 证明 gate 机制有信号，能把 `0009 / 0006` 往更静方向拉；
 - `v77` 证明 gate-only 若没有专属监督，会退回 safe/no-op；
-- `v78 / v79` 证明 gate 专属监督有效，但当前 keep backstop 还缺 `0007` 风格 hard present 覆盖；
-- 所以下一步不是继续扫权重，而是补 hard-present keep guardrail。
+- `v78 / v79` 证明 gate 专属监督有效，但 keep backstop 曾缺 `0007` 风格 hard present 覆盖；
+- `v80` 进一步说明：即使补了更宽的 keep union，当前二元 gate target 仍会继续滑向 over-silence；
+- 所以下一步不是继续扫权重，而是把 gate supervision 从二元 keep / abstain 改成 audibility-conditioned target。
 
 ## 当前最可靠的阶段结论
 
 1. `same_gender_present_keep_guardrail_v1` 已经是正式资产，后续必须保留。
-2. 当前问题不再是“缺更好的 selector”，而是：
+2. 当前问题不再是“缺更好的 selector”或“缺更宽的 keep 样本”，而是：
    - keep
    - abstain
-   仍共享同一条输出自由度。
+   虽然已经拆出 gate，但 gate 的监督目标仍然过于二元。
 3. 继续做 `v72` 附近的普通权重 sweep，预期收益很低。
 
 ## 下一步默认计划
@@ -194,15 +204,19 @@
 
 优先顺序：
 
-1. 物化 `hard_present_gate_keep_guardrail_v1`
-   - 覆盖 `near_real_0007` 风格 hard present + music / harder mixture
-2. 后续 gate 训练固定保留三条训练/验收约束：
+1. 不再继续做 `v80` 同结构 sweep。
+2. 下一步优先改成：
+   - `audibility-conditioned gate target`
+   - 把 hard-present keep、medium present keep、weak-target abstain 从完全二元监督改成分层目标
+3. 后续 gate 训练固定保留四条训练/验收约束：
    - `abstention_gate_proxy_v1`
    - `same_gender_present_keep_guardrail_v1`
    - `hard_present_gate_keep_guardrail_v1`
-3. 在任何新训练前，固定保留以下三条验收：
+   - `gate_keep_union_v2`
+4. 在任何新训练前，固定保留以下四条验收：
    - `real_eval_manifest_residual_speech_leak_floor_v1`
    - `same_gender_present_keep_guardrail_v1`
+   - `hard_present_gate_keep_guardrail_v1`
    - `overlap_abstention_proxy_v4_audibility_v1`
 
 ## 近期关键日报入口
@@ -212,6 +226,7 @@
 - `reports/daily/2026-03-26_overlap_abstention_feasibility_and_plan.md`
 - `reports/daily/2026-03-26_audibility_conditioned_v1_and_abstention_gate_v1_v75_v76_v77.md`
 - `reports/daily/2026-03-26_abstention_gate_proxy_v1_and_v78_v79_followup.md`
+- `reports/daily/2026-03-26_hard_present_gate_keep_guardrail_v1_and_v80_followup.md`
 
 ## 文档维护规则
 

@@ -189,7 +189,7 @@
 - gate 机制本身不是伪方向
 - 当前缺的是 gate 的专属监督，而不是更多 gate 学习率 sweep
 
-### 11. gate 专属监督成立，但 keep backstop 仍缺 hard-present 覆盖
+### 11. gate 专属监督成立，但只补 keep 覆盖面还不够
 
 事实：
 
@@ -201,12 +201,46 @@
   - 加大 gate push 后
   - `near_real_0006 / 0009` 确实更静
   - 但 `near_real_0007` 开始回退
+- `v80`
+  - 接入 `hard_present_gate_keep_guardrail_v1 + keep_union_v2`
+  - `near_real_0006 / 0009` 更静
+  - 但 `same_gender / hard_present keep guardrail` 仍分别是 `11 / 16` 条 violation
+  - `near_real_0007` 反而比 `v79` 更坏
 
 结论：
 
-- 问题已经从“缺 gate supervision”推进到了“缺 hard-present keep guardrail”
-- 下一步不该继续扫 gate loss 权重，而应补：
+- 问题已经从“缺 gate supervision”推进到：
+  - 当前 gate supervision 的目标语义仍然过于二元
+- 下一步不该继续扫 gate loss 权重，也不该继续扩大 keep union，而应改：
+  - `audibility-conditioned gate target`
+
+### 12. train sample-id selector 不能直接充当 val keep 监控
+
+事实：
+
+- `v80` 训练里：
+  - `reconstruction_extra_focus_sample_ids`
+  - `branch_protect_focus_sample_ids`
+  都指向 `sample_ids_gate_keep_union_v2_train.txt`
+- 结果 `train_summary.json` 里：
+  - `train_selector_metrics.branch_protect.selected_count = 63`
+  - `val_selector_metrics.branch_protect.selected_count = 0`
+
+影响：
+
+- 当 keep selector 依赖 train sample id union，而 val manifest 不复用这些 id 时：
+  - val loss 并不能代表 keep 约束是否真正泛化；
+  - 训练日志会低估 keep regression 风险。
+
+要求：
+
+- 这类训练必须继续依赖外部 guardrail / near-real 裁决：
+  - `same_gender_present_keep_guardrail_v1`
   - `hard_present_gate_keep_guardrail_v1`
+  - `real_eval_manifest_residual_speech_leak_floor_v1`
+- 后续若继续做 gate supervision，优先改成：
+  - 可跨 train / val 共享的 metadata / target 语义
+  - 而不是只靠 train sample-id selector
 
 ## 近期关键案例入口
 
@@ -214,3 +248,4 @@
 - `reports/daily/2026-03-26_present_keep_guardrail_v1_v2_and_v73_v74_followup.md`
 - `reports/daily/2026-03-26_audibility_conditioned_v1_and_abstention_gate_v1_v75_v76_v77.md`
 - `reports/daily/2026-03-26_abstention_gate_proxy_v1_and_v78_v79_followup.md`
+- `reports/daily/2026-03-26_hard_present_gate_keep_guardrail_v1_and_v80_followup.md`

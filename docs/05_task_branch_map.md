@@ -48,6 +48,11 @@
   - 状态：
     - stronger gate push
     - 不能放行
+- `v80`
+  - `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v80_v79_abstention_gate_keepunion_v2_ft1`
+  - 状态：
+    - wider keep union follow-up
+    - 不能放行
 
 ## 当前活跃问题树
 
@@ -106,7 +111,7 @@
 - `branch abstention gate`
   - `active_mechanism_probe`
 - `hard-present gate keep backstop`
-  - `next_required_guardrail`
+  - `guardrail_materialized_but_insufficient_as_sample_union`
 
 ### C. same-gender present keep
 
@@ -264,6 +269,25 @@
 
 - `failed_over_silence`
 
+### 9. `v80`
+
+含义：
+
+- `v79 + keep_union_v2`
+
+结果：
+
+- `0006 / 0009` 更静
+- `same_gender keep guardrail`
+  - 仍是 `11` 条 violation
+- `hard_present keep guardrail`
+  - 仍是 `16` 条 violation
+- `0007` 比 `v79` 更坏
+
+裁决：
+
+- `failed_binary_gate_target`
+
 ## 当前有效训练与验收入口
 
 ### 训练侧
@@ -281,6 +305,12 @@
   - `data/synthetic/val_manifest_abstention_gate_proxy_v1.jsonl`
   - `data/synthetic/train_manifest_abstention_gate_bundle_v1.jsonl`
   - `data/synthetic/val_manifest_abstention_gate_bundle_v1.jsonl`
+  - `data/synthetic/train_manifest_hard_present_gate_keep_guardrail_v1.jsonl`
+  - `data/synthetic/val_manifest_hard_present_gate_keep_guardrail_v1.jsonl`
+  - `data/synthetic/train_manifest_gate_keep_union_v2.jsonl`
+  - `data/synthetic/val_manifest_gate_keep_union_v2.jsonl`
+  - `data/synthetic/train_manifest_abstention_gate_bundle_v2.jsonl`
+  - `data/synthetic/val_manifest_abstention_gate_bundle_v2.jsonl`
 
 ### 验收侧
 
@@ -288,6 +318,8 @@
   - `data/references/real_eval_manifest_residual_speech_leak_floor_v1.jsonl`
 - keep synthetic guardrail：
   - `data/synthetic/val_manifest_same_gender_present_keep_guardrail_v1.jsonl`
+- hard-present keep synthetic guardrail：
+  - `data/synthetic/val_manifest_hard_present_gate_keep_guardrail_v1.jsonl`
 - abstention synthetic guardrail：
   - `data/synthetic/val_manifest_overlap_abstention_proxy_v4_audibility_v1.jsonl`
 
@@ -309,15 +341,16 @@
 
 如果没有新的用户决策，当前默认下一步是：
 
-- 不再继续扫 `v79` 附近权重；
-- 直接补下一条 guardrail：
-  - `hard_present_gate_keep_guardrail_v1`
-  - 目标覆盖 `near_real_0007` 风格样本
+- 不再继续扫 `v80` 同结构权重；
+- 直接改机制层目标语义：
+  - `audibility-conditioned gate target`
+  - 目标是把 hard-present keep、medium present keep、weak-target abstain 从完全二元监督改成分层目标
 
-执行前必须保持三条验收同时在场：
+执行前必须保持四条验收同时在场：
 
 - `real_eval_manifest_residual_speech_leak_floor_v1`
 - `same_gender_present_keep_guardrail_v1`
+- `hard_present_gate_keep_guardrail_v1`
 - `overlap_abstention_proxy_v4_audibility_v1`
 
 ## 近期关键日报入口
@@ -327,6 +360,7 @@
 - `reports/daily/2026-03-26_frontier_imperfection_taxonomy_and_next_subproblem.md`
 - `reports/daily/2026-03-26_audibility_conditioned_v1_and_abstention_gate_v1_v75_v76_v77.md`
 - `reports/daily/2026-03-26_abstention_gate_proxy_v1_and_v78_v79_followup.md`
+- `reports/daily/2026-03-26_hard_present_gate_keep_guardrail_v1_and_v80_followup.md`
 
 ## 文档维护规则
 
