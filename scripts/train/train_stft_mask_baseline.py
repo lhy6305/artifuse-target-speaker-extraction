@@ -32,6 +32,15 @@ from tse_prefix.pipeline.loss_selectors import (
 )
 
 
+def parse_optional_bool_arg(value: str) -> bool:
+    normalized = value.strip().lower()
+    if normalized in {"1", "true", "yes"}:
+        return True
+    if normalized in {"0", "false", "no"}:
+        return False
+    raise argparse.ArgumentTypeError(f"Expected one of: true, false, 1, 0, yes, no. Got: {value!r}")
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Train the minimal TSE baseline.")
     parser.add_argument(
@@ -285,7 +294,23 @@ def add_selector_args(parser: argparse.ArgumentParser, prefix: str) -> None:
         parser.add_argument(f"{flag_prefix}focus-recipes", nargs="*", default=[])
         parser.add_argument(f"{flag_prefix}focus-patterns", nargs="*", default=[])
         parser.add_argument(f"{flag_prefix}focus-interference-pools", nargs="*", default=[])
+        parser.add_argument(f"{flag_prefix}focus-interference-profiles", nargs="*", default=[])
         parser.add_argument(f"{flag_prefix}focus-interference-speaker-names", nargs="*", default=[])
+        parser.add_argument(
+            f"{flag_prefix}require-speech-interference",
+            type=parse_optional_bool_arg,
+            default=None,
+        )
+        parser.add_argument(
+            f"{flag_prefix}require-music-interference",
+            type=parse_optional_bool_arg,
+            default=None,
+        )
+        parser.add_argument(
+            f"{flag_prefix}require-other-interference",
+            type=parse_optional_bool_arg,
+            default=None,
+        )
         parser.add_argument(f"{flag_prefix}min-target-ratio", type=float, default=None)
         parser.add_argument(f"{flag_prefix}max-target-ratio", type=float, default=None)
         parser.add_argument(f"{flag_prefix}min-target-energy-ratio", type=float, default=None)
@@ -294,6 +319,8 @@ def add_selector_args(parser: argparse.ArgumentParser, prefix: str) -> None:
         parser.add_argument(f"{flag_prefix}max-overlap-ratio", type=float, default=None)
         parser.add_argument(f"{flag_prefix}min-interference-gain-db", type=float, default=None)
         parser.add_argument(f"{flag_prefix}max-interference-gain-db", type=float, default=None)
+        parser.add_argument(f"{flag_prefix}min-interference-layer-count", type=int, default=None)
+        parser.add_argument(f"{flag_prefix}max-interference-layer-count", type=int, default=None)
         parser.add_argument(
             f"{flag_prefix}min-target-transient-presence-minus-mid-db-mean",
             dest=f"{attr_prefix}min_target_transient_presence_minus_mid_db_mean",
@@ -518,7 +545,11 @@ def build_loss_config(args: argparse.Namespace) -> dict[str, float]:
                 "focus_recipes",
                 "focus_patterns",
                 "focus_interference_pools",
+                "focus_interference_profiles",
                 "focus_interference_speaker_names",
+                "require_speech_interference",
+                "require_music_interference",
+                "require_other_interference",
                 "min_target_ratio",
                 "max_target_ratio",
                 "min_target_energy_ratio",
@@ -527,6 +558,8 @@ def build_loss_config(args: argparse.Namespace) -> dict[str, float]:
                 "max_overlap_ratio",
                 "min_interference_gain_db",
                 "max_interference_gain_db",
+                "min_interference_layer_count",
+                "max_interference_layer_count",
                 "min_target_transient_presence_minus_mid_db_mean",
                 "max_target_transient_presence_minus_mid_db_mean",
                 "min_target_transient_presence_share_mean",

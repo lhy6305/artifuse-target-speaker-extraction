@@ -71,6 +71,9 @@
   - `v100`
     - 含义：`v95 + frozen teacher hard-present overlap veto`
     - 状态：relative `v81` 三条 synthetic guardrail 全量正收益，near-real objective gate 已通过；但 `v81 vs v100` 听审结果为 `tie = 3, v81 = 1, v100 = 0`，不升格
+  - `v101`
+    - 含义：`v88 + overlap cancel delta blend v1`
+    - 状态：relative `v81` synthetic / near-real objective 继续正收益，relative `v88` 则明显更保守；但 `v81 vs v101` 听审结果为 `tie = 3, v81 = 1, v101 = 0`，不升格
   - `v82`
     - 含义：`present_overlap_residual_leak_purification v1` 首轮 mask pilot
     - 状态：objective 前进明显，但 `v81 vs v82` 听审为 `4 / 4 tie`
@@ -127,12 +130,13 @@
 - `v72 / v73 / v74 / v75 / v76 / v77 / v78 / v79 / v80 / v81 / v82 / v83 / v84 / v85 / v86` 都不能替代默认线。
 - `v72 / v73 / v74 / v75 / v76 / v77 / v78 / v79 / v80 / v81 / v82 / v83 / v84 / v85 / v86 / v87 / v88 / v89 / v90 / v91 / v93 / v94 / v95 / v98 / v99` 都不能替代默认线。
 - `v100` 也不能替代默认线。
+- `v101` 也不能替代默认线。
 
 ## 当前默认下一步
 
-- `teacher artifact veto` 这条分支先收口；
-- 不把 `v100` 继续当成默认扩展方向；
-- 当前若继续推进，应回到更高层的机制重设计，而不是在 `v95 / v100` 家族上继续小步扫参。
+- `overlap cancel delta blend v1` 这条分支先收口；
+- 不继续做 `v101 / v102` 同家族小步 sweep；
+- 如继续推进，应切到新的机制题，而不是继续在当前 subtractive canceller 家族里做安全校准微调。
 
 ## 当前核心子题
 
@@ -372,6 +376,31 @@
    - `v98` 虽然是有效 subtractive pilot，但 synthetic、near-real tradeoff、bandwidth 全都近乎与 `v81` 打平；
    - 这条 `phase-preserving overlap canceller` 线本轮可视为已自动收口，不值得进入 focused 听审。
 
+### 6. overlap-local benchmark 诊断链
+
+已完成：
+
+- `scripts/eval/build_overlap_local_benchmark_manifest.py`
+- `scripts/eval/analyze_overlap_local_benchmark.py`
+- `reports/eval/overlap_local_benchmark_manifest_residual_speech_leak_floor_v1.jsonl`
+- 已回放 pack：
+  - `v81 vs v88`
+  - `v81 vs v95`
+  - `v81 vs v100`
+  - `v81 vs v101`
+
+结论：
+
+- whole-utterance `more_interference_leaky` 在这 4 个已听 pack 的 `5` 个 decisive 样本上，全部与人耳偏好反向；
+- overlap-local `better_retention_minus_speech_leak` 在 `3` 个 target-present decisive 样本上全部与人耳一致；
+- overlap-local `more_artifact_proxy_heavy` 在 `5` 个 decisive 样本里对齐了 `4` 个，尤其能抓到：
+  - `v95 / v100` 在 `near_real_0007` 上的人耳伪影回退；
+- overlap-local `more_total_interference_leaky` 会被 `near_real_0007` 的 music 成分污染，不如 speech-only 版本稳定；
+- 当前可用结论不是“local 指标完全替代全句指标”，而是：
+  - 对 target-present overlap frontier，
+  - 应优先看 localized `speech-leak / retention-minus-speech-leak / artifact-share`，
+  - 不再把 whole-utterance leak tradeoff 当终裁依据。
+
 ## 下一步默认计划
 
 当前默认状态不是继续当前 refiner 家族自动扩树。
@@ -403,16 +432,21 @@
 9. 当前也不再继续做：
    - `v96 / v97` 这类 `auxiliary_only + overlap_cancel_head-only` probe
    - `v98` 附近的 `phase_preserve` overlap-canceller ratio mode 小步 sweep
-9. 后续训练固定保留四条训练/验收约束：
+10. 后续训练固定保留四条训练/验收约束：
    - `abstention_gate_proxy_v1`
    - `same_gender_present_keep_guardrail_v1`
    - `hard_present_gate_keep_guardrail_v1`
    - `gate_keep_union_v2`
-10. 当前若继续推进，默认应切到：
+11. 当前若继续推进，默认应切到：
    - 新的机制层表示或监督语义
    - 并显式处理 `hard-present artifact risk`
    - 而不是继续改同一个 multiplicative overlap-cancel head 的 ratio parameterization
-11. 在任何新训练前，固定保留以下四条验收：
+12. 在任何新训练前，默认先保留一轮 overlap-local 回放：
+   - 先看 `localized speech leak`
+   - `localized retention-minus-speech-leak`
+   - `localized artifact proxy`
+   是否比 whole-utterance tradeoff 更接近已知听审样本
+13. 在任何新训练前，固定保留以下四条验收：
    - `real_eval_manifest_residual_speech_leak_floor_v1`
    - `same_gender_present_keep_guardrail_v1`
    - `hard_present_gate_keep_guardrail_v1`
@@ -442,6 +476,7 @@
 - `reports/daily/2026-03-26_overlap_aux_interference_decoder_v2_v3_v4_and_v93_v94_v95_followup.md`
 - `reports/daily/2026-03-26_v81_vs_v95_listening_review.md`
 - `reports/daily/2026-03-26_overlap_canceller_phasepreserve_v96_v97_v98_followup.md`
+- `reports/daily/2026-03-26_overlap_local_benchmark_v81_v88_v95_v100_v101_followup.md`
 
 ## 文档维护规则
 

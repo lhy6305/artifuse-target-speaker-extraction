@@ -167,6 +167,14 @@
     - near-real objective gate 已通过
     - `v81 vs v100` 听审结果为 `tie = 3, v81 = 1, v100 = 0`
     - 分支先收口，不升格
+- `v101`
+  - `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v101_v88_overlap_cancel_deltablend_v1_ft1`
+  - 状态：
+    - `v88 + overlap cancel delta blend v1`
+    - relative `v81` synthetic / near-real objective 继续正收益
+    - relative `v88` 明显更保守，是一个真正的中间解
+    - `v81 vs v101` 听审结果为 `tie = 3, v81 = 1, v101 = 0`
+    - 分支先收口，不升格
 
 ## 当前活跃问题树
 
@@ -238,6 +246,8 @@
   - `objective_positive_but_not_audibly_better`
 - `teacher artifact veto`
   - `closed_as_non_audible_improvement`
+- `overlap cancel delta blend`
+  - `closed_as_safety_calibration_only`
 
 ### C. same-gender present keep
 
@@ -867,6 +877,10 @@
 
 - near-real 主验收：
   - `data/references/real_eval_manifest_residual_speech_leak_floor_v1.jsonl`
+- overlap-local near-real 诊断：
+  - `reports/eval/overlap_local_benchmark_manifest_residual_speech_leak_floor_v1.jsonl`
+  - `scripts/eval/build_overlap_local_benchmark_manifest.py`
+  - `scripts/eval/analyze_overlap_local_benchmark.py`
 - keep synthetic guardrail：
   - `data/synthetic/val_manifest_same_gender_present_keep_guardrail_v1.jsonl`
 - hard-present keep synthetic guardrail：
@@ -919,6 +933,10 @@
   - `phase_preserve` 代码路径保留
   - 但这条 overlap-canceller 线当前不构成新的前沿
   - `v98` 不进入 focused 听审
+- `v81 vs v88 / v95 / v100 / v101` 已完成 overlap-local 回放，当前结论是：
+  - localized `speech leak / retention-minus-speech-leak / artifact proxy`
+    比 whole-utterance leak tradeoff 更接近已知听审裁决；
+  - 这条 benchmark 现已成为后续 overlap frontier 的固定诊断链；
 - 不再继续做 `v83` 式宽触发 refiner，也不做 `v84` 附近小权重 sweep；
 - 不再继续做 `v85 / v86` 同家族小步 sweep；
 - 不再继续做 `v87 / v88` 同家族小步 sweep；

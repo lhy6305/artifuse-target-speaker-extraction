@@ -776,6 +776,119 @@
 - 但它当前只能把已知失败“变轻”，还不能把它“变成胜利”；
 - 如果核心目标是可听胜出，就不应继续把 `v95 / v100` 家族当默认扩展方向。
 
+### 31. `delta blend` 只对真正改 final output 的 subtractive 家族有意义
+
+事实：
+
+- `v100` 这条家族使用的是：
+  - `branch_overlap_cancel_apply_mode = auxiliary_only`
+- 在这种接线下，overlap cancel 只作为辅助监督存在；
+- 即使给 cancel 路径新增 final delta blend，也不会改变最终输出。
+
+要求：
+
+- `delta blend` 类机制只能挂在：
+  - `branch_overlap_cancel_apply_mode = subtract`
+  的 subtractive 家族上；
+- 不要再把这类输出路径机制错误地尝试在 `auxiliary_only` 家族上。
+
+### 32. `delta blend` 能把 subtractive canceller 拉回安全区，但仍可能完全过不了人耳阈值
+
+事实：
+
+- `v101`
+  - 相对 `v88`
+  - 确实把 hard-present 风险拉回来了
+  - `v81 vs v101` 解盲结果是：
+    - `tie = 3`
+    - `v81 = 1`
+    - `v101 = 0`
+- 唯一分出胜负的是：
+  - `near_real_0009`
+  - 而且仍是 `v81` 更好
+
+结论：
+
+- `delta blend` 是有效的 safety-calibration 机制；
+- 但它当前只能把 `v88` 这类 subtractive canceller 变得更稳，
+  还不能把它变成新的可听前沿；
+- 不应继续把 `v101 / v102` 这类同家族小步 sweep 当默认推进方向。
+
+### 33. whole-utterance leak tradeoff 在 overlap frontier 上可能系统性和人耳反向
+
+事实：
+
+- 用 `overlap_local_benchmark` 回放：
+  - `v81 vs v88`
+  - `v81 vs v95`
+  - `v81 vs v100`
+  - `v81 vs v101`
+- 在这 4 个已听 pack 的 `5` 个 decisive 样本上：
+  - whole-utterance `more_interference_leaky`
+  - 全部指向“新候选更好”
+  - 但人耳终裁全部是 `v81`
+
+结论：
+
+- 对 overlap frontier，整句 `interference_capture` 风格 tradeoff 不能再当作主裁决依据；
+- 它会把：
+  - 更静
+  - 但更糊
+  - 或更有伪影
+  的候选误判成更优。
+
+要求：
+
+- frontier 样本上必须补 localized 指标；
+- 特别是 target-present overlap，不再只看 whole-utterance leak tradeoff。
+
+### 34. localized `speech-only` 比 `total interference` 更适合做人耳对齐
+
+事实：
+
+- overlap-local 回放里：
+  - `better_retention_minus_speech_leak`
+    - 对 `3` 个 target-present decisive 样本全部对齐人耳；
+  - `more_total_interference_leaky`
+    - 在 `near_real_0007` 这类 `music_plus_speech` 样本上会被 music 成分污染，
+    - 与人耳出现反向。
+
+结论：
+
+- 对当前这批 near-real overlap frontier，
+  - 人耳更接近：
+    - `speech leak`
+    - `retention-minus-speech-leak`
+    - `artifact proxy`
+  - 而不是：
+    - `total interference leak`
+
+要求：
+
+- 后续 overlap-local benchmark 默认优先报告：
+  - `more_speech_interference_leaky_candidate`
+  - `better_retention_minus_speech_leak_candidate`
+  - `more_artifact_proxy_heavy_candidate`
+- `more_total_interference_leaky_candidate` 只保留为辅助观察，不再当主裁决列。
+
+### 35. listening pack 的人耳标签不能只依赖 `listening_review_decoded_summary.json`
+
+事实：
+
+- `v81 vs v100` blind 包只有：
+  - `listening_sheet.csv`
+  - `blind_key.json`
+  - 没有现成的 `listening_review_decoded_summary.json`
+- 如果分析脚本只读 decoded summary，会把：
+  - `human_alignment_summary`
+  整列算成空。
+
+要求：
+
+- pack 分析脚本必须支持回退到：
+  - `listening_sheet.csv + blind_key.json`
+- 否则会把已经完成的听审资产误判成“没人耳标签”。
+
 ## 近期关键案例入口
 
 - `reports/daily/2026-03-26_overlap_abstention_proxy_v3_v4_and_v71_v72_followup.md`
@@ -789,3 +902,6 @@
 - `reports/daily/2026-03-26_v81_vs_v95_listening_review.md`
 - `reports/daily/2026-03-26_teacher_artifact_veto_v99_v100_followup.md`
 - `reports/daily/2026-03-26_v81_vs_v100_listening_review.md`
+- `reports/daily/2026-03-26_overlap_cancel_deltablend_v1_v101_followup.md`
+- `reports/daily/2026-03-26_v81_vs_v101_listening_review.md`
+- `reports/daily/2026-03-26_overlap_local_benchmark_v81_v88_v95_v100_v101_followup.md`
