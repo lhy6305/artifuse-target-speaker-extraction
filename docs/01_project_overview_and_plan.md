@@ -29,9 +29,12 @@
 - 默认主线：
   - `legacy stage2`
 - 研究分支：
-  - `v72`
-    - 含义：当前 overlap-abstention 方向里最强的 objective 研究基座
+  - `v81`
+    - 含义：当前 gate 机制线里最健康的 guardrail-safe 研究基座
     - 状态：研究用，不可放行
+  - `v82`
+    - 含义：`present_overlap_residual_leak_purification v1` 首轮 mask pilot
+    - 状态：objective 前进明显，但 `v81 vs v82` 听审为 `4 / 4 tie`
 - 机制层 follow-up：
   - `v75`
     - 含义：`audibility-conditioned objective v1`
@@ -54,6 +57,18 @@
   - `v81`
     - 含义：`v79 + audibility-conditioned gate target v1`
     - 状态：near-real 重新回到 `0` violation，但 `v54 vs v81` 听审为 `4 / 4 tie`
+  - `v82`
+    - 含义：`v81 + overlap residual purify v1`
+    - 状态：`same_gender / hard-present / abstention` 三条 synthetic 都改善，但 near-real `present_guardrail_violation_count = 1`
+  - `v83`
+    - 含义：`v81 + overlap refiner v1`
+    - 状态：synthetic 大幅前进，但 near-real `present_guardrail_violation_count = 2`，不可放行
+  - `v84`
+    - 含义：`v81 + overlap refiner v2 prerefine`
+    - 状态：比 `v83` 更受控，但 near-real 仍有 `present_guardrail_violation_count = 1`，不可放行
+  - `v85`
+    - 含义：`v81 + overlap refiner v3 gate-complement`
+    - 状态：当前第一条 near-real `0` violation 的 refiner checkpoint，已进入 focused 听审关
 - 已验证失败：
   - `v73`
     - broad keep-guardrail 修正
@@ -66,6 +81,7 @@
 
 - `legacy stage2` 仍是默认可用线。
 - `v72 / v73 / v74 / v75 / v76 / v77 / v78 / v79 / v80 / v81` 都不能替代默认线。
+- `v72 / v73 / v74 / v75 / v76 / v77 / v78 / v79 / v80 / v81 / v82 / v83 / v84 / v85` 都不能替代默认线。
 
 ## 当前核心子题
 
@@ -194,32 +210,110 @@
 - `v54 vs v81` focused 听审已经完成，但结果是 `4 / 4 tie`，残余泄漏问题仍无可听改善；
 - 当前下一步不再是继续选 checkpoint，而是直接转到 residual leak 机制题。
 
+### 5. present-overlap residual leak purification
+
+已完成：
+
+- `target_overlap_intervals`
+- `overlap_interval_interference_projection_loss`
+- `overlap_interference` selector 接线
+- `v82`
+- `branch_overlap_refine_head`
+- `estimated_waveform_branch_base`
+- `--loss-use-branch-prerefine-as-primary-prediction`
+- `v83`
+- `v84`
+- `v85`
+
+结论：
+
+- `v82` 是第一条真正直接打 overlap residual leak 的 pilot；
+- 相对 `v81`：
+  - `overlap_abstention_proxy_v4`
+    - `+2.8258 dB`
+  - `same_gender_present_keep_guardrail_v1`
+    - `11 / 11` improve
+  - `hard_present_gate_keep_guardrail_v1`
+    - `13` improve / `2` regress / `1` near tie
+- 但 near-real residual leak floor 上：
+  - `combined_rank = v82 > v81 > v54`
+  - `guardrail_filtered_rank = v81 > v54 > v82`
+  - 原因是 `near_real_0007` 重新形成 `1` 条 present guardrail violation
+- `v81 vs v82` focused 听审现已完成：
+  - `4 / 4 tie`
+  - 无任何可感知改善
+  - `0003 / 0006 / 0007 / 0009` 仍分别停留在 moderate / heavy leak 问题上
+- `v83` 证明 overlap refiner 机制非常强，但当前 `v1` 监督会把 near-real 拉坏：
+  - `overlap_abstention_proxy_v4`
+    - `+8.5779 dB`
+  - `same_gender_present_keep_guardrail_v1`
+    - `+6.4518 dB`
+  - `hard_present_gate_keep_guardrail_v1`
+    - `+5.6606 dB`
+  - 但 near-real：
+    - `present_guardrail_violation_count = 2`
+    - `target_capture_regression_sample_ids = [near_real_0007]`
+    - `residual_increase_sample_ids = [near_real_0003, near_real_0007]`
+- `v84` 证明 refiner-specific prerefine baseline / delta guard 有真实作用：
+  - synthetic 相对 `v81` 仍全量改善：
+    - abstention `+7.3566 dB`
+    - same-gender keep `+5.1392 dB`
+    - hard-present keep `+4.4538 dB`
+  - near-real 相对 `v83` 明显回拉：
+    - `present_guardrail_violation_count = 2 -> 1`
+    - `residual_increase_sample_ids`
+      - `[near_real_0003, near_real_0007] -> [near_real_0007]`
+  - 但它仍未超过 `v81`：
+    - `guardrail_filtered_rank = v81 > v54 > v84 > v82 > v83`
+    - `near_real_0007` 仍是硬回退样本
+- `v85` 证明 `gate-complement` 是当前最有效的 refiner 激活语义：
+  - synthetic 相对 `v81` 仍全量改善：
+    - abstention `+4.7489 dB`
+    - same-gender keep `+2.1718 dB`
+    - hard-present keep `+2.3698 dB`
+  - near-real 首次回到：
+    - `present_guardrail_violation_count = 0`
+    - `target_capture_regression_sample_ids = []`
+    - `residual_increase_sample_ids = []`
+  - `guardrail_filtered_rank`
+    - `v85 > v81 > v54 > v84 > v82 > v83`
+  - 当前已经导出 focused 包：
+    - `reports/eval/ab_listening_pack_residual_speech_leak_floor_v1_v81_vs_v85_blind`
+
 ## 当前最可靠的阶段结论
 
 1. `same_gender_present_keep_guardrail_v1` 已经是正式资产，后续必须保留。
-2. 当前问题不再是“缺更好的 selector”或“缺更宽的 keep 样本”，而是：
-   - keep
-   - abstain
-   虽然已经拆出 gate，但 gate 的监督目标仍然过于二元。
-3. `v81` 已经是当前最健康的 gate 机制候选，但听审显示它还没有形成可听优势，不能放行。
+2. overlap refiner 机制已经成立，当前最有效的收窄方式是：
+   - 用 `gate-complement`
+   - 而不是 `gate`
+3. `v85` 是当前第一条同时满足：
+   - synthetic 全面正收益
+   - near-real `0` violation
+   的 refiner 候选，已值得进入 focused 听审。
 
 ## 下一步默认计划
 
-当前默认下一步不是继续扫 checkpoint，而是继续机制层改动。
+当前默认下一步不是继续扫 checkpoint，而是直接做 `v81 vs v85` focused 听审。
 
 优先顺序：
 
-1. 不再继续做 `v80` 同结构 sweep。
-2. `v54 vs v81` 选型题先收口，不再继续追加同类听审。
-3. 下一步优先改成新的机制子题：
-   - `present_overlap_residual_leak_purification`
-   - 目标直接降低重叠段 residual speech leak，而不是继续微调 gate calibration
-4. 后续 gate 训练固定保留四条训练/验收约束：
+1. `v54 vs v81` 选型题已经收口，不再继续追加同类听审。
+2. `v81 vs v82` 选型题已收口，不再继续追加同类听审。
+3. 当前默认下一步：
+   - 先听 `reports/eval/ab_listening_pack_residual_speech_leak_floor_v1_v81_vs_v85_blind`
+   - 核心确认：
+     - `0006 / 0009` 的 suppression 收益是否推进到可听层
+     - `0007` 是否没有被一起压坏
+4. 听审前默认不再继续做：
+   - `v83` 式宽触发 refiner
+   - `v84` 附近轻量 sweep
+   - `v85` 之后的自动 checkpoint 扩树
+5. 后续训练固定保留四条训练/验收约束：
    - `abstention_gate_proxy_v1`
    - `same_gender_present_keep_guardrail_v1`
    - `hard_present_gate_keep_guardrail_v1`
    - `gate_keep_union_v2`
-5. 在任何新训练前，固定保留以下四条验收：
+6. 在任何新训练前，固定保留以下四条验收：
    - `real_eval_manifest_residual_speech_leak_floor_v1`
    - `same_gender_present_keep_guardrail_v1`
    - `hard_present_gate_keep_guardrail_v1`
@@ -235,6 +329,10 @@
 - `reports/daily/2026-03-26_hard_present_gate_keep_guardrail_v1_and_v80_followup.md`
 - `reports/daily/2026-03-26_audibility_gate_target_v1_and_v81_followup.md`
 - `reports/daily/2026-03-26_v54_vs_v81_listening_review.md`
+- `reports/daily/2026-03-26_present_overlap_residual_purify_v1_and_v82_followup.md`
+- `reports/daily/2026-03-26_v81_vs_v82_listening_review.md`
+- `reports/daily/2026-03-26_overlap_refiner_v1_v2_and_v83_v84_followup.md`
+- `reports/daily/2026-03-26_overlap_refiner_v3_gatecomplement_and_v85_followup.md`
 
 ## 文档维护规则
 

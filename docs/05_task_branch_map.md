@@ -58,6 +58,26 @@
   - 状态：
     - audibility-conditioned gate target first pilot
     - 听审已完成，不能直接放行
+- `v82`
+  - `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v82_v81_overlap_purify_v1_ft1`
+  - 状态：
+    - present-overlap residual purification first pilot
+    - objective 前进明显，但 focused 听审 `4 / 4 tie`
+- `v83`
+  - `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v83_v81_overlap_refiner_v1_ft1`
+  - 状态：
+    - overlap refiner first pilot
+    - synthetic 大幅前进，但 near-real guardrail 明显失败
+- `v84`
+  - `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v84_v81_overlap_refiner_v2_prerefine_ft1_rerun2`
+  - 状态：
+    - overlap refiner prerefine follow-up
+    - 比 `v83` 更受控，但仍未过 near-real guardrail
+- `v85`
+  - `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v85_v81_overlap_refiner_v3_gatecomplement_ft1`
+  - 状态：
+    - overlap refiner gate-complement pilot
+    - 当前第一条已过 near-real guardrail 的 refiner 候选
 
 ## 当前活跃问题树
 
@@ -117,6 +137,10 @@
   - `active_mechanism_probe`
 - `hard-present gate keep backstop`
   - `guardrail_materialized_but_insufficient_as_sample_union`
+- `present-overlap residual purification`
+  - `active`
+- `overlap refiner`
+  - `active_but_not_guardrail_safe`
 
 ### C. same-gender present keep
 
@@ -320,6 +344,108 @@
 
 - `promising_but_not_audibly_better`
 
+### 11. `v82`
+
+含义：
+
+- `v81 + overlap residual purify v1`
+
+结果：
+
+- `overlap_abstention_proxy_v4`
+  - 相对 `v81` 是 `+2.8258 dB`
+- `same_gender_present_keep_guardrail_v1`
+  - `11 / 11` improve
+- `hard_present_gate_keep_guardrail_v1`
+  - `13` improve / `2` regress / `1` near tie
+- near-real residual leak floor
+  - `combined_rank = v82 > v81 > v54`
+  - 但 `present_guardrail_violation_count = 1`
+  - 回退样本：
+    - `near_real_0007`
+- focused 听审：
+  - `reports/eval/ab_listening_pack_residual_speech_leak_floor_v1_v81_vs_v82_blind`
+  - 解盲结果：
+    - `4 / 4 tie`
+    - 无任何可感知差异
+
+裁决：
+
+- `objective_only_progress_not_audible`
+
+### 12. `v83`
+
+含义：
+
+- `v81 + overlap refiner v1`
+
+结果：
+
+- relative `v81`
+  - abstention `+8.5779 dB`
+  - same-gender keep `+6.4518 dB`
+  - hard-present keep `+5.6606 dB`
+- near-real residual leak floor
+  - `combined_rank = 1st`
+  - 但 `present_guardrail_violation_count = 2`
+  - 回退样本：
+    - `near_real_0007`
+  - residual share 增加样本：
+    - `near_real_0003`
+    - `near_real_0007`
+
+裁决：
+
+- `failed_refiner_v1_overpush`
+
+### 13. `v84`
+
+含义：
+
+- `v81 + overlap refiner v2 prerefine`
+
+结果：
+
+- relative `v81`
+  - abstention `+7.3566 dB`
+  - same-gender keep `+5.1392 dB`
+  - hard-present keep `+4.4538 dB`
+- relative `v83`
+  - near-real violation `2 -> 1`
+  - residual increase 缩到：
+    - `near_real_0007`
+- 但 relative `v81`
+  - `near_real_0007` 仍明显回退
+  - `guardrail_filtered_rank = v81 > v54 > v84 > v82 > v83`
+
+裁决：
+
+- `partially_recovered_but_not_safe`
+
+### 14. `v85`
+
+含义：
+
+- `v81 + overlap refiner v3 gate-complement`
+
+结果：
+
+- relative `v81`
+  - abstention `+4.7489 dB`
+  - same-gender keep `+2.1718 dB`
+  - hard-present keep `+2.3698 dB`
+- near-real residual leak floor
+  - `present_guardrail_violation_count = 0`
+  - `target_capture_regression_sample_ids = []`
+  - `residual_increase_sample_ids = []`
+  - `guardrail_filtered_rank = 1st`
+- focused 包已导出：
+  - `reports/eval/ab_listening_pack_residual_speech_leak_floor_v1_v81_vs_v85_blind`
+
+裁决：
+
+- `listening_gate_ready`
+
 ## 当前有效训练与验收入口
 
 ### 训练侧
@@ -373,11 +499,14 @@
 
 如果没有新的用户决策，当前默认下一步是：
 
-- `v54 vs v81` 选型题先收口；
-- 不再继续做同类 checkpoint 听审；
-- 直接开新的机制子题：
-  - `present_overlap_residual_leak_purification`
-  - 目标直打重叠段 residual leak
+- `v54 vs v81` 选型题已收口；
+- `v81 vs v82` 选型题也已收口；
+- `v81 vs v84` 当前不导听审，因为 near-real guardrail 尚未过线；
+- `v85` 已经过 near-real guardrail，当前默认下一步是：
+  - `v81 vs v85` focused GUI 听审
+- 不再继续做 `v83` 式宽触发 refiner，也不做 `v84` 附近小权重 sweep；
+- 若 `v85` 听审仍无可感知差异，再决定是否继续开：
+  - `overlap refiner v4`
 
 执行前必须保持四条验收同时在场：
 
@@ -396,6 +525,10 @@
 - `reports/daily/2026-03-26_hard_present_gate_keep_guardrail_v1_and_v80_followup.md`
 - `reports/daily/2026-03-26_audibility_gate_target_v1_and_v81_followup.md`
 - `reports/daily/2026-03-26_v54_vs_v81_listening_review.md`
+- `reports/daily/2026-03-26_present_overlap_residual_purify_v1_and_v82_followup.md`
+- `reports/daily/2026-03-26_v81_vs_v82_listening_review.md`
+- `reports/daily/2026-03-26_overlap_refiner_v1_v2_and_v83_v84_followup.md`
+- `reports/daily/2026-03-26_overlap_refiner_v3_gatecomplement_and_v85_followup.md`
 
 ## 文档维护规则
 

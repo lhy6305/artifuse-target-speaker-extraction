@@ -135,7 +135,7 @@
 
 不能只看 objective summary。
 
-### 8. 当前真正的瓶颈已经从 selector 转到 gate 专属监督
+### 8. `selector -> gate supervision` 这条收窄链已经走完，不应回退
 
 事实：
 
@@ -144,19 +144,22 @@
 
 已经把“缺 selector / 缺数据切片”的问题收窄得差不多了。
 
-当前瓶颈更像：
+这一步之后的瓶颈更像：
 
 - keep
 - abstain
 
 虽然已经不必完全共享同一条输出自由度，但 `gate` 还没有自己的监督目标。
 
-要求：
+当前要求：
 
-- 下一步优先尝试：
-  - `abstention_gate_proxy_v1`
-  - `gate-level loss`
-- 不再默认继续扫普通权重组合。
+- 不要再把“补 selector / 补 gate-level loss”当成默认下一步；
+- 这一步已经被：
+  - `v78 / v79 / v80 / v81`
+  走完；
+- 当前默认应继续往：
+  - `present_overlap_residual_leak_purification`
+  推进。
 
 ### 9. `audibility-conditioned objective v1` 单独不够
 
@@ -285,7 +288,194 @@
   - `overlap residual leak floor`
 - 后续不应再默认做：
   - `v54 / v81 / v82` 之间的 checkpoint 选美
-- 而应直接开新的机制子题，去打残余泄漏本身
+ - 而应直接开新的机制子题，去打残余泄漏本身
+
+### 15. overlap residual purification 也可能重新伤到 `0007`
+
+事实：
+
+- `v82`
+  - 是第一条直接把 `overlap_interval_interference_projection_loss` 接进训练的 pilot
+  - relative `v81`：
+    - `overlap_abstention_proxy_v4`
+      - `+2.8258 dB`
+    - `same_gender_present_keep_guardrail_v1`
+      - `11 / 11` improve
+    - `hard_present_gate_keep_guardrail_v1`
+      - `13` improve / `2` regress / `1` near tie
+- 但 near-real `real_eval_manifest_residual_speech_leak_floor_v1` 上：
+  - `combined_rank = v82 > v81 > v54`
+  - `guardrail_filtered_rank = v81 > v54 > v82`
+  - 原因是：
+    - `near_real_0007` 重新出现 `1` 条 `target_capture_regression`
+
+结论：
+
+- overlap residual loss 是有效方向；
+- 但它仍可能把：
+  - `0003 / 0006 / 0009`
+  的 leakage 改善
+  和
+  - `0007`
+  的 keep 回退
+  一起带出来。
+
+要求：
+
+- `v82` 这类 overlap purification pilot 不能只看 synthetic 三连涨；
+- 必须同时过：
+  - `real_eval_manifest_residual_speech_leak_floor_v1`
+  - 且优先补 focused 听审：
+    - `v81 vs v82`
+
+### 16. `v81 -> v82` 级别的 objective 改善仍可能完全低于人耳阈值
+
+事实：
+
+- `v82`
+  - 相对 `v81`
+    - `overlap_abstention_proxy_v4 = +2.8258 dB`
+    - `same_gender_present_keep_guardrail_v1 = 11 / 11 improve`
+    - `hard_present_gate_keep_guardrail_v1 = 13 improve / 2 regress / 1 near tie`
+- 但 `v81 vs v82` focused 听审解盲后仍是：
+  - `4 / 4 tie`
+  - `0003 / 0006 / 0007 / 0009` 都无可感知差异
+
+结论：
+
+- 当前这条 `overlap residual purify v1` 机制，虽然方向正确；
+- 但改进幅度仍小于人耳可感知阈值。
+
+要求：
+
+- 不要再把：
+  - `objective 连涨`
+  - `near-real combined rank 更高`
+  视为继续做同结构 sweep 的充分理由；
+- `v82` 之后默认应升级机制复杂度，而不是继续做 `v83 / v84` 同构微调。
+
+### 17. overlap refiner 会极强地放大 synthetic 收益，但也最容易把 near-real 一起推坏
+
+事实：
+
+- `v83`
+  - overlap-abstention proxy
+    - `+8.5779 dB`
+  - same-gender keep guardrail
+    - `+6.4518 dB`
+  - hard-present keep guardrail
+    - `+5.6606 dB`
+- 但 near-real：
+  - `present_guardrail_violation_count = 2`
+  - `target_capture_regression_sample_ids = [near_real_0007]`
+  - `residual_increase_sample_ids = [near_real_0003, near_real_0007]`
+
+结论：
+
+- overlap refiner 机制不是伪方向；
+- 但它比前面的 gate / mask reweight 更容易把 synthetic objective 推到“过强但不安全”的区域。
+
+要求：
+
+- 这类 refiner pilot 不能先导听审再判断；
+- 必须先过 near-real guardrail，再决定是否值得听。
+
+### 18. refiner 训练若拿 shared base 当 baseline，会把“新增改动”对齐错对象
+
+事实：
+
+- `v83` 之前，训练里 primary prediction 默认是：
+  - `estimated_waveform_base`
+- 这对应 shared base decoder；
+- 但 overlap refiner 实际修改的是：
+  - branch decoder 的输出
+
+影响：
+
+- `interference_extra_base_align_weight`
+- `interference_extra_base_delta_projection_weight`
+
+如果之后要用，实际上会去约束：
+
+- refiner 相对 shared base 的偏移
+
+而不是：
+
+- refiner 相对 branch pre-refine 输出的新增改动
+
+要求：
+
+- overlap refiner 线必须显式导出：
+  - `estimated_waveform_branch_base`
+- 并通过：
+  - `--loss-use-branch-prerefine-as-primary-prediction`
+  把 branch pre-refine 输出设为 baseline。
+
+### 19. prerefine baseline / delta guard 是必要条件，但还不是充分条件
+
+事实：
+
+- `v84`
+  - 相对 `v83`
+    - `present_guardrail_violation_count = 2 -> 1`
+    - `residual_increase_sample_ids`
+      - `[near_real_0003, near_real_0007] -> [near_real_0007]`
+- 但相对 `v81`：
+  - `near_real_0007`
+    - `target_capture_db = -17.715 -> -19.667`
+    - `interference_capture_db = -47.206 -> -39.179`
+    - `residual_output_share = 0.665 -> 0.779`
+
+结论：
+
+- prerefine baseline + delta guard 的确把 refiner 从失控状态拉回来了；
+- 但当前 refiner 触发范围仍然太宽，`0007` 这类 hard-present case 还会被一起卷进去。
+
+要求：
+
+- 下一步不要做 `v84` 附近轻量 sweep；
+- 默认应直接收窄到：
+  - weak-target
+  - high-overlap
+  - speech interference
+  的 refiner 激活子域。
+
+### 20. overlap refiner 更适合绑到 `1 - gate`，不适合继续乘 `gate`
+
+事实：
+
+- `v84`
+  - 使用 `refiner * gate`
+  - near-real：
+    - `present_guardrail_violation_count = 1`
+    - `target_capture_regression_sample_ids = [near_real_0007]`
+    - `residual_increase_sample_ids = [near_real_0007]`
+- `v85`
+  - 使用 `refiner * (1 - gate)`
+  - synthetic 相对 `v81` 仍全面为正：
+    - abstention `+4.7489 dB`
+    - same-gender keep `+2.1718 dB`
+    - hard-present keep `+2.3698 dB`
+  - near-real：
+    - `present_guardrail_violation_count = 0`
+    - `target_capture_regression_sample_ids = []`
+    - `residual_increase_sample_ids = []`
+    - `guardrail_filtered_rank = 1st`
+
+结论：
+
+- 当前 gate 更像“哪里该保留目标”的语义；
+- overlap refiner 更像“哪里允许进一步清理 residual”的语义；
+- 所以直接乘 `gate` 会更容易把 refiner 拉进 hard-present 区域；
+- 乘 `1 - gate` 更符合当前子题。
+
+要求：
+
+- 后续若继续做 refiner 线，默认基线应是：
+  - `branch_overlap_refine_gate_mode = complement`
+- 不再回到：
+  - `branch_overlap_refine_gate_mode = gate`
+  作为默认起点。
 
 ## 近期关键案例入口
 

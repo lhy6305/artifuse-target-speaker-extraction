@@ -99,6 +99,11 @@ def parse_args() -> argparse.Namespace:
         help="Add a per-frame scalar gate on top of the branch decoder mask for overlap abstention.",
     )
     parser.add_argument(
+        "--model-enable-branch-overlap-refine-head",
+        action="store_true",
+        help="Add a zero-init complex residual canceller on top of the branch decoder output.",
+    )
+    parser.add_argument(
         "--model-enable-adapter-temporal-model",
         action="store_true",
         help="Add a dedicated bidirectional GRU inside the adapter branch before adapter mask prediction.",
@@ -111,6 +116,12 @@ def parse_args() -> argparse.Namespace:
         help="Optional reference conditioning mode used only inside the adapter mask branch.",
     )
     parser.add_argument("--model-adapter-mask-max-delta", type=float, default=0.25)
+    parser.add_argument("--model-branch-overlap-refine-max-delta", type=float, default=0.15)
+    parser.add_argument(
+        "--model-branch-overlap-refine-gate-mode",
+        choices=["none", "gate", "complement"],
+        default="gate",
+    )
     parser.add_argument("--loss-stft-weight", type=float, default=0.5)
     parser.add_argument("--loss-sisdr-weight", type=float, default=0.0)
     parser.add_argument("--loss-branch-protect-guard-sisdr-weight", type=float, default=0.0)
@@ -144,6 +155,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--loss-gate-target-transient-db-weight", type=float, default=0.10)
     parser.add_argument("--loss-gate-target-min-value", type=float, default=0.0)
     parser.add_argument("--loss-gate-target-max-value", type=float, default=1.0)
+    parser.add_argument(
+        "--loss-use-branch-prerefine-as-primary-prediction",
+        action="store_true",
+        help=(
+            "When branch overlap refinement is enabled, use the branch pre-refine output as the "
+            "primary prediction baseline inside compute_losses."
+        ),
+    )
     parser.add_argument("--loss-reconstruction-waveform-weight", type=float, default=0.0)
     parser.add_argument("--loss-reconstruction-stft-weight", type=float, default=0.0)
     parser.add_argument("--loss-reconstruction-extra-waveform-weight", type=float, default=0.0)
@@ -309,10 +328,13 @@ def build_model_config(args: argparse.Namespace) -> dict[str, int]:
         "enable_adapter_mask_head": args.model_enable_adapter_mask_head,
         "enable_branch_decoder_head": args.model_enable_branch_decoder_head,
         "enable_branch_abstention_gate": args.model_enable_branch_abstention_gate,
+        "enable_branch_overlap_refine_head": args.model_enable_branch_overlap_refine_head,
         "enable_adapter_temporal_model": args.model_enable_adapter_temporal_model,
         "adapter_gru_layers": args.model_adapter_gru_layers,
         "adapter_conditioning_mode": args.model_adapter_conditioning_mode,
         "adapter_mask_max_delta": args.model_adapter_mask_max_delta,
+        "branch_overlap_refine_max_delta": args.model_branch_overlap_refine_max_delta,
+        "branch_overlap_refine_gate_mode": args.model_branch_overlap_refine_gate_mode,
     }
 
 
@@ -366,6 +388,7 @@ def build_loss_config(args: argparse.Namespace) -> dict[str, float]:
         "gate_target_transient_db_weight": args.loss_gate_target_transient_db_weight,
         "gate_target_min_value": args.loss_gate_target_min_value,
         "gate_target_max_value": args.loss_gate_target_max_value,
+        "use_branch_prerefine_as_primary_prediction": args.loss_use_branch_prerefine_as_primary_prediction,
         "interference_loss_mode": args.loss_interference_mode,
         "interference_extra_loss_mode": args.loss_interference_extra_mode,
         "overlap_interference_loss_mode": args.loss_overlap_interference_mode,
@@ -435,6 +458,7 @@ def build_compute_loss_kwargs(loss_config: dict) -> dict:
         "gate_target_transient_db_weight",
         "gate_target_min_value",
         "gate_target_max_value",
+        "use_branch_prerefine_as_primary_prediction",
     }
     return {
         key: value
@@ -507,6 +531,15 @@ def resolve_branch_extra_prediction(outputs: dict[str, torch.Tensor]) -> torch.T
     return None
 
 
+def resolve_primary_prediction(
+    outputs: dict[str, torch.Tensor],
+    use_branch_prerefine_as_primary_prediction: bool,
+) -> torch.Tensor:
+    if use_branch_prerefine_as_primary_prediction and outputs.get("estimated_waveform_branch_base") is not None:
+        return outputs["estimated_waveform_branch_base"]
+    return outputs.get("estimated_waveform_base", outputs["estimated_waveform"])
+
+
 def resolve_selector_sample_weights(
     batch: dict,
     device: torch.device,
@@ -564,6 +597,7 @@ def load_model_state_dict_for_init(model: nn.Module, checkpoint_state_dict: dict
         "branch_decoder_temporal_model.",
         "branch_decoder_mask_head.",
         "branch_decoder_gate_head.",
+        "branch_overlap_refine_head.",
         "adapter_mask_head.",
         "adapter_condition_proj.",
         "adapter_condition_scale.",
@@ -786,7 +820,12 @@ def evaluate(
                 selector_totals[prefix]["selected_count"] += int(stats["selected_count"])
                 selector_totals[prefix]["total_count"] += int(stats["total_count"])
             losses = compute_losses(
-                prediction=outputs.get("estimated_waveform_base", outputs["estimated_waveform"]),
+                prediction=resolve_primary_prediction(
+                    outputs,
+                    use_branch_prerefine_as_primary_prediction=bool(
+                        loss_config.get("use_branch_prerefine_as_primary_prediction", False)
+                    ),
+                ),
                 reconstruction_extra_prediction=outputs["estimated_waveform"],
                 extra_prediction=resolve_branch_extra_prediction(outputs),
                 mixture=batch["mixture"],
@@ -1105,7 +1144,12 @@ def main() -> None:
                 train_selector_totals[prefix]["selected_count"] += int(stats["selected_count"])
                 train_selector_totals[prefix]["total_count"] += int(stats["total_count"])
             losses = compute_losses(
-                prediction=outputs.get("estimated_waveform_base", outputs["estimated_waveform"]),
+                prediction=resolve_primary_prediction(
+                    outputs,
+                    use_branch_prerefine_as_primary_prediction=bool(
+                        loss_config.get("use_branch_prerefine_as_primary_prediction", False)
+                    ),
+                ),
                 reconstruction_extra_prediction=outputs["estimated_waveform"],
                 extra_prediction=resolve_branch_extra_prediction(outputs),
                 mixture=batch["mixture"],
