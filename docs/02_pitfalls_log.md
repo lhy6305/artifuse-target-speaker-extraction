@@ -503,6 +503,40 @@
 - 这类 absent / silence-over-leak 前沿，不要只靠自动指标切研究基座；
 - 只要进入 frontier 区间，仍必须回到人耳终裁。
 
+### 22. `v85 / v86` 级别的 overlap refiner 优化，已经足以改善自动与 guardrail，但仍可能完全不解决核心听感痛点
+
+事实：
+
+- `v85`
+  - near-real guardrail 已过
+  - 但 `v81 vs v85` 听审解盲后：
+    - `3 / 4 tie`
+    - `1 / 4 = v81`
+- `v86`
+  - relative `v81`
+    - abstention `+3.5979 dB`
+    - same-gender keep `+1.6103 dB`
+    - hard-present keep `+1.7029 dB`
+  - near-real 仍是 `0` violation
+  - 但 `v81 vs v86` 听审解盲后：
+    - `3 / 4 tie`
+    - `1 / 4 = v81`
+    - `v86 = 0`
+
+结论：
+
+- 当前 overlap refiner 家族已经不是“没学到东西”；
+- 真正的问题是：
+  - 自动收益没有推进到可听层；
+  - `present overlap residual leak` 这个主观痛点仍然原地存在。
+
+要求：
+
+- 不要再把：
+  - `v85 / v86` 这类 objective-safe refiner 变体
+  当成默认继续微调的理由；
+- 若继续推进，应优先换机制题，不再做当前 refiner 家族的小步 sweep。
+
 ## 近期关键案例入口
 
 - `reports/daily/2026-03-26_overlap_abstention_proxy_v3_v4_and_v71_v72_followup.md`

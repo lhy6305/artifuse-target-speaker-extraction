@@ -20,6 +20,7 @@ class STFTMaskBaseline(nn.Module):
         enable_branch_decoder_head: bool = False,
         enable_branch_abstention_gate: bool = False,
         enable_branch_overlap_refine_head: bool = False,
+        enable_branch_overlap_cancel_head: bool = False,
         enable_adapter_temporal_model: bool = False,
         adapter_gru_layers: int = 1,
         adapter_conditioning_mode: str = "none",
@@ -27,6 +28,9 @@ class STFTMaskBaseline(nn.Module):
         branch_overlap_refine_max_delta: float = 0.15,
         branch_overlap_refine_gate_mode: str = "gate",
         branch_overlap_refine_source_mode: str = "mixture",
+        branch_overlap_cancel_max_delta: float = 0.15,
+        branch_overlap_cancel_gate_mode: str = "complement",
+        branch_overlap_cancel_source_mode: str = "residual",
     ) -> None:
         super().__init__()
         self.n_fft = n_fft
@@ -38,12 +42,16 @@ class STFTMaskBaseline(nn.Module):
         self.enable_branch_decoder_head = enable_branch_decoder_head
         self.enable_branch_abstention_gate = enable_branch_abstention_gate
         self.enable_branch_overlap_refine_head = enable_branch_overlap_refine_head
+        self.enable_branch_overlap_cancel_head = enable_branch_overlap_cancel_head
         self.enable_adapter_temporal_model = enable_adapter_temporal_model
         self.adapter_conditioning_mode = adapter_conditioning_mode
         self.adapter_mask_max_delta = adapter_mask_max_delta
         self.branch_overlap_refine_max_delta = branch_overlap_refine_max_delta
         self.branch_overlap_refine_gate_mode = branch_overlap_refine_gate_mode
         self.branch_overlap_refine_source_mode = branch_overlap_refine_source_mode
+        self.branch_overlap_cancel_max_delta = branch_overlap_cancel_max_delta
+        self.branch_overlap_cancel_gate_mode = branch_overlap_cancel_gate_mode
+        self.branch_overlap_cancel_source_mode = branch_overlap_cancel_source_mode
 
         if enable_adapter_mask_head and enable_branch_decoder_head:
             raise ValueError("Adapter mask head and branch decoder head are mutually exclusive for now.")
@@ -51,6 +59,8 @@ class STFTMaskBaseline(nn.Module):
             raise ValueError("Branch abstention gate requires enable_branch_decoder_head.")
         if enable_branch_overlap_refine_head and not enable_branch_decoder_head:
             raise ValueError("Branch overlap refiner requires enable_branch_decoder_head.")
+        if enable_branch_overlap_cancel_head and not enable_branch_decoder_head:
+            raise ValueError("Branch overlap canceller requires enable_branch_decoder_head.")
         if branch_overlap_refine_gate_mode not in ("none", "gate", "complement"):
             raise ValueError(
                 "branch_overlap_refine_gate_mode must be one of: none, gate, complement."
@@ -58,6 +68,14 @@ class STFTMaskBaseline(nn.Module):
         if branch_overlap_refine_source_mode not in ("mixture", "branch_base", "residual"):
             raise ValueError(
                 "branch_overlap_refine_source_mode must be one of: mixture, branch_base, residual."
+            )
+        if branch_overlap_cancel_gate_mode not in ("none", "gate", "complement"):
+            raise ValueError(
+                "branch_overlap_cancel_gate_mode must be one of: none, gate, complement."
+            )
+        if branch_overlap_cancel_source_mode not in ("mixture", "branch_base", "residual"):
+            raise ValueError(
+                "branch_overlap_cancel_source_mode must be one of: mixture, branch_base, residual."
             )
 
         if conditioning_mode == "legacy_bias":
@@ -142,12 +160,22 @@ class STFTMaskBaseline(nn.Module):
                 self.reset_branch_overlap_refine_head()
             else:
                 self.branch_overlap_refine_head = None
+            if enable_branch_overlap_cancel_head:
+                self.branch_overlap_cancel_head = nn.Sequential(
+                    nn.Linear(hidden_dim * 2, hidden_dim),
+                    nn.ReLU(),
+                    nn.Linear(hidden_dim, self.freq_bins * 2),
+                )
+                self.reset_branch_overlap_cancel_head()
+            else:
+                self.branch_overlap_cancel_head = None
             self.reset_branch_decoder_from_base()
         else:
             self.branch_decoder_temporal_model = None
             self.branch_decoder_mask_head = None
             self.branch_decoder_gate_head = None
             self.branch_overlap_refine_head = None
+            self.branch_overlap_cancel_head = None
         if enable_adapter_mask_head:
             adapter_hidden_dim = hidden_dim * 2
             if enable_adapter_temporal_model:
@@ -208,6 +236,13 @@ class STFTMaskBaseline(nn.Module):
         if self.branch_overlap_refine_head is None:
             return
         final_layer = self.branch_overlap_refine_head[-1]
+        nn.init.zeros_(final_layer.weight)
+        nn.init.zeros_(final_layer.bias)
+
+    def reset_branch_overlap_cancel_head(self) -> None:
+        if self.branch_overlap_cancel_head is None:
+            return
+        final_layer = self.branch_overlap_cancel_head[-1]
         nn.init.zeros_(final_layer.weight)
         nn.init.zeros_(final_layer.bias)
 
@@ -345,8 +380,11 @@ class STFTMaskBaseline(nn.Module):
         branch_decoder_mask = None
         branch_decoder_frame_gate = None
         branch_overlap_refine_ratio = None
+        branch_overlap_cancel_ratio = None
         estimated_stft_branch_base = None
         estimated_waveform_branch_base = None
+        branch_overlap_cancel_estimate_stft = None
+        branch_overlap_cancel_estimate_waveform = None
         if self.branch_decoder_temporal_model is not None and self.branch_decoder_mask_head is not None:
             branch_encoded, _ = self.branch_decoder_temporal_model(temporal_input)
             branch_decoder_mask = self.branch_decoder_mask_head(branch_encoded).transpose(1, 2)
@@ -376,7 +414,31 @@ class STFTMaskBaseline(nn.Module):
                 elif self.branch_overlap_refine_source_mode == "residual":
                     refine_source_stft = mix_stft - estimated_stft_branch_base
                 estimated_stft = estimated_stft - (refine_source_stft * branch_overlap_refine_ratio)
+            if self.branch_overlap_cancel_head is not None:
+                branch_overlap_cancel_params = (
+                    torch.tanh(self.branch_overlap_cancel_head(branch_encoded)).transpose(1, 2)
+                    * self.branch_overlap_cancel_max_delta
+                )
+                cancel_real, cancel_imag = torch.chunk(branch_overlap_cancel_params, 2, dim=1)
+                branch_overlap_cancel_ratio = torch.complex(cancel_real, cancel_imag)
+                if branch_decoder_frame_gate is not None:
+                    if self.branch_overlap_cancel_gate_mode == "gate":
+                        branch_overlap_cancel_ratio = branch_overlap_cancel_ratio * branch_decoder_frame_gate
+                    elif self.branch_overlap_cancel_gate_mode == "complement":
+                        branch_overlap_cancel_ratio = branch_overlap_cancel_ratio * (1.0 - branch_decoder_frame_gate)
+                cancel_source_stft = mix_stft
+                if self.branch_overlap_cancel_source_mode == "branch_base":
+                    cancel_source_stft = estimated_stft_branch_base
+                elif self.branch_overlap_cancel_source_mode == "residual":
+                    cancel_source_stft = mix_stft - estimated_stft_branch_base
+                branch_overlap_cancel_estimate_stft = cancel_source_stft * branch_overlap_cancel_ratio
+                estimated_stft = estimated_stft - branch_overlap_cancel_estimate_stft
             estimated_waveform = self.istft(estimated_stft, mixture_lengths)
+            if branch_overlap_cancel_estimate_stft is not None:
+                branch_overlap_cancel_estimate_waveform = self.istft(
+                    branch_overlap_cancel_estimate_stft,
+                    mixture_lengths,
+                )
         elif self.adapter_mask_head is not None:
             estimated_stft = mix_stft * mask
             estimated_waveform = self.istft(estimated_stft, mixture_lengths)
@@ -390,9 +452,12 @@ class STFTMaskBaseline(nn.Module):
             "branch_decoder_mask": branch_decoder_mask,
             "branch_decoder_frame_gate": branch_decoder_frame_gate,
             "branch_overlap_refine_ratio": branch_overlap_refine_ratio,
+            "branch_overlap_cancel_ratio": branch_overlap_cancel_ratio,
             "mixture_stft": mix_stft,
             "estimated_stft": estimated_stft,
             "estimated_stft_base": estimated_stft_base,
             "estimated_stft_branch_base": estimated_stft_branch_base,
             "estimated_waveform_branch_base": estimated_waveform_branch_base,
+            "branch_overlap_cancel_estimate_stft": branch_overlap_cancel_estimate_stft,
+            "branch_overlap_cancel_estimate_waveform": branch_overlap_cancel_estimate_waveform,
         }

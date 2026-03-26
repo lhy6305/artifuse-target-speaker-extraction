@@ -85,7 +85,7 @@
     - overlap refiner residual-source gate-complement follow-up
     - relative `v81` 仍保持三条 synthetic 正收益
     - near-real 仍为 `0` present violation
-    - 当前等待 `v81 vs v86` focused 听审终裁
+    - `v81 vs v86` 听审已完成，但仍未转正
 
 ## 当前活跃问题树
 
@@ -148,7 +148,7 @@
 - `present-overlap residual purification`
   - `active`
 - `overlap refiner`
-  - `active_but_not_guardrail_safe`
+  - `active_guardrail_safe_but_not_audibly_better`
 
 ### C. same-gender present keep
 
@@ -480,10 +480,16 @@
   - `near_real_0006 / 0009` 仍保留更静趋势
 - focused 包已导出：
   - `reports/eval/ab_listening_pack_residual_speech_leak_floor_v1_v81_vs_v86_blind`
+- focused 听审结果：
+  - `3 / 4 tie`
+  - `1 / 4 = v81`
+  - `v86 = 0`
+  - 唯一分出胜负的是：
+    - `near_real_0009 = v81 > v86`
 
 裁决：
 
-- `awaiting_human_listening`
+- `objective_guardrail_better_but_not_audibly_better`
 
 ## 当前有效训练与验收入口
 
@@ -544,10 +550,12 @@
 - `v81 vs v85` 听审已完成，当前结论是：
   - `v85` 不升格
   - `v81` 继续作为研究基座
-- `v81 vs v86` focused 包已导出，当前默认下一步是先做人耳终裁：
-  - `reports/eval/ab_listening_pack_residual_speech_leak_floor_v1_v81_vs_v86_blind`
+- `v81 vs v86` 听审也已完成，当前结论是：
+  - `v86` 不升格
+  - `v81` 继续作为研究基座
 - 不再继续做 `v83` 式宽触发 refiner，也不做 `v84` 附近小权重 sweep；
-- 在 `v81 vs v86` 听审完成前，不继续开 `v87+`
+- 不再继续做 `v85 / v86` 同家族小步 sweep；
+- 若后续继续推进，默认应切到新的机制子题，而不是直接开 `v87+`
 
 执行前必须保持四条验收同时在场：
 
@@ -572,6 +580,7 @@
 - `reports/daily/2026-03-26_overlap_refiner_v3_gatecomplement_and_v85_followup.md`
 - `reports/daily/2026-03-26_v81_vs_v85_listening_review.md`
 - `reports/daily/2026-03-26_overlap_refiner_v4_residualsource_and_v86_followup.md`
+- `reports/daily/2026-03-26_v81_vs_v86_listening_review.md`
 
 ## 文档维护规则
 
