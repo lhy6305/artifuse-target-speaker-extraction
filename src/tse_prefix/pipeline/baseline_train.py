@@ -27,6 +27,8 @@ class LossBreakdown:
     interference_extra_projection_ratio: torch.Tensor
     absent_interval_l1: torch.Tensor
     absent_extra_interval_l1: torch.Tensor
+    gate_abstain_mean: torch.Tensor
+    gate_keep_mean: torch.Tensor
 
 
 INTERFERENCE_LOSS_MODES = (
@@ -405,6 +407,38 @@ def weighted_sisdr_loss(
     return average_sample_losses(list(sisdr_losses), sample_weights, prediction)
 
 
+def weighted_gate_target_loss(
+    gate_values: torch.Tensor | None,
+    lengths: torch.Tensor,
+    model,
+    *,
+    target_value: float,
+    sample_weights: torch.Tensor | None = None,
+) -> torch.Tensor:
+    if gate_values is None or sample_weights is None:
+        reference = gate_values if gate_values is not None else lengths
+        return reference.new_tensor(0.0)
+
+    if gate_values.ndim != 3 or gate_values.shape[1] != 1:
+        raise ValueError("gate_values must have shape [batch, 1, frames]")
+
+    frame_lengths = model.waveform_lengths_to_frame_lengths(lengths, max_frames=gate_values.shape[-1])
+    if frame_lengths is None:
+        return gate_values.new_tensor(0.0)
+
+    sample_losses: list[torch.Tensor] = []
+    target_scalar = float(target_value)
+    for gate_item, frame_length in zip(gate_values[:, 0, :], frame_lengths):
+        valid_frames = int(frame_length.item())
+        if valid_frames <= 0:
+            sample_losses.append(gate_values.new_tensor(0.0))
+            continue
+        target = torch.full_like(gate_item[:valid_frames], fill_value=target_scalar)
+        sample_losses.append(F.l1_loss(gate_item[:valid_frames], target))
+
+    return average_sample_losses(sample_losses, sample_weights, gate_values)
+
+
 def compute_losses(
     prediction: torch.Tensor,
     mixture: torch.Tensor,
@@ -412,6 +446,7 @@ def compute_losses(
     lengths: torch.Tensor,
     absent_intervals: list[list[dict[str, float]]],
     model,
+    gate_values: torch.Tensor | None = None,
     reconstruction_extra_prediction: torch.Tensor | None = None,
     extra_prediction: torch.Tensor | None = None,
     reconstruction_sample_weights: torch.Tensor | None = None,
@@ -423,6 +458,8 @@ def compute_losses(
     branch_protect_sample_weights: torch.Tensor | None = None,
     absent_sample_weights: torch.Tensor | None = None,
     absent_extra_sample_weights: torch.Tensor | None = None,
+    gate_abstain_sample_weights: torch.Tensor | None = None,
+    gate_keep_sample_weights: torch.Tensor | None = None,
     sample_rate: int = 16000,
     stft_weight: float = 0.5,
     reconstruction_waveform_weight: float = 0.0,
@@ -440,6 +477,8 @@ def compute_losses(
     interference_extra_weight: float = 0.0,
     absent_weight: float = 0.0,
     absent_extra_weight: float = 0.0,
+    gate_abstain_weight: float = 0.0,
+    gate_keep_weight: float = 0.0,
     interference_loss_mode: str = "prediction_projection_ratio",
     interference_extra_loss_mode: str = "prediction_projection_ratio",
     transient_top_ratio: float = 0.12,
@@ -580,6 +619,20 @@ def compute_losses(
         sample_rate=sample_rate,
         sample_weights=absent_extra_sample_weights,
     )
+    gate_abstain_term = weighted_gate_target_loss(
+        gate_values=gate_values,
+        lengths=lengths,
+        model=model,
+        target_value=0.0,
+        sample_weights=gate_abstain_sample_weights,
+    )
+    gate_keep_term = weighted_gate_target_loss(
+        gate_values=gate_values,
+        lengths=lengths,
+        model=model,
+        target_value=1.0,
+        sample_weights=gate_keep_sample_weights,
+    )
     total = (
         waveform_term
         + (stft_term * stft_weight)
@@ -598,6 +651,8 @@ def compute_losses(
         + (interference_extra_term * interference_extra_weight)
         + (absent_term * absent_weight)
         + (absent_extra_term * absent_extra_weight)
+        + (gate_abstain_term * gate_abstain_weight)
+        + (gate_keep_term * gate_keep_weight)
     )
     return LossBreakdown(
         total=total,
@@ -619,4 +674,6 @@ def compute_losses(
         interference_extra_projection_ratio=interference_extra_term,
         absent_interval_l1=absent_term,
         absent_extra_interval_l1=absent_extra_term,
+        gate_abstain_mean=gate_abstain_term,
+        gate_keep_mean=gate_keep_term,
     )

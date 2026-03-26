@@ -42,6 +42,12 @@
   - `v77`
     - 含义：`v72 + gate-only isolate probe`
     - 状态：失败，但证明 gate-only 在当前损失下会退回 safe/no-op
+  - `v78`
+    - 含义：`v72 + abstention_gate_proxy_v1 + gate-level loss`
+    - 状态：present-safe，但 absent 收益不足
+  - `v79`
+    - 含义：`v78` 的 stronger gate push
+    - 状态：absent 更静，但重新伤到 hard present backstop
 - 已验证失败：
   - `v73`
     - broad keep-guardrail 修正
@@ -53,7 +59,7 @@
 当前结论：
 
 - `legacy stage2` 仍是默认可用线。
-- `v72 / v73 / v74 / v75 / v76 / v77` 都不能替代默认线。
+- `v72 / v73 / v74 / v75 / v76 / v77 / v78 / v79` 都不能替代默认线。
 
 ## 当前核心子题
 
@@ -161,13 +167,17 @@
 - `branch abstention gate` 结构
 - `v76`
 - `v77`
+ - `abstention_gate_proxy_v1`
+ - `v78`
+ - `v79`
 
 结论：
 
 - `v75` 证明 loss-only 仍不够；
 - `v76` 证明 gate 机制有信号，能把 `0009 / 0006` 往更静方向拉；
 - `v77` 证明 gate-only 若没有专属监督，会退回 safe/no-op；
-- 所以下一步不是继续扫权重，而是给 gate 单独建监督。
+- `v78 / v79` 证明 gate 专属监督有效，但当前 keep backstop 还缺 `0007` 风格 hard present 覆盖；
+- 所以下一步不是继续扫权重，而是补 hard-present keep guardrail。
 
 ## 当前最可靠的阶段结论
 
@@ -184,11 +194,12 @@
 
 优先顺序：
 
-1. 为 `branch abstention gate` 建单独监督
-   - 新建 `abstention_gate_proxy_v1`
-   - 直接监督 gate 在弱目标/absent 情况下变小，在 keep backstop 上不要塌掉
-2. 默认先固定 `v72` 的 mask，只训 gate 头或 gate 小分支
-   - 避免再次出现 `v76` 那种 joint drift
+1. 物化 `hard_present_gate_keep_guardrail_v1`
+   - 覆盖 `near_real_0007` 风格 hard present + music / harder mixture
+2. 后续 gate 训练固定保留三条训练/验收约束：
+   - `abstention_gate_proxy_v1`
+   - `same_gender_present_keep_guardrail_v1`
+   - `hard_present_gate_keep_guardrail_v1`
 3. 在任何新训练前，固定保留以下三条验收：
    - `real_eval_manifest_residual_speech_leak_floor_v1`
    - `same_gender_present_keep_guardrail_v1`
@@ -200,6 +211,7 @@
 - `reports/daily/2026-03-26_present_keep_guardrail_v1_v2_and_v73_v74_followup.md`
 - `reports/daily/2026-03-26_overlap_abstention_feasibility_and_plan.md`
 - `reports/daily/2026-03-26_audibility_conditioned_v1_and_abstention_gate_v1_v75_v76_v77.md`
+- `reports/daily/2026-03-26_abstention_gate_proxy_v1_and_v78_v79_followup.md`
 
 ## 文档维护规则
 

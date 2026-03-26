@@ -123,6 +123,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--loss-interference-extra-weight", type=float, default=0.0)
     parser.add_argument("--loss-absent-weight", type=float, default=0.0)
     parser.add_argument("--loss-absent-extra-weight", type=float, default=0.0)
+    parser.add_argument("--loss-gate-abstain-weight", type=float, default=0.0)
+    parser.add_argument("--loss-gate-keep-weight", type=float, default=0.0)
     parser.add_argument("--loss-reconstruction-waveform-weight", type=float, default=0.0)
     parser.add_argument("--loss-reconstruction-stft-weight", type=float, default=0.0)
     parser.add_argument("--loss-reconstruction-extra-waveform-weight", type=float, default=0.0)
@@ -317,6 +319,8 @@ def build_loss_config(args: argparse.Namespace) -> dict[str, float]:
         "interference_extra_weight": args.loss_interference_extra_weight,
         "absent_weight": args.loss_absent_weight,
         "absent_extra_weight": args.loss_absent_extra_weight,
+        "gate_abstain_weight": args.loss_gate_abstain_weight,
+        "gate_keep_weight": args.loss_gate_keep_weight,
         "interference_loss_mode": args.loss_interference_mode,
         "interference_extra_loss_mode": args.loss_interference_extra_mode,
         "transient_top_ratio": 0.12,
@@ -541,6 +545,8 @@ def evaluate(
     total_interference_extra = 0.0
     total_absent = 0.0
     total_absent_extra = 0.0
+    total_gate_abstain = 0.0
+    total_gate_keep = 0.0
     batch_count = 0
     compute_loss_kwargs = build_compute_loss_kwargs(loss_config)
     selector_totals = {
@@ -637,6 +643,7 @@ def evaluate(
                 lengths=batch["target_lengths"],
                 absent_intervals=batch["target_absent_intervals"],
                 model=model,
+                gate_values=outputs.get("branch_decoder_frame_gate"),
                 reconstruction_sample_weights=reconstruction_sample_weights,
                 reconstruction_extra_sample_weights=reconstruction_extra_sample_weights,
                 transient_sample_weights=transient_sample_weights,
@@ -646,6 +653,8 @@ def evaluate(
                 branch_protect_sample_weights=branch_protect_sample_weights,
                 absent_sample_weights=absent_sample_weights,
                 absent_extra_sample_weights=absent_extra_sample_weights,
+                gate_abstain_sample_weights=interference_extra_sample_weights,
+                gate_keep_sample_weights=branch_protect_sample_weights,
                 **compute_loss_kwargs,
             )
             total_loss += float(losses.total.item())
@@ -669,6 +678,8 @@ def evaluate(
             total_interference_extra += float(losses.interference_extra_projection_ratio.item())
             total_absent += float(losses.absent_interval_l1.item())
             total_absent_extra += float(losses.absent_extra_interval_l1.item())
+            total_gate_abstain += float(losses.gate_abstain_mean.item())
+            total_gate_keep += float(losses.gate_keep_mean.item())
             batch_count += 1
     if batch_count == 0:
         metrics = {
@@ -691,6 +702,8 @@ def evaluate(
             "interference_extra_projection_ratio": 0.0,
             "absent_interval_l1": 0.0,
             "absent_extra_interval_l1": 0.0,
+            "gate_abstain_mean": 0.0,
+            "gate_keep_mean": 0.0,
         }
     else:
         metrics = {
@@ -715,6 +728,8 @@ def evaluate(
             "interference_extra_projection_ratio": total_interference_extra / batch_count,
             "absent_interval_l1": total_absent / batch_count,
             "absent_extra_interval_l1": total_absent_extra / batch_count,
+            "gate_abstain_mean": total_gate_abstain / batch_count,
+            "gate_keep_mean": total_gate_keep / batch_count,
         }
     selector_metrics = {}
     for prefix, totals in selector_totals.items():
@@ -811,6 +826,8 @@ def main() -> None:
         epoch_interference_extra = 0.0
         epoch_absent = 0.0
         epoch_absent_extra = 0.0
+        epoch_gate_abstain = 0.0
+        epoch_gate_keep = 0.0
         step_count = 0
         train_selector_totals = {
             prefix: {"active": False, "selected_count": 0, "total_count": 0}
@@ -906,6 +923,7 @@ def main() -> None:
                 lengths=batch["target_lengths"],
                 absent_intervals=batch["target_absent_intervals"],
                 model=model,
+                gate_values=outputs.get("branch_decoder_frame_gate"),
                 reconstruction_sample_weights=reconstruction_sample_weights,
                 reconstruction_extra_sample_weights=reconstruction_extra_sample_weights,
                 transient_sample_weights=transient_sample_weights,
@@ -915,6 +933,8 @@ def main() -> None:
                 branch_protect_sample_weights=branch_protect_sample_weights,
                 absent_sample_weights=absent_sample_weights,
                 absent_extra_sample_weights=absent_extra_sample_weights,
+                gate_abstain_sample_weights=interference_extra_sample_weights,
+                gate_keep_sample_weights=branch_protect_sample_weights,
                 **compute_loss_kwargs,
             )
 
@@ -947,6 +967,8 @@ def main() -> None:
             epoch_interference_extra += float(losses.interference_extra_projection_ratio.item())
             epoch_absent += float(losses.absent_interval_l1.item())
             epoch_absent_extra += float(losses.absent_extra_interval_l1.item())
+            epoch_gate_abstain += float(losses.gate_abstain_mean.item())
+            epoch_gate_keep += float(losses.gate_keep_mean.item())
 
             if global_step % args.log_every == 0:
                 print(
@@ -995,6 +1017,8 @@ def main() -> None:
                             "absent_extra_interval_l1": round(
                                 float(losses.absent_extra_interval_l1.item()), 6
                             ),
+                            "gate_abstain_mean": round(float(losses.gate_abstain_mean.item()), 6),
+                            "gate_keep_mean": round(float(losses.gate_keep_mean.item()), 6),
                         },
                         ensure_ascii=False,
                     )
@@ -1025,6 +1049,8 @@ def main() -> None:
             "interference_extra_projection_ratio": epoch_interference_extra / max(1, step_count),
             "absent_interval_l1": epoch_absent / max(1, step_count),
             "absent_extra_interval_l1": epoch_absent_extra / max(1, step_count),
+            "gate_abstain_mean": epoch_gate_abstain / max(1, step_count),
+            "gate_keep_mean": epoch_gate_keep / max(1, step_count),
         }
         train_selector_metrics = {
             prefix: {
@@ -1065,6 +1091,8 @@ def main() -> None:
                 "train_interference_extra_projection_ratio": train_metrics["interference_extra_projection_ratio"],
                 "train_absent_interval_l1": train_metrics["absent_interval_l1"],
                 "train_absent_extra_interval_l1": train_metrics["absent_extra_interval_l1"],
+                "train_gate_abstain_mean": train_metrics["gate_abstain_mean"],
+                "train_gate_keep_mean": train_metrics["gate_keep_mean"],
                 "train_selector_metrics": train_selector_metrics,
                 "val_loss": val_metrics["loss"],
                 "val_waveform_l1": val_metrics["waveform_l1"],
@@ -1087,6 +1115,8 @@ def main() -> None:
                 "val_interference_extra_projection_ratio": val_metrics["interference_extra_projection_ratio"],
                 "val_absent_interval_l1": val_metrics["absent_interval_l1"],
                 "val_absent_extra_interval_l1": val_metrics["absent_extra_interval_l1"],
+                "val_gate_abstain_mean": val_metrics["gate_abstain_mean"],
+                "val_gate_keep_mean": val_metrics["gate_keep_mean"],
                 "val_selector_metrics": val_selector_metrics,
             }
         )

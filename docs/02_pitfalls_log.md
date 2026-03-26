@@ -189,8 +189,28 @@
 - gate 机制本身不是伪方向
 - 当前缺的是 gate 的专属监督，而不是更多 gate 学习率 sweep
 
+### 11. gate 专属监督成立，但 keep backstop 仍缺 hard-present 覆盖
+
+事实：
+
+- `v78`
+  - `abstention_gate_proxy_v1 + gate-level loss`
+  - 首次恢复到 present-safe
+  - 但 absent 收益不足
+- `v79`
+  - 加大 gate push 后
+  - `near_real_0006 / 0009` 确实更静
+  - 但 `near_real_0007` 开始回退
+
+结论：
+
+- 问题已经从“缺 gate supervision”推进到了“缺 hard-present keep guardrail”
+- 下一步不该继续扫 gate loss 权重，而应补：
+  - `hard_present_gate_keep_guardrail_v1`
+
 ## 近期关键案例入口
 
 - `reports/daily/2026-03-26_overlap_abstention_proxy_v3_v4_and_v71_v72_followup.md`
 - `reports/daily/2026-03-26_present_keep_guardrail_v1_v2_and_v73_v74_followup.md`
 - `reports/daily/2026-03-26_audibility_conditioned_v1_and_abstention_gate_v1_v75_v76_v77.md`
+- `reports/daily/2026-03-26_abstention_gate_proxy_v1_and_v78_v79_followup.md`

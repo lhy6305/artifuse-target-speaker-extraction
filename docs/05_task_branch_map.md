@@ -38,6 +38,16 @@
   - 状态：
     - gate-only isolate probe
     - 不能放行
+- `v78`
+  - `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v78_v72_abstention_gate_proxy_v1_supervised_ft1`
+  - 状态：
+    - gate supervision first safe pilot
+    - 不能放行
+- `v79`
+  - `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v79_v78_abstention_gate_proxy_v1_supervised_tuned_ft1`
+  - 状态：
+    - stronger gate push
+    - 不能放行
 
 ## 当前活跃问题树
 
@@ -95,6 +105,8 @@
   - `failed_as_loss_only`
 - `branch abstention gate`
   - `active_mechanism_probe`
+- `hard-present gate keep backstop`
+  - `next_required_guardrail`
 
 ### C. same-gender present keep
 
@@ -187,7 +199,37 @@
 
 - `failed_safe_noop`
 
-### 5. `v73`
+### 5. `v78`
+
+含义：
+
+- `v72 + abstention_gate_proxy_v1 + gate-level loss`
+
+结果：
+
+- 恢复到 present-safe
+- absent 仍不够静
+
+裁决：
+
+- `safe_but_absent_weak`
+
+### 6. `v79`
+
+含义：
+
+- `v78 + stronger gate push`
+
+结果：
+
+- `0006 / 0009` 更静
+- `0007` 开始回退
+
+裁决：
+
+- `failed_hard_present_backstop`
+
+### 7. `v73`
 
 含义：
 
@@ -203,7 +245,7 @@
 
 - `failed_tradeoff`
 
-### 6. `v74`
+### 8. `v74`
 
 含义：
 
@@ -235,6 +277,10 @@
 - gate 机制 follow-up：
   - `data/synthetic/train_manifest_audibility_conditioned_bundle_v1.jsonl`
   - `data/synthetic/val_manifest_audibility_conditioned_bundle_v1.jsonl`
+  - `data/synthetic/train_manifest_abstention_gate_proxy_v1.jsonl`
+  - `data/synthetic/val_manifest_abstention_gate_proxy_v1.jsonl`
+  - `data/synthetic/train_manifest_abstention_gate_bundle_v1.jsonl`
+  - `data/synthetic/val_manifest_abstention_gate_bundle_v1.jsonl`
 
 ### 验收侧
 
@@ -263,11 +309,10 @@
 
 如果没有新的用户决策，当前默认下一步是：
 
-- 不再继续扫 `v76 / v77` 附近权重；
-- 直接做 gate 专属监督：
-  - `abstention_gate_proxy_v1`
-  - `gate-level loss`
-  - 默认先固定 `v72` mask，只训 gate 分支
+- 不再继续扫 `v79` 附近权重；
+- 直接补下一条 guardrail：
+  - `hard_present_gate_keep_guardrail_v1`
+  - 目标覆盖 `near_real_0007` 风格样本
 
 执行前必须保持三条验收同时在场：
 
@@ -281,6 +326,7 @@
 - `reports/daily/2026-03-26_present_keep_guardrail_v1_v2_and_v73_v74_followup.md`
 - `reports/daily/2026-03-26_frontier_imperfection_taxonomy_and_next_subproblem.md`
 - `reports/daily/2026-03-26_audibility_conditioned_v1_and_abstention_gate_v1_v75_v76_v77.md`
+- `reports/daily/2026-03-26_abstention_gate_proxy_v1_and_v78_v79_followup.md`
 
 ## 文档维护规则
 
