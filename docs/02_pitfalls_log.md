@@ -734,6 +734,48 @@
   - 或监督语义
   - 并显式处理 `hard-present artifact risk`
 
+### 29. near-real tradeoff gate 不能把缺失的 optional bucket 当失败
+
+事实：
+
+- `scripts/eval/gate_near_real_tradeoff.py`
+  之前会把：
+  - focused subset pack 中本来就不存在的 `target_present__none`
+  直接判成 `missing_bucket -> fail`
+
+影响：
+
+- 会把像 `residual_speech_leak_floor_v1` 这种只含：
+  - `target_present__speech`
+  - `target_present__music_plus_speech`
+  - `target_absent__speech`
+  的包误写成 `overall_pass = false`
+
+要求：
+
+- `target_present__none` 在 near-real focused subset gate 中只能算 optional bucket；
+- 若该 bucket 不存在，应：
+  - 保留 `present = false`
+  - 但不能拉低 `overall_pass`
+
+### 30. `teacher artifact veto` 能减轻失败，但仍可能完全过不了人耳阈值
+
+事实：
+
+- `v100`
+  - 相对 `v95`
+  - 确实把 `near_real_0007` 上的 artifact 风险从更重拉回了一档
+- 但 `v81 vs v100` 解盲后仍然是：
+  - `tie = 3`
+  - `v81 = 1`
+  - `v100 = 0`
+
+结论：
+
+- frozen teacher overlap veto 不是完全无效；
+- 但它当前只能把已知失败“变轻”，还不能把它“变成胜利”；
+- 如果核心目标是可听胜出，就不应继续把 `v95 / v100` 家族当默认扩展方向。
+
 ## 近期关键案例入口
 
 - `reports/daily/2026-03-26_overlap_abstention_proxy_v3_v4_and_v71_v72_followup.md`
@@ -745,3 +787,5 @@
 - `reports/daily/2026-03-26_v54_vs_v81_listening_review.md`
 - `reports/daily/2026-03-26_overlap_aux_interference_decoder_v2_v3_v4_and_v93_v94_v95_followup.md`
 - `reports/daily/2026-03-26_v81_vs_v95_listening_review.md`
+- `reports/daily/2026-03-26_teacher_artifact_veto_v99_v100_followup.md`
+- `reports/daily/2026-03-26_v81_vs_v100_listening_review.md`

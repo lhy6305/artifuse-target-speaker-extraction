@@ -55,6 +55,12 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help="Optional checkpoint to initialize model weights from.",
     )
+    parser.add_argument(
+        "--teacher-checkpoint",
+        type=Path,
+        default=None,
+        help="Optional frozen teacher checkpoint used for hard-present overlap teacher veto losses.",
+    )
     parser.add_argument("--epochs", type=int, default=2)
     parser.add_argument("--batch-size", type=int, default=2)
     parser.add_argument("--lr", type=float, default=1e-3)
@@ -161,6 +167,12 @@ def parse_args() -> argparse.Namespace:
         choices=["complex", "phase_preserve"],
         default="complex",
     )
+    parser.add_argument(
+        "--model-branch-overlap-cancel-delta-blend-mode",
+        choices=["none", "gate", "complement"],
+        default="none",
+    )
+    parser.add_argument("--model-branch-overlap-cancel-max-blend", type=float, default=1.0)
     parser.add_argument("--model-branch-overlap-dual-decoder-max-delta", type=float, default=0.15)
     parser.add_argument(
         "--model-branch-overlap-dual-decoder-gate-mode",
@@ -176,6 +188,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--loss-stft-weight", type=float, default=0.5)
     parser.add_argument("--loss-sisdr-weight", type=float, default=0.0)
     parser.add_argument("--loss-branch-protect-guard-sisdr-weight", type=float, default=0.0)
+    parser.add_argument("--loss-branch-protect-overlap-base-align-weight", type=float, default=0.0)
+    parser.add_argument("--loss-branch-protect-teacher-overlap-weight", type=float, default=0.0)
     parser.add_argument("--loss-interference-extra-guard-sisdr-weight", type=float, default=0.0)
     parser.add_argument("--loss-interference-extra-base-align-weight", type=float, default=0.0)
     parser.add_argument("--loss-interference-extra-base-delta-projection-weight", type=float, default=0.0)
@@ -400,6 +414,8 @@ def build_model_config(args: argparse.Namespace) -> dict[str, int]:
         "branch_overlap_cancel_source_mode": args.model_branch_overlap_cancel_source_mode,
         "branch_overlap_cancel_apply_mode": args.model_branch_overlap_cancel_apply_mode,
         "branch_overlap_cancel_ratio_mode": args.model_branch_overlap_cancel_ratio_mode,
+        "branch_overlap_cancel_delta_blend_mode": args.model_branch_overlap_cancel_delta_blend_mode,
+        "branch_overlap_cancel_max_blend": args.model_branch_overlap_cancel_max_blend,
         "branch_overlap_dual_decoder_max_delta": args.model_branch_overlap_dual_decoder_max_delta,
         "branch_overlap_dual_decoder_gate_mode": args.model_branch_overlap_dual_decoder_gate_mode,
         "branch_overlap_dual_decoder_source_mode": args.model_branch_overlap_dual_decoder_source_mode,
@@ -429,6 +445,12 @@ def build_loss_config(args: argparse.Namespace) -> dict[str, float]:
         "reconstruction_extra_stft_weight": args.loss_reconstruction_extra_stft_weight,
         "sisdr_weight": args.loss_sisdr_weight,
         "branch_protect_guard_sisdr_weight": args.loss_branch_protect_guard_sisdr_weight,
+        "branch_protect_overlap_base_align_weight": (
+            args.loss_branch_protect_overlap_base_align_weight
+        ),
+        "branch_protect_teacher_overlap_weight": (
+            args.loss_branch_protect_teacher_overlap_weight
+        ),
         "interference_extra_guard_sisdr_weight": args.loss_interference_extra_guard_sisdr_weight,
         "interference_extra_base_align_weight": args.loss_interference_extra_base_align_weight,
         "interference_extra_base_delta_projection_weight": (
@@ -671,6 +693,15 @@ def load_checkpoint(path: Path, device: torch.device) -> dict:
     return torch.load(path, map_location=device, weights_only=False)
 
 
+def resolve_model_config_from_checkpoint(checkpoint: dict) -> dict:
+    model_config = dict(checkpoint.get("model_config", {}))
+    if "conditioning_mode" not in model_config:
+        state_dict = checkpoint["model_state_dict"]
+        if "condition_proj.weight" in state_dict:
+            model_config["conditioning_mode"] = "legacy_bias"
+    return model_config
+
+
 def serialize_repo_path(path: Path | None) -> str | None:
     if path is None:
         return None
@@ -782,6 +813,7 @@ def evaluate(
     dataloader: DataLoader,
     device: torch.device,
     loss_config: dict[str, float],
+    teacher_model: STFTMaskBaseline | None = None,
 ) -> tuple[dict[str, float], dict[str, dict[str, float | int | bool | None]]]:
     model.eval()
     total_loss = 0.0
@@ -793,6 +825,8 @@ def evaluate(
     total_reconstruction_extra_stft = 0.0
     total_sisdr_loss = 0.0
     total_branch_protect_guard_sisdr_loss = 0.0
+    total_branch_protect_overlap_base_align_l1 = 0.0
+    total_branch_protect_teacher_overlap_l1 = 0.0
     total_interference_extra_guard_sisdr_loss = 0.0
     total_interference_extra_base_align_l1 = 0.0
     total_interference_extra_base_delta_projection_ratio = 0.0
@@ -841,6 +875,15 @@ def evaluate(
                 reference=batch["reference"],
                 reference_lengths=batch["reference_lengths"],
             )
+            teacher_prediction = None
+            if teacher_model is not None:
+                teacher_outputs = teacher_model(
+                    mixture=batch["mixture"],
+                    mixture_lengths=batch["mixture_lengths"],
+                    reference=batch["reference"],
+                    reference_lengths=batch["reference_lengths"],
+                )
+                teacher_prediction = teacher_outputs["estimated_waveform"]
             reconstruction_sample_weights, reconstruction_extra_sample_weights, reconstruction_union_sample_weights = (
                 resolve_selector_sample_weights(
                     batch=batch,
@@ -946,6 +989,7 @@ def evaluate(
                 ),
                 reconstruction_extra_prediction=outputs["estimated_waveform"],
                 extra_prediction=resolve_branch_extra_prediction(outputs),
+                teacher_prediction=teacher_prediction,
                 overlap_cancel_prediction=outputs.get("branch_overlap_cancel_estimate_waveform"),
                 mixture=batch["mixture"],
                 target=batch["target"],
@@ -982,6 +1026,12 @@ def evaluate(
             total_reconstruction_extra_stft += float(losses.reconstruction_extra_stft_l1.item())
             total_sisdr_loss += float(losses.sisdr_loss.item())
             total_branch_protect_guard_sisdr_loss += float(losses.branch_protect_guard_sisdr_loss.item())
+            total_branch_protect_overlap_base_align_l1 += float(
+                losses.branch_protect_overlap_base_align_l1.item()
+            )
+            total_branch_protect_teacher_overlap_l1 += float(
+                losses.branch_protect_teacher_overlap_l1.item()
+            )
             total_interference_extra_guard_sisdr_loss += float(losses.interference_extra_guard_sisdr_loss.item())
             total_interference_extra_base_align_l1 += float(losses.interference_extra_base_align_l1.item())
             total_interference_extra_base_delta_projection_ratio += float(
@@ -1019,6 +1069,8 @@ def evaluate(
             "reconstruction_extra_stft_l1": 0.0,
             "sisdr_loss": 0.0,
             "branch_protect_guard_sisdr_loss": 0.0,
+            "branch_protect_overlap_base_align_l1": 0.0,
+            "branch_protect_teacher_overlap_l1": 0.0,
             "interference_extra_guard_sisdr_loss": 0.0,
             "interference_extra_base_align_l1": 0.0,
             "interference_extra_base_delta_projection_ratio": 0.0,
@@ -1050,6 +1102,12 @@ def evaluate(
             "reconstruction_extra_stft_l1": total_reconstruction_extra_stft / batch_count,
             "sisdr_loss": total_sisdr_loss / batch_count,
             "branch_protect_guard_sisdr_loss": total_branch_protect_guard_sisdr_loss / batch_count,
+            "branch_protect_overlap_base_align_l1": (
+                total_branch_protect_overlap_base_align_l1 / batch_count
+            ),
+            "branch_protect_teacher_overlap_l1": (
+                total_branch_protect_teacher_overlap_l1 / batch_count
+            ),
             "interference_extra_guard_sisdr_loss": total_interference_extra_guard_sisdr_loss / batch_count,
             "interference_extra_base_align_l1": total_interference_extra_base_align_l1 / batch_count,
             "interference_extra_base_delta_projection_ratio": (
@@ -1130,6 +1188,18 @@ def main() -> None:
         init_checkpoint = load_checkpoint(args.init_checkpoint, device)
         load_model_state_dict_for_init(model, init_checkpoint["model_state_dict"])
         init_checkpoint_path = str(args.init_checkpoint)
+    teacher_checkpoint_path: str | None = None
+    teacher_model: STFTMaskBaseline | None = None
+    if args.teacher_checkpoint is not None:
+        teacher_checkpoint = load_checkpoint(args.teacher_checkpoint, device)
+        teacher_model = STFTMaskBaseline(
+            **resolve_model_config_from_checkpoint(teacher_checkpoint)
+        ).to(device)
+        teacher_model.load_state_dict(teacher_checkpoint["model_state_dict"])
+        teacher_model.eval()
+        for parameter in teacher_model.parameters():
+            parameter.requires_grad_(False)
+        teacher_checkpoint_path = str(args.teacher_checkpoint)
     trainable_parameters, trainable_config = configure_trainable_parameters(
         model=model,
         module_prefixes=args.trainable_module_prefixes,
@@ -1163,6 +1233,8 @@ def main() -> None:
         epoch_reconstruction_extra_stft = 0.0
         epoch_sisdr_loss = 0.0
         epoch_branch_protect_guard_sisdr_loss = 0.0
+        epoch_branch_protect_overlap_base_align_l1 = 0.0
+        epoch_branch_protect_teacher_overlap_l1 = 0.0
         epoch_interference_extra_guard_sisdr_loss = 0.0
         epoch_interference_extra_base_align_l1 = 0.0
         epoch_interference_extra_base_delta_projection_ratio = 0.0
@@ -1210,6 +1282,16 @@ def main() -> None:
                 reference=batch["reference"],
                 reference_lengths=batch["reference_lengths"],
             )
+            teacher_prediction = None
+            if teacher_model is not None:
+                with torch.no_grad():
+                    teacher_outputs = teacher_model(
+                        mixture=batch["mixture"],
+                        mixture_lengths=batch["mixture_lengths"],
+                        reference=batch["reference"],
+                        reference_lengths=batch["reference_lengths"],
+                    )
+                teacher_prediction = teacher_outputs["estimated_waveform"]
             reconstruction_sample_weights, reconstruction_extra_sample_weights, reconstruction_union_sample_weights = (
                 resolve_selector_sample_weights(
                     batch=batch,
@@ -1315,6 +1397,7 @@ def main() -> None:
                 ),
                 reconstruction_extra_prediction=outputs["estimated_waveform"],
                 extra_prediction=resolve_branch_extra_prediction(outputs),
+                teacher_prediction=teacher_prediction,
                 overlap_cancel_prediction=outputs.get("branch_overlap_cancel_estimate_waveform"),
                 mixture=batch["mixture"],
                 target=batch["target"],
@@ -1360,6 +1443,12 @@ def main() -> None:
             epoch_reconstruction_extra_stft += float(losses.reconstruction_extra_stft_l1.item())
             epoch_sisdr_loss += float(losses.sisdr_loss.item())
             epoch_branch_protect_guard_sisdr_loss += float(losses.branch_protect_guard_sisdr_loss.item())
+            epoch_branch_protect_overlap_base_align_l1 += float(
+                losses.branch_protect_overlap_base_align_l1.item()
+            )
+            epoch_branch_protect_teacher_overlap_l1 += float(
+                losses.branch_protect_teacher_overlap_l1.item()
+            )
             epoch_interference_extra_guard_sisdr_loss += float(losses.interference_extra_guard_sisdr_loss.item())
             epoch_interference_extra_base_align_l1 += float(losses.interference_extra_base_align_l1.item())
             epoch_interference_extra_base_delta_projection_ratio += float(
@@ -1410,6 +1499,12 @@ def main() -> None:
                             "sisdr_loss": round(float(losses.sisdr_loss.item()), 6),
                             "branch_protect_guard_sisdr_loss": round(
                                 float(losses.branch_protect_guard_sisdr_loss.item()), 6
+                            ),
+                            "branch_protect_overlap_base_align_l1": round(
+                                float(losses.branch_protect_overlap_base_align_l1.item()), 6
+                            ),
+                            "branch_protect_teacher_overlap_l1": round(
+                                float(losses.branch_protect_teacher_overlap_l1.item()), 6
                             ),
                             "interference_extra_guard_sisdr_loss": round(
                                 float(losses.interference_extra_guard_sisdr_loss.item()), 6
@@ -1474,6 +1569,12 @@ def main() -> None:
             "reconstruction_extra_stft_l1": epoch_reconstruction_extra_stft / max(1, step_count),
             "sisdr_loss": epoch_sisdr_loss / max(1, step_count),
             "branch_protect_guard_sisdr_loss": epoch_branch_protect_guard_sisdr_loss / max(1, step_count),
+            "branch_protect_overlap_base_align_l1": (
+                epoch_branch_protect_overlap_base_align_l1 / max(1, step_count)
+            ),
+            "branch_protect_teacher_overlap_l1": (
+                epoch_branch_protect_teacher_overlap_l1 / max(1, step_count)
+            ),
             "interference_extra_guard_sisdr_loss": epoch_interference_extra_guard_sisdr_loss / max(1, step_count),
             "interference_extra_base_align_l1": epoch_interference_extra_base_align_l1 / max(1, step_count),
             "interference_extra_base_delta_projection_ratio": (
@@ -1517,7 +1618,13 @@ def main() -> None:
             }
             for prefix, totals in train_selector_totals.items()
         }
-        val_metrics, val_selector_metrics = evaluate(model, val_loader, device, loss_config=loss_config)
+        val_metrics, val_selector_metrics = evaluate(
+            model,
+            val_loader,
+            device,
+            loss_config=loss_config,
+            teacher_model=teacher_model,
+        )
         history.append(
             {
                 "epoch": epoch,
@@ -1531,6 +1638,12 @@ def main() -> None:
                 "train_reconstruction_extra_stft_l1": train_metrics["reconstruction_extra_stft_l1"],
                 "train_sisdr_loss": train_metrics["sisdr_loss"],
                 "train_branch_protect_guard_sisdr_loss": train_metrics["branch_protect_guard_sisdr_loss"],
+                "train_branch_protect_overlap_base_align_l1": (
+                    train_metrics["branch_protect_overlap_base_align_l1"]
+                ),
+                "train_branch_protect_teacher_overlap_l1": (
+                    train_metrics["branch_protect_teacher_overlap_l1"]
+                ),
                 "train_interference_extra_guard_sisdr_loss": train_metrics["interference_extra_guard_sisdr_loss"],
                 "train_interference_extra_base_align_l1": train_metrics["interference_extra_base_align_l1"],
                 "train_interference_extra_base_delta_projection_ratio": (
@@ -1572,6 +1685,12 @@ def main() -> None:
                 "val_reconstruction_extra_stft_l1": val_metrics["reconstruction_extra_stft_l1"],
                 "val_sisdr_loss": val_metrics["sisdr_loss"],
                 "val_branch_protect_guard_sisdr_loss": val_metrics["branch_protect_guard_sisdr_loss"],
+                "val_branch_protect_overlap_base_align_l1": (
+                    val_metrics["branch_protect_overlap_base_align_l1"]
+                ),
+                "val_branch_protect_teacher_overlap_l1": (
+                    val_metrics["branch_protect_teacher_overlap_l1"]
+                ),
                 "val_interference_extra_guard_sisdr_loss": val_metrics["interference_extra_guard_sisdr_loss"],
                 "val_interference_extra_base_align_l1": val_metrics["interference_extra_base_align_l1"],
                 "val_interference_extra_base_delta_projection_ratio": (
@@ -1628,6 +1747,7 @@ def main() -> None:
             "loss_config": loss_config,
             "trainable_config": trainable_config,
             "init_checkpoint": init_checkpoint_path,
+            "teacher_checkpoint": teacher_checkpoint_path,
             "model_state_dict": model.state_dict(),
             "optimizer_state_dict": optimizer.state_dict(),
             "args": vars(args),
@@ -1655,6 +1775,11 @@ def main() -> None:
         "loss_config": loss_config,
         "trainable_config": trainable_config,
         "init_checkpoint": serialize_repo_path(Path(init_checkpoint_path)) if init_checkpoint_path else None,
+        "teacher_checkpoint": (
+            serialize_repo_path(Path(teacher_checkpoint_path))
+            if teacher_checkpoint_path
+            else None
+        ),
         "global_steps": global_step,
         "start_time": start_dt.isoformat(timespec="seconds"),
         "end_time": end_dt.isoformat(timespec="seconds"),

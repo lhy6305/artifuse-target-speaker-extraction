@@ -17,6 +17,8 @@ class LossBreakdown:
     reconstruction_extra_stft_l1: torch.Tensor
     sisdr_loss: torch.Tensor
     branch_protect_guard_sisdr_loss: torch.Tensor
+    branch_protect_overlap_base_align_l1: torch.Tensor
+    branch_protect_teacher_overlap_l1: torch.Tensor
     interference_extra_guard_sisdr_loss: torch.Tensor
     interference_extra_base_align_l1: torch.Tensor
     interference_extra_base_delta_projection_ratio: torch.Tensor
@@ -636,6 +638,7 @@ def compute_losses(
     overlap_cancel_prediction: torch.Tensor | None = None,
     reconstruction_extra_prediction: torch.Tensor | None = None,
     extra_prediction: torch.Tensor | None = None,
+    teacher_prediction: torch.Tensor | None = None,
     reconstruction_sample_weights: torch.Tensor | None = None,
     reconstruction_extra_sample_weights: torch.Tensor | None = None,
     transient_sample_weights: torch.Tensor | None = None,
@@ -661,6 +664,8 @@ def compute_losses(
     reconstruction_extra_stft_weight: float = 0.0,
     sisdr_weight: float = 0.0,
     branch_protect_guard_sisdr_weight: float = 0.0,
+    branch_protect_overlap_base_align_weight: float = 0.0,
+    branch_protect_teacher_overlap_weight: float = 0.0,
     interference_extra_guard_sisdr_weight: float = 0.0,
     interference_extra_base_align_weight: float = 0.0,
     interference_extra_base_delta_projection_weight: float = 0.0,
@@ -743,6 +748,25 @@ def compute_losses(
         sample_weights=branch_protect_sample_weights,
         zero_mean=True,
     )
+    branch_protect_overlap_base_align_term = interval_waveform_l1_loss(
+        prediction=extra_prediction,
+        target=prediction,
+        lengths=lengths,
+        intervals_batch=overlap_intervals,
+        sample_rate=sample_rate,
+        sample_weights=branch_protect_sample_weights,
+    )
+    if teacher_prediction is None:
+        branch_protect_teacher_overlap_term = prediction.new_tensor(0.0)
+    else:
+        branch_protect_teacher_overlap_term = interval_waveform_l1_loss(
+            prediction=extra_prediction,
+            target=teacher_prediction,
+            lengths=lengths,
+            intervals_batch=overlap_intervals,
+            sample_rate=sample_rate,
+            sample_weights=branch_protect_sample_weights,
+        )
     interference_extra_guard_sisdr_term = weighted_sisdr_loss(
         prediction=extra_prediction,
         target=target,
@@ -911,6 +935,8 @@ def compute_losses(
         + (reconstruction_extra_stft_term * reconstruction_extra_stft_weight)
         + (sisdr_term * sisdr_weight)
         + (branch_protect_guard_sisdr_term * branch_protect_guard_sisdr_weight)
+        + (branch_protect_overlap_base_align_term * branch_protect_overlap_base_align_weight)
+        + (branch_protect_teacher_overlap_term * branch_protect_teacher_overlap_weight)
         + (interference_extra_guard_sisdr_term * interference_extra_guard_sisdr_weight)
         + (interference_extra_base_align_term * interference_extra_base_align_weight)
         + (interference_extra_base_delta_projection_term * interference_extra_base_delta_projection_weight)
@@ -943,6 +969,8 @@ def compute_losses(
         reconstruction_extra_stft_l1=reconstruction_extra_stft_term,
         sisdr_loss=sisdr_term,
         branch_protect_guard_sisdr_loss=branch_protect_guard_sisdr_term,
+        branch_protect_overlap_base_align_l1=branch_protect_overlap_base_align_term,
+        branch_protect_teacher_overlap_l1=branch_protect_teacher_overlap_term,
         interference_extra_guard_sisdr_loss=interference_extra_guard_sisdr_term,
         interference_extra_base_align_l1=interference_extra_base_align_term,
         interference_extra_base_delta_projection_ratio=interference_extra_base_delta_projection_term,

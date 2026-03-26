@@ -100,6 +100,7 @@ def evaluate_bucket(
     baseline_label: str,
     candidate_label: str,
     rules: list[dict[str, str]],
+    required: bool = True,
 ) -> dict[str, Any]:
     group = get_group(summary, bucket_name)
     if group is None:
@@ -107,8 +108,9 @@ def evaluate_bucket(
             "bucket_name": bucket_name,
             "present": False,
             "count": 0,
-            "pass": False,
-            "reason": "missing_bucket",
+            "required": required,
+            "pass": not required,
+            "reason": "missing_bucket" if required else "missing_optional_bucket",
             "rules": [],
         }
 
@@ -128,6 +130,7 @@ def evaluate_bucket(
         "bucket_name": bucket_name,
         "present": True,
         "count": int(group.get("count", 0)),
+        "required": required,
         "pass": bucket_pass,
         "rules": rule_results,
         "decoded_label_counts": group.get("decoded_label_counts", {}),
@@ -143,11 +146,12 @@ def main() -> None:
 
     # These hard gates encode the current near-real keep/drop logic:
     # 1. speech-only target-present must not be worse on retention-vs-leak, leak, or residual.
-    # 2. raw-only target-present must not become more residual-heavy.
+    # 2. raw-only target-present must not become more residual-heavy when that bucket exists.
     # 3. target-absent speech must keep at least as much suppression signal as baseline.
     bucket_configs = [
         {
             "bucket_name": "target_present__speech",
+            "required": True,
             "rules": [
                 {
                     "metric_key": "better_retention_minus_leak_label",
@@ -168,6 +172,7 @@ def main() -> None:
         },
         {
             "bucket_name": "target_present__none",
+            "required": False,
             "rules": [
                 {
                     "metric_key": "more_residual_heavy_label",
@@ -178,6 +183,7 @@ def main() -> None:
         },
         {
             "bucket_name": "target_absent__speech",
+            "required": True,
             "rules": [
                 {
                     "metric_key": "more_interference_leaky_label",
@@ -195,6 +201,7 @@ def main() -> None:
             baseline_label=args.baseline_label,
             candidate_label=candidate_label,
             rules=config["rules"],
+            required=bool(config.get("required", True)),
         )
         for config in bucket_configs
     ]

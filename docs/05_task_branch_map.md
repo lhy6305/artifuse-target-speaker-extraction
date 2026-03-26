@@ -153,6 +153,20 @@
     - 首个有效的 `phase-preserving subtractive overlap canceller`
     - synthetic / near-real tradeoff / bandwidth 都近乎与 `v81` 全 tie
     - 不进入 focused 听审
+- `v99`
+  - `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v99_v95_hardpresent_artifact_veto_v1_ft1`
+  - 状态：
+    - self-align artifact veto probe
+    - 在 `auxiliary_only` 家族上是结构性 no-op
+    - 不构成真实候选
+- `v100`
+  - `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v100_v95_teacher_artifact_veto_v1_ft1`
+  - 状态：
+    - frozen teacher hard-present overlap veto
+    - relative `v81` 三条 synthetic 全量正收益
+    - near-real objective gate 已通过
+    - `v81 vs v100` 听审结果为 `tie = 3, v81 = 1, v100 = 0`
+    - 分支先收口，不升格
 
 ## 当前活跃问题树
 
@@ -222,6 +236,8 @@
   - `failed_as_direct_output_path`
 - `overlap auxiliary interference decoder`
   - `objective_positive_but_not_audibly_better`
+- `teacher artifact veto`
+  - `closed_as_non_audible_improvement`
 
 ### C. same-gender present keep
 

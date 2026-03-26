@@ -65,6 +65,12 @@
   - `v98`
     - 含义：`v81 + overlap canceller v3 phase_preserve subtract`
     - 状态：首个有效的 phase-preserving subtractive pilot，但 synthetic / near-real / bandwidth 都与 `v81` 近乎全 tie，不进入 focused 听审
+  - `v99`
+    - 含义：`v95 + hard-present self-align veto probe`
+    - 状态：在 `auxiliary_only` 家族上是结构性 no-op，不构成真实候选
+  - `v100`
+    - 含义：`v95 + frozen teacher hard-present overlap veto`
+    - 状态：relative `v81` 三条 synthetic guardrail 全量正收益，near-real objective gate 已通过；但 `v81 vs v100` 听审结果为 `tie = 3, v81 = 1, v100 = 0`，不升格
   - `v82`
     - 含义：`present_overlap_residual_leak_purification v1` 首轮 mask pilot
     - 状态：objective 前进明显，但 `v81 vs v82` 听审为 `4 / 4 tie`
@@ -119,7 +125,14 @@
 - `v72 / v73 / v74 / v75 / v76 / v77 / v78 / v79 / v80 / v81` 都不能替代默认线。
 - `v72 / v73 / v74 / v75 / v76 / v77 / v78 / v79 / v80 / v81 / v82 / v83 / v84 / v85` 都不能替代默认线。
 - `v72 / v73 / v74 / v75 / v76 / v77 / v78 / v79 / v80 / v81 / v82 / v83 / v84 / v85 / v86` 都不能替代默认线。
-- `v72 / v73 / v74 / v75 / v76 / v77 / v78 / v79 / v80 / v81 / v82 / v83 / v84 / v85 / v86 / v87 / v88 / v89 / v90 / v91 / v93 / v94 / v95` 都不能替代默认线。
+- `v72 / v73 / v74 / v75 / v76 / v77 / v78 / v79 / v80 / v81 / v82 / v83 / v84 / v85 / v86 / v87 / v88 / v89 / v90 / v91 / v93 / v94 / v95 / v98 / v99` 都不能替代默认线。
+- `v100` 也不能替代默认线。
+
+## 当前默认下一步
+
+- `teacher artifact veto` 这条分支先收口；
+- 不把 `v100` 继续当成默认扩展方向；
+- 当前若继续推进，应回到更高层的机制重设计，而不是在 `v95 / v100` 家族上继续小步扫参。
 
 ## 当前核心子题
 

@@ -36,6 +36,8 @@ class STFTMaskBaseline(nn.Module):
         branch_overlap_cancel_source_mode: str = "residual",
         branch_overlap_cancel_apply_mode: str = "subtract",
         branch_overlap_cancel_ratio_mode: str = "complex",
+        branch_overlap_cancel_delta_blend_mode: str = "none",
+        branch_overlap_cancel_max_blend: float = 1.0,
         branch_overlap_dual_decoder_max_delta: float = 0.15,
         branch_overlap_dual_decoder_gate_mode: str = "complement",
         branch_overlap_dual_decoder_source_mode: str = "residual",
@@ -64,6 +66,8 @@ class STFTMaskBaseline(nn.Module):
         self.branch_overlap_cancel_source_mode = branch_overlap_cancel_source_mode
         self.branch_overlap_cancel_apply_mode = branch_overlap_cancel_apply_mode
         self.branch_overlap_cancel_ratio_mode = branch_overlap_cancel_ratio_mode
+        self.branch_overlap_cancel_delta_blend_mode = branch_overlap_cancel_delta_blend_mode
+        self.branch_overlap_cancel_max_blend = branch_overlap_cancel_max_blend
         self.branch_overlap_dual_decoder_max_delta = branch_overlap_dual_decoder_max_delta
         self.branch_overlap_dual_decoder_gate_mode = branch_overlap_dual_decoder_gate_mode
         self.branch_overlap_dual_decoder_source_mode = branch_overlap_dual_decoder_source_mode
@@ -106,6 +110,10 @@ class STFTMaskBaseline(nn.Module):
         if branch_overlap_cancel_ratio_mode not in ("complex", "phase_preserve"):
             raise ValueError(
                 "branch_overlap_cancel_ratio_mode must be one of: complex, phase_preserve."
+            )
+        if branch_overlap_cancel_delta_blend_mode not in ("none", "gate", "complement"):
+            raise ValueError(
+                "branch_overlap_cancel_delta_blend_mode must be one of: none, gate, complement."
             )
         if branch_overlap_dual_decoder_gate_mode not in ("none", "gate", "complement"):
             raise ValueError(
@@ -464,6 +472,7 @@ class STFTMaskBaseline(nn.Module):
         branch_decoder_frame_gate = None
         branch_overlap_refine_ratio = None
         branch_overlap_cancel_ratio = None
+        branch_overlap_cancel_delta_blend = None
         estimated_stft_branch_base = None
         estimated_waveform_branch_base = None
         branch_overlap_cancel_estimate_stft = None
@@ -527,7 +536,19 @@ class STFTMaskBaseline(nn.Module):
                     cancel_source_stft = mix_stft - estimated_stft_branch_base
                 branch_overlap_cancel_estimate_stft = cancel_source_stft * branch_overlap_cancel_ratio
                 if self.branch_overlap_cancel_apply_mode == "subtract":
-                    estimated_stft = estimated_stft - branch_overlap_cancel_estimate_stft
+                    if branch_decoder_frame_gate is not None:
+                        if self.branch_overlap_cancel_delta_blend_mode == "gate":
+                            branch_overlap_cancel_delta_blend = branch_decoder_frame_gate
+                        elif self.branch_overlap_cancel_delta_blend_mode == "complement":
+                            branch_overlap_cancel_delta_blend = 1.0 - branch_decoder_frame_gate
+                    if branch_overlap_cancel_delta_blend is None:
+                        branch_overlap_cancel_delta_blend = torch.ones_like(branch_decoder_mask[:, :1, :])
+                    branch_overlap_cancel_delta_blend = (
+                        branch_overlap_cancel_delta_blend * self.branch_overlap_cancel_max_blend
+                    )
+                    estimated_stft = estimated_stft - (
+                        branch_overlap_cancel_estimate_stft * branch_overlap_cancel_delta_blend
+                    )
             if (
                 self.branch_overlap_dual_decoder_temporal_model is not None
                 and self.branch_overlap_dual_decoder_head is not None
@@ -583,6 +604,7 @@ class STFTMaskBaseline(nn.Module):
             "branch_decoder_frame_gate": branch_decoder_frame_gate,
             "branch_overlap_refine_ratio": branch_overlap_refine_ratio,
             "branch_overlap_cancel_ratio": branch_overlap_cancel_ratio,
+            "branch_overlap_cancel_delta_blend": branch_overlap_cancel_delta_blend,
             "mixture_stft": mix_stft,
             "estimated_stft": estimated_stft,
             "estimated_stft_base": estimated_stft_base,
