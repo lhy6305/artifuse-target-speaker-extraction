@@ -21,6 +21,7 @@ class SyntheticSample:
     recipe: str
     temporal_pattern: str
     target_present_ratio: float
+    target_energy_ratio: float | None
     target_transient_presence_minus_mid_db_mean: float | None
     target_transient_presence_share_mean: float | None
     interference_transient_presence_minus_mid_db_mean: float | None
@@ -87,6 +88,11 @@ class SyntheticTSEDataset(Dataset[dict[str, Any]]):
                 recipe=row["recipe"],
                 temporal_pattern=row.get("temporal_pattern", "target_full"),
                 target_present_ratio=float(row.get("target_present_ratio", 1.0)),
+                target_energy_ratio=(
+                    float(row["target_energy_ratio"])
+                    if row.get("target_energy_ratio") is not None
+                    else None
+                ),
                 target_transient_presence_minus_mid_db_mean=(
                     float(row["target_transient_presence_minus_mid_db_mean"])
                     if row.get("target_transient_presence_minus_mid_db_mean") is not None
@@ -132,6 +138,11 @@ class SyntheticTSEDataset(Dataset[dict[str, Any]]):
             "recipe": sample.recipe,
             "temporal_pattern": sample.temporal_pattern,
             "target_present_ratio": sample.target_present_ratio,
+            "target_energy_ratio": (
+                float(sample.target_energy_ratio)
+                if sample.target_energy_ratio is not None
+                else float("nan")
+            ),
             "target_transient_presence_minus_mid_db_mean": (
                 float(sample.target_transient_presence_minus_mid_db_mean)
                 if sample.target_transient_presence_minus_mid_db_mean is not None
@@ -199,6 +210,10 @@ def synthetic_collate_fn(batch: list[dict[str, Any]]) -> dict[str, Any]:
         "temporal_patterns": [item["temporal_pattern"] for item in batch],
         "target_present_ratios": torch.tensor(
             [item["target_present_ratio"] for item in batch],
+            dtype=torch.float32,
+        ),
+        "target_energy_ratios": torch.tensor(
+            [item["target_energy_ratio"] for item in batch],
             dtype=torch.float32,
         ),
         "target_transient_presence_minus_mid_db_means": torch.tensor(

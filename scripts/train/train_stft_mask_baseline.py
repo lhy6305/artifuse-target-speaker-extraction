@@ -161,6 +161,8 @@ def add_selector_args(parser: argparse.ArgumentParser, prefix: str) -> None:
         parser.add_argument(f"{flag_prefix}focus-interference-speaker-names", nargs="*", default=[])
         parser.add_argument(f"{flag_prefix}min-target-ratio", type=float, default=None)
         parser.add_argument(f"{flag_prefix}max-target-ratio", type=float, default=None)
+        parser.add_argument(f"{flag_prefix}min-target-energy-ratio", type=float, default=None)
+        parser.add_argument(f"{flag_prefix}max-target-energy-ratio", type=float, default=None)
         parser.add_argument(f"{flag_prefix}min-overlap-ratio", type=float, default=None)
         parser.add_argument(f"{flag_prefix}max-overlap-ratio", type=float, default=None)
         parser.add_argument(f"{flag_prefix}min-interference-gain-db", type=float, default=None)
@@ -245,6 +247,7 @@ def move_batch_to_device(batch: dict, device: torch.device) -> dict:
         "reference",
         "reference_lengths",
         "target_present_ratios",
+        "target_energy_ratios",
         "target_transient_presence_minus_mid_db_means",
         "target_transient_presence_share_means",
         "interference_transient_presence_minus_mid_db_means",
@@ -332,6 +335,8 @@ def build_loss_config(args: argparse.Namespace) -> dict[str, float]:
                 "focus_interference_speaker_names",
                 "min_target_ratio",
                 "max_target_ratio",
+                "min_target_energy_ratio",
+                "max_target_energy_ratio",
                 "min_overlap_ratio",
                 "max_overlap_ratio",
                 "min_interference_gain_db",

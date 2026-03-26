@@ -1,0 +1,76 @@
+{
+  "input_manifests": [
+    "data/synthetic/val_manifest_overlap_abstention_backstop_union_metrics_v1.jsonl",
+    "data/synthetic/val_manifest_same_gender_reverb_proxy_v2_metrics_v1.jsonl"
+  ],
+  "output_manifest": "data/synthetic/val_manifest_audibility_conditioned_bundle_v1.jsonl",
+  "sample_ids_output": null,
+  "dedupe_key": "sample_id",
+  "duplicate_key_count": 14,
+  "duplicate_keys": [
+    "val_000027",
+    "val_000033",
+    "val_000041",
+    "val_000048",
+    "val_000052",
+    "val_000077",
+    "val_000104",
+    "val_000111",
+    "val_000125",
+    "val_000163",
+    "val_000182",
+    "val_000197",
+    "val_000215",
+    "val_000219"
+  ],
+  "input_summaries": [
+    {
+      "manifest": "data/synthetic/val_manifest_overlap_abstention_backstop_union_metrics_v1.jsonl",
+      "summary": {
+        "count": 55,
+        "recipe_counts": {
+          "target_clean_plus_music": 9,
+          "target_clean_speech": 17,
+          "target_hard_plus_music": 8,
+          "target_hard_speech": 21
+        },
+        "temporal_pattern_counts": {
+          "target_full": 55
+        },
+        "interference_pool_counts": {
+          "": 55
+        }
+      }
+    },
+    {
+      "manifest": "data/synthetic/val_manifest_same_gender_reverb_proxy_v2_metrics_v1.jsonl",
+      "summary": {
+        "count": 100,
+        "recipe_counts": {
+          "target_clean_speech": 100
+        },
+        "temporal_pattern_counts": {
+          "target_full": 100
+        },
+        "interference_pool_counts": {
+          "": 100
+        }
+      }
+    }
+  ],
+  "output_summary": {
+    "count": 141,
+    "recipe_counts": {
+      "target_clean_plus_music": 7,
+      "target_clean_speech": 113,
+      "target_hard_plus_music": 6,
+      "target_hard_speech": 15
+    },
+    "temporal_pattern_counts": {
+      "target_full": 141
+    },
+    "interference_pool_counts": {
+      "": 141
+    }
+  }
+}

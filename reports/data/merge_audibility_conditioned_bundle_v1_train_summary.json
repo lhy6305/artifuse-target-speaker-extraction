@@ -1,0 +1,83 @@
+{
+  "input_manifests": [
+    "data/synthetic/train_manifest_overlap_abstention_backstop_union_metrics_v1.jsonl",
+    "data/synthetic/train_manifest_same_gender_reverb_proxy_v2_metrics_v1.jsonl"
+  ],
+  "output_manifest": "data/synthetic/train_manifest_audibility_conditioned_bundle_v1.jsonl",
+  "sample_ids_output": null,
+  "dedupe_key": "sample_id",
+  "duplicate_key_count": 21,
+  "duplicate_keys": [
+    "train_000017",
+    "train_000039",
+    "train_000057",
+    "train_000058",
+    "train_000111",
+    "train_000115",
+    "train_000118",
+    "train_000124",
+    "train_000133",
+    "train_000189",
+    "train_000191",
+    "train_000210",
+    "train_000219",
+    "train_000225",
+    "train_000237",
+    "train_000245",
+    "train_000263",
+    "train_000324",
+    "train_000370",
+    "train_000410",
+    "train_000508"
+  ],
+  "input_summaries": [
+    {
+      "manifest": "data/synthetic/train_manifest_overlap_abstention_backstop_union_metrics_v1.jsonl",
+      "summary": {
+        "count": 211,
+        "recipe_counts": {
+          "target_clean_plus_music": 46,
+          "target_clean_speech": 64,
+          "target_hard_plus_music": 43,
+          "target_hard_speech": 58
+        },
+        "temporal_pattern_counts": {
+          "target_full": 211
+        },
+        "interference_pool_counts": {
+          "": 211
+        }
+      }
+    },
+    {
+      "manifest": "data/synthetic/train_manifest_same_gender_reverb_proxy_v2_metrics_v1.jsonl",
+      "summary": {
+        "count": 190,
+        "recipe_counts": {
+          "target_clean_speech": 190
+        },
+        "temporal_pattern_counts": {
+          "target_full": 190
+        },
+        "interference_pool_counts": {
+          "": 190
+        }
+      }
+    }
+  ],
+  "output_summary": {
+    "count": 380,
+    "recipe_counts": {
+      "target_clean_plus_music": 43,
+      "target_clean_speech": 246,
+      "target_hard_plus_music": 40,
+      "target_hard_speech": 51
+    },
+    "temporal_pattern_counts": {
+      "target_full": 380
+    },
+    "interference_pool_counts": {
+      "": 380
+    }
+  }
+}

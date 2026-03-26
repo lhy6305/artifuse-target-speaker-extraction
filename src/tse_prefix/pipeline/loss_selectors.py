@@ -11,6 +11,8 @@ SELECTOR_SUFFIXES = (
     "focus_interference_speaker_names",
     "min_target_ratio",
     "max_target_ratio",
+    "min_target_energy_ratio",
+    "max_target_energy_ratio",
     "min_overlap_ratio",
     "max_overlap_ratio",
     "min_interference_gain_db",
@@ -55,6 +57,8 @@ def _build_branch_selector_sample_weights(
     speaker_names = set(loss_config.get(f"{key_prefix}focus_interference_speaker_names", []))
     min_ratio = loss_config.get(f"{key_prefix}min_target_ratio")
     max_ratio = loss_config.get(f"{key_prefix}max_target_ratio")
+    min_target_energy_ratio = loss_config.get(f"{key_prefix}min_target_energy_ratio")
+    max_target_energy_ratio = loss_config.get(f"{key_prefix}max_target_energy_ratio")
     min_overlap = loss_config.get(f"{key_prefix}min_overlap_ratio")
     max_overlap = loss_config.get(f"{key_prefix}max_overlap_ratio")
     min_gain = loss_config.get(f"{key_prefix}min_interference_gain_db")
@@ -82,6 +86,8 @@ def _build_branch_selector_sample_weights(
         or speaker_names
         or min_ratio is not None
         or max_ratio is not None
+        or min_target_energy_ratio is not None
+        or max_target_energy_ratio is not None
         or min_overlap is not None
         or max_overlap is not None
         or min_gain is not None
@@ -133,6 +139,7 @@ def _build_branch_selector_sample_weights(
         )
 
     ratios = batch["target_present_ratios"].to(device=device, dtype=torch.float32)
+    target_energy_ratios = batch["target_energy_ratios"].to(device=device, dtype=torch.float32)
     transient_minus_mid = batch["target_transient_presence_minus_mid_db_means"].to(device=device, dtype=torch.float32)
     transient_share = batch["target_transient_presence_share_means"].to(device=device, dtype=torch.float32)
     interference_transient_minus_mid = batch["interference_transient_presence_minus_mid_db_means"].to(
@@ -153,6 +160,14 @@ def _build_branch_selector_sample_weights(
         weights = weights * (ratios >= float(min_ratio)).float()
     if max_ratio is not None:
         weights = weights * (ratios <= float(max_ratio)).float()
+    if min_target_energy_ratio is not None:
+        weights = weights * (
+            (~torch.isnan(target_energy_ratios)) & (target_energy_ratios >= float(min_target_energy_ratio))
+        ).float()
+    if max_target_energy_ratio is not None:
+        weights = weights * (
+            (~torch.isnan(target_energy_ratios)) & (target_energy_ratios <= float(max_target_energy_ratio))
+        ).float()
     if min_overlap is not None:
         weights = weights * ((~torch.isnan(overlaps)) & (overlaps >= float(min_overlap))).float()
     if max_overlap is not None:
