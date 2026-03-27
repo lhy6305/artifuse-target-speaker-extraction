@@ -1,0 +1,817 @@
+{
+  "pack_dir": "reports/eval/ab_listening_pack_residual_speech_leak_floor_v1_v81_vs_v106_blind",
+  "benchmark_manifest": "reports/eval/overlap_local_benchmark_manifest_residual_speech_leak_floor_v1.jsonl",
+  "num_samples": 4,
+  "source_retention_threshold_db": 0.5,
+  "interference_leak_threshold_db": 0.5,
+  "retention_minus_leak_threshold_db": 0.75,
+  "artifact_share_threshold": 0.03,
+  "better_source_retention_candidate_counts": {
+    "tie": 2,
+    "file_b": 1,
+    "not_applicable": 1
+  },
+  "more_speech_interference_leaky_candidate_counts": {
+    "file_a": 2,
+    "file_b": 2
+  },
+  "more_total_interference_leaky_candidate_counts": {
+    "file_a": 2,
+    "tie": 1,
+    "file_b": 1
+  },
+  "better_retention_minus_speech_leak_candidate_counts": {
+    "file_b": 1,
+    "tie": 1,
+    "file_a": 1,
+    "not_applicable": 1
+  },
+  "better_retention_minus_total_leak_candidate_counts": {
+    "file_b": 1,
+    "tie": 2,
+    "not_applicable": 1
+  },
+  "more_artifact_proxy_heavy_candidate_counts": {
+    "tie": 4
+  },
+  "decoded_label_counts": {
+    "better_source_retention_label": {
+      "tie": 2,
+      "v106": 1,
+      "not_applicable": 1
+    },
+    "more_speech_interference_leaky_label": {
+      "v81": 2,
+      "v106": 2
+    },
+    "more_total_interference_leaky_label": {
+      "v81": 2,
+      "tie": 1,
+      "v106": 1
+    },
+    "better_retention_minus_speech_leak_label": {
+      "v106": 1,
+      "tie": 1,
+      "v81": 1,
+      "not_applicable": 1
+    },
+    "better_retention_minus_total_leak_label": {
+      "v106": 1,
+      "tie": 2,
+      "not_applicable": 1
+    },
+    "more_artifact_proxy_heavy_label": {
+      "tie": 4
+    }
+  },
+  "decoded_mean_metrics_by_label": {
+    "v81": {
+      "target_capture_db": -10.755877430237161,
+      "speech_interference_capture_db": -39.159389292089216,
+      "total_interference_capture_db": -35.57399205010733,
+      "retention_minus_speech_leak_db": 25.224906587550027,
+      "retention_minus_total_leak_db": 20.444376931574173,
+      "artifact_proxy_db": -2.293157826099155,
+      "residual_output_share": 0.6261463682537707,
+      "joint_fit_r2": 0.3738536317462294
+    },
+    "v106": {
+      "target_capture_db": -10.736192124302896,
+      "speech_interference_capture_db": -38.283522647931285,
+      "total_interference_capture_db": -35.896169328940715,
+      "retention_minus_speech_leak_db": 24.363839451225573,
+      "retention_minus_total_leak_db": 21.180701692571475,
+      "artifact_proxy_db": -2.242010194793434,
+      "residual_output_share": 0.632028828861828,
+      "joint_fit_r2": 0.367971171138172
+    }
+  },
+  "human_alignment_summary": {
+    "better_source_retention_candidate": {
+      "decisive_samples": 0,
+      "aligned": 0,
+      "contradicted": 0,
+      "predicted_tie": 0,
+      "not_applicable": 0
+    },
+    "more_speech_interference_leaky_candidate": {
+      "decisive_samples": 0,
+      "aligned": 0,
+      "contradicted": 0,
+      "predicted_tie": 0,
+      "not_applicable": 0
+    },
+    "more_total_interference_leaky_candidate": {
+      "decisive_samples": 0,
+      "aligned": 0,
+      "contradicted": 0,
+      "predicted_tie": 0,
+      "not_applicable": 0
+    },
+    "better_retention_minus_speech_leak_candidate": {
+      "decisive_samples": 0,
+      "aligned": 0,
+      "contradicted": 0,
+      "predicted_tie": 0,
+      "not_applicable": 0
+    },
+    "better_retention_minus_total_leak_candidate": {
+      "decisive_samples": 0,
+      "aligned": 0,
+      "contradicted": 0,
+      "predicted_tie": 0,
+      "not_applicable": 0
+    },
+    "more_artifact_proxy_heavy_candidate": {
+      "decisive_samples": 0,
+      "aligned": 0,
+      "contradicted": 0,
+      "predicted_tie": 0,
+      "not_applicable": 0
+    }
+  },
+  "top_abs_speech_interference_capture_deltas": [
+    {
+      "sample_id": "near_real_0007",
+      "note": "residual-speech-leak floor focus; hard target-present friend-speech plus music case, all current frontier candidates still show moderate leakage and moderate artifact",
+      "benchmark_kind": "target_present_overlap_peak",
+      "window_start_sec": 0.53,
+      "window_duration_sec": 1.0,
+      "target_active_start_sec": 0.3499999999999943,
+      "target_active_end_sec": 2.3900000000000006,
+      "human_decoded_better_output": "",
+      "file_a_name": "candidate_a.wav",
+      "file_b_name": "candidate_b.wav",
+      "file_a_label": "v81",
+      "file_b_label": "v106",
+      "file_a_metrics": {
+        "rms_dbfs": -37.3629856540101,
+        "target_capture_db": -15.964747523038579,
+        "target_projection_scale": 0.1591338697293657,
+        "speech_interference_capture_db": -55.218861976114574,
+        "speech_interference_projection_scale": 0.0017340308870160556,
+        "total_interference_capture_db": -40.877273008187004,
+        "total_interference_projection_scale": 0.00903933219388863,
+        "retention_minus_speech_leak_db": 39.254114453076,
+        "retention_minus_total_leak_db": 24.912525485148425,
+        "joint_fit_r2": 0.3917968082694777,
+        "residual_output_share": 0.6082031917305223,
+        "artifact_proxy_db": -2.1595130509331595,
+        "projection_coefficients": [
+          0.15899695456027985,
+          0.008612999692559242
+        ]
+      },
+      "file_b_metrics": {
+        "rms_dbfs": -36.83793828093448,
+        "target_capture_db": -15.41257425597889,
+        "target_projection_scale": 0.16957869436873008,
+        "speech_interference_capture_db": -50.39110067698779,
+        "speech_interference_projection_scale": 0.003023047299901022,
+        "total_interference_capture_db": -40.841687401025496,
+        "total_interference_projection_scale": 0.009076441802106832,
+        "retention_minus_speech_leak_db": 34.9785264210089,
+        "retention_minus_total_leak_db": 25.429113145046607,
+        "joint_fit_r2": 0.39346064631615907,
+        "residual_output_share": 0.6065393536838409,
+        "artifact_proxy_db": -2.17141015846539,
+        "projection_coefficients": [
+          0.16944162547588348,
+          0.008622104302048683
+        ]
+      },
+      "delta_target_capture_db_b_minus_a": 0.5521732670596879,
+      "delta_speech_interference_capture_db_b_minus_a": 4.827761299126784,
+      "delta_total_interference_capture_db_b_minus_a": 0.03558560716150794,
+      "delta_retention_minus_speech_leak_db_b_minus_a": -4.275588032067098,
+      "delta_retention_minus_total_leak_db_b_minus_a": 0.5165876598981818,
+      "delta_residual_output_share_b_minus_a": -0.001663838046681354,
+      "better_source_retention_candidate": "file_b",
+      "more_speech_interference_leaky_candidate": "file_b",
+      "more_total_interference_leaky_candidate": "tie",
+      "better_retention_minus_speech_leak_candidate": "file_a",
+      "better_retention_minus_total_leak_candidate": "tie",
+      "more_artifact_proxy_heavy_candidate": "tie"
+    },
+    {
+      "sample_id": "near_real_0003",
+      "note": "residual-speech-leak floor focus; target present with domain-matched friend speech, all current frontier candidates still have moderate leakage",
+      "benchmark_kind": "target_present_overlap_peak",
+      "window_start_sec": 0.49,
+      "window_duration_sec": 1.0,
+      "target_active_start_sec": 0.3500000000000014,
+      "target_active_end_sec": 1.490000000000002,
+      "human_decoded_better_output": "",
+      "file_a_name": "candidate_a.wav",
+      "file_b_name": "candidate_b.wav",
+      "file_a_label": "v81",
+      "file_b_label": "v106",
+      "file_a_metrics": {
+        "rms_dbfs": -26.1603682151765,
+        "target_capture_db": -11.469326320952131,
+        "target_projection_scale": 0.2670137855416915,
+        "speech_interference_capture_db": -22.172855796036156,
+        "speech_interference_projection_scale": 0.07786767546395748,
+        "total_interference_capture_db": -22.172855796036156,
+        "total_interference_projection_scale": 0.07786767546395748,
+        "retention_minus_speech_leak_db": 10.703529475084025,
+        "retention_minus_total_leak_db": 10.703529475084025,
+        "joint_fit_r2": 0.3663607443497999,
+        "residual_output_share": 0.6336392556502001,
+        "artifact_proxy_db": -1.9815792487723045,
+        "projection_coefficients": [
+          0.26663658022880554,
+          0.07528481632471085
+        ]
+      },
+      "file_b_metrics": {
+        "rms_dbfs": -26.430067582092246,
+        "target_capture_db": -11.735993258505369,
+        "target_projection_scale": 0.2589407115470005,
+        "speech_interference_capture_db": -23.52140299601774,
+        "speech_interference_projection_scale": 0.06666990712828016,
+        "total_interference_capture_db": -23.52140299601774,
+        "total_interference_projection_scale": 0.06666990712828016,
+        "retention_minus_speech_leak_db": 11.785409737512373,
+        "retention_minus_total_leak_db": 11.785409737512373,
+        "joint_fit_r2": 0.36332065923742896,
+        "residual_output_share": 0.636679340762571,
+        "artifact_proxy_db": -1.9607924207576335,
+        "projection_coefficients": [
+          0.2586192488670349,
+          0.06416472047567368
+        ]
+      },
+      "delta_target_capture_db_b_minus_a": -0.26666693755323756,
+      "delta_speech_interference_capture_db_b_minus_a": -1.348547199981585,
+      "delta_total_interference_capture_db_b_minus_a": -1.348547199981585,
+      "delta_retention_minus_speech_leak_db_b_minus_a": 1.0818802624283475,
+      "delta_retention_minus_total_leak_db_b_minus_a": 1.0818802624283475,
+      "delta_residual_output_share_b_minus_a": 0.0030400851123709716,
+      "better_source_retention_candidate": "tie",
+      "more_speech_interference_leaky_candidate": "file_a",
+      "more_total_interference_leaky_candidate": "file_a",
+      "better_retention_minus_speech_leak_candidate": "file_b",
+      "better_retention_minus_total_leak_candidate": "file_b",
+      "more_artifact_proxy_heavy_candidate": "tie"
+    },
+    {
+      "sample_id": "near_real_0009",
+      "note": "residual-speech-leak floor focus; target absent with external speech only, all current frontier candidates still have moderate leakage",
+      "benchmark_kind": "target_absent_speech_peak",
+      "window_start_sec": 1.82,
+      "window_duration_sec": 1.0,
+      "target_active_start_sec": null,
+      "target_active_end_sec": null,
+      "human_decoded_better_output": "",
+      "file_a_name": "candidate_a.wav",
+      "file_b_name": "candidate_b.wav",
+      "file_a_label": "v81",
+      "file_b_label": "v106",
+      "file_a_metrics": {
+        "rms_dbfs": -54.51606587828084,
+        "target_capture_db": null,
+        "target_projection_scale": null,
+        "speech_interference_capture_db": -48.69520511499532,
+        "speech_interference_projection_scale": 0.0036748509427773106,
+        "total_interference_capture_db": -48.69520511499532,
+        "total_interference_projection_scale": 0.0036748509427773106,
+        "retention_minus_speech_leak_db": null,
+        "retention_minus_total_leak_db": null,
+        "joint_fit_r2": 0.07761235710841974,
+        "residual_output_share": 0.9223876428915803,
+        "artifact_proxy_db": -0.3508652386113765,
+        "projection_coefficients": [
+          0.0036748507991433144
+        ]
+      },
+      "file_b_metrics": {
+        "rms_dbfs": -53.02636104923489,
+        "target_capture_db": null,
+        "target_projection_scale": null,
+        "speech_interference_capture_db": -47.83399586513974,
+        "speech_interference_projection_scale": 0.004057889284431448,
+        "total_interference_capture_db": -47.83399586513974,
+        "total_interference_projection_scale": 0.004057889284431448,
+        "retention_minus_speech_leak_db": null,
+        "retention_minus_total_leak_db": null,
+        "joint_fit_r2": 0.06715544734200385,
+        "residual_output_share": 0.9328445526579962,
+        "artifact_proxy_db": -0.3019072018380122,
+        "projection_coefficients": [
+          0.004057888872921467
+        ]
+      },
+      "delta_target_capture_db_b_minus_a": null,
+      "delta_speech_interference_capture_db_b_minus_a": 0.8612092498555768,
+      "delta_total_interference_capture_db_b_minus_a": 0.8612092498555768,
+      "delta_retention_minus_speech_leak_db_b_minus_a": null,
+      "delta_retention_minus_total_leak_db_b_minus_a": null,
+      "delta_residual_output_share_b_minus_a": 0.01045690976641589,
+      "better_source_retention_candidate": "not_applicable",
+      "more_speech_interference_leaky_candidate": "file_b",
+      "more_total_interference_leaky_candidate": "file_b",
+      "better_retention_minus_speech_leak_candidate": "not_applicable",
+      "better_retention_minus_total_leak_candidate": "not_applicable",
+      "more_artifact_proxy_heavy_candidate": "tie"
+    },
+    {
+      "sample_id": "near_real_0006",
+      "note": "residual-speech-leak floor focus; target present with external guodegang speech, all current frontier candidates still have heavy leakage",
+      "benchmark_kind": "target_present_overlap_peak",
+      "window_start_sec": 0.55,
+      "window_duration_sec": 1.0,
+      "target_active_start_sec": 0.3499999999999943,
+      "target_active_end_sec": 1.6400000000000006,
+      "human_decoded_better_output": "",
+      "file_a_name": "candidate_a.wav",
+      "file_b_name": "candidate_b.wav",
+      "file_a_label": "v81",
+      "file_b_label": "v106",
+      "file_a_metrics": {
+        "rms_dbfs": -28.40021759591124,
+        "target_capture_db": -4.8335584467207715,
+        "target_projection_scale": 0.573220980506981,
+        "speech_interference_capture_db": -30.55063428121084,
+        "speech_interference_projection_scale": 0.02968029995483531,
+        "total_interference_capture_db": -30.55063428121084,
+        "total_interference_projection_scale": 0.02968029995483531,
+        "retention_minus_speech_leak_db": 25.717075834490068,
+        "retention_minus_total_leak_db": 25.717075834490068,
+        "joint_fit_r2": 0.6596446172572199,
+        "residual_output_share": 0.34035538274278004,
+        "artifact_proxy_db": -4.680673766079779,
+        "projection_coefficients": [
+          0.5730591416358948,
+          0.028518076986074448
+        ]
+      },
+      "file_b_metrics": {
+        "rms_dbfs": -28.553042060762284,
+        "target_capture_db": -5.0600088584244265,
+        "target_projection_scale": 0.55846962517269,
+        "speech_interference_capture_db": -31.38759105357987,
+        "speech_interference_projection_scale": 0.026953827648551972,
+        "total_interference_capture_db": -31.38759105357987,
+        "total_interference_projection_scale": 0.026953827648551972,
+        "retention_minus_speech_leak_db": 26.327582195155443,
+        "retention_minus_total_leak_db": 26.327582195155443,
+        "joint_fit_r2": 0.6479479316570963,
+        "residual_output_share": 0.3520520683429037,
+        "artifact_proxy_db": -4.533930998112699,
+        "projection_coefficients": [
+          0.5583229660987854,
+          0.025821492075920105
+        ]
+      },
+      "delta_target_capture_db_b_minus_a": -0.22645041170365499,
+      "delta_speech_interference_capture_db_b_minus_a": -0.8369567723690317,
+      "delta_total_interference_capture_db_b_minus_a": -0.8369567723690317,
+      "delta_retention_minus_speech_leak_db_b_minus_a": 0.6105063606653758,
+      "delta_retention_minus_total_leak_db_b_minus_a": 0.6105063606653758,
+      "delta_residual_output_share_b_minus_a": 0.011696685600123657,
+      "better_source_retention_candidate": "tie",
+      "more_speech_interference_leaky_candidate": "file_a",
+      "more_total_interference_leaky_candidate": "file_a",
+      "better_retention_minus_speech_leak_candidate": "tie",
+      "better_retention_minus_total_leak_candidate": "tie",
+      "more_artifact_proxy_heavy_candidate": "tie"
+    }
+  ],
+  "top_abs_retention_minus_speech_leak_deltas": [
+    {
+      "sample_id": "near_real_0007",
+      "note": "residual-speech-leak floor focus; hard target-present friend-speech plus music case, all current frontier candidates still show moderate leakage and moderate artifact",
+      "benchmark_kind": "target_present_overlap_peak",
+      "window_start_sec": 0.53,
+      "window_duration_sec": 1.0,
+      "target_active_start_sec": 0.3499999999999943,
+      "target_active_end_sec": 2.3900000000000006,
+      "human_decoded_better_output": "",
+      "file_a_name": "candidate_a.wav",
+      "file_b_name": "candidate_b.wav",
+      "file_a_label": "v81",
+      "file_b_label": "v106",
+      "file_a_metrics": {
+        "rms_dbfs": -37.3629856540101,
+        "target_capture_db": -15.964747523038579,
+        "target_projection_scale": 0.1591338697293657,
+        "speech_interference_capture_db": -55.218861976114574,
+        "speech_interference_projection_scale": 0.0017340308870160556,
+        "total_interference_capture_db": -40.877273008187004,
+        "total_interference_projection_scale": 0.00903933219388863,
+        "retention_minus_speech_leak_db": 39.254114453076,
+        "retention_minus_total_leak_db": 24.912525485148425,
+        "joint_fit_r2": 0.3917968082694777,
+        "residual_output_share": 0.6082031917305223,
+        "artifact_proxy_db": -2.1595130509331595,
+        "projection_coefficients": [
+          0.15899695456027985,
+          0.008612999692559242
+        ]
+      },
+      "file_b_metrics": {
+        "rms_dbfs": -36.83793828093448,
+        "target_capture_db": -15.41257425597889,
+        "target_projection_scale": 0.16957869436873008,
+        "speech_interference_capture_db": -50.39110067698779,
+        "speech_interference_projection_scale": 0.003023047299901022,
+        "total_interference_capture_db": -40.841687401025496,
+        "total_interference_projection_scale": 0.009076441802106832,
+        "retention_minus_speech_leak_db": 34.9785264210089,
+        "retention_minus_total_leak_db": 25.429113145046607,
+        "joint_fit_r2": 0.39346064631615907,
+        "residual_output_share": 0.6065393536838409,
+        "artifact_proxy_db": -2.17141015846539,
+        "projection_coefficients": [
+          0.16944162547588348,
+          0.008622104302048683
+        ]
+      },
+      "delta_target_capture_db_b_minus_a": 0.5521732670596879,
+      "delta_speech_interference_capture_db_b_minus_a": 4.827761299126784,
+      "delta_total_interference_capture_db_b_minus_a": 0.03558560716150794,
+      "delta_retention_minus_speech_leak_db_b_minus_a": -4.275588032067098,
+      "delta_retention_minus_total_leak_db_b_minus_a": 0.5165876598981818,
+      "delta_residual_output_share_b_minus_a": -0.001663838046681354,
+      "better_source_retention_candidate": "file_b",
+      "more_speech_interference_leaky_candidate": "file_b",
+      "more_total_interference_leaky_candidate": "tie",
+      "better_retention_minus_speech_leak_candidate": "file_a",
+      "better_retention_minus_total_leak_candidate": "tie",
+      "more_artifact_proxy_heavy_candidate": "tie"
+    },
+    {
+      "sample_id": "near_real_0003",
+      "note": "residual-speech-leak floor focus; target present with domain-matched friend speech, all current frontier candidates still have moderate leakage",
+      "benchmark_kind": "target_present_overlap_peak",
+      "window_start_sec": 0.49,
+      "window_duration_sec": 1.0,
+      "target_active_start_sec": 0.3500000000000014,
+      "target_active_end_sec": 1.490000000000002,
+      "human_decoded_better_output": "",
+      "file_a_name": "candidate_a.wav",
+      "file_b_name": "candidate_b.wav",
+      "file_a_label": "v81",
+      "file_b_label": "v106",
+      "file_a_metrics": {
+        "rms_dbfs": -26.1603682151765,
+        "target_capture_db": -11.469326320952131,
+        "target_projection_scale": 0.2670137855416915,
+        "speech_interference_capture_db": -22.172855796036156,
+        "speech_interference_projection_scale": 0.07786767546395748,
+        "total_interference_capture_db": -22.172855796036156,
+        "total_interference_projection_scale": 0.07786767546395748,
+        "retention_minus_speech_leak_db": 10.703529475084025,
+        "retention_minus_total_leak_db": 10.703529475084025,
+        "joint_fit_r2": 0.3663607443497999,
+        "residual_output_share": 0.6336392556502001,
+        "artifact_proxy_db": -1.9815792487723045,
+        "projection_coefficients": [
+          0.26663658022880554,
+          0.07528481632471085
+        ]
+      },
+      "file_b_metrics": {
+        "rms_dbfs": -26.430067582092246,
+        "target_capture_db": -11.735993258505369,
+        "target_projection_scale": 0.2589407115470005,
+        "speech_interference_capture_db": -23.52140299601774,
+        "speech_interference_projection_scale": 0.06666990712828016,
+        "total_interference_capture_db": -23.52140299601774,
+        "total_interference_projection_scale": 0.06666990712828016,
+        "retention_minus_speech_leak_db": 11.785409737512373,
+        "retention_minus_total_leak_db": 11.785409737512373,
+        "joint_fit_r2": 0.36332065923742896,
+        "residual_output_share": 0.636679340762571,
+        "artifact_proxy_db": -1.9607924207576335,
+        "projection_coefficients": [
+          0.2586192488670349,
+          0.06416472047567368
+        ]
+      },
+      "delta_target_capture_db_b_minus_a": -0.26666693755323756,
+      "delta_speech_interference_capture_db_b_minus_a": -1.348547199981585,
+      "delta_total_interference_capture_db_b_minus_a": -1.348547199981585,
+      "delta_retention_minus_speech_leak_db_b_minus_a": 1.0818802624283475,
+      "delta_retention_minus_total_leak_db_b_minus_a": 1.0818802624283475,
+      "delta_residual_output_share_b_minus_a": 0.0030400851123709716,
+      "better_source_retention_candidate": "tie",
+      "more_speech_interference_leaky_candidate": "file_a",
+      "more_total_interference_leaky_candidate": "file_a",
+      "better_retention_minus_speech_leak_candidate": "file_b",
+      "better_retention_minus_total_leak_candidate": "file_b",
+      "more_artifact_proxy_heavy_candidate": "tie"
+    },
+    {
+      "sample_id": "near_real_0006",
+      "note": "residual-speech-leak floor focus; target present with external guodegang speech, all current frontier candidates still have heavy leakage",
+      "benchmark_kind": "target_present_overlap_peak",
+      "window_start_sec": 0.55,
+      "window_duration_sec": 1.0,
+      "target_active_start_sec": 0.3499999999999943,
+      "target_active_end_sec": 1.6400000000000006,
+      "human_decoded_better_output": "",
+      "file_a_name": "candidate_a.wav",
+      "file_b_name": "candidate_b.wav",
+      "file_a_label": "v81",
+      "file_b_label": "v106",
+      "file_a_metrics": {
+        "rms_dbfs": -28.40021759591124,
+        "target_capture_db": -4.8335584467207715,
+        "target_projection_scale": 0.573220980506981,
+        "speech_interference_capture_db": -30.55063428121084,
+        "speech_interference_projection_scale": 0.02968029995483531,
+        "total_interference_capture_db": -30.55063428121084,
+        "total_interference_projection_scale": 0.02968029995483531,
+        "retention_minus_speech_leak_db": 25.717075834490068,
+        "retention_minus_total_leak_db": 25.717075834490068,
+        "joint_fit_r2": 0.6596446172572199,
+        "residual_output_share": 0.34035538274278004,
+        "artifact_proxy_db": -4.680673766079779,
+        "projection_coefficients": [
+          0.5730591416358948,
+          0.028518076986074448
+        ]
+      },
+      "file_b_metrics": {
+        "rms_dbfs": -28.553042060762284,
+        "target_capture_db": -5.0600088584244265,
+        "target_projection_scale": 0.55846962517269,
+        "speech_interference_capture_db": -31.38759105357987,
+        "speech_interference_projection_scale": 0.026953827648551972,
+        "total_interference_capture_db": -31.38759105357987,
+        "total_interference_projection_scale": 0.026953827648551972,
+        "retention_minus_speech_leak_db": 26.327582195155443,
+        "retention_minus_total_leak_db": 26.327582195155443,
+        "joint_fit_r2": 0.6479479316570963,
+        "residual_output_share": 0.3520520683429037,
+        "artifact_proxy_db": -4.533930998112699,
+        "projection_coefficients": [
+          0.5583229660987854,
+          0.025821492075920105
+        ]
+      },
+      "delta_target_capture_db_b_minus_a": -0.22645041170365499,
+      "delta_speech_interference_capture_db_b_minus_a": -0.8369567723690317,
+      "delta_total_interference_capture_db_b_minus_a": -0.8369567723690317,
+      "delta_retention_minus_speech_leak_db_b_minus_a": 0.6105063606653758,
+      "delta_retention_minus_total_leak_db_b_minus_a": 0.6105063606653758,
+      "delta_residual_output_share_b_minus_a": 0.011696685600123657,
+      "better_source_retention_candidate": "tie",
+      "more_speech_interference_leaky_candidate": "file_a",
+      "more_total_interference_leaky_candidate": "file_a",
+      "better_retention_minus_speech_leak_candidate": "tie",
+      "better_retention_minus_total_leak_candidate": "tie",
+      "more_artifact_proxy_heavy_candidate": "tie"
+    }
+  ],
+  "top_abs_artifact_proxy_deltas": [
+    {
+      "sample_id": "near_real_0006",
+      "note": "residual-speech-leak floor focus; target present with external guodegang speech, all current frontier candidates still have heavy leakage",
+      "benchmark_kind": "target_present_overlap_peak",
+      "window_start_sec": 0.55,
+      "window_duration_sec": 1.0,
+      "target_active_start_sec": 0.3499999999999943,
+      "target_active_end_sec": 1.6400000000000006,
+      "human_decoded_better_output": "",
+      "file_a_name": "candidate_a.wav",
+      "file_b_name": "candidate_b.wav",
+      "file_a_label": "v81",
+      "file_b_label": "v106",
+      "file_a_metrics": {
+        "rms_dbfs": -28.40021759591124,
+        "target_capture_db": -4.8335584467207715,
+        "target_projection_scale": 0.573220980506981,
+        "speech_interference_capture_db": -30.55063428121084,
+        "speech_interference_projection_scale": 0.02968029995483531,
+        "total_interference_capture_db": -30.55063428121084,
+        "total_interference_projection_scale": 0.02968029995483531,
+        "retention_minus_speech_leak_db": 25.717075834490068,
+        "retention_minus_total_leak_db": 25.717075834490068,
+        "joint_fit_r2": 0.6596446172572199,
+        "residual_output_share": 0.34035538274278004,
+        "artifact_proxy_db": -4.680673766079779,
+        "projection_coefficients": [
+          0.5730591416358948,
+          0.028518076986074448
+        ]
+      },
+      "file_b_metrics": {
+        "rms_dbfs": -28.553042060762284,
+        "target_capture_db": -5.0600088584244265,
+        "target_projection_scale": 0.55846962517269,
+        "speech_interference_capture_db": -31.38759105357987,
+        "speech_interference_projection_scale": 0.026953827648551972,
+        "total_interference_capture_db": -31.38759105357987,
+        "total_interference_projection_scale": 0.026953827648551972,
+        "retention_minus_speech_leak_db": 26.327582195155443,
+        "retention_minus_total_leak_db": 26.327582195155443,
+        "joint_fit_r2": 0.6479479316570963,
+        "residual_output_share": 0.3520520683429037,
+        "artifact_proxy_db": -4.533930998112699,
+        "projection_coefficients": [
+          0.5583229660987854,
+          0.025821492075920105
+        ]
+      },
+      "delta_target_capture_db_b_minus_a": -0.22645041170365499,
+      "delta_speech_interference_capture_db_b_minus_a": -0.8369567723690317,
+      "delta_total_interference_capture_db_b_minus_a": -0.8369567723690317,
+      "delta_retention_minus_speech_leak_db_b_minus_a": 0.6105063606653758,
+      "delta_retention_minus_total_leak_db_b_minus_a": 0.6105063606653758,
+      "delta_residual_output_share_b_minus_a": 0.011696685600123657,
+      "better_source_retention_candidate": "tie",
+      "more_speech_interference_leaky_candidate": "file_a",
+      "more_total_interference_leaky_candidate": "file_a",
+      "better_retention_minus_speech_leak_candidate": "tie",
+      "better_retention_minus_total_leak_candidate": "tie",
+      "more_artifact_proxy_heavy_candidate": "tie"
+    },
+    {
+      "sample_id": "near_real_0009",
+      "note": "residual-speech-leak floor focus; target absent with external speech only, all current frontier candidates still have moderate leakage",
+      "benchmark_kind": "target_absent_speech_peak",
+      "window_start_sec": 1.82,
+      "window_duration_sec": 1.0,
+      "target_active_start_sec": null,
+      "target_active_end_sec": null,
+      "human_decoded_better_output": "",
+      "file_a_name": "candidate_a.wav",
+      "file_b_name": "candidate_b.wav",
+      "file_a_label": "v81",
+      "file_b_label": "v106",
+      "file_a_metrics": {
+        "rms_dbfs": -54.51606587828084,
+        "target_capture_db": null,
+        "target_projection_scale": null,
+        "speech_interference_capture_db": -48.69520511499532,
+        "speech_interference_projection_scale": 0.0036748509427773106,
+        "total_interference_capture_db": -48.69520511499532,
+        "total_interference_projection_scale": 0.0036748509427773106,
+        "retention_minus_speech_leak_db": null,
+        "retention_minus_total_leak_db": null,
+        "joint_fit_r2": 0.07761235710841974,
+        "residual_output_share": 0.9223876428915803,
+        "artifact_proxy_db": -0.3508652386113765,
+        "projection_coefficients": [
+          0.0036748507991433144
+        ]
+      },
+      "file_b_metrics": {
+        "rms_dbfs": -53.02636104923489,
+        "target_capture_db": null,
+        "target_projection_scale": null,
+        "speech_interference_capture_db": -47.83399586513974,
+        "speech_interference_projection_scale": 0.004057889284431448,
+        "total_interference_capture_db": -47.83399586513974,
+        "total_interference_projection_scale": 0.004057889284431448,
+        "retention_minus_speech_leak_db": null,
+        "retention_minus_total_leak_db": null,
+        "joint_fit_r2": 0.06715544734200385,
+        "residual_output_share": 0.9328445526579962,
+        "artifact_proxy_db": -0.3019072018380122,
+        "projection_coefficients": [
+          0.004057888872921467
+        ]
+      },
+      "delta_target_capture_db_b_minus_a": null,
+      "delta_speech_interference_capture_db_b_minus_a": 0.8612092498555768,
+      "delta_total_interference_capture_db_b_minus_a": 0.8612092498555768,
+      "delta_retention_minus_speech_leak_db_b_minus_a": null,
+      "delta_retention_minus_total_leak_db_b_minus_a": null,
+      "delta_residual_output_share_b_minus_a": 0.01045690976641589,
+      "better_source_retention_candidate": "not_applicable",
+      "more_speech_interference_leaky_candidate": "file_b",
+      "more_total_interference_leaky_candidate": "file_b",
+      "better_retention_minus_speech_leak_candidate": "not_applicable",
+      "better_retention_minus_total_leak_candidate": "not_applicable",
+      "more_artifact_proxy_heavy_candidate": "tie"
+    },
+    {
+      "sample_id": "near_real_0003",
+      "note": "residual-speech-leak floor focus; target present with domain-matched friend speech, all current frontier candidates still have moderate leakage",
+      "benchmark_kind": "target_present_overlap_peak",
+      "window_start_sec": 0.49,
+      "window_duration_sec": 1.0,
+      "target_active_start_sec": 0.3500000000000014,
+      "target_active_end_sec": 1.490000000000002,
+      "human_decoded_better_output": "",
+      "file_a_name": "candidate_a.wav",
+      "file_b_name": "candidate_b.wav",
+      "file_a_label": "v81",
+      "file_b_label": "v106",
+      "file_a_metrics": {
+        "rms_dbfs": -26.1603682151765,
+        "target_capture_db": -11.469326320952131,
+        "target_projection_scale": 0.2670137855416915,
+        "speech_interference_capture_db": -22.172855796036156,
+        "speech_interference_projection_scale": 0.07786767546395748,
+        "total_interference_capture_db": -22.172855796036156,
+        "total_interference_projection_scale": 0.07786767546395748,
+        "retention_minus_speech_leak_db": 10.703529475084025,
+        "retention_minus_total_leak_db": 10.703529475084025,
+        "joint_fit_r2": 0.3663607443497999,
+        "residual_output_share": 0.6336392556502001,
+        "artifact_proxy_db": -1.9815792487723045,
+        "projection_coefficients": [
+          0.26663658022880554,
+          0.07528481632471085
+        ]
+      },
+      "file_b_metrics": {
+        "rms_dbfs": -26.430067582092246,
+        "target_capture_db": -11.735993258505369,
+        "target_projection_scale": 0.2589407115470005,
+        "speech_interference_capture_db": -23.52140299601774,
+        "speech_interference_projection_scale": 0.06666990712828016,
+        "total_interference_capture_db": -23.52140299601774,
+        "total_interference_projection_scale": 0.06666990712828016,
+        "retention_minus_speech_leak_db": 11.785409737512373,
+        "retention_minus_total_leak_db": 11.785409737512373,
+        "joint_fit_r2": 0.36332065923742896,
+        "residual_output_share": 0.636679340762571,
+        "artifact_proxy_db": -1.9607924207576335,
+        "projection_coefficients": [
+          0.2586192488670349,
+          0.06416472047567368
+        ]
+      },
+      "delta_target_capture_db_b_minus_a": -0.26666693755323756,
+      "delta_speech_interference_capture_db_b_minus_a": -1.348547199981585,
+      "delta_total_interference_capture_db_b_minus_a": -1.348547199981585,
+      "delta_retention_minus_speech_leak_db_b_minus_a": 1.0818802624283475,
+      "delta_retention_minus_total_leak_db_b_minus_a": 1.0818802624283475,
+      "delta_residual_output_share_b_minus_a": 0.0030400851123709716,
+      "better_source_retention_candidate": "tie",
+      "more_speech_interference_leaky_candidate": "file_a",
+      "more_total_interference_leaky_candidate": "file_a",
+      "better_retention_minus_speech_leak_candidate": "file_b",
+      "better_retention_minus_total_leak_candidate": "file_b",
+      "more_artifact_proxy_heavy_candidate": "tie"
+    },
+    {
+      "sample_id": "near_real_0007",
+      "note": "residual-speech-leak floor focus; hard target-present friend-speech plus music case, all current frontier candidates still show moderate leakage and moderate artifact",
+      "benchmark_kind": "target_present_overlap_peak",
+      "window_start_sec": 0.53,
+      "window_duration_sec": 1.0,
+      "target_active_start_sec": 0.3499999999999943,
+      "target_active_end_sec": 2.3900000000000006,
+      "human_decoded_better_output": "",
+      "file_a_name": "candidate_a.wav",
+      "file_b_name": "candidate_b.wav",
+      "file_a_label": "v81",
+      "file_b_label": "v106",
+      "file_a_metrics": {
+        "rms_dbfs": -37.3629856540101,
+        "target_capture_db": -15.964747523038579,
+        "target_projection_scale": 0.1591338697293657,
+        "speech_interference_capture_db": -55.218861976114574,
+        "speech_interference_projection_scale": 0.0017340308870160556,
+        "total_interference_capture_db": -40.877273008187004,
+        "total_interference_projection_scale": 0.00903933219388863,
+        "retention_minus_speech_leak_db": 39.254114453076,
+        "retention_minus_total_leak_db": 24.912525485148425,
+        "joint_fit_r2": 0.3917968082694777,
+        "residual_output_share": 0.6082031917305223,
+        "artifact_proxy_db": -2.1595130509331595,
+        "projection_coefficients": [
+          0.15899695456027985,
+          0.008612999692559242
+        ]
+      },
+      "file_b_metrics": {
+        "rms_dbfs": -36.83793828093448,
+        "target_capture_db": -15.41257425597889,
+        "target_projection_scale": 0.16957869436873008,
+        "speech_interference_capture_db": -50.39110067698779,
+        "speech_interference_projection_scale": 0.003023047299901022,
+        "total_interference_capture_db": -40.841687401025496,
+        "total_interference_projection_scale": 0.009076441802106832,
+        "retention_minus_speech_leak_db": 34.9785264210089,
+        "retention_minus_total_leak_db": 25.429113145046607,
+        "joint_fit_r2": 0.39346064631615907,
+        "residual_output_share": 0.6065393536838409,
+        "artifact_proxy_db": -2.17141015846539,
+        "projection_coefficients": [
+          0.16944162547588348,
+          0.008622104302048683
+        ]
+      },
+      "delta_target_capture_db_b_minus_a": 0.5521732670596879,
+      "delta_speech_interference_capture_db_b_minus_a": 4.827761299126784,
+      "delta_total_interference_capture_db_b_minus_a": 0.03558560716150794,
+      "delta_retention_minus_speech_leak_db_b_minus_a": -4.275588032067098,
+      "delta_retention_minus_total_leak_db_b_minus_a": 0.5165876598981818,
+      "delta_residual_output_share_b_minus_a": -0.001663838046681354,
+      "better_source_retention_candidate": "file_b",
+      "more_speech_interference_leaky_candidate": "file_b",
+      "more_total_interference_leaky_candidate": "tie",
+      "better_retention_minus_speech_leak_candidate": "file_a",
+      "better_retention_minus_total_leak_candidate": "tie",
+      "more_artifact_proxy_heavy_candidate": "tie"
+    }
+  ]
+}

@@ -1088,6 +1088,91 @@
   
   则默认判为 proxy 过拟合，不导听审。
 
+### 42. A/B 导包分析出现 `num_samples = 0` 时，先排除旧 summary 或导包未完成，不要先怀疑分析脚本本身
+
+事实：
+
+- `v81 vs v106` 的 near-real pack 在导出成功后，目录里确实有 `4` 条样本；
+- 但第一次看到的：
+  - `tradeoff_analysis/summary.json`
+  - `overlap_local_benchmark/summary.json`
+  - `bandwidth_analysis/summary.json`
+  
+  都是 `num_samples = 0`；
+- 原因分别是：
+  - 旧失败导包留下的过期 summary
+  - blind 包里把导包和分析并行跑，分析脚本先读到尚未写完的目录
+
+说明：
+
+- 这是流程时序问题，不是当前分析脚本回归；
+- 如果不先核对 pack 根目录和 `sample_meta.json`，很容易误把有效候选当成导包失败。
+
+要求：
+
+- 后续凡是 A/B pack analysis 出现 `num_samples = 0`，默认先检查：
+  - pack 根目录 `summary.json` 的 `num_exported_samples`
+  - 样本子目录里的 `sample_meta.json`
+  - `candidate_a.wav / candidate_b.wav` 或真实 label 音频是否已落盘
+- 如果导包与分析要连续执行，默认顺序应为：
+  - 先导包
+  - 再分析
+  
+  不要并行。
+
+### 43. `local artifact veto` 只做 teacher-overlap 对齐，不足以自动压住 `0007` 风格 speech leak
+
+事实：
+
+- `v106` 已经不再像 `v103 / v105` 那样在 `0007` 上出现更重 artifact；
+- overlap-local `0007` 上：
+  - `better_source_retention = v106`
+  - `more_artifact_proxy_heavy = tie`
+  - 但 `more_speech_interference_leaky = v106`
+  - `better_retention_minus_speech_leak = v81`
+
+说明：
+
+- “把局部输出往 `v81` teacher 靠近”可以先止住最明显的 artifact 爆炸；
+- 但它并不会自动学会把 `music_plus_speech` hard-present 局部窗里的 speech leak 压下去；
+- 所以下一轮如果听审仍不转正，主问题就不再是 artifact 本身，而是：
+  - 局部 speech leak 没被显式建模
+
+要求：
+
+- 后续 `0007` 风格 local veto 若继续推进，默认应额外加入：
+  - `music_plus_speech` 局部窗的显式 speech-leak backstop
+- 不要再假设：
+  - teacher-overlap 对齐
+  
+  会自然等价于更低的 local speech leak。
+
+### 44. 主观听审默认只对同批次 A/B 负责，不能把不同批次的严重度标签直接横向串联
+
+事实：
+
+- 同一条样本，在不同批次听审里，主观上对 leak / artifact 严重度的命名可能会漂移；
+- 例如这次主观记为“中等泄漏”，下次也可能主观记为“明显泄漏”；
+- 但同一批次内的 A/B 比较，主观标准是统一的。
+
+说明：
+
+- 因此听审最可靠的信息是：
+  - 同批次里谁更好
+  - 是否有可感知差异
+- 不能把：
+  - `v81 vs v103` 这批里记作 `moderate artifact`
+  - 和 `v81 vs v106` 这批里的 `slight / moderate leak`
+  
+  直接当成绝对可比的跨批次量尺。
+
+要求：
+
+- 后续记录主观结论时，默认优先写：
+  - `v81 / candidate / tie` 的同批次裁决
+  - 以及“核心痛点是否在本批次内改善”
+- 不要把不同批次的主观强弱标签直接用于跨包排序。
+
 ## 近期关键案例入口
 
 - `reports/daily/2026-03-26_overlap_abstention_proxy_v3_v4_and_v71_v72_followup.md`

@@ -1047,6 +1047,31 @@
   - 不继续 `v104+ / v105+` 小步权重 sweep
   - 基于 `v81` 设计更外科式的 local artifact veto / backstop
   - 重点只打 `0007` 风格局部 artifact，而不是继续扩大整条 proxy 的全局 guard weight
+- `v106 = local_artifact_veto`
+  - checkpoint：
+    - `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v106_v81_overlap_purify_v4_local_artifact_veto_ft1`
+  - 数据：
+    - `hard_present_artifact_local_proxy_v1`
+    - `artifact_local_aware_bundle_v1`
+  - 结果：
+    - synthetic 上是一个中间解，不再像 `v105` 那样 proxy 过拟合
+    - `overlap_abstention_proxy_v4_audibility_v1` 排第一
+    - near-real whole-utterance 上：
+      - `0007` target capture 优于 `v81`
+      - `0009` absent suppression 回退
+    - overlap-local 上：
+      - `0003` 更偏向 `v106`
+      - `0006` 接近 tie
+      - `0007` artifact 与 `v81` 打平，但 speech leak 仍更重
+  - 裁决：
+    - focused blind 听审已完成，结果为 `tie = 4`
+    - 四条样本都无可感知差异
+    - `0007` 核心痛点未出现主观改善
+    - 不做 `v106+`
+- 当前默认下一步再次更新为：
+  - 收口 `v106` 这一版 local artifact veto
+  - 暂停 `v106+` 小步权重 sweep
+  - 如果 `0007` 仍要继续，则把下轮 local veto 改为显式 speech-leak backstop，而不再只做 teacher-overlap 对齐
 
 执行前必须保持五条验收同时在场：
 
@@ -1086,6 +1111,8 @@
 - `reports/daily/2026-03-27_v81_vs_v103_listening_review.md`
 - `reports/daily/2026-03-27_hard_present_artifact_proxy_v1_materialization.md`
 - `reports/daily/2026-03-27_artifactaware_pilots_v104_v105_followup.md`
+- `reports/daily/2026-03-27_local_artifact_veto_v106_followup.md`
+- `reports/daily/2026-03-27_v81_vs_v106_listening_review.md`
 
 ## 文档维护规则
 
