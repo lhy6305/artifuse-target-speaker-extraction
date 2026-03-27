@@ -24,7 +24,7 @@
 
 ## 当前默认状态
 
-截至 `2026-03-26`，当前正式状态如下：
+截至 `2026-03-27`，当前正式状态如下：
 
 - 默认主线：
   - `legacy stage2`
@@ -74,6 +74,30 @@
   - `v101`
     - 含义：`v88 + overlap cancel delta blend v1`
     - 状态：relative `v81` synthetic / near-real objective 继续正收益，relative `v88` 则明显更保守；但 `v81 vs v101` 听审结果为 `tie = 3, v81 = 1, v101 = 0`，不升格
+  - `v102`
+    - 含义：`v81 + overlap_purify_v2_speechonly_selector_ft1`
+    - 状态：首个真正的 `speech_only overlap` pilot；automatic 全绿，但 `0007` 仍是唯一明确 blocker，不自动升格
+  - `v103`
+    - 含义：`v102 + plus_music teacher veto`
+    - 状态：automatic 全绿，但 blind `v81 vs v103` 为 `v81 = 4, v103 = 0, tie = 0`，且四条都因 artifact 更重而输掉，不升格
+  - `v104`
+    - 含义：`v81 + artifactaware_anchor`
+    - 状态：比 `v103` 更安全，但 `0007` 没形成局部 rescue，不继续
+  - `v105`
+    - 含义：`v81 + artifactguard`
+    - 状态：synthetic 很强，但 `0003 / 0007` target capture 同时回退，判定为 proxy 过拟合，不升格
+  - `v106`
+    - 含义：`v81 + local_artifact_veto`
+    - 状态：artifact 侧止血成功，但 `v81 vs v106` 听审为 `tie = 4`，`0007` 核心痛点无主观改善，不升格
+  - `v107`
+    - 含义：`v81 + overlap_purify_v5_local_speech_leak_bundle_v1`
+    - 状态：显式 local speech-leak backstop 首版；automatic 继续转强，但 blind `v81 vs v107` 为 `v81 = 4, v107 = 0, tie = 0`，四条都因 artifact 更重而输掉，不升格
+  - `v108`
+    - 含义：`v107 + local_speech_leak preserve backstop v1`
+    - 状态：相对 `v107` 确实减轻了 phone-artifact，但 synthetic 四条固定验收几乎全线回退，`v81` 基线也未被越过；不导听审，直接收口
+  - `v109`
+    - 含义：`v107 + local_speech_leak 0007-like backstop v1`
+    - 状态：relative `v81` 四条固定验收全绿，且 `near-real tradeoff gate / phone_artifact_gate_v1` 都已通过；但 blind `v81 vs v109` 结果为 `tie = 3, v81 = 1, v109 = 0`，核心痛点 `0007` 仍未主观转正，不升格
   - `v82`
     - 含义：`present_overlap_residual_leak_purification v1` 首轮 mask pilot
     - 状态：objective 前进明显，但 `v81 vs v82` 听审为 `4 / 4 tie`
@@ -131,6 +155,7 @@
 - `v72 / v73 / v74 / v75 / v76 / v77 / v78 / v79 / v80 / v81 / v82 / v83 / v84 / v85 / v86 / v87 / v88 / v89 / v90 / v91 / v93 / v94 / v95 / v98 / v99` 都不能替代默认线。
 - `v100` 也不能替代默认线。
 - `v101` 也不能替代默认线。
+- `v102 / v103 / v104 / v105 / v106 / v107 / v108` 也都不能替代默认线。
 
 ## 当前默认下一步
 
@@ -173,11 +198,137 @@
     - 自动层面是中间解
     - 但听审层面仍未转正
     - 不继续 `v106+`
+- `v107 = local_speech_leak_backstop` 已完成：
+  - 训练数据改为：
+    - `speech_leak_local_aware_bundle_v1`
+  - 新增：
+    - `local_speech_leak_proxy_v1`
+  - proxy 选择口径是：
+    - 从 `speech_plus_music` 原样本切局部高 risk 窗
+  - 但导出的训练视图只保留：
+    - `target + speech layer`
+  - synthetic 三条固定验收 relative `v81` 全部继续更强：
+    - abstention `+3.0895 dB`
+    - same-gender keep `+1.4266 dB`
+    - hard-present keep `+1.1428 dB`
+  - near-real whole-utterance 上：
+    - `overall_pass = true`
+    - `0003` 的 `retention-minus-leak` 转正
+    - `0009` absent suppression 基本 tie
+  - overlap-local 上：
+    - `0003 / 0006`
+      - `retention-minus-speech-leak = v107`
+    - `0007`
+      - `better_retention_minus_speech_leak = v81`
+      - `more_artifact_proxy_heavy = v107`
+  - 当前裁决：
+    - automatic 已经证明显式 local speech-leak supervision 是成立方向
+    - 但 `0007` 仍未自动修好
+    - blind `v81 vs v107` 听审结果为：
+      - `v81 = 4`
+      - `v107 = 0`
+      - `tie = 0`
+    - 四条样本共同原因都是：
+      - `v107` artifact 更重
+- `v108 = local_speech_leak_preserve_backstop_v1` 已完成：
+  - 初始化改为：
+    - `v107`
+  - 保留：
+    - `speech_leak_local_aware_bundle_v1`
+    - `speech_only overlap_interference_extra`
+  - 新增：
+    - `sample_ids_local_speech_leak_proxy_v1_all.txt`
+    - 在 `local_speech_leak_proxy_v1` 全量子集上同时打开：
+      - `branch_protect_guard_sisdr`
+      - `branch_protect_teacher_overlap(v81)`
+  - relative `v81`：
+    - abstention `-0.6017 dB`
+    - same-gender keep `+0.3024 dB`
+    - hard-present keep `+0.0170 dB`
+    - hard-present artifact proxy `+0.2906 dB`
+  - relative `v107`：
+    - abstention `-3.6913 dB`
+    - same-gender keep `-1.1242 dB`
+    - hard-present keep `-1.1257 dB`
+    - hard-present artifact proxy `-1.5016 dB`
+  - near-real / phone-artifact：
+    - 相对 `v81`，`phone_artifact_gate_v1` 仍 fail
+    - 相对 `v107`，`phone_artifact_gate_v1` 已 pass
+    - 说明这版确实止住了一部分电话音式 artifact
+    - 但代价是把 `v107` 的主收益一起抹掉
+  - 当前裁决：
+    - 不导听审
+    - 直接收口
+- `v109 = local_speech_leak_0007like_backstop_v1` 已完成：
+  - 初始化改为：
+    - `v107`
+  - 保留：
+    - `speech_leak_local_aware_bundle_v1`
+    - `speech_only overlap_interference_extra`
+  - 新增：
+    - `build_local_speech_leak_0007_like_proxy.py`
+    - `sample_ids_local_speech_leak_0007_like_proxy_v1_all.txt`
+    - 在更窄的 `0007` 风格 `music_plus_speech hard-present` 局部窗上打开：
+      - `branch_protect_guard_sisdr`
+      - `branch_protect_teacher_overlap(v81)`
+  - relative `v81`：
+    - abstention `+2.5930 dB`
+    - same-gender keep `+1.0756 dB`
+    - hard-present keep `+0.6735 dB`
+    - hard-present artifact proxy `+1.4404 dB`
+  - relative `v107`：
+    - abstention `-0.4966 dB`
+    - same-gender keep `-0.3511 dB`
+    - hard-present keep `-0.4693 dB`
+    - hard-present artifact proxy `-0.3518 dB`
+  - near-real / phone-artifact：
+    - relative `v81`
+      - `near-real tradeoff gate = pass`
+      - `phone_artifact_gate_v1 = pass`
+    - relative `v107`
+      - `near-real tradeoff gate = pass`
+      - `phone_artifact_gate_v1 = pass`
+    - overlap-local 上：
+      - `0003 / 0007`
+        - `better_retention_minus_speech_leak = v109`
+      - `0007`
+        - 仍有 `artifact / retention` 拉扯，未形成自动上的无争议转正
+  - 当前裁决：
+    - blind `v81 vs v109` 结果为：
+      - `tie = 3`
+      - `v81 = 1`
+      - `v109 = 0`
+    - 唯一非 tie 样本仍是：
+      - `0007`
+      - 原因仍是 `v109` artifact 更重
+    - `v109` 不升格
+    - 不继续 `v109+` 小步 sweep
 - 当前默认下一步再次更新为：
   - 维持新的 artifact-first 固定诊断链
-  - 收口 `v106` 这一版 local artifact veto teacher-overlap 方案
-  - 不继续 `v106+` 小步权重 sweep
-  - 如果继续 `0007` 子题，再把下一轮 local veto 从“teacher-overlap 对齐”改成“显式压 speech leak 的 local backstop”
+  - `v106` 的 teacher-overlap local veto 已收口
+  - `v107` 也已收口
+  - `v108` 也已收口
+  - `v109` 已完成自动验收并通过：
+    - `near-real tradeoff gate`
+    - `phone_artifact_gate_v1`
+  - 不立刻继续 `v107+ / v108+ / v109+` 小步权重 sweep
+  - `phone_artifact_gate_v1` 已完成物化并回放：
+    - 基于 `real_eval_manifest_bandwidth_guardrail_v1`
+    - 组合 `bandwidth + transient-loss`
+    - 已能稳定抓住 `v103 / v107` 两组已知电话音失败 pack
+  - `v108` 已进一步证明：
+    - 宽打到 `local_speech_leak_proxy_v1` 全量子集的 preservation / teacher backstop 会过度回缩
+  - `v109` 已进一步证明：
+    - 把 backstop 缩到 `0007-like` 子域，
+    - 可以在不重走 `v108` 式全局回缩的前提下保留 artifact relief
+  - blind `v81 vs v109` 已进一步证明：
+    - 这条 family 已从“明显 artifact 失败”收敛到“与 `v81` 很接近”
+    - 但 `0007` 仍未主观转正
+  - 当前默认下一步改为：
+    - 收口 `v109`
+    - 不继续 `v109+` 同构小步 sweep
+    - 若继续 `0007` 子题，
+      直接回到 retention / artifact 拉扯本身重新拆约束
 
 ## 当前核心子题
 
@@ -233,6 +384,28 @@
 - `hard_present_gate_keep_guardrail_v1` 则覆盖 `near_real_0007` 风格 hard-present failure；
 - `hard_present_artifact_proxy_v1` 进一步把 `0007` 的 `speech_plus_music + artifact-risk` 子域单独拆出来；
 - 后续凡是 overlap-abstention 分支继续训练，都必须同时看这条。
+
+### near-real phone-artifact guardrail
+
+- `data/references/real_eval_manifest_bandwidth_guardrail_v1.jsonl`
+- `scripts/eval/analyze_listening_pack_bandwidth.py`
+- `scripts/eval/analyze_listening_pack_transients.py`
+- `scripts/eval/gate_near_real_phone_artifact.py`
+
+作用：
+
+- 专门补当前这轮“电话音式 artifact”自动诊断；
+- 当前结论不是单看纯 bandwidth narrowing；
+- 而是固定组合：
+  - `bandwidth`
+  - `transient-loss`
+- 已在两组已知失败 pack 上验证：
+  - `v81 vs v103`
+  - `v81 vs v107`
+- 两组 pack 都表现为：
+  - pure bandwidth `tie`
+  - 但 transient-loss 明确抓到 candidate 更差
+- 后续凡是 overlap-local 新候选，在导听审前默认都要过这条 gate。
 
 ## 本阶段已完成事项
 
@@ -686,6 +859,12 @@
 - `reports/daily/2026-03-27_artifactaware_pilots_v104_v105_followup.md`
 - `reports/daily/2026-03-27_local_artifact_veto_v106_followup.md`
 - `reports/daily/2026-03-27_v81_vs_v106_listening_review.md`
+- `reports/daily/2026-03-27_local_speech_leak_proxy_v107_followup.md`
+- `reports/daily/2026-03-27_v81_vs_v107_listening_review.md`
+- `reports/daily/2026-03-27_phone_artifact_gate_v1_followup.md`
+- `reports/daily/2026-03-27_local_speech_leak_preservebackstop_v108_followup.md`
+- `reports/daily/2026-03-27_local_speech_leak_0007like_backstop_v109_followup.md`
+- `reports/daily/2026-03-27_v81_vs_v109_listening_review.md`
 
 ## 文档维护规则
 

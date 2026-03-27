@@ -1,0 +1,158 @@
+{
+  "pack_dir": "reports/eval/ab_listening_pack_real_eval_bandwidth_guardrail_v1_v81_vs_v108",
+  "num_samples": 4,
+  "n_fft": 1024,
+  "hop_length": 256,
+  "top_transient_ratio": 0.12,
+  "transient_min_count": 8,
+  "presence_low_hz": 3000.0,
+  "presence_high_hz": 8000.0,
+  "mid_low_hz": 800.0,
+  "mid_high_hz": 3000.0,
+  "loss_threshold_db": 1.0,
+  "loss_frame_ratio_threshold": 0.2,
+  "more_transient_lossy_candidate_counts": {
+    "tie": 2,
+    "file_b": 2
+  },
+  "top_abs_presence_minus_mid_mean_deltas": [
+    {
+      "sample_id": "near_real_0006",
+      "file_a_label": "v81",
+      "file_b_label": "v108",
+      "delta_presence_minus_mid_retention_db_mean_b_minus_a": -2.22609281539917,
+      "delta_presence_minus_mid_retention_db_p10_b_minus_a": -3.8055656433105476,
+      "delta_strong_presence_loss_frame_ratio_b_minus_a": 0.05882352941176472,
+      "more_transient_lossy_candidate": "file_b",
+      "transient_loss_score_file_a": 0,
+      "transient_loss_score_file_b": 2,
+      "transient_loss_evidence_file_a": [],
+      "transient_loss_evidence_file_b": [
+        "lower_presence_minus_mid_mean",
+        "lower_presence_minus_mid_p10"
+      ],
+      "better_output": "",
+      "note": "raw target clip mixed with external speech from the Guodegang source"
+    },
+    {
+      "sample_id": "near_real_0009",
+      "file_a_label": "v81",
+      "file_b_label": "v108",
+      "delta_presence_minus_mid_retention_db_mean_b_minus_a": -1.4352526664733887,
+      "delta_presence_minus_mid_retention_db_p10_b_minus_a": -2.5163040161132804,
+      "delta_strong_presence_loss_frame_ratio_b_minus_a": 0.16666666666666669,
+      "more_transient_lossy_candidate": "file_b",
+      "transient_loss_score_file_a": 0,
+      "transient_loss_score_file_b": 2,
+      "transient_loss_evidence_file_a": [],
+      "transient_loss_evidence_file_b": [
+        "lower_presence_minus_mid_mean",
+        "lower_presence_minus_mid_p10"
+      ],
+      "better_output": "",
+      "note": "target absent; only external speech is present"
+    },
+    {
+      "sample_id": "near_real_0002",
+      "file_a_label": "v81",
+      "file_b_label": "v108",
+      "delta_presence_minus_mid_retention_db_mean_b_minus_a": -0.7722204923629761,
+      "delta_presence_minus_mid_retention_db_p10_b_minus_a": -1.3618673563003538,
+      "delta_strong_presence_loss_frame_ratio_b_minus_a": 0.0,
+      "more_transient_lossy_candidate": "tie",
+      "transient_loss_score_file_a": 0,
+      "transient_loss_score_file_b": 1,
+      "transient_loss_evidence_file_a": [],
+      "transient_loss_evidence_file_b": [
+        "lower_presence_minus_mid_p10"
+      ],
+      "better_output": "",
+      "note": "second raw target clip only; another target-present sanity check with different prosody"
+    },
+    {
+      "sample_id": "near_real_0001",
+      "file_a_label": "v81",
+      "file_b_label": "v108",
+      "delta_presence_minus_mid_retention_db_mean_b_minus_a": 0.39933615922927856,
+      "delta_presence_minus_mid_retention_db_p10_b_minus_a": 0.08561580181121828,
+      "delta_strong_presence_loss_frame_ratio_b_minus_a": 0.0,
+      "more_transient_lossy_candidate": "tie",
+      "transient_loss_score_file_a": 0,
+      "transient_loss_score_file_b": 0,
+      "transient_loss_evidence_file_a": [],
+      "transient_loss_evidence_file_b": [],
+      "better_output": "",
+      "note": "raw target clip only; used to inspect source retention and over-suppression on target-present speech"
+    }
+  ],
+  "top_abs_strong_loss_ratio_deltas": [
+    {
+      "sample_id": "near_real_0009",
+      "file_a_label": "v81",
+      "file_b_label": "v108",
+      "delta_presence_minus_mid_retention_db_mean_b_minus_a": -1.4352526664733887,
+      "delta_presence_minus_mid_retention_db_p10_b_minus_a": -2.5163040161132804,
+      "delta_strong_presence_loss_frame_ratio_b_minus_a": 0.16666666666666669,
+      "more_transient_lossy_candidate": "file_b",
+      "transient_loss_score_file_a": 0,
+      "transient_loss_score_file_b": 2,
+      "transient_loss_evidence_file_a": [],
+      "transient_loss_evidence_file_b": [
+        "lower_presence_minus_mid_mean",
+        "lower_presence_minus_mid_p10"
+      ],
+      "better_output": "",
+      "note": "target absent; only external speech is present"
+    },
+    {
+      "sample_id": "near_real_0006",
+      "file_a_label": "v81",
+      "file_b_label": "v108",
+      "delta_presence_minus_mid_retention_db_mean_b_minus_a": -2.22609281539917,
+      "delta_presence_minus_mid_retention_db_p10_b_minus_a": -3.8055656433105476,
+      "delta_strong_presence_loss_frame_ratio_b_minus_a": 0.05882352941176472,
+      "more_transient_lossy_candidate": "file_b",
+      "transient_loss_score_file_a": 0,
+      "transient_loss_score_file_b": 2,
+      "transient_loss_evidence_file_a": [],
+      "transient_loss_evidence_file_b": [
+        "lower_presence_minus_mid_mean",
+        "lower_presence_minus_mid_p10"
+      ],
+      "better_output": "",
+      "note": "raw target clip mixed with external speech from the Guodegang source"
+    },
+    {
+      "sample_id": "near_real_0001",
+      "file_a_label": "v81",
+      "file_b_label": "v108",
+      "delta_presence_minus_mid_retention_db_mean_b_minus_a": 0.39933615922927856,
+      "delta_presence_minus_mid_retention_db_p10_b_minus_a": 0.08561580181121828,
+      "delta_strong_presence_loss_frame_ratio_b_minus_a": 0.0,
+      "more_transient_lossy_candidate": "tie",
+      "transient_loss_score_file_a": 0,
+      "transient_loss_score_file_b": 0,
+      "transient_loss_evidence_file_a": [],
+      "transient_loss_evidence_file_b": [],
+      "better_output": "",
+      "note": "raw target clip only; used to inspect source retention and over-suppression on target-present speech"
+    },
+    {
+      "sample_id": "near_real_0002",
+      "file_a_label": "v81",
+      "file_b_label": "v108",
+      "delta_presence_minus_mid_retention_db_mean_b_minus_a": -0.7722204923629761,
+      "delta_presence_minus_mid_retention_db_p10_b_minus_a": -1.3618673563003538,
+      "delta_strong_presence_loss_frame_ratio_b_minus_a": 0.0,
+      "more_transient_lossy_candidate": "tie",
+      "transient_loss_score_file_a": 0,
+      "transient_loss_score_file_b": 1,
+      "transient_loss_evidence_file_a": [],
+      "transient_loss_evidence_file_b": [
+        "lower_presence_minus_mid_p10"
+      ],
+      "better_output": "",
+      "note": "second raw target clip only; another target-present sanity check with different prosody"
+    }
+  ]
+}

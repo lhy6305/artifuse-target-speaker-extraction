@@ -1173,6 +1173,293 @@
   - 以及“核心痛点是否在本批次内改善”
 - 不要把不同批次的主观强弱标签直接用于跨包排序。
 
+### 45. `music_plus_speech` 局部窗如果不把导出训练视图改成 `target + speech_only`，就不会形成显式 speech-leak 监督
+
+事实：
+
+- `v106` 已经证明：
+  - 只在 `music_plus_speech` hard-present 局部窗上做 teacher-overlap 对齐，
+  - 并不会自动把 `near_real_0007` 风格局部 speech leak 压下去；
+- `v107` 的有效变化不是“再选一遍局部窗”，而是：
+  - 仍从完整 `speech_plus_music` 原样本选局部高 risk 窗；
+  - 但导出的训练混合只保留：
+    - `target + speech layer`
+  - 让现有 `speech_only overlap_interference_extra` 直接变成显式 speech-leak backstop。
+
+结论：
+
+- 关键不是有没有 local proxy；
+- 而是：
+  - local proxy 的“窗口选择语义”
+  - 和“导出训练视图语义”
+  不能再绑在同一个 full-mix 表达上。
+
+要求：
+
+- 后续凡是继续做 `music_plus_speech` 局部 speech-leak proxy，
+  默认都要区分两层语义：
+  - 选择窗时看完整 `speech_plus_music`
+  - 训练视图只导出显式要压的那部分干扰
+- 否则 loss 看到的仍是 speech 与 music 混合残差，
+  监督目标不会真正对准 speech leak。
+
+### 46. local proxy builder 不能假设 `torchaudio` 后端能直接读完所有源干扰素材
+
+事实：
+
+- 这轮在物化 `local_speech_leak_proxy_v1` 时，源 `interference_layers[].audio_path` 中包含 `.m4a`；
+- 当前环境里 `torchaudio` 实际落到 `soundfile` 后端时，不能稳定读取这类输入；
+- 如果脚本只走 `torchaudio.load`，会在 proxy 物化阶段中断。
+
+要求：
+
+- 后续凡是需要直接回读原始 interference layer 音频的脚本，
+  默认都要准备兼容解码回退；
+- 当前可行做法是：
+  - 先尝试 `torchaudio.load`
+  - 失败后回退到 `ffmpeg` 解码并重采样
+- 不要把“manifest 已存在 wav 路径”错误地类推到所有源 layer 资源也都是 wav。
+
+### 47. 显式 local speech-leak supervision 成立，不等于主观就不会重新输在 artifact
+
+事实：
+
+- `v107`
+  - automatic 上同时满足：
+    - synthetic 三条固定验收 relative `v81` 全部更强
+    - near-real whole-utterance `overall_pass = true`
+    - overlap-local `0003 / 0006` 的 `retention-minus-speech-leak` 转正
+- 但 blind `v81 vs v107` 听审结果是：
+  - `v81 = 4`
+  - `v107 = 0`
+  - `tie = 0`
+- 四条样本共同决策标签都是：
+  - `less_artifact`
+
+结论：
+
+- 这说明当前问题已经不是：
+  - “speech leak 没被显式监督”
+- 而是：
+  - “显式压 speech leak 后，`music_plus_speech` hard-present 局部窗里的 preservation / artifact 代价仍没有被约束住”
+
+要求：
+
+- 后续凡是沿 `local speech-leak proxy` 继续推进，
+  默认都不能只盯：
+  - speech leak
+  - retention-minus-speech-leak
+- 必须同时补：
+  - 局部 preservation backstop
+  - 局部 artifact backstop
+- 如果一个新候选已经出现：
+  - blind 听审 `4 / 4` 全部因 artifact 输掉
+  
+  默认动作应是收口当前 family，
+  不再继续同构 sweep。
+
+### 48. 当前这批“电话音”失败，纯 bandwidth narrowing 抓不住，必须补 transient-loss
+
+事实：
+
+- 用 `real_eval_manifest_bandwidth_guardrail_v1` 回放：
+  - `v81 vs v103`
+  - `v81 vs v107`
+- `bandwidth_analysis/summary.json` 都没有抓到 decisive narrowing：
+  - `v81 vs v103`
+    - `narrower_candidate_counts = tie: 4`
+  - `v81 vs v107`
+    - 结论同型，纯 bandwidth 仍不分胜负
+- 但 `transient_analysis/summary.json` 两组都能抓到：
+  - `more_transient_lossy_candidate_counts = tie: 1, file_b: 3`
+  - 被抓到的都是：
+    - `near_real_0002`
+    - `near_real_0006`
+    - `near_real_0009`
+
+结论：
+
+- 当前这批主观上像“电话音”的失败，
+  更接近：
+  - 高频瞬态存在感丢失
+  而不是：
+  - 单纯频宽收窄
+
+要求：
+
+- 后续不要再把纯 `bandwidth_analysis` 当作当前 artifact frontier 的充分代理；
+- 任何要解释这批电话音失败的自动诊断，
+  默认都必须至少补：
+  - `transient-loss`
+
+### 49. `phone_artifact_gate_v1` 应作为导听审前的固定前置 gate，而不是事后分析脚本
+
+事实：
+
+- 已新增：
+  - `scripts/eval/gate_near_real_phone_artifact.py`
+- 它组合：
+  - `bandwidth_analysis`
+  - `transient_analysis`
+- 在两组已知主观失败 pack 上都能稳定判 fail：
+  - `v81 vs v103`
+    - `overall_pass = false`
+  - `v81 vs v107`
+    - `overall_pass = false`
+- 两组共同失败 bucket 都是：
+  - `raw_target_only`
+  - `target_present__speech`
+  - `target_absent__speech`
+
+结论：
+
+- 这说明当前 artifact-first 诊断链已经不是概念性想法，
+  而是已有可执行 gate。
+
+要求：
+
+- 后续任何沿：
+  - `local speech-leak proxy`
+  - `music_plus_speech hard-present`
+  继续推进的新候选，
+  在导听审前默认都先过：
+  - `real_eval_manifest_bandwidth_guardrail_v1`
+  - `gate_near_real_phone_artifact.py`
+- 如果该 gate 已 fail，
+  默认动作不是继续导听审，
+  而是先回到 artifact / preservation 约束本身。
+
+### 50. 把 preservation / teacher backstop 宽打到整个 `local_speech_leak_proxy_v1` 子域，会把 `v107` 的主收益一起抹掉
+
+事实：
+
+- `v108`
+  - 在 `v107` 基础上新增：
+    - `branch_protect_guard_sisdr`
+    - `branch_protect_teacher_overlap(v81)`
+  - 两条 selector 都打到：
+    - `sample_ids_local_speech_leak_proxy_v1_all.txt`
+- 结果不是“牺牲一点 abstention，换来更稳的 artifact / keep”，而是：
+  - relative `v107`
+    - abstention `-3.6913 dB`
+    - same-gender keep `-1.1242 dB`
+    - hard-present keep `-1.1257 dB`
+    - hard-present artifact proxy `-1.5016 dB`
+- near-real / phone-artifact 上：
+  - relative `v107`
+    - `phone_artifact_gate_v1 = pass`
+  - 说明 artifact 的确止住了
+  - 但 relative `v81`
+    - `phone_artifact_gate_v1` 仍 fail
+    - `0007` 也没转成正向 candidate
+
+结论：
+
+- 当前问题不是“preservation backstop` 无效”；
+- 而是：
+  - 把它宽打到整个 `local_speech_leak_proxy_v1` 子域过于粗暴，
+  - 会把 `v107` 在 `0003 / 0006` 上的有效行为一起拉回。
+
+要求：
+
+- 后续若继续推进 `v107` 这条显式 speech-leak family，
+  默认不要再做：
+  - `local_speech_leak_proxy_v1` 全量子集上的宽 `branch_protect + teacher` backstop
+- 默认应改成：
+  - 只在更窄的 `0007` 风格 `music_plus_speech hard-present` 局部窗上打 preservation / artifact backstop
+  - 先过 `phone_artifact_gate_v1`
+  - 再决定是否值得导听审。
+
+### 51. 把 backstop 缩到 `0007-like` 子域，可以避开 `v108` 式过度回缩；但这不等于 `0007` 已被自动解掉
+
+事实：
+
+- `v109`
+  - 不再沿用 `v108` 的全量子域 backstop
+  - 改成只打：
+    - `sample_ids_local_speech_leak_0007_like_proxy_v1_all.txt`
+- relative `v81`：
+  - 四条 synthetic 固定验收重新全绿
+  - `near-real tradeoff gate = pass`
+  - `phone_artifact_gate_v1 = pass`
+- relative `v107`：
+  - `0003 / 0007` 的 overlap-local
+    - `better_retention_minus_speech_leak = v109`
+  - 且 `phone_artifact_gate_v1` 继续 pass
+
+但同时：
+
+- relative `v81` 的 `near_real_0007`
+  - overlap-local 上
+    - `better_retention_minus_speech_leak = v109`
+  - 但 whole-utterance 上
+    - `better_retention_minus_leak = tie`
+  - 且 overlap-local 上
+    - `more_artifact_proxy_heavy = v109`
+
+结论：
+
+- `0007-like` 窄 backstop 是当前有效方向；
+- 但它解决的是：
+  - `v108` 式全局回缩
+  - 与 `v107` 式明显电话音失败
+- 还没有自动解决：
+  - `0007` 的最终 retention / artifact 拉扯。
+
+要求：
+
+- 这类候选一旦已经同时通过：
+  - `near-real tradeoff gate`
+  - `phone_artifact_gate_v1`
+- 默认动作应改为：
+  - 直接导 focused blind 听审
+- 而不是继续做同构小步 sweep，
+  因为剩余不确定性已经是主观裁决层问题。
+
+### 52. 即使通过 `near-real tradeoff gate + phone_artifact_gate_v1`，也只说明“值得导听审”，不说明核心痛点已主观解决
+
+事实：
+
+- `v109`
+  - relative `v81`
+    - 四条 synthetic 固定验收全绿
+    - `near-real tradeoff gate = pass`
+    - `phone_artifact_gate_v1 = pass`
+- 但 blind `v81 vs v109` 解盲后仍是：
+  - `tie = 3`
+  - `v81 = 1`
+  - `v109 = 0`
+- 唯一非 tie 样本仍是：
+  - `near_real_0007`
+  - 决策标签：
+    - `less_artifact`
+
+结论：
+
+- 当前两条客观 gate 的作用边界很明确：
+  - 它们能筛掉“明显不值得听”的候选；
+  - 但不能证明候选已经解决核心痛点。
+- `v109` 的意义是：
+  - 从 `v107` 那种明显 artifact 失败，
+  - 收敛到和 `v81` 很接近；
+  - 不是：
+    - 已经主观超越 `v81`
+
+要求：
+
+- 后续不要把：
+  - `objective 全绿`
+  - `tradeoff gate pass`
+  - `phone_artifact_gate_v1 pass`
+  误读成“已经可以升格”；
+- 对这类候选，blind 听审仍是最终裁决。
+- 如果听审结果是：
+  - 大量 `tie`
+  - 且唯一 decisive 样本仍偏向 baseline
+  
+  默认动作应是收口当前 family，
+  而不是继续做同构小步 sweep。
+
 ## 近期关键案例入口
 
 - `reports/daily/2026-03-26_overlap_abstention_proxy_v3_v4_and_v71_v72_followup.md`
@@ -1195,3 +1482,9 @@
 - `reports/daily/2026-03-27_v81_vs_v103_listening_review.md`
 - `reports/daily/2026-03-27_hard_present_artifact_proxy_v1_materialization.md`
 - `reports/daily/2026-03-27_artifactaware_pilots_v104_v105_followup.md`
+- `reports/daily/2026-03-27_local_speech_leak_proxy_v107_followup.md`
+- `reports/daily/2026-03-27_v81_vs_v107_listening_review.md`
+- `reports/daily/2026-03-27_phone_artifact_gate_v1_followup.md`
+- `reports/daily/2026-03-27_local_speech_leak_preservebackstop_v108_followup.md`
+- `reports/daily/2026-03-27_local_speech_leak_0007like_backstop_v109_followup.md`
+- `reports/daily/2026-03-27_v81_vs_v109_listening_review.md`

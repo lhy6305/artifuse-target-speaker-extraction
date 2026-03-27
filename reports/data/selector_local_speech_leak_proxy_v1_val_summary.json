@@ -1,0 +1,34 @@
+{
+  "input_manifest": "data/synthetic/val_manifest_hard_present_artifact_proxy_v1.jsonl",
+  "output_manifest": "data/synthetic/val_manifest_local_speech_leak_proxy_v1.jsonl",
+  "output_root": "data/synthetic/local_speech_leak_proxy_v1",
+  "sample_ids_file": "data/synthetic/sample_ids_local_speech_leak_proxy_v1_val.txt",
+  "window_duration_sec": 1.0,
+  "window_hop_sec": 0.02,
+  "min_local_target_share": 0.02,
+  "max_local_target_share": 0.35,
+  "min_local_speech_share_of_interference": 0.25,
+  "min_local_music_share_of_interference": 0.05,
+  "skipped_source_profile_count": 0,
+  "selected_count": 7,
+  "selection_mode_counts": {
+    "speech_peak_music_present_fallback": 3,
+    "speech_target_share_bounded_peak": 4
+  },
+  "local_target_share_mean": 0.12419121482646855,
+  "local_speech_share_of_interference_mean": 0.8862655888493693,
+  "local_music_share_of_interference_mean": 0.11373441115063052,
+  "local_target_energy_db_mean": 10.032905906126388,
+  "local_speech_energy_db_mean": 18.229167316278243,
+  "local_music_energy_db_mean": 6.975623149968858,
+  "local_target_to_speech_energy_db_mean": -8.196261410151857,
+  "sample_ids": [
+    "val_000105_local_speech_leak_proxy_v1",
+    "val_000343_local_speech_leak_proxy_v1",
+    "val_000383_local_speech_leak_proxy_v1",
+    "val_000400_local_speech_leak_proxy_v1",
+    "val_000416_local_speech_leak_proxy_v1",
+    "val_000437_local_speech_leak_proxy_v1",
+    "val_000495_local_speech_leak_proxy_v1"
+  ]
+}

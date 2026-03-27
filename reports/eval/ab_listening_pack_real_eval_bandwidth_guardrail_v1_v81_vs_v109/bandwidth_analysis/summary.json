@@ -1,0 +1,149 @@
+{
+  "pack_dir": "reports/eval/ab_listening_pack_real_eval_bandwidth_guardrail_v1_v81_vs_v109",
+  "num_samples": 4,
+  "n_fft": 1024,
+  "hop_length": 256,
+  "rolloff_percent": 0.95,
+  "narrow_rolloff_threshold_hz": 250.0,
+  "narrow_upper_vs_mid_threshold_db": 1.0,
+  "narrow_frame_upper_p90_threshold": 0.15,
+  "narrow_score_threshold": 2,
+  "narrower_candidate_counts": {
+    "tie": 3,
+    "file_a": 1
+  },
+  "top_abs_rolloff_deltas": [
+    {
+      "sample_id": "near_real_0001",
+      "file_a_label": "v81",
+      "file_b_label": "v109",
+      "delta_rolloff_hz_b_minus_a": -109.375,
+      "delta_upper_vs_mid_db_b_minus_a": 0.7691488955195371,
+      "delta_frame_upper_share_p90_b_minus_a": 0.14975402951240552,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 0,
+      "narrowing_score_file_b": 0,
+      "narrowing_evidence_file_a": [],
+      "narrowing_evidence_file_b": [],
+      "better_output": "",
+      "note": "raw target clip only; used to inspect source retention and over-suppression on target-present speech"
+    },
+    {
+      "sample_id": "near_real_0002",
+      "file_a_label": "v81",
+      "file_b_label": "v109",
+      "delta_rolloff_hz_b_minus_a": -46.875,
+      "delta_upper_vs_mid_db_b_minus_a": 0.9127537721708876,
+      "delta_frame_upper_share_p90_b_minus_a": 0.30943268239498145,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 1,
+      "narrowing_score_file_b": 0,
+      "narrowing_evidence_file_a": [
+        "lower_frame_upper_p90"
+      ],
+      "narrowing_evidence_file_b": [],
+      "better_output": "",
+      "note": "second raw target clip only; another target-present sanity check with different prosody"
+    },
+    {
+      "sample_id": "near_real_0006",
+      "file_a_label": "v81",
+      "file_b_label": "v109",
+      "delta_rolloff_hz_b_minus_a": 0.0,
+      "delta_upper_vs_mid_db_b_minus_a": -0.3893814061024372,
+      "delta_frame_upper_share_p90_b_minus_a": -0.039162981137633356,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 0,
+      "narrowing_score_file_b": 0,
+      "narrowing_evidence_file_a": [],
+      "narrowing_evidence_file_b": [],
+      "better_output": "",
+      "note": "raw target clip mixed with external speech from the Guodegang source"
+    },
+    {
+      "sample_id": "near_real_0009",
+      "file_a_label": "v81",
+      "file_b_label": "v109",
+      "delta_rolloff_hz_b_minus_a": 0.0,
+      "delta_upper_vs_mid_db_b_minus_a": 1.0004736283718918,
+      "delta_frame_upper_share_p90_b_minus_a": 0.365137305855751,
+      "narrower_candidate": "file_a",
+      "narrowing_score_file_a": 2,
+      "narrowing_score_file_b": 0,
+      "narrowing_evidence_file_a": [
+        "lower_upper_vs_mid",
+        "lower_frame_upper_p90"
+      ],
+      "narrowing_evidence_file_b": [],
+      "better_output": "",
+      "note": "target absent; only external speech is present"
+    }
+  ],
+  "top_abs_upper_vs_mid_deltas": [
+    {
+      "sample_id": "near_real_0009",
+      "file_a_label": "v81",
+      "file_b_label": "v109",
+      "delta_rolloff_hz_b_minus_a": 0.0,
+      "delta_upper_vs_mid_db_b_minus_a": 1.0004736283718918,
+      "delta_frame_upper_share_p90_b_minus_a": 0.365137305855751,
+      "narrower_candidate": "file_a",
+      "narrowing_score_file_a": 2,
+      "narrowing_score_file_b": 0,
+      "narrowing_evidence_file_a": [
+        "lower_upper_vs_mid",
+        "lower_frame_upper_p90"
+      ],
+      "narrowing_evidence_file_b": [],
+      "better_output": "",
+      "note": "target absent; only external speech is present"
+    },
+    {
+      "sample_id": "near_real_0002",
+      "file_a_label": "v81",
+      "file_b_label": "v109",
+      "delta_rolloff_hz_b_minus_a": -46.875,
+      "delta_upper_vs_mid_db_b_minus_a": 0.9127537721708876,
+      "delta_frame_upper_share_p90_b_minus_a": 0.30943268239498145,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 1,
+      "narrowing_score_file_b": 0,
+      "narrowing_evidence_file_a": [
+        "lower_frame_upper_p90"
+      ],
+      "narrowing_evidence_file_b": [],
+      "better_output": "",
+      "note": "second raw target clip only; another target-present sanity check with different prosody"
+    },
+    {
+      "sample_id": "near_real_0001",
+      "file_a_label": "v81",
+      "file_b_label": "v109",
+      "delta_rolloff_hz_b_minus_a": -109.375,
+      "delta_upper_vs_mid_db_b_minus_a": 0.7691488955195371,
+      "delta_frame_upper_share_p90_b_minus_a": 0.14975402951240552,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 0,
+      "narrowing_score_file_b": 0,
+      "narrowing_evidence_file_a": [],
+      "narrowing_evidence_file_b": [],
+      "better_output": "",
+      "note": "raw target clip only; used to inspect source retention and over-suppression on target-present speech"
+    },
+    {
+      "sample_id": "near_real_0006",
+      "file_a_label": "v81",
+      "file_b_label": "v109",
+      "delta_rolloff_hz_b_minus_a": 0.0,
+      "delta_upper_vs_mid_db_b_minus_a": -0.3893814061024372,
+      "delta_frame_upper_share_p90_b_minus_a": -0.039162981137633356,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 0,
+      "narrowing_score_file_b": 0,
+      "narrowing_evidence_file_a": [],
+      "narrowing_evidence_file_b": [],
+      "better_output": "",
+      "note": "raw target clip mixed with external speech from the Guodegang source"
+    }
+  ]
+}

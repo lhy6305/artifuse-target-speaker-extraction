@@ -1,0 +1,93 @@
+{
+  "input_train_manifest": "data/synthetic/train_manifest_local_speech_leak_proxy_v1.jsonl",
+  "input_val_manifest": "data/synthetic/val_manifest_local_speech_leak_proxy_v1.jsonl",
+  "output_train_manifest": "data/synthetic/train_manifest_local_speech_leak_0007_like_proxy_v1.jsonl",
+  "output_val_manifest": "data/synthetic/val_manifest_local_speech_leak_0007_like_proxy_v1.jsonl",
+  "output_train_sample_ids": "data/synthetic/sample_ids_local_speech_leak_0007_like_proxy_v1_train.txt",
+  "output_val_sample_ids": "data/synthetic/sample_ids_local_speech_leak_0007_like_proxy_v1_val.txt",
+  "output_all_sample_ids": "data/synthetic/sample_ids_local_speech_leak_0007_like_proxy_v1_all.txt",
+  "criteria": {
+    "required_selection_mode": "speech_target_share_bounded_peak",
+    "min_local_music_share_of_interference": 0.1,
+    "max_local_fullmix_target_share": 0.14,
+    "max_target_energy_ratio": 0.22,
+    "min_target_transient_presence_share_mean": 0.02,
+    "max_target_transient_presence_share_mean": 0.08,
+    "min_target_interference_logspec_cosine": 0.5
+  },
+  "train": {
+    "selected_count": 3,
+    "sample_ids": [
+      "train_001193_local_speech_leak_proxy_v1",
+      "train_001316_local_speech_leak_proxy_v1",
+      "train_001831_local_speech_leak_proxy_v1"
+    ],
+    "recipe_counts": {
+      "target_clean_plus_music": 3
+    },
+    "selection_mode_counts": {
+      "speech_target_share_bounded_peak": 3
+    },
+    "local_music_share_of_interference_min": 0.10148941210484609,
+    "local_music_share_of_interference_max": 0.25329042217266684,
+    "local_fullmix_target_share_min": 0.09146411995254249,
+    "local_fullmix_target_share_max": 0.13565232825316376,
+    "target_energy_ratio_min": 0.10075435370731599,
+    "target_energy_ratio_max": 0.15758564168044562,
+    "target_transient_presence_share_mean_min": 0.02019071765244007,
+    "target_transient_presence_share_mean_max": 0.0322795994579792,
+    "target_interference_logspec_cosine_min": 0.6348104572429382,
+    "target_interference_logspec_cosine_max": 0.7286600967742966
+  },
+  "val": {
+    "selected_count": 3,
+    "sample_ids": [
+      "val_000343_local_speech_leak_proxy_v1",
+      "val_000416_local_speech_leak_proxy_v1",
+      "val_000495_local_speech_leak_proxy_v1"
+    ],
+    "recipe_counts": {
+      "target_clean_plus_music": 3
+    },
+    "selection_mode_counts": {
+      "speech_target_share_bounded_peak": 3
+    },
+    "local_music_share_of_interference_min": 0.1452653664523352,
+    "local_music_share_of_interference_max": 0.328417301252714,
+    "local_fullmix_target_share_min": 0.07069749527541912,
+    "local_fullmix_target_share_max": 0.10929605071702796,
+    "target_energy_ratio_min": 0.09658133367934461,
+    "target_energy_ratio_max": 0.1322033334480438,
+    "target_transient_presence_share_mean_min": 0.030714942142367363,
+    "target_transient_presence_share_mean_max": 0.05393320322036743,
+    "target_interference_logspec_cosine_min": 0.6411312120159252,
+    "target_interference_logspec_cosine_max": 0.7570422622244803
+  },
+  "all": {
+    "selected_count": 6,
+    "sample_ids": [
+      "train_001193_local_speech_leak_proxy_v1",
+      "train_001316_local_speech_leak_proxy_v1",
+      "train_001831_local_speech_leak_proxy_v1",
+      "val_000343_local_speech_leak_proxy_v1",
+      "val_000416_local_speech_leak_proxy_v1",
+      "val_000495_local_speech_leak_proxy_v1"
+    ],
+    "recipe_counts": {
+      "target_clean_plus_music": 6
+    },
+    "selection_mode_counts": {
+      "speech_target_share_bounded_peak": 6
+    },
+    "local_music_share_of_interference_min": 0.10148941210484609,
+    "local_music_share_of_interference_max": 0.328417301252714,
+    "local_fullmix_target_share_min": 0.07069749527541912,
+    "local_fullmix_target_share_max": 0.13565232825316376,
+    "target_energy_ratio_min": 0.09658133367934461,
+    "target_energy_ratio_max": 0.15758564168044562,
+    "target_transient_presence_share_mean_min": 0.02019071765244007,
+    "target_transient_presence_share_mean_max": 0.05393320322036743,
+    "target_interference_logspec_cosine_min": 0.6348104572429382,
+    "target_interference_logspec_cosine_max": 0.7570422622244803
+  }
+}

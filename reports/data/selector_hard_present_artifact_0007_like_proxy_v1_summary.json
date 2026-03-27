@@ -1,0 +1,74 @@
+{
+  "input_train_manifest": "data/synthetic/train_manifest_hard_present_artifact_local_proxy_v1.jsonl",
+  "input_val_manifest": "data/synthetic/val_manifest_hard_present_artifact_local_proxy_v1.jsonl",
+  "paired_train_sample_ids": "data/synthetic/sample_ids_local_speech_leak_0007_like_proxy_v1_train.txt",
+  "paired_val_sample_ids": "data/synthetic/sample_ids_local_speech_leak_0007_like_proxy_v1_val.txt",
+  "output_train_manifest": "data/synthetic/train_manifest_hard_present_artifact_0007_like_proxy_v1.jsonl",
+  "output_val_manifest": "data/synthetic/val_manifest_hard_present_artifact_0007_like_proxy_v1.jsonl",
+  "output_train_sample_ids": "data/synthetic/sample_ids_hard_present_artifact_0007_like_proxy_v1_train.txt",
+  "output_val_sample_ids": "data/synthetic/sample_ids_hard_present_artifact_0007_like_proxy_v1_val.txt",
+  "output_all_sample_ids": "data/synthetic/sample_ids_hard_present_artifact_0007_like_proxy_v1_all.txt",
+  "train": {
+    "selected_count": 3,
+    "sample_ids": [
+      "train_001193_hard_present_artifact_local_v1",
+      "train_001316_hard_present_artifact_local_v1",
+      "train_001831_hard_present_artifact_local_v1"
+    ],
+    "recipe_counts": {
+      "target_clean_plus_music": 3
+    },
+    "selection_mode_counts": {
+      "target_share_bounded_peak": 3
+    },
+    "target_energy_ratio_min": 0.07007224054992148,
+    "target_energy_ratio_max": 0.09549719221042689,
+    "target_transient_presence_share_mean_min": 0.02019071765244007,
+    "target_transient_presence_share_mean_max": 0.0322795994579792,
+    "target_interference_logspec_cosine_min": 0.6348104572429382,
+    "target_interference_logspec_cosine_max": 0.7286600967742966
+  },
+  "val": {
+    "selected_count": 3,
+    "sample_ids": [
+      "val_000343_hard_present_artifact_local_v1",
+      "val_000416_hard_present_artifact_local_v1",
+      "val_000495_hard_present_artifact_local_v1"
+    ],
+    "recipe_counts": {
+      "target_clean_plus_music": 3
+    },
+    "selection_mode_counts": {
+      "target_share_bounded_peak": 3
+    },
+    "target_energy_ratio_min": 0.03174495954726343,
+    "target_energy_ratio_max": 0.07650905253503033,
+    "target_transient_presence_share_mean_min": 0.030714942142367363,
+    "target_transient_presence_share_mean_max": 0.05393320322036743,
+    "target_interference_logspec_cosine_min": 0.6411312120159252,
+    "target_interference_logspec_cosine_max": 0.7570422622244803
+  },
+  "all": {
+    "selected_count": 6,
+    "sample_ids": [
+      "train_001193_hard_present_artifact_local_v1",
+      "train_001316_hard_present_artifact_local_v1",
+      "train_001831_hard_present_artifact_local_v1",
+      "val_000343_hard_present_artifact_local_v1",
+      "val_000416_hard_present_artifact_local_v1",
+      "val_000495_hard_present_artifact_local_v1"
+    ],
+    "recipe_counts": {
+      "target_clean_plus_music": 6
+    },
+    "selection_mode_counts": {
+      "target_share_bounded_peak": 6
+    },
+    "target_energy_ratio_min": 0.03174495954726343,
+    "target_energy_ratio_max": 0.09549719221042689,
+    "target_transient_presence_share_mean_min": 0.02019071765244007,
+    "target_transient_presence_share_mean_max": 0.05393320322036743,
+    "target_interference_logspec_cosine_min": 0.6348104572429382,
+    "target_interference_logspec_cosine_max": 0.7570422622244803
+  }
+}

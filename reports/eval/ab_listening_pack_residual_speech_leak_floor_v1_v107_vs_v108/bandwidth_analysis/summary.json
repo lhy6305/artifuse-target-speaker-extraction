@@ -1,0 +1,142 @@
+{
+  "pack_dir": "reports/eval/ab_listening_pack_residual_speech_leak_floor_v1_v107_vs_v108",
+  "num_samples": 4,
+  "n_fft": 1024,
+  "hop_length": 256,
+  "rolloff_percent": 0.95,
+  "narrow_rolloff_threshold_hz": 250.0,
+  "narrow_upper_vs_mid_threshold_db": 1.0,
+  "narrow_frame_upper_p90_threshold": 0.15,
+  "narrow_score_threshold": 2,
+  "narrower_candidate_counts": {
+    "tie": 4
+  },
+  "top_abs_rolloff_deltas": [
+    {
+      "sample_id": "near_real_0007",
+      "file_a_label": "v107",
+      "file_b_label": "v108",
+      "delta_rolloff_hz_b_minus_a": -78.125,
+      "delta_upper_vs_mid_db_b_minus_a": 3.4692118011470185,
+      "delta_frame_upper_share_p90_b_minus_a": 0.04409845843911171,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 1,
+      "narrowing_score_file_b": 0,
+      "narrowing_evidence_file_a": [
+        "lower_upper_vs_mid"
+      ],
+      "narrowing_evidence_file_b": [],
+      "better_output": "",
+      "note": "harder near-real case with raw target, friend speech, and music together"
+    },
+    {
+      "sample_id": "near_real_0003",
+      "file_a_label": "v107",
+      "file_b_label": "v108",
+      "delta_rolloff_hz_b_minus_a": -15.625,
+      "delta_upper_vs_mid_db_b_minus_a": 0.33017997821208134,
+      "delta_frame_upper_share_p90_b_minus_a": 0.008309465646743952,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 0,
+      "narrowing_score_file_b": 0,
+      "narrowing_evidence_file_a": [],
+      "narrowing_evidence_file_b": [],
+      "better_output": "",
+      "note": "raw target clip mixed with domain-matched friend speech"
+    },
+    {
+      "sample_id": "near_real_0006",
+      "file_a_label": "v107",
+      "file_b_label": "v108",
+      "delta_rolloff_hz_b_minus_a": 0.0,
+      "delta_upper_vs_mid_db_b_minus_a": 0.1974278780993437,
+      "delta_frame_upper_share_p90_b_minus_a": 0.006201105937361721,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 0,
+      "narrowing_score_file_b": 0,
+      "narrowing_evidence_file_a": [],
+      "narrowing_evidence_file_b": [],
+      "better_output": "",
+      "note": "raw target clip mixed with external speech from the Guodegang source"
+    },
+    {
+      "sample_id": "near_real_0009",
+      "file_a_label": "v107",
+      "file_b_label": "v108",
+      "delta_rolloff_hz_b_minus_a": 0.0,
+      "delta_upper_vs_mid_db_b_minus_a": 0.3695854916611463,
+      "delta_frame_upper_share_p90_b_minus_a": -0.10618851780891458,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 0,
+      "narrowing_score_file_b": 0,
+      "narrowing_evidence_file_a": [],
+      "narrowing_evidence_file_b": [],
+      "better_output": "",
+      "note": "target absent; only external speech is present"
+    }
+  ],
+  "top_abs_upper_vs_mid_deltas": [
+    {
+      "sample_id": "near_real_0007",
+      "file_a_label": "v107",
+      "file_b_label": "v108",
+      "delta_rolloff_hz_b_minus_a": -78.125,
+      "delta_upper_vs_mid_db_b_minus_a": 3.4692118011470185,
+      "delta_frame_upper_share_p90_b_minus_a": 0.04409845843911171,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 1,
+      "narrowing_score_file_b": 0,
+      "narrowing_evidence_file_a": [
+        "lower_upper_vs_mid"
+      ],
+      "narrowing_evidence_file_b": [],
+      "better_output": "",
+      "note": "harder near-real case with raw target, friend speech, and music together"
+    },
+    {
+      "sample_id": "near_real_0009",
+      "file_a_label": "v107",
+      "file_b_label": "v108",
+      "delta_rolloff_hz_b_minus_a": 0.0,
+      "delta_upper_vs_mid_db_b_minus_a": 0.3695854916611463,
+      "delta_frame_upper_share_p90_b_minus_a": -0.10618851780891458,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 0,
+      "narrowing_score_file_b": 0,
+      "narrowing_evidence_file_a": [],
+      "narrowing_evidence_file_b": [],
+      "better_output": "",
+      "note": "target absent; only external speech is present"
+    },
+    {
+      "sample_id": "near_real_0003",
+      "file_a_label": "v107",
+      "file_b_label": "v108",
+      "delta_rolloff_hz_b_minus_a": -15.625,
+      "delta_upper_vs_mid_db_b_minus_a": 0.33017997821208134,
+      "delta_frame_upper_share_p90_b_minus_a": 0.008309465646743952,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 0,
+      "narrowing_score_file_b": 0,
+      "narrowing_evidence_file_a": [],
+      "narrowing_evidence_file_b": [],
+      "better_output": "",
+      "note": "raw target clip mixed with domain-matched friend speech"
+    },
+    {
+      "sample_id": "near_real_0006",
+      "file_a_label": "v107",
+      "file_b_label": "v108",
+      "delta_rolloff_hz_b_minus_a": 0.0,
+      "delta_upper_vs_mid_db_b_minus_a": 0.1974278780993437,
+      "delta_frame_upper_share_p90_b_minus_a": 0.006201105937361721,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 0,
+      "narrowing_score_file_b": 0,
+      "narrowing_evidence_file_a": [],
+      "narrowing_evidence_file_b": [],
+      "better_output": "",
+      "note": "raw target clip mixed with external speech from the Guodegang source"
+    }
+  ]
+}

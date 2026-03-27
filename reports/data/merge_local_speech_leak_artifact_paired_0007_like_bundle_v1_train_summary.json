@@ -1,0 +1,77 @@
+{
+  "input_manifests": [
+    "data/synthetic/train_manifest_abstention_gate_bundle_v2.jsonl",
+    "data/synthetic/train_manifest_local_speech_leak_0007_like_proxy_v1.jsonl",
+    "data/synthetic/train_manifest_hard_present_artifact_0007_like_proxy_v1.jsonl"
+  ],
+  "output_manifest": "data/synthetic/train_manifest_local_speech_leak_artifact_paired_0007_like_bundle_v1.jsonl",
+  "sample_ids_output": "data/synthetic/sample_ids_local_speech_leak_artifact_paired_0007_like_bundle_v1_train.txt",
+  "dedupe_key": "sample_id",
+  "duplicate_key_count": 0,
+  "duplicate_keys": [],
+  "input_summaries": [
+    {
+      "manifest": "data/synthetic/train_manifest_abstention_gate_bundle_v2.jsonl",
+      "summary": {
+        "count": 102,
+        "recipe_counts": {
+          "target_clean_plus_music": 30,
+          "target_clean_speech": 34,
+          "target_hard_plus_music": 21,
+          "target_hard_speech": 17
+        },
+        "temporal_pattern_counts": {
+          "target_full": 102
+        },
+        "interference_pool_counts": {
+          "": 102
+        }
+      }
+    },
+    {
+      "manifest": "data/synthetic/train_manifest_local_speech_leak_0007_like_proxy_v1.jsonl",
+      "summary": {
+        "count": 3,
+        "recipe_counts": {
+          "target_clean_plus_music": 3
+        },
+        "temporal_pattern_counts": {
+          "target_full": 3
+        },
+        "interference_pool_counts": {
+          "": 3
+        }
+      }
+    },
+    {
+      "manifest": "data/synthetic/train_manifest_hard_present_artifact_0007_like_proxy_v1.jsonl",
+      "summary": {
+        "count": 3,
+        "recipe_counts": {
+          "target_clean_plus_music": 3
+        },
+        "temporal_pattern_counts": {
+          "target_full": 3
+        },
+        "interference_pool_counts": {
+          "": 3
+        }
+      }
+    }
+  ],
+  "output_summary": {
+    "count": 108,
+    "recipe_counts": {
+      "target_clean_plus_music": 36,
+      "target_clean_speech": 34,
+      "target_hard_plus_music": 21,
+      "target_hard_speech": 17
+    },
+    "temporal_pattern_counts": {
+      "target_full": 108
+    },
+    "interference_pool_counts": {
+      "": 108
+    }
+  }
+}
