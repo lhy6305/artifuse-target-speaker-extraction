@@ -995,15 +995,65 @@
     - `0007`
       - `better_retention_minus_speech_leak = v81`
       - `more_artifact_proxy_heavy = v103`
-  - 当前不自动升格，先走：
-    - `v81 vs v103` focused 听审
-  - 不继续做 `v103+` 同结构小步 sweep
+  - blind `v81 vs v103` focused 听审已完成：
+    - `v81 = 4`
+    - `v103 = 0`
+    - `tie = 0`
+    - 四条样本全部因为 `v103` artifact 更重而偏向 `v81`
+  - 当前正式裁决：
+    - `v103` 不升格
+    - 不继续做 `v103+` 同结构小步 sweep
+    - 这条家族先收口，转去新的 artifact-first 机制题
+- `hard_present_artifact_proxy_v1` 已完成物化：
+  - `data/synthetic/train_manifest_hard_present_artifact_proxy_v1.jsonl`
+  - `data/synthetic/val_manifest_hard_present_artifact_proxy_v1.jsonl`
+  - 口径：
+    - `speech_plus_music`
+    - `layer_count = 2`
+    - `target_full`
+    - weak-target
+    - mid/high transient-share hard-present overlap
+  - `v81 / v102 / v103` 回放结果：
+    - train violation
+      - `v81 = 0`
+      - `v102 = 1`
+      - `v103 = 2`
+    - val violation
+      - `v81 = 0`
+      - `v102 = 0`
+      - `v103 = 2`
+  - 当前新的默认下一步：
+    - 基于 `v81`
+    - 设计首个 artifact-aware pilot
+    - 固定同时回放五条验收：
+      - `real_eval_manifest_residual_speech_leak_floor_v1`
+      - `same_gender_present_keep_guardrail_v1`
+      - `hard_present_gate_keep_guardrail_v1`
+      - `hard_present_artifact_proxy_v1`
+      - `overlap_abstention_proxy_v4_audibility_v1`
+- 首轮 artifact-aware pilots 已完成：
+  - `v104 = artifactaware_anchor`
+    - 比 `v103` 安全
+    - 但 near-real `0007` 没有形成局部 rescue
+    - 不继续
+  - `v105 = artifactguard`
+    - synthetic 四条固定验收都排前
+    - `hard_present_artifact_proxy_v1` 也排前
+    - 但 near-real `0003 / 0007` target capture 同时回退
+    - overlap-local `0007` 仍是 `v81` 更好，且 `v105` artifact 更重
+    - 判定为 proxy 过拟合，不导听审
+- 当前默认下一步再次更新为：
+  - 收口 `v104 / v105` 这轮粗粒度 artifact-aware pilot
+  - 不继续 `v104+ / v105+` 小步权重 sweep
+  - 基于 `v81` 设计更外科式的 local artifact veto / backstop
+  - 重点只打 `0007` 风格局部 artifact，而不是继续扩大整条 proxy 的全局 guard weight
 
-执行前必须保持四条验收同时在场：
+执行前必须保持五条验收同时在场：
 
 - `real_eval_manifest_residual_speech_leak_floor_v1`
 - `same_gender_present_keep_guardrail_v1`
 - `hard_present_gate_keep_guardrail_v1`
+- `hard_present_artifact_proxy_v1`
 - `overlap_abstention_proxy_v4_audibility_v1`
 
 ## 近期关键日报入口
@@ -1033,6 +1083,9 @@
 - `reports/daily/2026-03-27_speech_only_selector_profile_prework.md`
 - `reports/daily/2026-03-27_overlap_purify_v2_speechonly_v102_followup.md`
 - `reports/daily/2026-03-27_plusmusic_teacher_veto_v103_followup.md`
+- `reports/daily/2026-03-27_v81_vs_v103_listening_review.md`
+- `reports/daily/2026-03-27_hard_present_artifact_proxy_v1_materialization.md`
+- `reports/daily/2026-03-27_artifactaware_pilots_v104_v105_followup.md`
 
 ## 文档维护规则
 

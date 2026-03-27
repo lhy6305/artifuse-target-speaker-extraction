@@ -134,12 +134,25 @@
 
 ## 当前默认下一步
 
-- `v103` 已完成自动验收与 near-real 包导出；
+- `v81 vs v103` focused 听审已完成；
+- 结果是 `4 / 4` 全部偏向 `v81`，共同原因都是 `v103` 伪影更重；
 - 不继续做 `v103+` 同结构小步权重 sweep；
+- `hard_present_artifact_proxy_v1` 已物化并完成 `v81 / v102 / v103` 回放；
+- 它能复现“suppression 继续更强，但 hard-present artifact/backstop 重新变差”的问题模式；
+- `v104 = artifactaware_anchor` 已完成：
+  - synthetic 介于 `v81` 与 `v102` 之间
+  - near-real 比 `v103` 安全，但 `0007` 没有形成局部 rescue
+  - 不再继续
+- `v105 = artifactguard` 已完成：
+  - synthetic 四条固定验收都排前，`hard_present_artifact_proxy_v1` 也最强
+  - 但 near-real `0003 / 0007` target capture 同时回退
+  - overlap-local 上 `0007` 仍是 `v81` 更好，且 `v105` artifact 更重
+  - 判定为 proxy 过拟合，不导听审
 - 当前默认下一步改为：
-  - `v81 vs v103` focused 听审
-  - 重点固定看 `0007` 是否仍有更重 artifact
-  - 再复核 `0003 / 0006 / 0009` 的代价是否可接受
+  - 收口 `speech_only overlap residual + plus_music teacher veto` 这一小家族
+  - 维持新的 artifact-first 固定诊断链
+  - 收口 `v104 / v105` 这一轮 artifact-aware 粗权重 pilot
+  - 基于 `v81` 改做更外科式的 local artifact veto / backstop，而不是继续 `v103+` 或 `v105+`
 
 ## 当前核心子题
 
@@ -186,12 +199,14 @@
 
 - `data/synthetic/val_manifest_same_gender_present_keep_guardrail_v1.jsonl`
 - `data/synthetic/val_manifest_hard_present_gate_keep_guardrail_v1.jsonl`
+- `data/synthetic/val_manifest_hard_present_artifact_proxy_v1.jsonl`
 
 作用：
 
 - 这是当前最重要的新 guardrail；
 - 它能复现 `near_real_0003` 风格 failure；
 - `hard_present_gate_keep_guardrail_v1` 则覆盖 `near_real_0007` 风格 hard-present failure；
+- `hard_present_artifact_proxy_v1` 进一步把 `0007` 的 `speech_plus_music + artifact-risk` 子域单独拆出来；
 - 后续凡是 overlap-abstention 分支继续训练，都必须同时看这条。
 
 ## 本阶段已完成事项
@@ -533,9 +548,18 @@
 
 当前裁决：
 
-- `v103` 是这一小家族里目前最值得继续听审的自动候选；
-- 但仍不能自动升格，
-  因为 `0007` 的局部 artifact / retention 问题没有消失。
+- `v103` automatic 上确实是这一小家族里最强的一条；
+- 但 blind 听审 `v81 vs v103` 结果为：
+  - `v81 = 4`
+  - `v103 = 0`
+  - `tie = 0`
+- 四条样本共同原因都是：
+  - `v103` 伪影更重
+- 因此本家族当前正式裁决不是“值得继续微调”，
+  而是：
+  - whole-utterance / localized leak objective 仍不足以约束真实可听伪影
+  - `v103` 不升格
+  - 这条训练方向先收口
 
 ## 下一步默认计划
 
@@ -595,10 +619,14 @@
    - 先做了 `v81 vs v102` focused 听审后，确认 `0007` 仍是唯一明确痛点
 16. `v103` plus-music teacher veto pilot 已完成自动验收：
    - `v81 vs v103` 的 whole-utterance gate 已回到 `overall_pass = true`
-   - 但 overlap-local 仍显示 `0007` artifact proxy 更重
+   - 但 blind 听审结果为：
+     - `v81 = 4`
+     - `v103 = 0`
+     - `tie = 0`
+   - 四条样本全部因 `v103` 伪影更重而偏向 `v81`
    - 当前默认下一步改成：
-     - `v81 vs v103` focused 听审
-     - 听审重点仍固定看 `0003 / 0006 / 0007 / 0009`
+     - 不再继续 `v103+` 小步 sweep
+     - 改做 `0007` 风格 artifact proxy / 约束机制题
 
 ## 近期关键日报入口
 
@@ -628,6 +656,9 @@
 - `reports/daily/2026-03-27_speech_only_selector_profile_prework.md`
 - `reports/daily/2026-03-27_overlap_purify_v2_speechonly_v102_followup.md`
 - `reports/daily/2026-03-27_plusmusic_teacher_veto_v103_followup.md`
+- `reports/daily/2026-03-27_v81_vs_v103_listening_review.md`
+- `reports/daily/2026-03-27_hard_present_artifact_proxy_v1_materialization.md`
+- `reports/daily/2026-03-27_artifactaware_pilots_v104_v105_followup.md`
 
 ## 文档维护规则
 

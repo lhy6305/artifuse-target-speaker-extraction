@@ -48,6 +48,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-interference-gain-db", type=float, default=None)
     parser.add_argument("--interference-pools", nargs="*", default=[])
     parser.add_argument("--interference-speaker-names", nargs="*", default=[])
+    parser.add_argument("--interference-profiles", nargs="*", default=[])
+    parser.add_argument("--min-interference-layer-count", type=int, default=None)
+    parser.add_argument("--max-interference-layer-count", type=int, default=None)
+    parser.add_argument("--require-speech-interference", action="store_true")
+    parser.add_argument("--forbid-speech-interference", action="store_true")
+    parser.add_argument("--require-music-interference", action="store_true")
+    parser.add_argument("--forbid-music-interference", action="store_true")
+    parser.add_argument("--require-other-interference", action="store_true")
+    parser.add_argument("--forbid-other-interference", action="store_true")
     parser.add_argument(
         "--require-interference-reverb",
         action="store_true",
@@ -376,12 +385,63 @@ def infer_interference_speaker_name(audio_path: str | None) -> str | None:
     return parent_name or None
 
 
+def categorize_interference_pool(pool_name: str) -> str:
+    normalized = pool_name.strip().lower()
+    if not normalized:
+        return ""
+    if "speech" in normalized:
+        return "speech"
+    if "music" in normalized:
+        return "music"
+    return "other"
+
+
+def summarize_interference_layers(metadata: dict[str, Any]) -> dict[str, Any]:
+    layers = list(metadata.get("interference_layers", []))
+    categories: set[str] = set()
+    pools: list[str] = []
+    speaker_names: list[str] = []
+
+    for layer in layers:
+        pool_name = str(layer.get("pool", "")).strip()
+        if pool_name:
+            pools.append(pool_name)
+            category = categorize_interference_pool(pool_name)
+            if category:
+                categories.add(category)
+
+        speaker_name = infer_interference_speaker_name(str(layer.get("audio_path", "")))
+        if speaker_name:
+            speaker_names.append(speaker_name)
+
+    ordered_categories = [name for name in ("speech", "music", "other") if name in categories]
+    if not ordered_categories:
+        profile = "none"
+    elif len(ordered_categories) == 1:
+        profile = f"{ordered_categories[0]}_only"
+    else:
+        profile = "_plus_".join(ordered_categories)
+    return {
+        "layer_count": len(layers),
+        "profile": profile,
+        "has_speech": "speech" in categories,
+        "has_music": "music" in categories,
+        "has_other": "other" in categories,
+        "pools": sorted(set(pools)),
+        "speaker_names": sorted(set(speaker_names)),
+    }
+
+
 def summarize(rows: list[dict[str, Any]], enriched: list[dict[str, Any]]) -> dict[str, Any]:
     recipe_counts = Counter(row["recipe"] for row in rows)
     pattern_counts = Counter(row.get("temporal_pattern", "target_full") for row in rows)
     pool_counts = Counter(row["interference_pool"] for row in enriched if row["interference_pool"] is not None)
     speaker_counts = Counter(
         row["interference_speaker_name"] for row in enriched if row["interference_speaker_name"] is not None
+    )
+    profile_counts = Counter(row["interference_profile"] for row in enriched if row.get("interference_profile"))
+    layer_count_counts = Counter(
+        int(row["interference_layer_count"]) for row in enriched if row.get("interference_layer_count") is not None
     )
     if enriched:
         mean_overlap = float(sum(row["overlap_ratio"] for row in enriched if row["overlap_ratio"] is not None) / len(enriched))
@@ -392,6 +452,10 @@ def summarize(rows: list[dict[str, Any]], enriched: list[dict[str, Any]]) -> dic
         "pattern_counts": dict(sorted(pattern_counts.items())),
         "interference_pool_counts": dict(sorted(pool_counts.items())),
         "interference_speaker_counts": dict(sorted(speaker_counts.items())),
+        "interference_profile_counts": dict(sorted(profile_counts.items())),
+        "interference_layer_count_counts": {
+            str(key): int(value) for key, value in sorted(layer_count_counts.items())
+        },
         "mean_overlap_ratio": mean_overlap,
     }
 
@@ -406,6 +470,12 @@ def main() -> None:
         raise ValueError(
             "Cannot require and forbid target reverb at the same time."
         )
+    if args.require_speech_interference and args.forbid_speech_interference:
+        raise ValueError("Cannot require and forbid speech interference at the same time.")
+    if args.require_music_interference and args.forbid_music_interference:
+        raise ValueError("Cannot require and forbid music interference at the same time.")
+    if args.require_other_interference and args.forbid_other_interference:
+        raise ValueError("Cannot require and forbid other interference at the same time.")
     rng = random.Random(args.seed)
     recipe_caps = parse_recipe_caps(args.recipe_cap)
     allowed_sample_ids = load_sample_ids(args.sample_ids_file)
@@ -413,6 +483,7 @@ def main() -> None:
     temporal_patterns = set(args.temporal_patterns)
     interference_pools = set(args.interference_pools)
     interference_speaker_names = set(args.interference_speaker_names)
+    interference_profiles = set(args.interference_profiles)
     use_transient_filters = any(
         value is not None
         for value in [
@@ -459,6 +530,7 @@ def main() -> None:
             continue
 
         layers = list(metadata.get("interference_layers", []))
+        interference_summary = summarize_interference_layers(metadata)
         first_layer = layers[0] if layers else None
         interference_gain_db = None if first_layer is None else float(first_layer["gain_db"])
         interference_pool = None if first_layer is None else str(first_layer["pool"])
@@ -483,6 +555,28 @@ def main() -> None:
         if interference_pools and interference_pool not in interference_pools:
             continue
         if interference_speaker_names and interference_speaker_name not in interference_speaker_names:
+            continue
+        if interference_profiles and str(interference_summary["profile"]) not in interference_profiles:
+            continue
+        if args.min_interference_layer_count is not None and (
+            int(interference_summary["layer_count"]) < args.min_interference_layer_count
+        ):
+            continue
+        if args.max_interference_layer_count is not None and (
+            int(interference_summary["layer_count"]) > args.max_interference_layer_count
+        ):
+            continue
+        if args.require_speech_interference and not bool(interference_summary["has_speech"]):
+            continue
+        if args.forbid_speech_interference and bool(interference_summary["has_speech"]):
+            continue
+        if args.require_music_interference and not bool(interference_summary["has_music"]):
+            continue
+        if args.forbid_music_interference and bool(interference_summary["has_music"]):
+            continue
+        if args.require_other_interference and not bool(interference_summary["has_other"]):
+            continue
+        if args.forbid_other_interference and bool(interference_summary["has_other"]):
             continue
         if args.require_interference_reverb and not interference_has_reverb:
             continue
@@ -611,6 +705,11 @@ def main() -> None:
                 "interference_pool": interference_pool,
                 "interference_has_reverb": interference_has_reverb,
                 "interference_speaker_name": interference_speaker_name,
+                "interference_layer_count": int(interference_summary["layer_count"]),
+                "interference_profile": str(interference_summary["profile"]),
+                "has_speech_interference": bool(interference_summary["has_speech"]),
+                "has_music_interference": bool(interference_summary["has_music"]),
+                "has_other_interference": bool(interference_summary["has_other"]),
                 "target_has_reverb": target_has_reverb,
                 **transient_metrics,
             }
@@ -670,6 +769,15 @@ def main() -> None:
             "max_interference_gain_db": args.max_interference_gain_db,
             "interference_pools": sorted(interference_pools),
             "interference_speaker_names": sorted(interference_speaker_names),
+            "interference_profiles": sorted(interference_profiles),
+            "min_interference_layer_count": args.min_interference_layer_count,
+            "max_interference_layer_count": args.max_interference_layer_count,
+            "require_speech_interference": bool(args.require_speech_interference),
+            "forbid_speech_interference": bool(args.forbid_speech_interference),
+            "require_music_interference": bool(args.require_music_interference),
+            "forbid_music_interference": bool(args.forbid_music_interference),
+            "require_other_interference": bool(args.require_other_interference),
+            "forbid_other_interference": bool(args.forbid_other_interference),
             "require_interference_reverb": bool(args.require_interference_reverb),
             "forbid_interference_reverb": bool(args.forbid_interference_reverb),
             "require_target_reverb": bool(args.require_target_reverb),

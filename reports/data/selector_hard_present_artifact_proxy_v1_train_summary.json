@@ -1,0 +1,102 @@
+{
+  "input_manifest": "data/synthetic/train_manifest.jsonl",
+  "output_manifest": "data/synthetic/train_manifest_hard_present_artifact_proxy_v1.jsonl",
+  "sample_ids_file": null,
+  "seed": 20260318,
+  "filters": {
+    "recipes": [
+      "target_clean_plus_music",
+      "target_hard_plus_music"
+    ],
+    "temporal_patterns": [
+      "target_full"
+    ],
+    "min_target_ratio": null,
+    "max_target_ratio": null,
+    "min_target_energy_ratio": 0.04,
+    "max_target_energy_ratio": 0.2,
+    "min_overlap_ratio": 0.6,
+    "max_overlap_ratio": null,
+    "min_interference_gain_db": null,
+    "max_interference_gain_db": null,
+    "interference_pools": [],
+    "interference_speaker_names": [],
+    "interference_profiles": [
+      "speech_plus_music"
+    ],
+    "min_interference_layer_count": 2,
+    "max_interference_layer_count": 2,
+    "require_speech_interference": true,
+    "forbid_speech_interference": false,
+    "require_music_interference": true,
+    "forbid_music_interference": false,
+    "require_other_interference": false,
+    "forbid_other_interference": false,
+    "require_interference_reverb": false,
+    "forbid_interference_reverb": false,
+    "require_target_reverb": false,
+    "forbid_target_reverb": false,
+    "min_target_transient_presence_minus_mid_db_mean": -17.0,
+    "max_target_transient_presence_minus_mid_db_mean": -9.0,
+    "min_target_transient_presence_share_mean": 0.02,
+    "max_target_transient_presence_share_mean": 0.1,
+    "min_interference_transient_presence_minus_mid_db_mean": null,
+    "max_interference_transient_presence_minus_mid_db_mean": null,
+    "min_interference_transient_presence_share_mean": null,
+    "max_interference_transient_presence_share_mean": null,
+    "min_target_interference_logspec_cosine": null,
+    "max_target_interference_logspec_cosine": null,
+    "transient_filter_mode": "all",
+    "include_derived_metrics": true
+  },
+  "recipe_caps": {},
+  "selected_count": 33,
+  "recipe_counts": {
+    "target_clean_plus_music": 27,
+    "target_hard_plus_music": 6
+  },
+  "pattern_counts": {
+    "target_full": 33
+  },
+  "interference_pool_counts": {
+    "speech_interference_clean_pool": 27,
+    "speech_interference_hard_pool": 6
+  },
+  "interference_speaker_counts": {
+    "friend_hard_negative_segments": 6,
+    "����": 1,
+    "��������": 1,
+    "��̫": 1,
+    "����": 1,
+    "�����ɶ�": 1,
+    "������": 1,
+    "����": 1,
+    "����": 1,
+    "�ҷ�": 1,
+    "���͸�": 1,
+    "���������� - Placeholder": 1,
+    "ս������ - Battle": 1,
+    "��Ŀ�ٱ���": 1,
+    "��֮ة": 1,
+    "����": 1,
+    "����": 1,
+    "ŷ����": 1,
+    "����": 1,
+    "�����ǡ���˹����": 1,
+    "�����": 1,
+    "ά������": 1,
+    "ܽ����˹": 1,
+    "�ƴ�����": 1,
+    "��ά����": 1,
+    "ͭȸ": 1,
+    "����": 1,
+    "¹Ұ����": 1
+  },
+  "interference_profile_counts": {
+    "speech_plus_music": 33
+  },
+  "interference_layer_count_counts": {
+    "2": 33
+  },
+  "mean_overlap_ratio": 0.8786798445922199
+}

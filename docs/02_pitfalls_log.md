@@ -995,6 +995,99 @@
   - `--focus-recipes`
   以清空 synthetic 默认 recipe 过滤。
 
+### 39. `v103` 证明“automatic 转绿”仍可能对应“主观全败”
+
+事实：
+
+- `v103 = v102 + plus_music teacher veto`
+  在 automatic 上同时满足：
+  - synthetic 三条主验收继续更强
+  - near-real whole-utterance `overall_pass = true`
+- 但 blind `v81 vs v103` 听审结果是：
+  - `v81 = 4`
+  - `v103 = 0`
+  - `tie = 0`
+- 四条样本共同决策标签都是：
+  - `less_artifact`
+
+结论：
+
+- 当前这组 `speech leak / retention-minus-leak / teacher veto`
+  目标，仍不足以约束真正会被人耳否掉的伪影；
+- 如果一个新候选已经出现“全样本都因为 artifact 更差而输掉”的结果，
+  默认动作不是继续做同结构权重 sweep，
+  而是停掉这条家族，回到：
+  - artifact proxy 物化
+  - artifact-aware 训练约束
+  这一级问题上。
+
+### 40. `near_real_0007` 不能再用“recipe 近似”或“低 transient 近似”粗代理
+
+事实：
+
+- `near_real_0007` 的 blocker 不是单纯：
+  - `plus_music recipe`
+  - 或 `target_transient_presence_share_mean` 很低
+- 它更接近：
+  - 弱目标
+  - `speech_plus_music`
+  - `interference_layer_count = 2`
+  - `target_full`
+  - 中高 transient share 的 hard-present overlap
+
+如果只用：
+
+- `recipe in {target_clean_plus_music, target_hard_plus_music}`
+- 或继续沿用
+  - `target_transient_presence_share_mean <= 0.05`
+
+就会把：
+
+- `0007` 型 artifact-risk
+- `0006` 型 speech-only keep-case
+
+重新混在一起，导致 proxy 失焦。
+
+要求：
+
+- 后续凡是要物化 `0007` 风格 synthetic proxy，
+  默认都要显式带上：
+  - `interference_profile = speech_plus_music`
+  - `interference_layer_count = 2`
+  - `require_speech_interference = true`
+  - `require_music_interference = true`
+- 并且不要再把“更低 transient share”直接当作更接近 `0007` 的充分条件。
+
+### 41. `hard_present_artifact_proxy_v1` 不能脱离 near-real `0003 / 0007` 单独升格候选
+
+事实：
+
+- `v105` 在 synthetic 四条固定验收上都能排前；
+- `hard_present_artifact_proxy_v1` 也会把 `v105` 排到最前；
+- 但 near-real 上：
+  - `0003` target capture 从 `-11.474 dB` 掉到 `-13.512 dB`
+  - `0007` target capture 从 `-17.715 dB` 掉到 `-19.801 dB`
+  - overlap-local `0007` 仍是 `v81` 更好，且 `v105` artifact 更重
+
+说明：
+
+- 这条 proxy 可以用来暴露 `v103` 这种 artifact-risk；
+- 但如果直接把它当主目标强推，也会把真实 target capture 一起压低；
+- 它更适合作为 veto / backstop，而不是单独的升格依据。
+
+要求：
+
+- 后续凡是 `hard_present_artifact_proxy_v1` 排前的候选，
+  默认都必须同时检查：
+  - near-real `0003`
+  - near-real `0007`
+  - overlap-local `more_artifact_proxy_heavy`
+- 如果出现：
+  - proxy 更强
+  - 但 `0003 / 0007` target capture 回退
+  
+  则默认判为 proxy 过拟合，不导听审。
+
 ## 近期关键案例入口
 
 - `reports/daily/2026-03-26_overlap_abstention_proxy_v3_v4_and_v71_v72_followup.md`
@@ -1014,3 +1107,6 @@
 - `reports/daily/2026-03-27_speech_only_selector_profile_prework.md`
 - `reports/daily/2026-03-27_overlap_purify_v2_speechonly_v102_followup.md`
 - `reports/daily/2026-03-27_plusmusic_teacher_veto_v103_followup.md`
+- `reports/daily/2026-03-27_v81_vs_v103_listening_review.md`
+- `reports/daily/2026-03-27_hard_present_artifact_proxy_v1_materialization.md`
+- `reports/daily/2026-03-27_artifactaware_pilots_v104_v105_followup.md`

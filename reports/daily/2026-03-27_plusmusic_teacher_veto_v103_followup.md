@@ -145,6 +145,41 @@ whole-utterance：
 - `v103` 已把 whole-utterance automatic gate 拉回绿灯；
 - 但真正的 blocker 仍是 `0007` 的局部 artifact / retention 反向点。
 
+## blind 听审结果
+
+blind 包：
+
+- `reports/eval/ab_listening_pack_residual_speech_leak_floor_v1_v81_vs_v103_blind`
+
+映射：
+
+- `candidate_a = v81`
+- `candidate_b = v103`
+
+结果：
+
+- `better_output`
+  - `file_a = 4`
+  - `file_b = 0`
+  - `tie = 0`
+- 四条样本：
+  - `near_real_0003`
+  - `near_real_0006`
+  - `near_real_0007`
+  - `near_real_0009`
+  全部偏向 `v81`
+- 决策标签共同点：
+  - `less_artifact`
+- 主观记录上：
+  - `file_a_artifact = slight`
+  - `file_b_artifact = moderate`
+
+结论：
+
+- `v103` 没有解决核心痛点；
+- 并且不只 `0007`，而是四条样本都出现了更强伪影；
+- 因此 automatic 转绿并不构成继续沿本家族扩树的理由。
+
 ## pack 导出兼容修复
 
 本轮顺手修了 `export_ab_listening_pack.py` 的 near-real 兼容问题：
@@ -172,21 +207,8 @@ whole-utterance：
 
 ## 当前裁决
 
-1. `v103` 是目前这一小家族里最值得继续听审的 automatic candidate。
-2. 它修好了 automatic gate，但还没修好 `0007` 的局部 artifact 痛点。
-3. 因此当前默认下一步不是 `v103+` sweep，而是直接做：
-
-```powershell
-.\python.exe scripts\eval\listening_pack_gui.py --pack-dir reports\eval\ab_listening_pack_residual_speech_leak_floor_v1_v81_vs_v103_blind
-```
-
-focused 听审重点：
-
-- `near_real_0007`
-  - `v103` 是否仍比 `v81` 更假、更糙
-- `near_real_0003`
-  - local 指标转正是否终于对应到可听改善
-- `near_real_0006`
-  - 是否继续“更干净但也更空”
-- `near_real_0009`
-  - absent 是否仍保持自然
+1. `v103` 不升格。
+2. `speech_only overlap residual + plus_music teacher veto` 这一小家族先收口。
+3. 下一步不再做 `v103+` 微调，而应切到新的 artifact-first 子题：
+   - 先物化能复现 `0007` 风格伪影的 synthetic proxy
+   - 再决定是否需要显式 artifact-aware loss / gate / veto
