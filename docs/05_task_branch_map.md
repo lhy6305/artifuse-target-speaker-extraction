@@ -982,6 +982,71 @@ checkpoint：
 
 - `near_tie_but_painpoint_unresolved`
 
+### 30. `v110`
+
+checkpoint：
+
+- `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v110_v109_local_speech_leak_artifact_paired_0007like_bundle_v1_ft1`
+
+结果：
+
+- 新增 paired 资产：
+  - `build_hard_present_artifact_0007_like_proxy.py`
+  - `train/val_manifest_hard_present_artifact_0007_like_proxy_v1.jsonl`
+  - `train/val_manifest_local_speech_leak_artifact_paired_0007_like_bundle_v1.jsonl`
+- 训练口径：
+  - 从 `v109` 初始化
+  - leak view：
+    - `sample_ids_local_speech_leak_0007_like_proxy_v1_all.txt`
+    - `speech_only overlap_interference_extra`
+  - artifact view：
+    - `sample_ids_hard_present_artifact_0007_like_proxy_v1_all.txt`
+    - `branch_protect_guard_sisdr`
+    - `branch_protect_teacher_overlap(v81)`
+- selector 激活：
+  - train
+    - `overlap_interference_extra = 3 / 108`
+    - `branch_protect = 3 / 108`
+    - `branch_protect_teacher = 3 / 108`
+  - val
+    - `overlap_interference_extra = 2 / 39`
+    - `branch_protect = 3 / 39`
+    - `branch_protect_teacher = 3 / 39`
+- relative `v81`
+  - abstention `+3.2903 dB`
+  - same-gender keep `+1.2213 dB`
+  - hard-present keep `+0.9344 dB`
+  - hard-present artifact proxy `+1.6590 dB`
+  - `near-real tradeoff gate = pass`
+  - `phone_artifact_gate_v1 = pass`
+- relative `v109`
+  - abstention `+0.6973 dB`
+  - same-gender keep `+0.1458 dB`
+  - hard-present keep `+0.2610 dB`
+  - hard-present artifact proxy `+0.2186 dB`
+  - `near-real tradeoff gate = pass`
+  - `phone_artifact_gate_v1 = pass`
+- 关键 near-real：
+  - relative `v81`
+    - `0007`
+      - overlap-local：
+        - `better_retention_minus_speech_leak = v110`
+        - `better_retention_minus_total_leak = v81`
+        - `more_artifact_proxy_heavy = v110`
+      - whole-utterance：
+        - `better_retention_minus_leak = v81`
+  - relative `v109`
+    - `0007`
+      - overlap-local：
+        - `better_retention_minus_speech_leak = v110`
+        - `better_retention_minus_total_leak = v109`
+      - whole-utterance：
+        - `better_retention_minus_leak = v109`
+
+裁决：
+
+- `objective_positive_but_over_suppressive`
+
 ## 当前有效训练与验收入口
 
 ### 训练侧
@@ -1268,6 +1333,15 @@ checkpoint：
     - 不继续 `v109+` 小步 sweep
     - 若继续 `0007` 子题，
       直接回到 retention / artifact 拉扯本身重新拆约束
+- `v110` 已进一步证明：
+    - paired dual-view 即使精确落在同一批 `0007-like` base id 上，
+    - 也仍可能把 `0007` 往“局部 leak 更小，但 whole tradeoff 更差”的方向继续推
+  - 当前默认下一步再次更新为：
+    - 收口 `v110`
+    - 不继续 `v110+`
+    - 若继续 `0007` 子题，
+      优先改做更保守的 self-anchor 约束，
+      先保住 `v109` 的 whole-tradeoff，再看局部 leak 是否还能改善
 
 执行前必须保持六条验收同时在场：
 
@@ -1316,6 +1390,7 @@ checkpoint：
 - `reports/daily/2026-03-27_local_speech_leak_preservebackstop_v108_followup.md`
 - `reports/daily/2026-03-27_local_speech_leak_0007like_backstop_v109_followup.md`
 - `reports/daily/2026-03-27_v81_vs_v109_listening_review.md`
+- `reports/daily/2026-03-27_local_speech_leak_artifact_paired_0007like_v110_followup.md`
 
 ## 文档维护规则
 

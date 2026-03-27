@@ -98,6 +98,9 @@
   - `v109`
     - 含义：`v107 + local_speech_leak 0007-like backstop v1`
     - 状态：relative `v81` 四条固定验收全绿，且 `near-real tradeoff gate / phone_artifact_gate_v1` 都已通过；但 blind `v81 vs v109` 结果为 `tie = 3, v81 = 1, v109 = 0`，核心痛点 `0007` 仍未主观转正，不升格
+  - `v110`
+    - 含义：`v109 + paired local_speech_leak / artifact 0007-like bundle v1`
+    - 状态：synthetic relative `v81 / v109` 均继续转强，且 `near-real tradeoff gate / phone_artifact_gate_v1` 继续通过；但 `0007` 上仍表现为更强 speech-only suppression 换来更差 whole-tradeoff，不导听审，直接收口
   - `v82`
     - 含义：`present_overlap_residual_leak_purification v1` 首轮 mask pilot
     - 状态：objective 前进明显，但 `v81 vs v82` 听审为 `4 / 4 tie`
@@ -155,7 +158,7 @@
 - `v72 / v73 / v74 / v75 / v76 / v77 / v78 / v79 / v80 / v81 / v82 / v83 / v84 / v85 / v86 / v87 / v88 / v89 / v90 / v91 / v93 / v94 / v95 / v98 / v99` 都不能替代默认线。
 - `v100` 也不能替代默认线。
 - `v101` 也不能替代默认线。
-- `v102 / v103 / v104 / v105 / v106 / v107 / v108` 也都不能替代默认线。
+- `v102 / v103 / v104 / v105 / v106 / v107 / v108 / v109 / v110` 也都不能替代默认线。
 
 ## 当前默认下一步
 
@@ -303,15 +306,43 @@
       - 原因仍是 `v109` artifact 更重
     - `v109` 不升格
     - 不继续 `v109+` 小步 sweep
+- `v110 = local_speech_leak_artifact_paired_0007like_bundle_v1` 已完成：
+  - paired 资产已物化：
+    - `hard_present_artifact_0007_like_proxy_v1`
+    - `local_speech_leak_artifact_paired_0007_like_bundle_v1`
+  - relative `v81`
+    - 四条 synthetic 固定验收全绿
+    - `near-real tradeoff gate = pass`
+    - `phone_artifact_gate_v1 = pass`
+  - relative `v109`
+    - 四条 synthetic 固定验收仍是正向
+    - `near-real tradeoff gate = pass`
+    - `phone_artifact_gate_v1 = pass`
+  - 但 `near_real_0007`
+    - relative `v81`
+      - overlap-local：
+        - `better_retention_minus_speech_leak = v110`
+        - `better_retention_minus_total_leak = v81`
+        - `more_artifact_proxy_heavy = v110`
+      - whole-utterance：
+        - `better_retention_minus_leak = v81`
+    - relative `v109`
+      - overlap-local：
+        - `better_retention_minus_speech_leak = v110`
+        - `better_retention_minus_total_leak = v109`
+      - whole-utterance：
+        - `better_retention_minus_leak = v109`
+  - 当前裁决：
+    - `v110` 是 objective-positive but over-suppressive
+    - 不导听审
+    - 不继续 `v110+` 同构小步 sweep
 - 当前默认下一步再次更新为：
   - 维持新的 artifact-first 固定诊断链
   - `v106` 的 teacher-overlap local veto 已收口
   - `v107` 也已收口
   - `v108` 也已收口
-  - `v109` 已完成自动验收并通过：
-    - `near-real tradeoff gate`
-    - `phone_artifact_gate_v1`
-  - 不立刻继续 `v107+ / v108+ / v109+` 小步权重 sweep
+  - `v109 / v110` 都已完成自动验收
+  - 不立刻继续 `v107+ / v108+ / v109+ / v110+` 同构小步权重 sweep
   - `phone_artifact_gate_v1` 已完成物化并回放：
     - 基于 `real_eval_manifest_bandwidth_guardrail_v1`
     - 组合 `bandwidth + transient-loss`
@@ -329,6 +360,15 @@
     - 不继续 `v109+` 同构小步 sweep
     - 若继续 `0007` 子题，
       直接回到 retention / artifact 拉扯本身重新拆约束
+  - `v110` 已进一步证明：
+    - 即使把 `speech_only leak view` 与 `plus_music artifact view` 精确配对到同一批 `0007-like` base id，
+    - 也仍可能把 `0007` 推向“局部 leak 更小，但 whole tradeoff 更差”的过抑制解
+  - 当前默认下一步再次更新为：
+    - 收口 `v110`
+    - 不继续 `v110+`
+    - 若继续 `0007` 子题，
+      优先改做更保守的 self-anchor 约束，
+      先保住 `v109` 的 whole-tradeoff，再观察局部 leak 是否还能改善
 
 ## 当前核心子题
 
@@ -865,6 +905,7 @@
 - `reports/daily/2026-03-27_local_speech_leak_preservebackstop_v108_followup.md`
 - `reports/daily/2026-03-27_local_speech_leak_0007like_backstop_v109_followup.md`
 - `reports/daily/2026-03-27_v81_vs_v109_listening_review.md`
+- `reports/daily/2026-03-27_local_speech_leak_artifact_paired_0007like_v110_followup.md`
 
 ## 文档维护规则
 

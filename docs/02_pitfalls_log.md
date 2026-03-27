@@ -1460,6 +1460,65 @@
   默认动作应是收口当前 family，
   而不是继续做同构小步 sweep。
 
+### 53. 即使把 `speech_only leak view` 和 `plus_music artifact view` 精确配对到同一批 `0007-like` base id，也仍可能继续把 `0007` 推向过抑制
+
+事实：
+
+- `v110`
+  - 从 `v109` 出发
+  - 对同一批 `0007-like` base id 同时引入：
+    - `local_speech_leak_0007_like_proxy_v1`
+    - `hard_present_artifact_0007_like_proxy_v1`
+  - leak view 上继续打：
+    - `overlap_interference_extra`
+  - artifact view 上继续打：
+    - `branch_protect_guard_sisdr`
+    - `branch_protect_teacher_overlap(v81)`
+- relative `v81 / v109`
+  - 四条 synthetic 固定验收都仍是正向
+  - `near-real tradeoff gate = pass`
+  - `phone_artifact_gate_v1 = pass`
+- 但 `near_real_0007`
+  - relative `v81`
+    - overlap-local：
+      - `better_retention_minus_speech_leak = v110`
+      - `better_retention_minus_total_leak = v81`
+      - `more_artifact_proxy_heavy = v110`
+    - whole-utterance：
+      - `better_retention_minus_leak = v81`
+  - relative `v109`
+    - overlap-local：
+      - `better_retention_minus_speech_leak = v110`
+      - `better_retention_minus_total_leak = v109`
+    - whole-utterance：
+      - `better_retention_minus_leak = v109`
+
+结论：
+
+- 问题不只是“artifact view 没有一起在场”；
+- 即使 paired dual-view 已经在场，
+  当前这组 loss 仍会把 `0007` 往
+  “speech-only leak 更小，但 total / whole tradeoff 更差”
+  的方向继续推。
+- `phone_artifact_gate_v1` 在这里也只能说明：
+  - 没有回到明显电话音失败；
+  - 不能说明 `0007` 的核心 retention / total-leak 拉扯已经解掉。
+
+要求：
+
+- 这类 paired dual-view 候选一旦出现：
+  - synthetic 继续正向
+  - `tradeoff gate + phone_artifact_gate_v1` 继续 pass
+  - 但 `0007` whole-tradeoff 反而退化
+
+  默认动作应是直接收口当前参数化，
+  不再继续做 `v110+` 同构 sweep。
+- 若继续 `0007` 子题，
+  默认应改成：
+  - 更保守的 self-anchor / frontier-anchor 约束，
+  - 先保住当前最接近可听边界的 whole-tradeoff，
+  - 再观察局部 leak 改善是否还能留下。
+
 ## 近期关键案例入口
 
 - `reports/daily/2026-03-26_overlap_abstention_proxy_v3_v4_and_v71_v72_followup.md`
@@ -1488,3 +1547,4 @@
 - `reports/daily/2026-03-27_local_speech_leak_preservebackstop_v108_followup.md`
 - `reports/daily/2026-03-27_local_speech_leak_0007like_backstop_v109_followup.md`
 - `reports/daily/2026-03-27_v81_vs_v109_listening_review.md`
+- `reports/daily/2026-03-27_local_speech_leak_artifact_paired_0007like_v110_followup.md`
