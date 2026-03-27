@@ -194,6 +194,7 @@ def parse_args() -> argparse.Namespace:
         default="residual",
     )
     parser.add_argument("--model-branch-overlap-dual-decoder-max-blend", type=float, default=1.0)
+    parser.add_argument("--model-branch-overlap-dual-decoder-gate-floor", type=float, default=0.0)
     parser.add_argument("--loss-stft-weight", type=float, default=0.5)
     parser.add_argument("--loss-sisdr-weight", type=float, default=0.0)
     parser.add_argument("--loss-branch-protect-guard-sisdr-weight", type=float, default=0.0)
@@ -448,6 +449,7 @@ def build_model_config(args: argparse.Namespace) -> dict[str, int]:
         "branch_overlap_dual_decoder_gate_mode": args.model_branch_overlap_dual_decoder_gate_mode,
         "branch_overlap_dual_decoder_source_mode": args.model_branch_overlap_dual_decoder_source_mode,
         "branch_overlap_dual_decoder_max_blend": args.model_branch_overlap_dual_decoder_max_blend,
+        "branch_overlap_dual_decoder_gate_floor": args.model_branch_overlap_dual_decoder_gate_floor,
     }
 
 

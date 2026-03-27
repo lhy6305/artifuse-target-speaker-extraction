@@ -1094,6 +1094,421 @@ checkpoint：
 
 - `safe_but_no_meaningful_progress`
 
+### 32. `v112`
+
+checkpoint：
+
+- `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v112_v109_overlap_cancel_splitpath_0007like_v1_ft1`
+
+结果：
+
+- 首个最小 split-path pilot：
+  - 初始化：
+    - `v109`
+  - 只新增并训练：
+    - `branch_overlap_cancel_head`
+  - 同时保留：
+    - `loss_use_branch_prerefine_as_primary_prediction = true`
+  - 含义：
+    - `branch_base(v109)` 保持主输出
+    - `overlap_cancel_head` 只在 `speech_only overlap` 子域承担额外 suppress
+- selector 激活：
+  - train
+    - `overlap_cancel = 38 / 135`
+    - `branch_protect = 3 / 135`
+  - val
+    - `overlap_cancel = 12 / 40`
+    - `branch_protect = 3 / 40`
+- relative `v81`
+  - abstention `+2.6823 dB`
+  - same-gender keep `+1.1142 dB`
+  - hard-present keep `+0.7098 dB`
+  - hard-present artifact proxy `+1.4480 dB`
+  - `tradeoff gate = pass`
+  - `0007`
+    - overlap-local：
+      - `better_retention_minus_speech_leak = tie`
+      - `better_retention_minus_total_leak = v81`
+      - `more_artifact_proxy_heavy = v112`
+- relative `v109`
+  - abstention `+0.0893 dB`
+  - same-gender keep `+0.0386 dB`
+  - hard-present keep `+0.0364 dB`
+  - hard-present artifact proxy `+0.0076 dB`
+  - near-real whole 基本全 `tie`
+  - `0007`
+    - overlap-local：
+      - `more_speech_interference_leaky = v112`
+      - `better_retention_minus_speech_leak = v109`
+      - `more_artifact_proxy_heavy = tie`
+  - relative `v81 / v109`
+    - `export_ab_listening_pack = 0 candidate sample`
+
+裁决：
+
+- `split_path_safe_but_no_frontier_gain`
+
+### 33. `v113`
+
+checkpoint：
+
+- `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v113_v109_overlap_refine_preservebypass_0007like_selfanchor_v1_ft2`
+
+结果：
+
+- 首个 frozen-base residual-source refiner preserve/bypass pilot：
+  - 初始化：
+    - `v109`
+  - teacher：
+    - `v109`
+  - 只新增并训练：
+    - `branch_overlap_refine_head`
+  - 同时保留：
+    - `loss_use_branch_prerefine_as_primary_prediction = true`
+  - 并设置：
+    - `branch_overlap_refine_max_delta = 0.08`
+    - `branch_overlap_refine_gate_mode = complement`
+    - `branch_overlap_refine_source_mode = residual`
+  - 含义：
+    - `branch_base(v109)` 保持主输出
+    - refiner 只在 gate-complement 子域对 `residual` source 做小幅 preserve/bypass 风格修正
+- 首个 `ft1` 试跑不计入结论：
+  - 原因是 selector 未显式带入 CLI，
+  - paired `0007-like` 子域没有真正激活；
+  - 有效 run 以 `ft2` 为准
+- selector 激活：
+  - train
+    - `reconstruction_extra = 63 / 108`
+    - `overlap_interference_extra = 3 / 108`
+    - `branch_protect = 3 / 108`
+    - `branch_protect_teacher = 3 / 108`
+  - val
+    - `reconstruction_extra = 0 / 39`
+    - `overlap_interference_extra = 2 / 39`
+    - `branch_protect = 3 / 39`
+    - `branch_protect_teacher = 3 / 39`
+- relative `v81`
+  - abstention `+3.6476 dB`
+  - same-gender keep `+1.6197 dB`
+  - hard-present keep `+1.2724 dB`
+  - hard-present artifact proxy `+1.7747 dB`
+  - `tradeoff gate = pass`
+  - `0007`
+    - whole-utterance：
+      - `better_retention_minus_leak = v113`
+    - overlap-local：
+      - `better_retention_minus_speech_leak = v81`
+      - `better_retention_minus_total_leak = tie`
+      - `more_artifact_proxy_heavy = v113`
+- relative `v109`
+  - abstention `+1.0546 dB`
+  - same-gender keep `+0.5442 dB`
+  - hard-present keep `+0.5989 dB`
+  - hard-present artifact proxy `+0.3343 dB`
+  - `tradeoff gate = pass`
+  - `0007`
+    - whole-utterance：
+      - `better_retention_minus_leak = v113`
+    - overlap-local：
+      - `more_speech_interference_leaky = v113`
+      - `better_retention_minus_speech_leak = v109`
+      - `better_retention_minus_total_leak = v113`
+      - `more_artifact_proxy_heavy = tie`
+- bandwidth / transients：
+  - relative `v81`
+    - `narrower_candidate_counts = tie:4`
+    - `more_transient_lossy_candidate_counts = tie:4`
+  - relative `v109`
+    - `narrower_candidate_counts = tie:4`
+    - `more_transient_lossy_candidate_counts = tie:3, v113:1`
+    - 唯一坏点是：
+      - `near_real_0009`
+- relative `v81 / v109`
+  - `export_ab_listening_pack = 0 candidate sample`
+
+裁决：
+
+- `first_objective_positive_preservebypass_hit_but_not_listening_candidate`
+
+### 34. `v114`
+
+checkpoint：
+
+- `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v114_v113_overlap_refine_preservebypass_0007like_localpush_v1_ft1`
+
+结果：
+
+- `v113` 的最小 local-push follow-up：
+  - 初始化：
+    - `v113 ft2`
+  - teacher：
+    - `v109`
+  - 继续只训练：
+    - `branch_overlap_refine_head`
+  - 结构与 selector 命中保持不变：
+    - train `reconstruction_extra / overlap_interference_extra / branch_protect / branch_protect_teacher = 63 / 3 / 3 / 3`
+    - val `0 / 2 / 3 / 3`
+  - 唯一主动改动：
+    - `loss_overlap_interference_extra_weight`
+      - `0.04 -> 0.05`
+- relative `v113`
+  - abstention `+0.6524 dB`
+  - same-gender keep `+0.3698 dB`
+  - hard-present keep `+0.4298 dB`
+  - hard-present artifact proxy `+0.2396 dB`
+  - whole-utterance：
+    - `more_interference_leaky = v113` on `2 / 4`
+    - `better_retention_minus_leak = v114` on `1 / 4`
+    - `0007`
+      - `better_retention_minus_leak = v114`
+      - `delta_interference_capture_db = -1.8998 dB`
+      - `delta_retention_minus_leak_db = +1.8643 dB`
+  - overlap-local：
+    - `more_speech_interference_leaky = tie:1, v113:1, v114:2`
+    - `better_retention_minus_speech_leak = tie:2, v113:1, not_applicable:1`
+    - `more_artifact_proxy_heavy = tie:4`
+    - `0007`
+      - `more_speech_interference_leaky = v114`
+      - `better_retention_minus_speech_leak = v113`
+      - `better_retention_minus_total_leak = tie`
+      - `more_artifact_proxy_heavy = tie`
+      - `delta_speech_interference_capture_db = +6.7240 dB`
+      - `delta_retention_minus_speech_leak_db = -6.7384 dB`
+      - `delta_retention_minus_total_leak_db = +0.4852 dB`
+- bandwidth / transients：
+  - relative `v113`
+    - `narrower_candidate_counts = tie:4`
+    - `more_transient_lossy_candidate_counts = tie:2, v113:2`
+
+裁决：
+
+- `whole_positive_but_local_speech_leak_regressed_vs_v113`
+
+### 35. `v115`
+
+checkpoint：
+
+- `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v115_v113_overlap_refine_preservebypass_hardlocal_selector_v1_ft1`
+
+结果：
+
+- `v113` 的 finer hardlocal selector follow-up：
+  - 初始化：
+    - `v113 ft2`
+  - teacher：
+    - `v109`
+  - 继续只训练：
+    - `branch_overlap_refine_head`
+  - 结构与权重保持不变
+  - 唯一主动改动：
+    - `speech_only local leak` selector
+      从原始 `0007-like` 6 条 proxy
+      改成更大的 hardlocal plus-music 子池
+  - selector 命中：
+    - train `63 / 11 / 3 / 3`
+    - val `0 / 3 / 3 / 3`
+- relative `v113`
+  - abstention `+0.4349 dB`
+  - same-gender keep `+0.2292 dB`
+  - hard-present keep `+0.2703 dB`
+  - hard-present artifact proxy `+0.1544 dB`
+  - whole-utterance：
+    - `more_interference_leaky = v113` on `2 / 4`
+    - `better_retention_minus_leak = v115` on `1 / 4`
+    - `0007`
+      - `better_retention_minus_leak = v115`
+      - `delta_interference_capture_db = -2.1348 dB`
+      - `delta_retention_minus_leak_db = +2.0775 dB`
+  - overlap-local：
+    - `more_speech_interference_leaky = tie:1, v113:1, v115:2`
+    - `better_retention_minus_speech_leak = tie:2, v113:1, not_applicable:1`
+    - `more_artifact_proxy_heavy = tie:4`
+    - `0007`
+      - `more_speech_interference_leaky = v115`
+      - `better_retention_minus_speech_leak = v113`
+      - `delta_speech_interference_capture_db = +9.2226 dB`
+      - `delta_retention_minus_speech_leak_db = -9.2569 dB`
+
+裁决：
+
+- `finer_selector_still_optimizes_whole_or_total_not_local_speech_leak`
+
+### 36. `v116`
+
+checkpoint：
+
+- `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v116_v113_overlap_refine_preservebypass_0007like_predproj_v1_ft1`
+
+结果：
+
+- `v113` 的 overlap local pred-projection follow-up：
+  - 初始化：
+    - `v113 ft2`
+  - teacher：
+    - `v109`
+  - 继续只训练：
+    - `branch_overlap_refine_head`
+  - 结构、selector 与权重保持不变
+  - 唯一主动改动：
+    - `loss_overlap_interference_extra_mode`
+      - `residual_projection_ratio -> prediction_projection_ratio`
+  - selector 命中保持与 `v113` 一致：
+    - train `63 / 3 / 3 / 3`
+    - val `0 / 2 / 3 / 3`
+- relative `v113`
+  - abstention `+0.8478 dB`
+  - same-gender keep `+0.4624 dB`
+  - hard-present keep `+0.5265 dB`
+  - hard-present artifact proxy `+0.2962 dB`
+  - whole-utterance：
+    - `more_interference_leaky = v113` on `2 / 4`
+    - `better_retention_minus_leak = v116` on `1 / 4`
+    - `0007`
+      - `better_retention_minus_leak = v116`
+      - `delta_interference_capture_db = -2.3450 dB`
+      - `delta_retention_minus_leak_db = +2.2477 dB`
+  - overlap-local：
+    - `more_speech_interference_leaky = tie:1, v113:1, v116:2`
+    - `better_retention_minus_speech_leak = tie:1, v116:1, v113:1, not_applicable:1`
+    - `more_artifact_proxy_heavy = tie:4`
+    - `0007`
+      - `more_speech_interference_leaky = v116`
+      - `better_retention_minus_speech_leak = v113`
+      - `delta_speech_interference_capture_db = +9.2733 dB`
+      - `delta_retention_minus_speech_leak_db = -9.3285 dB`
+  - bandwidth / transients：
+    - `narrower_candidate_counts = tie:4`
+    - `more_transient_lossy_candidate_counts = tie:3, v113:1`
+
+裁决：
+
+- `predproj_semantics_still_fails_0007_local_speech_leak`
+
+### 37. `v117`
+
+checkpoint：
+
+- `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v117_v113_overlap_refine_preservebypass_0007like_gateguided_v1_ft1`
+
+结果：
+
+- `v113` 的 gate-guided integration follow-up：
+  - 初始化：
+    - `v113 ft2`
+  - teacher：
+    - `v109`
+  - 继续只训练：
+    - `branch_overlap_refine_head`
+  - 结构、selector 与权重保持不变
+  - 唯一主动改动：
+    - `branch_overlap_refine_gate_mode`
+      - `complement -> gate`
+  - selector 命中保持与 `v113` 一致：
+    - train `63 / 3 / 3 / 3`
+    - val `0 / 2 / 3 / 3`
+- relative `v113`
+  - abstention `+2.9297 dB`
+  - same-gender keep `+2.4865 dB`
+  - hard-present keep `+2.0962 dB`
+  - hard-present artifact proxy `+1.8984 dB`
+  - whole-utterance：
+    - `more_interference_leaky = v113` on `4 / 4`
+    - `better_retention_minus_leak = v117` on `3 / 4`
+    - `0007`
+      - `better_source_retention = v113`
+      - `better_retention_minus_leak = v117`
+      - `delta_target_capture_db = -0.8580 dB`
+      - `delta_interference_capture_db = -7.0435 dB`
+      - `delta_retention_minus_leak_db = +6.1855 dB`
+  - overlap-local：
+    - `better_source_retention = v113:2, tie:1, not_applicable:1`
+    - `more_speech_interference_leaky = v113:2, v117:2`
+    - `more_total_interference_leaky = v113:3, v117:1`
+    - `better_retention_minus_speech_leak = v117:2, v113:1, not_applicable:1`
+    - `better_retention_minus_total_leak = v117:3, not_applicable:1`
+    - `more_artifact_proxy_heavy = v117:2, tie:2`
+    - `0007`
+      - `more_speech_interference_leaky = v117`
+      - `better_retention_minus_speech_leak = v113`
+      - `better_retention_minus_total_leak = v117`
+      - `more_artifact_proxy_heavy = v117`
+      - `delta_speech_interference_capture_db = +10.6017 dB`
+      - `delta_retention_minus_speech_leak_db = -11.3125 dB`
+    - `0009`
+      - `more_speech_interference_leaky = v117`
+      - `delta_speech_interference_capture_db = +10.9446 dB`
+  - bandwidth / transients：
+    - `narrower_candidate_counts = tie:4`
+    - `more_transient_lossy_candidate_counts = v117:2, tie:1, v113:1`
+
+裁决：
+
+- `gateguided_refiner_overpushes_total_leak_but_regresses_0007_local_speech_leak`
+
+### 38. `v118`
+
+checkpoint：
+
+- `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v118_v109_overlap_dual_controller_floor_0007like_v1_ft1`
+
+结果：
+
+- 首个 dual-controller floor pilot：
+  - 初始化：
+    - `v109`
+  - teacher：
+    - `v109`
+  - 新增最小 controller 参数：
+    - `branch_overlap_dual_decoder_gate_floor = 0.75`
+  - 同时设置：
+    - `branch_overlap_dual_decoder_gate_mode = gate`
+    - `branch_overlap_dual_decoder_source_mode = residual`
+    - `branch_overlap_dual_decoder_max_delta = 0.08`
+    - `branch_overlap_dual_decoder_max_blend = 0.15`
+  - 只训练：
+    - `branch_overlap_dual_decoder_temporal_model`
+    - `branch_overlap_dual_decoder_head`
+- selector 命中：
+  - train
+    - `overlap_cancel = 3 / 108`
+    - `overlap_dual = 3 / 108`
+    - `branch_protect = 3 / 108`
+    - `branch_protect_teacher = 3 / 108`
+  - val
+    - `overlap_cancel = 3 / 39`
+    - `overlap_dual = 3 / 39`
+    - `branch_protect = 3 / 39`
+    - `branch_protect_teacher = 3 / 39`
+- relative `v109`
+  - abstention `-1.7880 dB`
+  - same-gender keep `-2.4133 dB`
+  - hard-present keep `-1.1600 dB`
+  - hard-present artifact proxy `-2.1929 dB`
+  - whole-utterance：
+    - `better_source_retention = v118:3, not_applicable:1`
+    - `more_interference_leaky = v118:4`
+    - `better_retention_minus_leak = tie:2, v109:1, not_applicable:1`
+    - `gate_near_real_tradeoff = fail`
+  - `0007`
+    - whole：
+      - `better_source_retention = v118`
+      - `more_interference_leaky = v118`
+      - `better_retention_minus_leak = v109`
+      - `delta_interference_capture_db = +12.9325 dB`
+    - overlap-local：
+      - `more_speech_interference_leaky = v118`
+      - `more_total_interference_leaky = v118`
+      - `better_retention_minus_speech_leak = v118`
+      - `better_retention_minus_total_leak = v109`
+      - `delta_total_interference_capture_db = +13.4918 dB`
+  - bandwidth / transients：
+    - `narrower_candidate_counts = tie:4`
+    - `more_transient_lossy_candidate_counts = tie:4`
+
+裁决：
+
+- `dual_controller_floor_stops_phone_artifact_but_not_direct_output_leak_drift`
+
 ## 当前有效训练与验收入口
 
 ### 训练侧
@@ -1393,11 +1808,70 @@ checkpoint：
     - self-anchor 确实能把 `v110` 的过抑制收回 safe 边界，
     - 但也会把这条 family 快速收成 near-no-op
   - 当前默认下一步再次更新为：
-    - 收口 `v110 / v111`
-    - 不继续 `v110+ / v111+`
+    - 收口 `v110 / v111 / v112`
+    - 不继续 `v110+ / v111+ / v112+`
     - 若继续 `0007` 子题，
-      这组 paired dual-view loss family 应视为已触边，
-      下一步改做新的约束或表示机制
+      这组 paired dual-view / overlap-cancel split-path family 应视为已触边，
+      `v112` 又进一步证明：
+      即使把 suppress 路径从主路径里拆开，
+      当前 multiplicative `overlap_cancel_head` 表示也只会收成 safe / near-no-op；
+      下一步改做新的约束、表示或 integration 机制
+- `v113` 已进一步证明：
+  - frozen-base residual-source refiner 这条 preserve/bypass 机制已经能相对 `v109` 真正前进，
+  - `0007` 的 whole-tradeoff 也第一次被自动推成正向，
+  - 但 overlap-local `speech_only` leak 仍未转正，且还没有 listening-pack candidate
+  - 当前默认下一步再次更新为：
+    - 收口 `v113`
+    - preserve/bypass family 保持活跃
+    - 不回退到旧 `overlap_cancel` family
+    - 若继续 `0007` 子题，
+      下一轮直接围绕：
+      保住 `v113` 的 whole-tradeoff 正向，
+      同时继续压 overlap-local `speech_only` leak
+- `v114 / v115 / v116 / v117` 已进一步共同证明：
+  - 当前 `branch_overlap_refine_head` 这条 preserve/bypass family
+    确实不是 near-no-op；
+  - 但不管改：
+    - selector
+    - overlap local loss mode
+    - gate integration
+    主优化出口仍然优先落在：
+    - whole-tradeoff
+    - total-leak
+    而不是稳定解决：
+    - `0007` overlap-local `speech_only` leak
+    - 与之绑定的 local artifact / absent local suppression
+  - 当前默认下一步再次更新为：
+    - 收口 `v113 / v114 / v115 / v116 / v117`
+    - preserve/bypass family 保持活跃
+    - 不回退到旧 `overlap_cancel` family
+    - 不继续当前 `branch_overlap_refine_head` 上的：
+      - selector-only
+      - loss-mode-only
+      - gate-mode-only
+      sweep
+    - 若继续 `0007` 子题，
+      直接切到新的局部表示 / controller 机制，
+      或显式分开的 target-present / target-absent local 控制语义
+- `v118` 已进一步证明：
+  - direct-output dual decoder 即使补上：
+    - `gate floor`
+    - 小 `max_blend`
+    也只能止住 phone-artifact；
+  - 不能修掉：
+    - `source retention ↑`
+    - `interference leak ↑`
+    同时发生的 integration 漂移；
+  - 因而 `overlap dual decoder` 仍应保留为：
+    - `failed_as_direct_output_path`
+  - 当前默认下一步再次更新为：
+    - 收口 `v118`
+    - 不继续 `v118+`
+    - 若继续 dual 语义，
+      只能改做：
+      - auxiliary-only
+      - controller-only
+      - 或其它不直接接管 final output 的 integration
 
 执行前必须保持六条验收同时在场：
 
@@ -1448,6 +1922,12 @@ checkpoint：
 - `reports/daily/2026-03-27_v81_vs_v109_listening_review.md`
 - `reports/daily/2026-03-27_local_speech_leak_artifact_paired_0007like_v110_followup.md`
 - `reports/daily/2026-03-27_local_speech_leak_artifact_paired_0007like_selfanchor_v111_followup.md`
+- `reports/daily/2026-03-27_overlap_cancel_splitpath_0007like_v112_followup.md`
+- `reports/daily/2026-03-27_overlap_refine_preservebypass_0007like_selfanchor_v113_followup.md`
+- `reports/daily/2026-03-28_overlap_refine_preservebypass_hardlocal_selector_v115_followup.md`
+- `reports/daily/2026-03-28_overlap_refine_preservebypass_0007like_predproj_v116_followup.md`
+- `reports/daily/2026-03-28_overlap_refine_preservebypass_0007like_gateguided_v117_followup.md`
+- `reports/daily/2026-03-28_overlap_dual_controller_floor_0007like_v118_followup.md`
 
 ## 文档维护规则
 

@@ -1566,6 +1566,361 @@
   - 或新的表示机制
   而不是继续沿这组 loss 组合细调。
 
+### 55. `frozen branch_base + overlap_cancel_head` 的 split-path 首版可以保持 safe，但当前表示会迅速收成 near-no-op，且未保住 `v109` 的 `0007` local speech-leak 优势
+
+事实：
+
+- `v112`
+  - 初始化：
+    - `v109`
+  - 新开：
+    - `branch_overlap_cancel_head`
+  - 但只训练：
+    - `branch_overlap_cancel_head`
+  - 同时打开：
+    - `loss_use_branch_prerefine_as_primary_prediction = true`
+  - 含义是：
+    - `branch_base(v109)` 继续作为主输出
+    - `overlap_cancel_head` 只在 `speech_only overlap` 子域承担独立 suppress 路径
+- selector 激活是成立的：
+  - train
+    - `overlap_cancel = 38 / 135`
+    - `branch_protect = 3 / 135`
+  - val
+    - `overlap_cancel = 12 / 40`
+    - `branch_protect = 3 / 40`
+- relative `v81`
+  - 四条 synthetic 固定验收仍全绿
+  - `tradeoff gate = pass`
+  - bandwidth / transient 也没有新坏桶
+- 但 relative `v109`
+  - synthetic 基本全 tie
+  - near-real whole 也基本全 tie
+  - `export_ab_listening_pack`
+    - relative `v81 / v109`
+      - 都是 `0 candidate sample`
+- 更关键的是 `near_real_0007` relative `v109`
+  - overlap-local：
+    - `more_speech_interference_leaky = v112`
+    - `better_retention_minus_speech_leak = v109`
+    - `more_artifact_proxy_heavy = tie`
+
+结论：
+
+- 当前问题并不只是“主路径和 suppress 路径还没有拆开”；
+- 把它们形式上拆开以后，
+  如果 suppress 仍停留在当前：
+  - multiplicative
+  - overlap-cancel
+  - complement-gated
+  表示里，
+  这条 family 仍会快速收成：
+  - safe
+  - 但几乎不前进。
+
+要求：
+
+- 不继续：
+  - `v112+`
+  - 当前这组 `frozen branch_base + overlap_cancel_head` split-path 小步 sweep
+- 后续若继续 `0007` 子题，
+  默认应改：
+  - 更明确的 preserve / bypass 表示
+  - 或新的 integration point
+- 不要再把“split-path 首版能训起来”误判成“这条 overlap-cancel family 已经具备解题能力”。
+
+### 56. paired `0007-like` manifest 不会自动替训练入口激活 selector；如果 CLI 漏传 `--loss-*-focus-*` 参数，run 会表面成功但实际没打中目标子域
+
+事实：
+
+- `v113` 首个 `ft1` 试跑：
+  - manifest 已经换成
+    - `train_manifest_local_speech_leak_artifact_paired_0007_like_bundle_v1.jsonl`
+    - `val_manifest_local_speech_leak_artifact_paired_0007_like_bundle_v1.jsonl`
+  - 但 CLI 漏传了：
+    - `--loss-reconstruction-extra-focus-sample-ids-file`
+    - `--loss-overlap-interference-extra-focus-sample-ids-file`
+    - `--loss-branch-protect-focus-sample-ids-file`
+    - `--loss-branch-protect-teacher-focus-sample-ids-file`
+- 结果是：
+  - head 本身确实在训练
+  - 但 train / val `selector_metrics` 全是：
+    - `active = false`
+    - `selected_count = 0`
+  - 也就是 paired `0007-like` 子域根本没有被实际命中
+- 只有在 `ft2` 把 selector 参数显式补齐以后，
+  才恢复成预期命中：
+  - train
+    - `reconstruction_extra = 63 / 108`
+    - `overlap_interference_extra = 3 / 108`
+    - `branch_protect = 3 / 108`
+  - val
+    - `overlap_interference_extra = 2 / 39`
+    - `branch_protect = 3 / 39`
+
+原因：
+
+- 训练脚本里的 selector 是由 `loss_config` 里的显式 `focus_* / require_* / min_* / max_*` 参数驱动的；
+- manifest 只是提供样本池与元数据；
+- 它不会“自动把 paired bundle 的 sample id 语义转成训练时的 selector 条件”。
+
+要求：
+
+- 后续凡是复用这类：
+  - paired bundle
+  - local proxy
+  - hard-present backstop
+  训练入口，
+  都必须同时检查：
+  - `train_summary.json` 里的 `loss_config` 是否真的带上目标 selector；
+  - `selector_metrics` 是否出现预期命中数；
+- 不能只看：
+  - manifest 已切换
+  - 训练已跑完
+  就把该 run 计入有效实验。
+
+### 57. 在 preserve/bypass self-anchor family 里，直接上调 `overlap_interference_extra_weight` 可能让 synthetic / whole-tradeoff 继续变好，但同时把真正想要的 overlap-local `speech_only` leak 拉坏
+
+事实：
+
+- `v114` 相对 `v113`：
+  - 唯一主动改动只是：
+    - `loss_overlap_interference_extra_weight`
+      - `0.04 -> 0.05`
+  - selector 命中完全一致；
+  - synthetic 四条固定验收全部继续正向；
+  - whole-utterance near-real 也继续正向：
+    - `more_interference_leaky = v113` on `2 / 4`
+    - `better_retention_minus_leak = v114` on `1 / 4`
+  - 但 overlap-local：
+    - `more_speech_interference_leaky = tie:1, v113:1, v114:2`
+    - `better_retention_minus_speech_leak = tie:2, v113:1, not_applicable:1`
+- 最关键的是 `near_real_0007`：
+  - whole-utterance：
+    - `better_retention_minus_leak = v114`
+    - `delta_interference_capture_db = -1.8998 dB`
+  - overlap-local：
+    - `more_speech_interference_leaky = v114`
+    - `better_retention_minus_speech_leak = v113`
+    - `delta_speech_interference_capture_db = +6.7240 dB`
+    - `delta_retention_minus_speech_leak_db = -6.7384 dB`
+
+原因：
+
+- 当前这条 preserve/bypass refiner family 里，
+  同一个 whole-pack `speech_only local push` 权重，
+  优先优化到的可能是：
+  - whole-tradeoff
+  - total-leak
+  而不是：
+  - overlap-local `speech_only` leak
+
+要求：
+
+- 后续凡是继续这条 family 的 follow-up，
+  不能再把：
+  - synthetic 更好
+  - whole-tradeoff 更好
+  当作“local `speech_only` leak 也会一起更好”的近似代理；
+- 必须先看：
+  - `overlap_local_benchmark`
+  - 尤其 `near_real_0007`
+    - `more_speech_interference_leaky`
+    - `better_retention_minus_speech_leak`
+  两项是否真的转正；
+- 如果这两项没转正，
+  就不应继续做同语义的 `overlap_interference_extra_weight` 小步加码。
+
+### 58. 在 preserve/bypass self-anchor family 里，把 selector 切得更像 `0007`，也不等于优化就会从 whole / total-leak 自动转到 overlap-local `speech_only` leak
+
+事实：
+
+- `v115` 相对 `v113`：
+  - 只改了 `speech_only local leak` selector 子域；
+  - synthetic 四条固定验收仍全正；
+  - whole-utterance near-real 也仍正向：
+    - `more_interference_leaky = v113` on `2 / 4`
+    - `better_retention_minus_leak = v115` on `1 / 4`
+  - 但 overlap-local：
+    - `more_speech_interference_leaky = tie:1, v113:1, v115:2`
+    - `better_retention_minus_speech_leak = tie:2, v113:1, not_applicable:1`
+- 最关键的是 `near_real_0007`：
+  - `more_speech_interference_leaky = v115`
+  - `delta_speech_interference_capture_db = +9.2226 dB`
+  - `delta_retention_minus_speech_leak_db = -9.2569 dB`
+  - 同时：
+    - `better_retention_minus_total_leak = tie`
+    - `more_artifact_proxy_heavy = tie`
+
+原因：
+
+- 当前 family 里，
+  即使 selector 已经更接近真实 blocker，
+  单一 refiner 头的主优化出口也仍可能先落在：
+  - whole-tradeoff
+  - total-leak
+  而不是：
+  - overlap-local `speech_only` leak
+
+要求：
+
+- 后续凡是继续这条 family 的 selector follow-up，
+  不能把“selector 更像 `0007`”本身当作足够前提；
+- 仍然必须优先检查：
+  - `overlap_local_benchmark`
+  - 尤其 `near_real_0007`
+    - `more_speech_interference_leaky`
+    - `better_retention_minus_speech_leak`
+- 如果这两项没转正，
+  就不应继续做 selector-only 小步 sweep。
+
+### 59. 在 preserve/bypass self-anchor family 里，把 overlap local loss 改成更直接的 `prediction_projection_ratio`，也仍可能复现同方向 local speech-leak 失败
+
+事实：
+
+- `v116` 相对 `v113`：
+  - 唯一主动改动是：
+    - `loss_overlap_interference_extra_mode`
+      - `residual_projection_ratio -> prediction_projection_ratio`
+  - synthetic 四条固定验收继续全正；
+  - whole-utterance near-real 继续正向：
+    - `more_interference_leaky = v113` on `2 / 4`
+    - `better_retention_minus_leak = v116` on `1 / 4`
+  - 但 overlap-local：
+    - `more_speech_interference_leaky = tie:1, v113:1, v116:2`
+    - `better_retention_minus_speech_leak = tie:1, v116:1, v113:1, not_applicable:1`
+- `near_real_0007` 上：
+  - `more_speech_interference_leaky = v116`
+  - `better_retention_minus_speech_leak = v113`
+  - `delta_speech_interference_capture_db = +9.2733 dB`
+  - `delta_retention_minus_speech_leak_db = -9.3285 dB`
+
+原因：
+
+- 当前 family 的瓶颈，
+  已经不能简单归因于 `residual_projection_ratio` 语义不够直接；
+- 因为即使改成更直接的 prediction-side projection，
+  主失败模式仍完全同向复现。
+
+要求：
+
+- 后续若继续 preserve/bypass family，
+  不能再把 loss-mode-only 调整当作高价值主线；
+- 若关键样本仍是：
+  - `more_speech_interference_leaky = new_run`
+  - `better_retention_minus_speech_leak = old_run`
+  就应直接转去 integration / 表示机制，而不是继续做 loss-mode sweep。
+
+### 60. 在 preserve/bypass self-anchor family 里，把 refiner integration 从 `complement` 切到 `gate`，会把 whole / total-leak 推得很强，但仍可能同时拉坏 `0007` local speech leak、local artifact 和 absent local suppression
+
+事实：
+
+- `v117` 相对 `v113`：
+  - 唯一主动改动是：
+    - `branch_overlap_refine_gate_mode`
+      - `complement -> gate`
+  - synthetic 四条固定验收大幅全正；
+  - whole-utterance near-real 也大幅正向：
+    - `more_interference_leaky = v113` on `4 / 4`
+    - `better_retention_minus_leak = v117` on `3 / 4`
+  - 但 overlap-local：
+    - `more_speech_interference_leaky = v113:2, v117:2`
+    - `more_artifact_proxy_heavy = v117:2, tie:2`
+- 最关键的是：
+  - `near_real_0007`
+    - `more_speech_interference_leaky = v117`
+    - `better_retention_minus_speech_leak = v113`
+    - `more_artifact_proxy_heavy = v117`
+    - `delta_speech_interference_capture_db = +10.6017 dB`
+    - `delta_retention_minus_speech_leak_db = -11.3125 dB`
+  - `near_real_0009`
+    - `more_speech_interference_leaky = v117`
+    - `delta_speech_interference_capture_db = +10.9446 dB`
+
+原因：
+
+- `gate` integration 会让 refiner 更直接进入 target-present 区域；
+- 这确实能极强地推高 whole / total-leak 指标；
+- 但当前单一 refiner 头会把：
+  - target-present `music_plus_speech`
+  - target-absent speech peak
+  两类局部桶一起拉扯，
+  不能稳定同时守住：
+  - local speech leak
+  - local artifact
+  - absent suppression
+
+要求：
+
+- 当前 `branch_overlap_refine_head` family 若继续，
+  不应再做：
+  - selector-only
+  - loss-mode-only
+  - gate-mode-only
+  小步 sweep；
+- 下一轮必须直接切到：
+  - 新的局部表示 / controller
+  - 或显式分开的 target-present / target-absent local 控制语义。
+
+### 61. 给 dual decoder 的 direct-output path 加 `gate floor / blend cap`，只能止住 phone-artifact，不足以修正 final-output dual-target takeover
+
+事实：
+
+- `v118` 相对 `v109`：
+  - 新增了：
+    - `branch_overlap_dual_decoder_gate_floor = 0.75`
+  - 并把 dual path 限到：
+    - `gate_mode = gate`
+    - `max_blend = 0.15`
+  - bandwidth / transients：
+    - `tie:4 / tie:4`
+    - 说明 phone-artifact / narrowing 已被止住；
+  - 但 synthetic 四条固定验收全线回退：
+    - abstention `-1.7880 dB`
+    - same-gender keep `-2.4133 dB`
+    - hard-present keep `-1.1600 dB`
+    - hard-present artifact proxy `-2.1929 dB`
+  - whole-utterance near-real：
+    - `better_source_retention = v118:3, not_applicable:1`
+    - `more_interference_leaky = v118:4`
+    - `better_retention_minus_leak = tie:2, v109:1, not_applicable:1`
+  - overlap-local：
+    - `more_speech_interference_leaky = v118:4`
+    - `more_total_interference_leaky = v118:4`
+    - `better_retention_minus_total_leak = v109:3, not_applicable:1`
+- 最关键的是 `near_real_0007`：
+  - whole：
+    - `better_source_retention = v118`
+    - `more_interference_leaky = v118`
+    - `better_retention_minus_leak = v109`
+    - `delta_interference_capture_db = +12.9325 dB`
+  - overlap-local：
+    - `more_total_interference_leaky = v118`
+    - `better_retention_minus_total_leak = v109`
+    - `delta_total_interference_capture_db = +13.4918 dB`
+
+原因：
+
+- `gate floor` 只能解决“dual path 一上来就大面积接管”的安全问题；
+- 但只要 integration 仍是：
+  - `dual target -> direct final output blend`
+  它就还是会把输出拉向：
+  - 更高 source retention
+  - 更高 interference leak
+- 所以修掉 phone-artifact，
+  不等于修掉 direct-output dual-target takeover。
+
+要求：
+
+- 后续如果继续 dual-source / dual-interference 语义，
+  不应再做：
+  - `v118+`
+  - 或 direct-output dual decoder 的同构 sweep；
+- 下一轮只能改成：
+  - auxiliary-only
+  - controller-only
+  - 或其它不直接接管 final output 的 integration。
+
 ## 近期关键案例入口
 
 - `reports/daily/2026-03-26_overlap_abstention_proxy_v3_v4_and_v71_v72_followup.md`
@@ -1596,3 +1951,9 @@
 - `reports/daily/2026-03-27_v81_vs_v109_listening_review.md`
 - `reports/daily/2026-03-27_local_speech_leak_artifact_paired_0007like_v110_followup.md`
 - `reports/daily/2026-03-27_local_speech_leak_artifact_paired_0007like_selfanchor_v111_followup.md`
+- `reports/daily/2026-03-27_overlap_cancel_splitpath_0007like_v112_followup.md`
+- `reports/daily/2026-03-27_overlap_refine_preservebypass_0007like_selfanchor_v113_followup.md`
+- `reports/daily/2026-03-28_overlap_refine_preservebypass_0007like_localpush_v114_followup.md`
+- `reports/daily/2026-03-28_overlap_refine_preservebypass_hardlocal_selector_v115_followup.md`
+- `reports/daily/2026-03-28_overlap_refine_preservebypass_0007like_predproj_v116_followup.md`
+- `reports/daily/2026-03-28_overlap_refine_preservebypass_0007like_gateguided_v117_followup.md`

@@ -1,0 +1,165 @@
+{
+  "pack_dir": "reports/eval/ab_inference_residual_speech_leak_floor_v1_v113_vs_v117_all",
+  "num_samples": 4,
+  "n_fft": 1024,
+  "hop_length": 256,
+  "top_transient_ratio": 0.12,
+  "transient_min_count": 8,
+  "presence_low_hz": 3000.0,
+  "presence_high_hz": 8000.0,
+  "mid_low_hz": 800.0,
+  "mid_high_hz": 3000.0,
+  "loss_threshold_db": 1.0,
+  "loss_frame_ratio_threshold": 0.2,
+  "more_transient_lossy_candidate_counts": {
+    "file_b": 2,
+    "tie": 1,
+    "file_a": 1
+  },
+  "top_abs_presence_minus_mid_mean_deltas": [
+    {
+      "sample_id": "near_real_0003",
+      "file_a_label": "v113",
+      "file_b_label": "v117",
+      "delta_presence_minus_mid_retention_db_mean_b_minus_a": -4.917080461978912,
+      "delta_presence_minus_mid_retention_db_p10_b_minus_a": -3.1425933837890625,
+      "delta_strong_presence_loss_frame_ratio_b_minus_a": 0.3125,
+      "more_transient_lossy_candidate": "file_b",
+      "transient_loss_score_file_a": 0,
+      "transient_loss_score_file_b": 3,
+      "transient_loss_evidence_file_a": [],
+      "transient_loss_evidence_file_b": [
+        "lower_presence_minus_mid_mean",
+        "lower_presence_minus_mid_p10",
+        "higher_strong_presence_loss_ratio"
+      ],
+      "better_output": "",
+      "note": "residual-speech-leak floor focus; target present with domain-matched friend speech, all current frontier candidates still have moderate leakage"
+    },
+    {
+      "sample_id": "near_real_0009",
+      "file_a_label": "v113",
+      "file_b_label": "v117",
+      "delta_presence_minus_mid_retention_db_mean_b_minus_a": -2.3339731693267822,
+      "delta_presence_minus_mid_retention_db_p10_b_minus_a": -1.1291278839111323,
+      "delta_strong_presence_loss_frame_ratio_b_minus_a": 0.375,
+      "more_transient_lossy_candidate": "file_b",
+      "transient_loss_score_file_a": 0,
+      "transient_loss_score_file_b": 3,
+      "transient_loss_evidence_file_a": [],
+      "transient_loss_evidence_file_b": [
+        "lower_presence_minus_mid_mean",
+        "lower_presence_minus_mid_p10",
+        "higher_strong_presence_loss_ratio"
+      ],
+      "better_output": "",
+      "note": "residual-speech-leak floor focus; target absent with external speech only, all current frontier candidates still have moderate leakage"
+    },
+    {
+      "sample_id": "near_real_0007",
+      "file_a_label": "v113",
+      "file_b_label": "v117",
+      "delta_presence_minus_mid_retention_db_mean_b_minus_a": 1.5093024969100952,
+      "delta_presence_minus_mid_retention_db_p10_b_minus_a": 9.028965377807616,
+      "delta_strong_presence_loss_frame_ratio_b_minus_a": -0.043478260869565244,
+      "more_transient_lossy_candidate": "file_a",
+      "transient_loss_score_file_a": 2,
+      "transient_loss_score_file_b": 0,
+      "transient_loss_evidence_file_a": [
+        "lower_presence_minus_mid_mean",
+        "lower_presence_minus_mid_p10"
+      ],
+      "transient_loss_evidence_file_b": [],
+      "better_output": "",
+      "note": "residual-speech-leak floor focus; hard target-present friend-speech plus music case, all current frontier candidates still show moderate leakage and moderate artifact"
+    },
+    {
+      "sample_id": "near_real_0006",
+      "file_a_label": "v113",
+      "file_b_label": "v117",
+      "delta_presence_minus_mid_retention_db_mean_b_minus_a": -0.05936908721923828,
+      "delta_presence_minus_mid_retention_db_p10_b_minus_a": -0.34742889404297017,
+      "delta_strong_presence_loss_frame_ratio_b_minus_a": 0.05882352941176472,
+      "more_transient_lossy_candidate": "tie",
+      "transient_loss_score_file_a": 0,
+      "transient_loss_score_file_b": 0,
+      "transient_loss_evidence_file_a": [],
+      "transient_loss_evidence_file_b": [],
+      "better_output": "",
+      "note": "residual-speech-leak floor focus; target present with external guodegang speech, all current frontier candidates still have heavy leakage"
+    }
+  ],
+  "top_abs_strong_loss_ratio_deltas": [
+    {
+      "sample_id": "near_real_0009",
+      "file_a_label": "v113",
+      "file_b_label": "v117",
+      "delta_presence_minus_mid_retention_db_mean_b_minus_a": -2.3339731693267822,
+      "delta_presence_minus_mid_retention_db_p10_b_minus_a": -1.1291278839111323,
+      "delta_strong_presence_loss_frame_ratio_b_minus_a": 0.375,
+      "more_transient_lossy_candidate": "file_b",
+      "transient_loss_score_file_a": 0,
+      "transient_loss_score_file_b": 3,
+      "transient_loss_evidence_file_a": [],
+      "transient_loss_evidence_file_b": [
+        "lower_presence_minus_mid_mean",
+        "lower_presence_minus_mid_p10",
+        "higher_strong_presence_loss_ratio"
+      ],
+      "better_output": "",
+      "note": "residual-speech-leak floor focus; target absent with external speech only, all current frontier candidates still have moderate leakage"
+    },
+    {
+      "sample_id": "near_real_0003",
+      "file_a_label": "v113",
+      "file_b_label": "v117",
+      "delta_presence_minus_mid_retention_db_mean_b_minus_a": -4.917080461978912,
+      "delta_presence_minus_mid_retention_db_p10_b_minus_a": -3.1425933837890625,
+      "delta_strong_presence_loss_frame_ratio_b_minus_a": 0.3125,
+      "more_transient_lossy_candidate": "file_b",
+      "transient_loss_score_file_a": 0,
+      "transient_loss_score_file_b": 3,
+      "transient_loss_evidence_file_a": [],
+      "transient_loss_evidence_file_b": [
+        "lower_presence_minus_mid_mean",
+        "lower_presence_minus_mid_p10",
+        "higher_strong_presence_loss_ratio"
+      ],
+      "better_output": "",
+      "note": "residual-speech-leak floor focus; target present with domain-matched friend speech, all current frontier candidates still have moderate leakage"
+    },
+    {
+      "sample_id": "near_real_0006",
+      "file_a_label": "v113",
+      "file_b_label": "v117",
+      "delta_presence_minus_mid_retention_db_mean_b_minus_a": -0.05936908721923828,
+      "delta_presence_minus_mid_retention_db_p10_b_minus_a": -0.34742889404297017,
+      "delta_strong_presence_loss_frame_ratio_b_minus_a": 0.05882352941176472,
+      "more_transient_lossy_candidate": "tie",
+      "transient_loss_score_file_a": 0,
+      "transient_loss_score_file_b": 0,
+      "transient_loss_evidence_file_a": [],
+      "transient_loss_evidence_file_b": [],
+      "better_output": "",
+      "note": "residual-speech-leak floor focus; target present with external guodegang speech, all current frontier candidates still have heavy leakage"
+    },
+    {
+      "sample_id": "near_real_0007",
+      "file_a_label": "v113",
+      "file_b_label": "v117",
+      "delta_presence_minus_mid_retention_db_mean_b_minus_a": 1.5093024969100952,
+      "delta_presence_minus_mid_retention_db_p10_b_minus_a": 9.028965377807616,
+      "delta_strong_presence_loss_frame_ratio_b_minus_a": -0.043478260869565244,
+      "more_transient_lossy_candidate": "file_a",
+      "transient_loss_score_file_a": 2,
+      "transient_loss_score_file_b": 0,
+      "transient_loss_evidence_file_a": [
+        "lower_presence_minus_mid_mean",
+        "lower_presence_minus_mid_p10"
+      ],
+      "transient_loss_evidence_file_b": [],
+      "better_output": "",
+      "note": "residual-speech-leak floor focus; hard target-present friend-speech plus music case, all current frontier candidates still show moderate leakage and moderate artifact"
+    }
+  ]
+}

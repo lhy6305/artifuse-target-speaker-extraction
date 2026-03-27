@@ -42,6 +42,7 @@ class STFTMaskBaseline(nn.Module):
         branch_overlap_dual_decoder_gate_mode: str = "complement",
         branch_overlap_dual_decoder_source_mode: str = "residual",
         branch_overlap_dual_decoder_max_blend: float = 1.0,
+        branch_overlap_dual_decoder_gate_floor: float = 0.0,
     ) -> None:
         super().__init__()
         self.n_fft = n_fft
@@ -72,6 +73,7 @@ class STFTMaskBaseline(nn.Module):
         self.branch_overlap_dual_decoder_gate_mode = branch_overlap_dual_decoder_gate_mode
         self.branch_overlap_dual_decoder_source_mode = branch_overlap_dual_decoder_source_mode
         self.branch_overlap_dual_decoder_max_blend = branch_overlap_dual_decoder_max_blend
+        self.branch_overlap_dual_decoder_gate_floor = branch_overlap_dual_decoder_gate_floor
 
         if enable_adapter_mask_head and enable_branch_decoder_head:
             raise ValueError("Adapter mask head and branch decoder head are mutually exclusive for now.")
@@ -123,6 +125,8 @@ class STFTMaskBaseline(nn.Module):
             raise ValueError(
                 "branch_overlap_dual_decoder_source_mode must be one of: mixture, branch_base, residual."
             )
+        if not 0.0 <= branch_overlap_dual_decoder_gate_floor < 1.0:
+            raise ValueError("branch_overlap_dual_decoder_gate_floor must satisfy 0.0 <= floor < 1.0.")
 
         if conditioning_mode == "legacy_bias":
             self.mix_proj = nn.Linear(self.freq_bins, hidden_dim)
@@ -336,6 +340,16 @@ class STFTMaskBaseline(nn.Module):
         final_layer = self.branch_overlap_dual_decoder_head[-1]
         nn.init.zeros_(final_layer.weight)
         nn.init.zeros_(final_layer.bias)
+
+    @staticmethod
+    def apply_blend_floor(
+        blend: torch.Tensor,
+        floor: float,
+    ) -> torch.Tensor:
+        if floor <= 0.0:
+            return blend
+        scaled = (blend - floor) / (1.0 - floor)
+        return torch.clamp(scaled, min=0.0, max=1.0)
 
     def stft(self, waveform: torch.Tensor) -> torch.Tensor:
         return torch.stft(
@@ -575,6 +589,10 @@ class STFTMaskBaseline(nn.Module):
                         dual_blend = 1.0 - branch_decoder_frame_gate
                 if dual_blend is None:
                     dual_blend = torch.ones_like(branch_decoder_mask[:, :1, :])
+                dual_blend = self.apply_blend_floor(
+                    dual_blend,
+                    self.branch_overlap_dual_decoder_gate_floor,
+                )
                 dual_blend = dual_blend * self.branch_overlap_dual_decoder_max_blend
                 estimated_stft = estimated_stft_branch_base + (
                     dual_blend * (branch_overlap_dual_target_stft - estimated_stft_branch_base)
