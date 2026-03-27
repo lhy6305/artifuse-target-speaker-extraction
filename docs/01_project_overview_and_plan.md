@@ -101,6 +101,9 @@
   - `v110`
     - 含义：`v109 + paired local_speech_leak / artifact 0007-like bundle v1`
     - 状态：synthetic relative `v81 / v109` 均继续转强，且 `near-real tradeoff gate / phone_artifact_gate_v1` 继续通过；但 `0007` 上仍表现为更强 speech-only suppression 换来更差 whole-tradeoff，不导听审，直接收口
+  - `v111`
+    - 含义：`v109 + paired dual-view self-anchor 0007-like bundle v1`
+    - 状态：把 `v110` 的过抑制收回到了 `v109` 附近，但 near-real relative `v109` 基本全 tie，属于 safe / near-no-op 控制实验，不导听审
   - `v82`
     - 含义：`present_overlap_residual_leak_purification v1` 首轮 mask pilot
     - 状态：objective 前进明显，但 `v81 vs v82` 听审为 `4 / 4 tie`
@@ -158,7 +161,7 @@
 - `v72 / v73 / v74 / v75 / v76 / v77 / v78 / v79 / v80 / v81 / v82 / v83 / v84 / v85 / v86 / v87 / v88 / v89 / v90 / v91 / v93 / v94 / v95 / v98 / v99` 都不能替代默认线。
 - `v100` 也不能替代默认线。
 - `v101` 也不能替代默认线。
-- `v102 / v103 / v104 / v105 / v106 / v107 / v108 / v109 / v110` 也都不能替代默认线。
+- `v102 / v103 / v104 / v105 / v106 / v107 / v108 / v109 / v110 / v111` 也都不能替代默认线。
 
 ## 当前默认下一步
 
@@ -336,6 +339,37 @@
     - `v110` 是 objective-positive but over-suppressive
     - 不导听审
     - 不继续 `v110+` 同构小步 sweep
+- `v111 = local_speech_leak_artifact_paired_0007like_selfanchor_v1` 已完成：
+  - 初始化：
+    - `v109`
+  - teacher：
+    - `v109`
+  - 相对 `v110`
+    - `branch_protect_teacher_overlap_weight`
+      - `3.0 -> 6.0`
+    - `overlap_interference_extra_weight`
+      - `0.03 -> 0.015`
+  - relative `v81`
+    - 四条 synthetic 固定验收继续全绿
+    - `tradeoff gate = pass`
+    - `0007`
+      - overlap-local：
+        - `better_retention_minus_speech_leak = v111`
+        - `better_retention_minus_total_leak = v81`
+        - `more_artifact_proxy_heavy = v111`
+      - whole-utterance：
+        - `better_retention_minus_leak = v81`
+  - relative `v109`
+    - synthetic 仅轻微正向
+    - near-real whole / local 基本全 `tie`
+    - `0007`
+      - `better_retention_minus_speech_leak = tie`
+      - `better_retention_minus_total_leak = tie`
+      - `more_artifact_proxy_heavy = tie`
+  - 当前裁决：
+    - `v111` 是 safe / near-no-op 控制实验
+    - 不导听审
+    - 不继续 `v111+`
 - 当前默认下一步再次更新为：
   - 维持新的 artifact-first 固定诊断链
   - `v106` 的 teacher-overlap local veto 已收口
@@ -369,6 +403,16 @@
     - 若继续 `0007` 子题，
       优先改做更保守的 self-anchor 约束，
       先保住 `v109` 的 whole-tradeoff，再观察局部 leak 是否还能改善
+  - `v111` 已进一步证明：
+    - self-anchor 确实能把 `v110` 的过抑制收回 safe 边界，
+    - 但也会把这条 family 收成 near-no-op
+  - 当前默认下一步再次更新为：
+    - 收口 `v110 / v111` 这一组 paired dual-view family
+    - 不继续 `v110+ / v111+`
+    - 若继续 `0007` 子题，
+      当前这组 loss family 应视为已触边，
+      下一步改做新的约束或表示机制，
+      而不是继续在这组 loss 权重上微调
 
 ## 当前核心子题
 
@@ -906,6 +950,7 @@
 - `reports/daily/2026-03-27_local_speech_leak_0007like_backstop_v109_followup.md`
 - `reports/daily/2026-03-27_v81_vs_v109_listening_review.md`
 - `reports/daily/2026-03-27_local_speech_leak_artifact_paired_0007like_v110_followup.md`
+- `reports/daily/2026-03-27_local_speech_leak_artifact_paired_0007like_selfanchor_v111_followup.md`
 
 ## 文档维护规则
 

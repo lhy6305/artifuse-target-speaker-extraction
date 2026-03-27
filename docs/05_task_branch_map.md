@@ -1047,6 +1047,53 @@ checkpoint：
 
 - `objective_positive_but_over_suppressive`
 
+### 31. `v111`
+
+checkpoint：
+
+- `experiments/checkpoints/baseline_stft_mask_stage2_legacy_transient_leakguard_probe_v111_v109_local_speech_leak_artifact_paired_0007like_selfanchor_v1_ft1`
+
+结果：
+
+- 与 `v110` 相比只改两点：
+  - teacher：
+    - `v81 -> v109`
+  - 权重：
+    - `branch_protect_teacher_overlap_weight: 3.0 -> 6.0`
+    - `overlap_interference_extra_weight: 0.03 -> 0.015`
+- relative `v81`
+  - abstention `+3.0139 dB`
+  - same-gender keep `+1.2233 dB`
+  - hard-present keep `+0.8403 dB`
+  - hard-present artifact proxy `+1.6793 dB`
+  - `tradeoff gate = pass`
+  - `0007`
+    - overlap-local：
+      - `better_retention_minus_speech_leak = v111`
+      - `better_retention_minus_total_leak = v81`
+      - `more_artifact_proxy_heavy = v111`
+    - whole：
+      - `better_retention_minus_leak = v81`
+- relative `v109`
+  - abstention `+0.4210 dB`
+  - same-gender keep `+0.1478 dB`
+  - hard-present keep `+0.1668 dB`
+  - hard-present artifact proxy `+0.2389 dB`
+  - near-real whole / local 基本全 `tie`
+  - `0007`
+    - overlap-local：
+      - `better_retention_minus_speech_leak = tie`
+      - `better_retention_minus_total_leak = tie`
+      - `more_artifact_proxy_heavy = tie`
+    - whole：
+      - `better_retention_minus_leak = tie`
+  - 导包：
+    - relative `v81 / v109` 都是 `0 candidate sample`
+
+裁决：
+
+- `safe_but_no_meaningful_progress`
+
 ## 当前有效训练与验收入口
 
 ### 训练侧
@@ -1342,6 +1389,15 @@ checkpoint：
     - 若继续 `0007` 子题，
       优先改做更保守的 self-anchor 约束，
       先保住 `v109` 的 whole-tradeoff，再看局部 leak 是否还能改善
+- `v111` 已进一步证明：
+    - self-anchor 确实能把 `v110` 的过抑制收回 safe 边界，
+    - 但也会把这条 family 快速收成 near-no-op
+  - 当前默认下一步再次更新为：
+    - 收口 `v110 / v111`
+    - 不继续 `v110+ / v111+`
+    - 若继续 `0007` 子题，
+      这组 paired dual-view loss family 应视为已触边，
+      下一步改做新的约束或表示机制
 
 执行前必须保持六条验收同时在场：
 
@@ -1391,6 +1447,7 @@ checkpoint：
 - `reports/daily/2026-03-27_local_speech_leak_0007like_backstop_v109_followup.md`
 - `reports/daily/2026-03-27_v81_vs_v109_listening_review.md`
 - `reports/daily/2026-03-27_local_speech_leak_artifact_paired_0007like_v110_followup.md`
+- `reports/daily/2026-03-27_local_speech_leak_artifact_paired_0007like_selfanchor_v111_followup.md`
 
 ## 文档维护规则
 

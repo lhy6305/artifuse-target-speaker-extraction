@@ -1519,6 +1519,53 @@
   - 先保住当前最接近可听边界的 whole-tradeoff，
   - 再观察局部 leak 改善是否还能留下。
 
+### 54. 把 paired dual-view 收成 self-anchor 虽能止住过抑制，但当前 family 会迅速退成 near-no-op
+
+事实：
+
+- `v111`
+  - 仍使用 `paired 0007-like dual-view bundle`
+  - 但改成：
+    - `teacher = v109`
+    - `overlap_interference_extra_weight` 减半
+    - `branch_protect_teacher_overlap_weight` 加强
+- relative `v81`
+  - `0007`
+    - 仍是：
+      - overlap-local `better_retention_minus_speech_leak = v111`
+      - 但 whole `better_retention_minus_leak = v81`
+- relative `v109`
+  - near-real whole / local 基本全 `tie`
+  - `0007`
+    - `better_retention_minus_speech_leak = tie`
+    - `better_retention_minus_total_leak = tie`
+    - `more_artifact_proxy_heavy = tie`
+- `export_ab_listening_pack.py` relative `v81 / v109` 也都给出：
+  - `num_candidate_samples = 0`
+
+结论：
+
+- 当前这组 paired dual-view family 的边界已经比较清楚：
+  - 放松一点，会走向 `v110` 式 over-suppressive；
+  - 收紧一点，会走向 `v111` 式 safe / near-no-op。
+- 这说明继续做同构权重 sweep，
+  大概率只是在：
+  - “过抑制”
+  - 和
+  - “基本不动”
+  之间来回摆动。
+
+要求：
+
+- `v111` 这类 self-anchor 控制实验一旦确认 near-real relative frontier 基本全 tie，
+  默认动作应是收口当前 family，
+  不再继续 `v111+`。
+- 如果继续 `0007` 子题，
+  下一步默认应改做：
+  - 新的约束语义
+  - 或新的表示机制
+  而不是继续沿这组 loss 组合细调。
+
 ## 近期关键案例入口
 
 - `reports/daily/2026-03-26_overlap_abstention_proxy_v3_v4_and_v71_v72_followup.md`
@@ -1548,3 +1595,4 @@
 - `reports/daily/2026-03-27_local_speech_leak_0007like_backstop_v109_followup.md`
 - `reports/daily/2026-03-27_v81_vs_v109_listening_review.md`
 - `reports/daily/2026-03-27_local_speech_leak_artifact_paired_0007like_v110_followup.md`
+- `reports/daily/2026-03-27_local_speech_leak_artifact_paired_0007like_selfanchor_v111_followup.md`
