@@ -595,6 +595,8 @@ def weighted_gate_target_loss(
     target_value: float | None = None,
     target_values: torch.Tensor | None = None,
     sample_weights: torch.Tensor | None = None,
+    intervals_batch: list[list[dict[str, float]]] | None = None,
+    sample_rate: int = 16000,
 ) -> torch.Tensor:
     if gate_values is None or sample_weights is None:
         reference = gate_values if gate_values is not None else lengths
@@ -620,11 +622,39 @@ def weighted_gate_target_loss(
         if valid_frames <= 0:
             sample_losses.append(gate_values.new_tensor(0.0))
             continue
+        valid_gate = gate_item[:valid_frames]
+        if intervals_batch is not None:
+            intervals = intervals_batch[sample_index]
+            interval_losses: list[torch.Tensor] = []
+            for interval in intervals:
+                start_index = int(round(float(interval["start_sec"]) * sample_rate))
+                end_index = int(round(float(interval["end_sec"]) * sample_rate))
+                start_frame = max(0, min(start_index // model.hop_length, valid_frames))
+                end_frame = max(
+                    start_frame,
+                    min(((end_index + model.hop_length - 1) // model.hop_length) + 1, valid_frames),
+                )
+                if end_frame <= start_frame:
+                    continue
+                gate_interval = valid_gate[start_frame:end_frame]
+                if target_values is not None:
+                    target_interval = torch.full_like(
+                        gate_interval,
+                        fill_value=float(target_values[sample_index].item()),
+                    )
+                else:
+                    target_interval = torch.full_like(gate_interval, fill_value=target_scalar)
+                interval_losses.append(F.l1_loss(gate_interval, target_interval))
+            if interval_losses:
+                sample_losses.append(torch.stack(interval_losses).mean())
+            else:
+                sample_losses.append(gate_values.new_tensor(0.0))
+            continue
         if target_values is not None:
-            target = torch.full_like(gate_item[:valid_frames], fill_value=float(target_values[sample_index].item()))
+            target = torch.full_like(valid_gate, fill_value=float(target_values[sample_index].item()))
         else:
-            target = torch.full_like(gate_item[:valid_frames], fill_value=target_scalar)
-        sample_losses.append(F.l1_loss(gate_item[:valid_frames], target))
+            target = torch.full_like(valid_gate, fill_value=target_scalar)
+        sample_losses.append(F.l1_loss(valid_gate, target))
 
     return average_sample_losses(sample_losses, sample_weights, gate_values)
 
@@ -651,6 +681,7 @@ def compute_losses(
     overlap_interference_sample_weights: torch.Tensor | None = None,
     overlap_interference_extra_sample_weights: torch.Tensor | None = None,
     overlap_cancel_sample_weights: torch.Tensor | None = None,
+    overlap_cancel_absent_mix_sample_weights: torch.Tensor | None = None,
     overlap_dual_sample_weights: torch.Tensor | None = None,
     overlap_dual_target_prediction: torch.Tensor | None = None,
     overlap_dual_residual_prediction: torch.Tensor | None = None,
@@ -663,6 +694,10 @@ def compute_losses(
     gate_keep_sample_weights: torch.Tensor | None = None,
     gate_target_sample_weights: torch.Tensor | None = None,
     gate_target_values: torch.Tensor | None = None,
+    gate_absent_intervals: list[list[dict[str, float]]] | None = None,
+    gate_abstain_intervals: list[list[dict[str, float]]] | None = None,
+    gate_keep_intervals: list[list[dict[str, float]]] | None = None,
+    gate_target_intervals: list[list[dict[str, float]]] | None = None,
     sample_rate: int = 16000,
     stft_weight: float = 0.5,
     reconstruction_waveform_weight: float = 0.0,
@@ -901,7 +936,11 @@ def compute_losses(
         lengths=lengths,
         intervals_batch=absent_intervals,
         sample_rate=sample_rate,
-        sample_weights=overlap_cancel_sample_weights,
+        sample_weights=(
+            overlap_cancel_absent_mix_sample_weights
+            if overlap_cancel_absent_mix_sample_weights is not None
+            else overlap_cancel_sample_weights
+        ),
     )
     overlap_dual_mix_consistency_term = interval_waveform_l1_loss(
         prediction=overlap_dual_target_prediction + overlap_dual_residual_prediction,
@@ -949,6 +988,8 @@ def compute_losses(
         model=model,
         target_value=0.0,
         sample_weights=gate_absent_sample_weights,
+        intervals_batch=gate_absent_intervals,
+        sample_rate=sample_rate,
     )
     gate_abstain_term = weighted_gate_target_loss(
         gate_values=gate_values,
@@ -956,6 +997,8 @@ def compute_losses(
         model=model,
         target_value=0.0,
         sample_weights=gate_abstain_sample_weights,
+        intervals_batch=gate_abstain_intervals,
+        sample_rate=sample_rate,
     )
     gate_keep_term = weighted_gate_target_loss(
         gate_values=gate_values,
@@ -963,6 +1006,8 @@ def compute_losses(
         model=model,
         target_value=1.0,
         sample_weights=gate_keep_sample_weights,
+        intervals_batch=gate_keep_intervals,
+        sample_rate=sample_rate,
     )
     gate_target_term = weighted_gate_target_loss(
         gate_values=gate_values,
@@ -970,6 +1015,8 @@ def compute_losses(
         model=model,
         target_values=gate_target_values,
         sample_weights=gate_target_sample_weights,
+        intervals_batch=gate_target_intervals,
+        sample_rate=sample_rate,
     )
     total = (
         waveform_term

@@ -2649,6 +2649,436 @@
       而不是继续优化
       broad absent-local mixture target
 
+- `v138 / v139 / v140 / v141 / v142`
+  进一步补了
+  `split-selector + head-only direct-apply`
+  家族的边界：
+  - 先是接线层：
+    - `overlap_cancel_waveform / target_projection`
+      与
+      `overlap_cancel_absent_mix`
+      不能再共用
+      一个 generic
+      `overlap_cancel_sample_weights`
+    - `v139`
+      已证明
+      split-selector 本体
+      是真实机制，
+      不是 no-op
+  - `v140`
+    明确证明：
+    - 只训练
+      `branch_overlap_cancel_head`
+      且
+      `apply_mode = auxiliary_only`
+      时，
+      即便训练 selector
+      和 absent-mix loss
+      都显著非零，
+      inference 仍会是 exact no-op
+    - 所以后续凡是
+      `head-only auxiliary_only`
+      实验，
+      必须先默认它
+      没有输出路径；
+      除非显式新增
+      final-output apply 机制
+  - `v141`
+    又补出更强边界：
+    - 同一个
+      direct-apply
+      `branch_overlap_cancel_head`
+      可以承载
+      `present-total`
+      或
+      `absent-local`
+      其中一类目标，
+      但不能同时稳定承载两类
+    - 一旦把
+      absent-local mix target
+      也灌回同一个
+      direct-apply cancel head，
+      就会出现：
+      - `0007 total leak`
+        改善
+      - 但
+        `0007 speech_only`
+        与
+        `0009 absent local`
+        同时恶化
+  - `v142`
+    则证明：
+    - `present-total bounded direct path`
+      本体是有效且相对安全的
+    - 但它并不会自动解决：
+      - `0007 speech_only local leak`
+      - `0009 absent local`
+    - 因而之后不能把
+      “`0007 total leak`
+      变好”
+      误判成
+      “核心 blocker
+      已被解决”
+  - 当前默认不再继续扫：
+    - 同一个 direct-apply cancel head
+      上的
+      `absent_mix` reweight
+    - 同头混训
+      `present-total + absent-local`
+  - 如果要继续，
+    默认应改成：
+    - 保留 `v142`
+      这条
+      present-total direct path
+    - 另开更强解耦的
+      absent path
+      去处理
+      `0007 speech_only`
+      和
+      `0009 absent local`
+
+- `v143 / v144 / v145 / v146`
+  又补了
+  `v142` 之上的
+  `overlap_refine` sibling
+  边界：
+  - `v143`
+    已证明：
+    - 在
+      `v142 + self-teacher`
+      前提下，
+      稀疏
+      `0007-like speech-only`
+      selector
+      只会收敛成
+      practical no-op
+  - `v144`
+    又证明：
+    - 即便把 speech-local selector
+      扩到
+      `33 / 99` train、
+      `7 / 37` val，
+      `branch_overlap_refine_present_head`
+      仍然推不出
+      可观测输出变化
+  - `v145`
+    进一步证明：
+    - 把 sibling
+      从
+      `refine_present_head`
+      换成
+      `refine_head`
+      本体之后，
+      的确能让 training-side
+      `overlap_interference_projection_ratio`
+      显著非零；
+    - 但 inference 侧
+      仍然是 near-no-op，
+      连 targeted
+      `local_speech_leak_proxy_v1`
+      compare
+      也没有显著变化
+  - `v146`
+    则补了一个实现坑点：
+    - 当前训练入口会对
+      init checkpoint
+      自动做
+      `teacher_checkpoint`
+      metadata fallback
+    - 因而
+      “不传 `--teacher-checkpoint`”
+      不等于
+      “真的无 teacher”
+    - 这轮原本想做
+      no-teacher，
+      实际却继承到了
+      `v126`
+      teacher；
+      而且最终仍是 exact no-op
+  - 当前默认不再继续扫：
+    - `v142` 之上的
+      `refine_present` sibling
+    - `v142` 之上的
+      `refine_base` sibling
+    - `speech-only selector`
+      宽窄同构 sweep
+    - `teacher=self`
+      同构 rerun
+  - 如果后续还要继续：
+    默认应先做二选一：
+    - 新增真正不同的
+      output apply path
+    - 或先给训练入口补一个
+      明确的
+      `disable teacher metadata fallback`
+      开关，
+      再验证真正的
+      no-teacher branch
+- `v147 / v148 / v149`
+  又补了三条实现边界：
+  - `v147`
+    证明：
+    - 训练入口在补完
+      `disable teacher metadata fallback`
+      之后，
+      true no-teacher
+      `refine_base`
+      rerun
+      relative `v142`
+      仍然是 exact no-op
+    - 所以
+      `v142` 之上的
+      `refine_base` sibling
+      不只是 teacher-anchor no-op，
+      连 true no-teacher
+      也推不出输出变化
+  - `v148`
+    暴露了另一个接班坑点：
+    - 不能用更宽的 bundle 文件
+      去近似复原
+      `v142`
+      当时的 hardlocal
+      `focus_sample_ids`
+    - 否则 selector
+      会从
+      `3 / 203`
+      意外膨胀到
+      `105 / 203`
+      而失去可比性
+  - `v149`
+    则证明：
+    - 把
+      `branch_overlap_cancel_head`
+      的 direct-apply blend
+      改成
+      `predicted_activity`
+      这种
+      cancel-ratio-derived
+      self-bounded 路由，
+      并不会更安全
+    - 即便 selector
+      已精确回到
+      `3 / 203`
+      与
+      `3 / 63`，
+      也仍会系统性打坏：
+      - `abstention`
+      - `same-gender keep`
+      - `hard-present keep`
+      - `artifact proxy`
+  - 当前默认不再继续扫：
+    - `predicted_activity`
+    - `predicted_activity + max_blend`
+    - 同构的
+      cancel-strength-derived
+      output blend
+- `v150 / v151 / v152`
+  则补出了
+  `decoupled apply-controller`
+  的新坑点：
+  - `v150`
+    说明：
+    - 若只训练
+      `branch_overlap_cancel_apply_controller_head`
+      且沿用
+      `v142`
+      的
+      `3 / 203`
+      与
+      `3 / 63`
+      hardlocal selector，
+      结果会是 practical no-op
+    - 所以
+      “把 apply 从 cancel head 拆出去”
+      本身不等于
+      “就能安全地产生输出变化”
+  - `v151`
+    说明：
+    - 即便同时训练
+      `branch_overlap_cancel_head`
+      与
+      `apply_controller_head`，
+      在窄 selector 下
+      也只是：
+      - fixed checks
+        基本 near-tie
+      - targeted
+        `local_speech_leak_proxy_v1`
+        变差
+    - 也就是说：
+      signal-on
+      不等于
+      local blocker
+      会自动变好
+  - `v152`
+    则排除了
+    “只是 selector 太稀”：
+    - 把 selector
+      扩到
+      broader hardlocal bundle
+      后，
+      overlap-cancel signal
+      明显变强
+    - 但：
+      - `abstention`
+      - `hard-present keep`
+      - `artifact proxy`
+      - `local speech-leak proxy`
+      反而一起转负
+  - 当前默认不再继续扫：
+    - `apply-controller` init bias
+    - `apply-controller only`
+    - `apply-controller + cancel`
+    - `apply-controller` selector 宽窄
+  - 如果后续还要继续：
+    默认应改做：
+    - 不直接重写 final output 的
+      local-window-only 机制
+    - 或完全不经
+      overlap-cancel direct subtract
+      的
+      monitor-only / auxiliary-only path
+- `v153 / v154 / v155 / v156 / v157 / v158`
+  则继续补齐了
+  `interval-veto`
+  这条 family
+  的边界：
+  - `v153`
+    证明：
+    - interval-scoped
+      `apply_controller`
+      supervision
+      不是 no-op
+    - 它第一次在
+      `v142`
+      之上同时把
+      `0007 speech_only`
+      与
+      `0009 absent local`
+      往正确方向推
+    - 但它不会自动修好
+      `0007 total leak`
+      或
+      `0009 whole absent`
+  - `v154`
+    说明：
+    - 在窄资产上
+      稍微加重 keep
+      可以把这条线
+      收到一个
+      objective 可保留点
+    - 但仍会留下
+      `0009 whole absent`
+      regression
+  - `v155`
+    暴露了接班坑点：
+    - 不能在旧
+      `0007_like_plus_true_absent_anchor_bundle_v2`
+      上宣称
+      broader keep
+    - 因为对应 sample ids
+      根本不存在，
+      selector
+      不会真的变宽
+  - `v156`
+    说明：
+    - 一旦 broader keep
+      真接到 union bundle，
+      controller
+      很容易塌回
+      near-neutral
+    - 结果会变成：
+      - 更安全
+      - 但也更接近
+        practical no-op
+  - `v157`
+    则说明：
+    - 在真实 broader keep
+      已接上的前提下，
+      重新加压 absent
+      仍能恢复
+      一部分正确方向 signal
+    - 它是当前这条
+      family
+      的最佳 continuation
+    - 但 blocker
+      仍是
+      `0007 total leak`
+      而不是
+      `0007 speech_only`
+  - `v158`
+    则进一步说明：
+    - 继续扫
+      `gate_keep_weight`
+      只会同时削弱：
+      - 正确方向的
+        `speech_only / absent local`
+        改善
+      - 错误方向的
+        `0007 total leak`
+        regression
+    - 也就是说，
+      keep reweight
+      不是修这个 blocker
+      的有效轴
+  - `v159`
+    进一步说明：
+    - 固定 low-band
+      speech-band apply
+      只会把
+      `0007 speech_only`
+      和 `0009 absent local`
+      的正确方向改进
+      保留一点点
+    - 但改不掉
+      `0007 total leak`
+      的符号，
+      whole `0007`
+      还会继续转差
+    - 所以
+      `branch_overlap_cancel_apply_max_freq_ratio`
+      不是有效轴
+  - `v160`
+    则补齐了另一个边界：
+    - 对
+      apply-controller
+      做 activation floor
+      也只是更 sparse 的
+      time-local writeback
+    - 它会略微改善
+      `0007 speech_only`
+      并缩小
+      `0007 total leak`
+      regression
+    - 但 `total leak`
+      仍然是错方向，
+      whole `0007`
+      也仍然更漏
+    - 所以
+      `branch_overlap_cancel_apply_controller_floor`
+      也不再继续
+  - 当前默认不再继续扫：
+    - `interval-veto union-bundle gate_keep_weight`
+    - 同构的
+      keep-side reweight
+    - `branch_overlap_cancel_apply_max_freq_ratio`
+    - `branch_overlap_cancel_apply_controller_floor`
+  - 如果后续还要继续：
+    默认应改做：
+    - 以 `v157`
+      为 active base
+    - 不再只改
+      apply 稀疏度
+      或频带形状
+    - 而是直接拆
+      controller supervision
+    - 让
+      `0007 total leak`
+      不再作为
+      absent-veto
+      同一个 scalar controller
+      的副作用
+
 ## 近期关键案例入口
 
 - `reports/daily/2026-03-26_overlap_abstention_proxy_v3_v4_and_v71_v72_followup.md`
@@ -2682,6 +3112,12 @@
 - `reports/daily/2026-03-27_overlap_cancel_splitpath_0007like_v112_followup.md`
 - `reports/daily/2026-03-27_overlap_refine_preservebypass_0007like_selfanchor_v113_followup.md`
 - `reports/daily/2026-03-28_true_absent_auxcancel_indirect_v136_v137_followup.md`
+- `reports/daily/2026-03-28_splitselector_headonly_directapply_v138_v142_followup.md`
+- `reports/daily/2026-03-28_refine_siblings_on_v142_v143_v146_followup.md`
+- `reports/daily/2026-03-28_headonly_predactivity_directapply_v148_v149_followup.md`
+- `reports/daily/2026-03-28_applycontroller_on_v142_v150_v152_followup.md`
+- `reports/daily/2026-03-28_applycontroller_interval_veto_v153_v158_followup.md`
+- `reports/daily/2026-03-28_applycontroller_interval_veto_localapply_v159_v160_followup.md`
 - `reports/daily/2026-03-28_overlap_refine_preservebypass_0007like_localpush_v114_followup.md`
 - `reports/daily/2026-03-28_overlap_refine_preservebypass_hardlocal_selector_v115_followup.md`
 - `reports/daily/2026-03-28_overlap_refine_preservebypass_0007like_predproj_v116_followup.md`

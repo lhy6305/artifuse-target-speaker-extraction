@@ -233,6 +233,33 @@
   - `v137`
     - 含义：`v136 + overlap_cancel_absent_mix_weight 0.01`
     - 状态：对 `v136` 的最小 reweight continuation；训练 selector 和 `overlap_cancel_absent_mix_l1` 仍真实生效，但 relative `v126` 四条 synthetic 固定验收比 `v136` 全部更差：`-0.1718 / -0.0715 / -0.0347 / -0.2080 dB`；说明这条 auxiliary-only indirect path 的问题不是简单的 weight 偏大，`overlap_cancel_absent_mix_weight` sweep 不再继续，`v137` 直接 reject，不补 near-real
+  - `v138`
+    - 含义：`v126 + overlap-cancel total-leak 0007-like self-anchor blend05 v1`
+    - 状态：首个 `head-only bounded subtract path` 的安全边界 probe；relative `v126` 四条 synthetic 固定验收近乎精确全 tie：`+0.0061 / +0.0027 / +0.0047 / +0.0023 dB`，whole / overlap-local 也几乎全 tie，仅 `near_real_0008` whole absent friend-only 有 `delta_interference_capture_db = +1.3024 dB` 的单点回退；判定为 safe / near-no-op，不导听审，但保留为“bounded direct subtract path 可以保持安全”的证据点
+  - `v139`
+    - 含义：`v126 + split-selector auxcancel total-leak + absent-mix self-anchor v1`
+    - 状态：首个把 `overlap_cancel_waveform / target_projection` 与 `overlap_cancel_absent_mix` 的 selector sample weights 正式拆开的 split-selector pilot；relative `v126` 四条 synthetic 固定验收仅轻微负向：`-0.0720 / -0.0702 / -0.0122 / -0.0565 dB`，说明没直接打穿 guardrail。它确实给出局部正证据：`near_real_0009` absent local leak `-24.4329 dB`，`near_real_0007 speech_only` local leak `-1.1327 dB`；但 whole `0003 / 0006 / 0007 / 0009` 全都更 leak，`0007 total leak` 也转差，whole `more_interference_leaky = v139:4`，因此直接 reject，不导听审
+  - `v140`
+    - 含义：`v126 + head-only auxcancel hardlocaltotal absentmix self-anchor v1`
+    - 状态：冻结除 `branch_overlap_cancel_head` 外的全部路由、只保留 split selectors 的 head-only `auxiliary_only` probe；训练 selector 与 loss signal 都真实命中：`overlap_cancel = 3 / 203` train、`3 / 63` val，`absent = 95 / 203` train、`24 / 63` val，`val_overlap_cancel_waveform_l1 = 0.0281501`、`val_overlap_cancel_absent_mix_l1 = 0.0522065`；但 relative `v126` 四条 synthetic 固定验收全部精确 `0.0 dB`，说明这是结构性 inference no-op，不构成真实候选
+  - `v141`
+    - 含义：`v126 + head-only split-selector subtract blend05 absentmix v1`
+    - 状态：把 `v140` 从 `auxiliary_only` 改成 bounded `subtract + complement blend 0.5` 之后的首个真实 direct-apply split-selector pilot；relative `v126` 四条 synthetic 固定验收全为正向：`+0.1037 / +0.1139 / +0.0121 / +0.0178 dB`。whole 上 `0003 / 0006 / 0009` 转正，local 上 `0007 total leak` 也明显改善：`delta_total_interference_capture_db = -19.5934 dB`；但 `0007 speech_only` 与 `0009 absent local` 同时严重回退，分别是 `+13.4400 dB` 与 `+21.0921 dB`，说明同一个 direct-apply cancel head 不能同时承载 `present-total` 与 `absent-local`，因此判定为 mixed mechanism-positive reject
+  - `v142`
+    - 含义：`v126 + head-only hardlocaltotal subtract blend05 v1`
+    - 状态：在 `v141` 上完全移除 absent supervision、只保留 present-total bounded direct path；relative `v126` 四条 synthetic 固定验收给出这轮最干净的一组正向：`+0.1949 / +0.0894 / +0.0848 / +0.0696 dB`。whole 上 `near_real_0009` absent `-5.1486 dB`、`near_real_0006` `interference / retention-minus-leak = -1.1233 / +1.1203 dB`、`near_real_0003` 也轻微转正；local 上 `near_real_0007 total leak = -3.2201 dB`、`near_real_0006 = -1.4526 dB`。但 `near_real_0007 speech_only` 与 `near_real_0009 absent local` 仍分别回退 `+6.4977 dB` 与 `+14.5135 dB`，所以只保留为 `head-only bounded direct-apply` 子线最佳 continuation，不导听审，也不能替代 `v126`
+  - `v143`
+    - 含义：`v142 + refine-present speech-only 0007-like sibling v1`
+    - 状态：首个在 `v142` 之上叠加 `branch_overlap_refine_present_head`、尝试独立修 `0007 speech_only` 的 sibling；但 `0007-like` selector 只命中 `3 / 203` train、`3 / 63` val，`train / val_overlap_interference_extra_projection_ratio` 仅 `2.1e-05 / 1.5e-05`，relative `v142` 四条 fixed synthetic checks 全是 near-tie：`-0.0030 / +0.0080 / +0.0086 / +0.0006 dB`；判定为 practical no-op，不补 near-real
+  - `v144`
+    - 含义：`v142 + refine-present broader speech-local-proxy hardlocal-bundle sibling v1`
+    - 状态：把 `v143` 的 speech selector 扩到 `33 / 99` train、`7 / 37` val，并改用 `hardlocal_bundle_v1`，但 relative `v142` 四条 fixed synthetic checks 仍全部 near-tie：`+0.0067 / +0.0025 / +0.0019 / +0.0054 dB`；连 `val_manifest_local_speech_leak_proxy_v1` 的 targeted compare 也只有 `-0.0039 dB`、`0 improved / 0 regressed`。说明 `refine_present_head` 在 `v142` 上即便吃到更宽 speech-local 资产也依然推不动输出，直接 reject
+  - `v145`
+    - 含义：`v142 + refine-base broader speech-local-proxy hardlocal-bundle sibling v1`
+    - 状态：把 sibling 从 `branch_overlap_refine_present_head` 改成 `branch_overlap_refine_head` 本体；它确实比 `v144` 更能吃到训练信号，`train / val_overlap_interference_projection_ratio = 0.0022900 / 0.0006825`，但 relative `v142` 四条 fixed synthetic checks 仍全部 near-tie：`+0.0128 / +0.0075 / +0.0081 / +0.0047 dB`，`local_speech_leak_proxy_v1` targeted compare 也仍是 `-0.0064 dB`、`0 improved / 0 regressed`；判定为 mechanism-on but output-off 的 near-no-op reject
+  - `v146`
+    - 含义：`v142 + refine-base broader speech-local-proxy fallback-teacher sibling v1`
+    - 状态：原本意图是不显式传 `teacher_checkpoint` 来复刻 `v145` 的 “no-teacher” 版本，但训练入口当前会对 init checkpoint 做 `teacher_checkpoint metadata fallback`，因此这轮实际继承到了 `v126` teacher；即便如此，relative `v142` 四条 fixed synthetic checks 仍全部精确 `0.0 dB`，`local_speech_leak_proxy_v1` 也精确 `0.0 dB`。这轮不是 guardrail 失败，而是 exact no-op，同时也补出了一个实现边界：当前“不传 teacher 参数”不等于“真的无 teacher”
   - `v82`
     - 含义：`present_overlap_residual_leak_purification v1` 首轮 mask pilot
     - 状态：objective 前进明显，但 `v81 vs v82` 听审为 `4 / 4 tie`
@@ -1642,6 +1669,214 @@
    - 当前默认下一步改成：
      - 不再继续 `v103+` 小步 sweep
      - 改做 `0007` 风格 artifact proxy / 约束机制题
+17. `v142` 之后的新 output-path 边界已经继续补齐到 `apply-controller`：
+   - `v147`
+     已完成真正的
+     no-teacher 验证：
+     - 训练入口已补
+       `disable teacher metadata fallback`
+       开关
+     - true no-teacher
+       `refine_base`
+       rerun
+       relative `v142`
+       仍是 exact no-op
+   - `v149`
+     证明：
+     - `v142 + head-only predicted-activity direct-apply`
+       不是 no-op
+     - 但四条 fixed checks
+       relative `v142`
+       全线重度转负：
+       - abstention `-6.0908 dB`
+       - same-gender keep `-3.0712 dB`
+       - hard-present keep `-7.0467 dB`
+       - artifact proxy `-10.8147 dB`
+   - `v150 / v151 / v152`
+     则把 decoupled
+     `apply-controller`
+     这条子线也收口了：
+     - `v150`
+       只训练 controller，
+       relative `v142`
+       五条口径全 near-tie，
+       属于 practical no-op
+     - `v151`
+       训练 controller + cancel，
+       fixed checks
+       仍基本 near-tie：
+       - abstention `-0.0108 dB`
+       - same-gender keep `+0.0261 dB`
+       - hard-present keep `-0.0397 dB`
+       - artifact proxy `-0.0215 dB`
+       但 targeted
+       `local_speech_leak_proxy_v1`
+       反而 `-0.1692 dB`
+    - `v152`
+      进一步把 selector
+      扩到 broader hardlocal bundle：
+      - train `33 / 99`
+      - val `7 / 37`
+       overlap-cancel signal
+       明显非零，
+       但 relative `v142`
+       fixed checks / local proxy
+        一起转负：
+        - abstention `-0.1635 dB`
+        - same-gender keep `-0.0032 dB`
+        - hard-present keep `-0.1439 dB`
+        - artifact proxy `-0.0906 dB`
+        - local speech leak proxy `-0.1433 dB`
+    - `v153 / v154 / v155 / v156 / v157 / v158`
+      则把这条线继续推进到了
+      `interval-veto + union bundle`：
+      - `v153`
+        是 `v142` 之上第一个可信的
+        interval-veto evidence point，
+        relative `v142`
+        四条 fixed checks
+        仍是轻微负向，
+        但 `local_speech_leak_proxy_v1`
+        转正 `+0.0840 dB`
+      - `v154`
+        把 narrow-asset 版本
+        收到这条 family
+        的第一个可保留点：
+        - 四条 fixed checks
+          `-0.0280 / -0.0134 / -0.0113 / -0.0095 dB`
+        - local proxy
+          `+0.0513 dB`
+        - `near_real_0007`
+          whole tradeoff
+          明显改善
+        但 `0009`
+        whole absent
+        仍回退
+      - `v155`
+        则被正式判成
+        invalid broader-keep attempt：
+        旧 `v2` 资产里
+        根本不含 broader keep ids，
+        selector
+        实际没有变宽
+      - `v156`
+        是第一个真实的
+        union-bundle broader-keep run：
+        - overlap-cancel selector
+          train `33 / 233`
+          / val `7 / 67`
+        - 四条 fixed checks
+          回到 exact near-tie
+        - `0009`
+          whole absent
+          regression
+          缩回阈值内
+        但 controller
+        也明显塌回
+        near-neutral
+      - `v157`
+        则是当前这条
+        interval-veto family
+        的最佳 continuation：
+        - 四条 fixed checks
+          `+0.0084 / -0.0005 / +0.0072 / +0.0059 dB`
+        - local proxy
+          `+0.0101 dB`
+        - `near_real_0007`
+          whole tradeoff
+          `-27.3083 / +27.3392 dB`
+        - local `0007 speech_only`
+          `-5.5297 dB`
+        但 local
+        `0007 total leak`
+        仍是
+        `+1.5121 dB`
+        的错误方向，
+        所以还不给听审
+      - `v158`
+        则证明
+        `gate_keep_weight = 3.0`
+        不值得继续：
+        它只把
+        `0007 total leak`
+        从
+        `+1.5121 dB`
+        缩到
+        `+1.3504 dB`，
+        同时也削弱了
+        `0007 speech_only`
+        和 `0009 absent local`
+        的正确方向改进
+      - `v159`
+        改成了固定低频
+        speech-band apply：
+        - 四条 fixed checks
+          仍是 near-tie
+        - local proxy
+          `+0.0017 dB`
+        - 但 `near_real_0007`
+          whole 明显转差，
+          `delta_interference_capture_db = +4.5358 dB`
+        - local 里
+          `0007 speech_only`
+          只改善
+          `-0.1698 dB`，
+          `0007 total leak`
+          仍是
+          `+0.1203 dB`
+          的错误方向
+      - `v160`
+        改成了
+        apply-controller floor `0.2`：
+        - 四条 fixed checks
+          仍是 near-tie
+        - local proxy
+          `+0.0005 dB`
+        - `near_real_0007`
+          `speech_only`
+          稍微更好到
+          `-0.2607 dB`
+        - 但 `total leak`
+          仍是
+          `+0.0771 dB`
+          的错误方向，
+          whole 也仍转差
+          `+3.4971 dB`
+        - `0009`
+          absent local
+          继续维持阈值内小幅正向，
+          但不足以抵消
+          `0007`
+          的主 blocker
+    - 当前默认不再继续扫：
+      - `predicted_activity`
+      - `predicted_activity + max_blend`
+      - `apply-controller` init bias
+      - `apply-controller only`
+      - `apply-controller + cancel`
+      - `apply-controller` selector width
+      - `interval-veto union-bundle gate_keep_weight`
+      - `branch_overlap_cancel_apply_max_freq_ratio`
+      - `branch_overlap_cancel_apply_controller_floor`
+    - 下一步若继续，
+      默认应改做：
+      - 保留 `v157`
+        作为这条 family
+        的 active base
+      - 不再只改
+        apply 形状，
+        而是直接拆
+        controller supervision
+      - 让
+        `near_real_0007 total leak`
+        不再作为
+        absent-veto
+        同一个 scalar controller
+        的副作用
+      - 而不是再扫
+        `gate_keep_weight`
+        / `apply band`
+        / `controller floor`
 
 ## 近期关键日报入口
 
@@ -1692,6 +1927,12 @@
 - `reports/daily/2026-03-28_overlap_refine_preservebypass_0007like_gateguided_v117_followup.md`
 - `reports/daily/2026-03-28_overlap_dual_controller_floor_0007like_v118_followup.md`
 - `reports/daily/2026-03-28_true_absent_auxcancel_indirect_v136_v137_followup.md`
+- `reports/daily/2026-03-28_splitselector_headonly_directapply_v138_v142_followup.md`
+- `reports/daily/2026-03-28_refine_siblings_on_v142_v143_v146_followup.md`
+- `reports/daily/2026-03-28_headonly_predactivity_directapply_v148_v149_followup.md`
+- `reports/daily/2026-03-28_applycontroller_on_v142_v150_v152_followup.md`
+- `reports/daily/2026-03-28_applycontroller_interval_veto_v153_v158_followup.md`
+- `reports/daily/2026-03-28_applycontroller_interval_veto_localapply_v159_v160_followup.md`
 
 ## 文档维护规则
 

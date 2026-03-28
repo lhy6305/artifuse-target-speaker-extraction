@@ -536,6 +536,7 @@ def main() -> None:
                 overlap_dual_target_prediction=outputs.get("branch_overlap_dual_target_waveform"),
                 overlap_dual_residual_prediction=outputs.get("branch_overlap_dual_residual_waveform"),
                 overlap_cancel_sample_weights=overlap_cancel_sample_weights,
+                overlap_cancel_absent_mix_sample_weights=absent_union_sample_weights,
                 overlap_dual_sample_weights=overlap_dual_sample_weights,
                 branch_protect_sample_weights=branch_protect_sample_weights,
                 branch_protect_teacher_sample_weights=branch_protect_teacher_sample_weights,

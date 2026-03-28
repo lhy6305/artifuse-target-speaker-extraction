@@ -25,6 +25,7 @@ SELECTOR_PREFIXES = (
 )
 
 GATE_TARGET_CONFIG_KEYS = {
+    "gate_supervision_source",
     "gate_target_mode",
     "gate_target_energy_center",
     "gate_target_energy_scale",

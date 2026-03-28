@@ -74,6 +74,14 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help="Optional frozen teacher checkpoint used for hard-present overlap teacher veto losses.",
     )
+    parser.add_argument(
+        "--disable-teacher-checkpoint-metadata-fallback",
+        action="store_true",
+        help=(
+            "When set, only use an explicitly provided --teacher-checkpoint and do not inherit "
+            "teacher_checkpoint metadata from the init checkpoint."
+        ),
+    )
     parser.add_argument("--epochs", type=int, default=2)
     parser.add_argument("--batch-size", type=int, default=2)
     parser.add_argument("--lr", type=float, default=1e-3)
@@ -134,6 +142,14 @@ def parse_args() -> argparse.Namespace:
         "--model-enable-branch-overlap-cancel-head",
         action="store_true",
         help="Add a dedicated overlap residual canceller head on top of the branch decoder output.",
+    )
+    parser.add_argument(
+        "--model-enable-branch-overlap-cancel-apply-controller",
+        action="store_true",
+        help=(
+            "Add a dedicated sigmoid controller head that scales overlap-cancel direct apply "
+            "without changing the cancel estimate itself."
+        ),
     )
     parser.add_argument(
         "--model-enable-branch-overlap-dual-decoder-head",
@@ -207,10 +223,12 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--model-branch-overlap-cancel-delta-blend-mode",
-        choices=["none", "gate", "complement"],
+        choices=["none", "gate", "complement", "predicted_activity"],
         default="none",
     )
     parser.add_argument("--model-branch-overlap-cancel-max-blend", type=float, default=1.0)
+    parser.add_argument("--model-branch-overlap-cancel-apply-controller-floor", type=float, default=0.0)
+    parser.add_argument("--model-branch-overlap-cancel-apply-max-freq-ratio", type=float, default=1.0)
     parser.add_argument("--model-branch-overlap-dual-decoder-max-delta", type=float, default=0.15)
     parser.add_argument(
         "--model-branch-overlap-dual-decoder-gate-mode",
@@ -255,6 +273,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--loss-gate-abstain-weight", type=float, default=0.0)
     parser.add_argument("--loss-gate-keep-weight", type=float, default=0.0)
     parser.add_argument("--loss-gate-target-weight", type=float, default=0.0)
+    parser.add_argument(
+        "--loss-gate-supervision-source",
+        choices=["branch_decoder_frame_gate", "overlap_cancel_apply_controller"],
+        default="branch_decoder_frame_gate",
+    )
     parser.add_argument(
         "--loss-gate-target-mode",
         choices=["none", "audibility"],
@@ -468,6 +491,9 @@ def build_model_config(args: argparse.Namespace) -> dict[str, int]:
         "enable_branch_overlap_refine_head": args.model_enable_branch_overlap_refine_head,
         "enable_branch_overlap_refine_present_head": args.model_enable_branch_overlap_refine_present_head,
         "enable_branch_overlap_cancel_head": args.model_enable_branch_overlap_cancel_head,
+        "enable_branch_overlap_cancel_apply_controller": (
+            args.model_enable_branch_overlap_cancel_apply_controller
+        ),
         "enable_branch_overlap_dual_decoder_head": args.model_enable_branch_overlap_dual_decoder_head,
         "enable_adapter_temporal_model": args.model_enable_adapter_temporal_model,
         "adapter_gru_layers": args.model_adapter_gru_layers,
@@ -492,6 +518,10 @@ def build_model_config(args: argparse.Namespace) -> dict[str, int]:
         "branch_overlap_cancel_ratio_mode": args.model_branch_overlap_cancel_ratio_mode,
         "branch_overlap_cancel_delta_blend_mode": args.model_branch_overlap_cancel_delta_blend_mode,
         "branch_overlap_cancel_max_blend": args.model_branch_overlap_cancel_max_blend,
+        "branch_overlap_cancel_apply_controller_floor": (
+            args.model_branch_overlap_cancel_apply_controller_floor
+        ),
+        "branch_overlap_cancel_apply_max_freq_ratio": args.model_branch_overlap_cancel_apply_max_freq_ratio,
         "branch_overlap_dual_decoder_max_delta": args.model_branch_overlap_dual_decoder_max_delta,
         "branch_overlap_dual_decoder_gate_mode": args.model_branch_overlap_dual_decoder_gate_mode,
         "branch_overlap_dual_decoder_source_mode": args.model_branch_overlap_dual_decoder_source_mode,
@@ -554,6 +584,7 @@ def build_loss_config(args: argparse.Namespace) -> dict[str, float]:
         "gate_abstain_weight": args.loss_gate_abstain_weight,
         "gate_keep_weight": args.loss_gate_keep_weight,
         "gate_target_weight": args.loss_gate_target_weight,
+        "gate_supervision_source": args.loss_gate_supervision_source,
         "gate_target_mode": args.loss_gate_target_mode,
         "gate_target_energy_center": args.loss_gate_target_energy_center,
         "gate_target_energy_scale": args.loss_gate_target_energy_scale,
@@ -658,9 +689,12 @@ def resolve_teacher_checkpoint_path(
     explicit_path: Path | None,
     checkpoint: dict | None,
     checkpoint_path: Path | None,
+    allow_metadata_fallback: bool = True,
 ) -> Path | None:
     if explicit_path is not None:
         return explicit_path.resolve()
+    if not allow_metadata_fallback:
+        return None
     if checkpoint is None:
         return None
 
@@ -691,6 +725,7 @@ def load_model_state_dict_for_init(model: nn.Module, checkpoint_state_dict: dict
         "branch_overlap_refine_head.",
         "branch_overlap_refine_present_head.",
         "branch_overlap_cancel_head.",
+        "branch_overlap_cancel_apply_controller_head.",
         "branch_overlap_dual_decoder_temporal_model.",
         "branch_overlap_dual_decoder_head.",
         "adapter_mask_head.",
@@ -959,6 +994,24 @@ def evaluate(
                 if gate_target_values is not None
                 else None
             )
+            gate_supervision_source = str(
+                loss_config.get("gate_supervision_source", "branch_decoder_frame_gate")
+            )
+            gate_values = outputs.get("branch_decoder_frame_gate")
+            gate_absent_sample_weights = absent_presence_sample_weights
+            gate_abstain_sample_weights = interference_extra_sample_weights
+            gate_keep_sample_weights = branch_protect_sample_weights
+            gate_target_intervals = None
+            gate_absent_intervals = None
+            gate_abstain_intervals = None
+            gate_keep_intervals = None
+            if gate_supervision_source == "overlap_cancel_apply_controller":
+                gate_values = outputs.get("branch_overlap_cancel_apply_controller")
+                gate_absent_sample_weights = absent_union_sample_weights
+                gate_abstain_sample_weights = None
+                gate_keep_sample_weights = overlap_cancel_sample_weights
+                gate_absent_intervals = batch["target_absent_intervals"]
+                gate_keep_intervals = batch["target_overlap_intervals"]
             for prefix, weights in (
                 ("reconstruction", reconstruction_union_sample_weights),
                 ("reconstruction_extra", reconstruction_extra_sample_weights),
@@ -998,7 +1051,7 @@ def evaluate(
                 absent_intervals=batch["target_absent_intervals"],
                 overlap_intervals=batch["target_overlap_intervals"],
                 model=model,
-                gate_values=outputs.get("branch_decoder_frame_gate"),
+                gate_values=gate_values,
                 reconstruction_sample_weights=reconstruction_sample_weights,
                 reconstruction_extra_sample_weights=reconstruction_extra_sample_weights,
                 transient_sample_weights=transient_sample_weights,
@@ -1008,16 +1061,21 @@ def evaluate(
                 overlap_interference_sample_weights=overlap_interference_sample_weights,
                 overlap_interference_extra_sample_weights=overlap_interference_extra_sample_weights,
                 overlap_cancel_sample_weights=overlap_cancel_sample_weights,
+                overlap_cancel_absent_mix_sample_weights=absent_union_sample_weights,
                 overlap_dual_sample_weights=overlap_dual_sample_weights,
                 branch_protect_sample_weights=branch_protect_sample_weights,
                 branch_protect_teacher_sample_weights=branch_protect_teacher_sample_weights,
                 absent_sample_weights=absent_sample_weights,
                 absent_extra_sample_weights=absent_extra_sample_weights,
-                gate_absent_sample_weights=absent_presence_sample_weights,
-                gate_abstain_sample_weights=interference_extra_sample_weights,
-                gate_keep_sample_weights=branch_protect_sample_weights,
+                gate_absent_sample_weights=gate_absent_sample_weights,
+                gate_abstain_sample_weights=gate_abstain_sample_weights,
+                gate_keep_sample_weights=gate_keep_sample_weights,
                 gate_target_sample_weights=gate_target_sample_weights,
                 gate_target_values=gate_target_values,
+                gate_absent_intervals=gate_absent_intervals,
+                gate_abstain_intervals=gate_abstain_intervals,
+                gate_keep_intervals=gate_keep_intervals,
+                gate_target_intervals=gate_target_intervals,
                 **compute_loss_kwargs,
             )
             total_loss += float(losses.total.item()) * batch_size
@@ -1225,6 +1283,7 @@ def main() -> None:
         explicit_path=args.teacher_checkpoint,
         checkpoint=init_checkpoint,
         checkpoint_path=args.init_checkpoint,
+        allow_metadata_fallback=not args.disable_teacher_checkpoint_metadata_fallback,
     )
     teacher_checkpoint_path: str | None = None
     teacher_model: STFTMaskBaseline | None = None
@@ -1423,6 +1482,24 @@ def main() -> None:
                 if gate_target_values is not None
                 else None
             )
+            gate_supervision_source = str(
+                loss_config.get("gate_supervision_source", "branch_decoder_frame_gate")
+            )
+            gate_values = outputs.get("branch_decoder_frame_gate")
+            gate_absent_sample_weights = absent_presence_sample_weights
+            gate_abstain_sample_weights = interference_extra_sample_weights
+            gate_keep_sample_weights = branch_protect_sample_weights
+            gate_target_intervals = None
+            gate_absent_intervals = None
+            gate_abstain_intervals = None
+            gate_keep_intervals = None
+            if gate_supervision_source == "overlap_cancel_apply_controller":
+                gate_values = outputs.get("branch_overlap_cancel_apply_controller")
+                gate_absent_sample_weights = absent_union_sample_weights
+                gate_abstain_sample_weights = None
+                gate_keep_sample_weights = overlap_cancel_sample_weights
+                gate_absent_intervals = batch["target_absent_intervals"]
+                gate_keep_intervals = batch["target_overlap_intervals"]
             for prefix, weights in (
                 ("reconstruction", reconstruction_union_sample_weights),
                 ("reconstruction_extra", reconstruction_extra_sample_weights),
@@ -1462,7 +1539,7 @@ def main() -> None:
                 absent_intervals=batch["target_absent_intervals"],
                 overlap_intervals=batch["target_overlap_intervals"],
                 model=model,
-                gate_values=outputs.get("branch_decoder_frame_gate"),
+                gate_values=gate_values,
                 reconstruction_sample_weights=reconstruction_sample_weights,
                 reconstruction_extra_sample_weights=reconstruction_extra_sample_weights,
                 transient_sample_weights=transient_sample_weights,
@@ -1472,16 +1549,21 @@ def main() -> None:
                 overlap_interference_sample_weights=overlap_interference_sample_weights,
                 overlap_interference_extra_sample_weights=overlap_interference_extra_sample_weights,
                 overlap_cancel_sample_weights=overlap_cancel_sample_weights,
+                overlap_cancel_absent_mix_sample_weights=absent_union_sample_weights,
                 overlap_dual_sample_weights=overlap_dual_sample_weights,
                 branch_protect_sample_weights=branch_protect_sample_weights,
                 branch_protect_teacher_sample_weights=branch_protect_teacher_sample_weights,
                 absent_sample_weights=absent_sample_weights,
                 absent_extra_sample_weights=absent_extra_sample_weights,
-                gate_absent_sample_weights=absent_presence_sample_weights,
-                gate_abstain_sample_weights=interference_extra_sample_weights,
-                gate_keep_sample_weights=branch_protect_sample_weights,
+                gate_absent_sample_weights=gate_absent_sample_weights,
+                gate_abstain_sample_weights=gate_abstain_sample_weights,
+                gate_keep_sample_weights=gate_keep_sample_weights,
                 gate_target_sample_weights=gate_target_sample_weights,
                 gate_target_values=gate_target_values,
+                gate_absent_intervals=gate_absent_intervals,
+                gate_abstain_intervals=gate_abstain_intervals,
+                gate_keep_intervals=gate_keep_intervals,
+                gate_target_intervals=gate_target_intervals,
                 **compute_loss_kwargs,
             )
 

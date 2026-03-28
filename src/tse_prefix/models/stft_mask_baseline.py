@@ -24,6 +24,7 @@ class STFTMaskBaseline(nn.Module):
         enable_branch_overlap_refine_head: bool = False,
         enable_branch_overlap_refine_present_head: bool = False,
         enable_branch_overlap_cancel_head: bool = False,
+        enable_branch_overlap_cancel_apply_controller: bool = False,
         enable_branch_overlap_dual_decoder_head: bool = False,
         enable_adapter_temporal_model: bool = False,
         adapter_gru_layers: int = 1,
@@ -48,6 +49,8 @@ class STFTMaskBaseline(nn.Module):
         branch_overlap_cancel_ratio_mode: str = "complex",
         branch_overlap_cancel_delta_blend_mode: str = "none",
         branch_overlap_cancel_max_blend: float = 1.0,
+        branch_overlap_cancel_apply_controller_floor: float = 0.0,
+        branch_overlap_cancel_apply_max_freq_ratio: float = 1.0,
         branch_overlap_dual_decoder_max_delta: float = 0.15,
         branch_overlap_dual_decoder_gate_mode: str = "complement",
         branch_overlap_dual_decoder_source_mode: str = "residual",
@@ -67,6 +70,7 @@ class STFTMaskBaseline(nn.Module):
         self.enable_branch_overlap_refine_head = enable_branch_overlap_refine_head
         self.enable_branch_overlap_refine_present_head = enable_branch_overlap_refine_present_head
         self.enable_branch_overlap_cancel_head = enable_branch_overlap_cancel_head
+        self.enable_branch_overlap_cancel_apply_controller = enable_branch_overlap_cancel_apply_controller
         self.enable_branch_overlap_dual_decoder_head = enable_branch_overlap_dual_decoder_head
         self.enable_adapter_temporal_model = enable_adapter_temporal_model
         self.adapter_conditioning_mode = adapter_conditioning_mode
@@ -90,6 +94,8 @@ class STFTMaskBaseline(nn.Module):
         self.branch_overlap_cancel_ratio_mode = branch_overlap_cancel_ratio_mode
         self.branch_overlap_cancel_delta_blend_mode = branch_overlap_cancel_delta_blend_mode
         self.branch_overlap_cancel_max_blend = branch_overlap_cancel_max_blend
+        self.branch_overlap_cancel_apply_controller_floor = branch_overlap_cancel_apply_controller_floor
+        self.branch_overlap_cancel_apply_max_freq_ratio = branch_overlap_cancel_apply_max_freq_ratio
         self.branch_overlap_dual_decoder_max_delta = branch_overlap_dual_decoder_max_delta
         self.branch_overlap_dual_decoder_gate_mode = branch_overlap_dual_decoder_gate_mode
         self.branch_overlap_dual_decoder_source_mode = branch_overlap_dual_decoder_source_mode
@@ -109,6 +115,10 @@ class STFTMaskBaseline(nn.Module):
             raise ValueError("Branch overlap present refiner requires enable_branch_abstention_gate.")
         if enable_branch_overlap_cancel_head and not enable_branch_decoder_head:
             raise ValueError("Branch overlap canceller requires enable_branch_decoder_head.")
+        if enable_branch_overlap_cancel_apply_controller and not enable_branch_overlap_cancel_head:
+            raise ValueError(
+                "Branch overlap cancel apply controller requires enable_branch_overlap_cancel_head."
+            )
         if enable_branch_overlap_dual_decoder_head and not enable_branch_decoder_head:
             raise ValueError("Branch overlap dual decoder requires enable_branch_decoder_head.")
         if enable_branch_overlap_cancel_head and enable_branch_overlap_dual_decoder_head:
@@ -185,9 +195,18 @@ class STFTMaskBaseline(nn.Module):
             raise ValueError(
                 "branch_overlap_cancel_ratio_mode must be one of: complex, phase_preserve."
             )
-        if branch_overlap_cancel_delta_blend_mode not in ("none", "gate", "complement"):
+        if branch_overlap_cancel_delta_blend_mode not in ("none", "gate", "complement", "predicted_activity"):
             raise ValueError(
-                "branch_overlap_cancel_delta_blend_mode must be one of: none, gate, complement."
+                "branch_overlap_cancel_delta_blend_mode must be one of: "
+                "none, gate, complement, predicted_activity."
+            )
+        if not 0.0 <= branch_overlap_cancel_apply_controller_floor < 1.0:
+            raise ValueError(
+                "branch_overlap_cancel_apply_controller_floor must satisfy 0.0 <= floor < 1.0."
+            )
+        if not 0.0 < branch_overlap_cancel_apply_max_freq_ratio <= 1.0:
+            raise ValueError(
+                "branch_overlap_cancel_apply_max_freq_ratio must satisfy 0.0 < ratio <= 1.0."
             )
         if branch_overlap_dual_decoder_gate_mode not in ("none", "gate", "complement"):
             raise ValueError(
@@ -312,6 +331,15 @@ class STFTMaskBaseline(nn.Module):
                 self.reset_branch_overlap_cancel_head()
             else:
                 self.branch_overlap_cancel_head = None
+            if enable_branch_overlap_cancel_apply_controller:
+                self.branch_overlap_cancel_apply_controller_head = nn.Sequential(
+                    nn.Linear(hidden_dim * 2, hidden_dim),
+                    nn.ReLU(),
+                    nn.Linear(hidden_dim, 1),
+                )
+                self.reset_branch_overlap_cancel_apply_controller_head()
+            else:
+                self.branch_overlap_cancel_apply_controller_head = None
             if enable_branch_overlap_dual_decoder_head:
                 self.branch_overlap_dual_decoder_temporal_model = nn.GRU(
                     input_size=gru_input_dim,
@@ -338,8 +366,17 @@ class STFTMaskBaseline(nn.Module):
             self.branch_overlap_refine_head = None
             self.branch_overlap_refine_present_head = None
             self.branch_overlap_cancel_head = None
+            self.branch_overlap_cancel_apply_controller_head = None
             self.branch_overlap_dual_decoder_temporal_model = None
             self.branch_overlap_dual_decoder_head = None
+        apply_band_bins = max(1, int(math.ceil(self.freq_bins * self.branch_overlap_cancel_apply_max_freq_ratio)))
+        apply_band_mask = torch.zeros(1, self.freq_bins, 1)
+        apply_band_mask[:, :apply_band_bins, :] = 1.0
+        self.register_buffer(
+            "branch_overlap_cancel_apply_band_mask",
+            apply_band_mask,
+            persistent=False,
+        )
         if enable_adapter_mask_head:
             adapter_hidden_dim = hidden_dim * 2
             if enable_adapter_temporal_model:
@@ -419,6 +456,13 @@ class STFTMaskBaseline(nn.Module):
             nn.init.constant_(final_layer.bias, -8.0)
         else:
             nn.init.zeros_(final_layer.bias)
+
+    def reset_branch_overlap_cancel_apply_controller_head(self) -> None:
+        if self.branch_overlap_cancel_apply_controller_head is None:
+            return
+        final_layer = self.branch_overlap_cancel_apply_controller_head[-1]
+        nn.init.zeros_(final_layer.weight)
+        nn.init.constant_(final_layer.bias, 4.0)
 
     def reset_branch_overlap_dual_decoder_from_branch(self) -> None:
         if (
@@ -594,6 +638,7 @@ class STFTMaskBaseline(nn.Module):
         branch_overlap_refine_present_veto = None
         branch_overlap_cancel_ratio = None
         branch_overlap_cancel_delta_blend = None
+        branch_overlap_cancel_apply_controller = None
         estimated_stft_branch_base = None
         estimated_waveform_branch_base = None
         branch_overlap_cancel_estimate_stft = None
@@ -739,10 +784,34 @@ class STFTMaskBaseline(nn.Module):
                             branch_overlap_cancel_delta_blend = branch_decoder_frame_gate
                         elif self.branch_overlap_cancel_delta_blend_mode == "complement":
                             branch_overlap_cancel_delta_blend = 1.0 - branch_decoder_frame_gate
+                    if self.branch_overlap_cancel_delta_blend_mode == "predicted_activity":
+                        cancel_scale = max(self.branch_overlap_cancel_max_delta, 1e-6)
+                        branch_overlap_cancel_delta_blend = torch.clamp(
+                            torch.abs(branch_overlap_cancel_ratio) / cancel_scale,
+                            min=0.0,
+                            max=1.0,
+                        )
                     if branch_overlap_cancel_delta_blend is None:
                         branch_overlap_cancel_delta_blend = torch.ones_like(branch_decoder_mask[:, :1, :])
+                    if self.branch_overlap_cancel_apply_controller_head is not None:
+                        branch_overlap_cancel_apply_controller = torch.sigmoid(
+                            self.branch_overlap_cancel_apply_controller_head(branch_encoded)
+                        ).transpose(1, 2)
+                        if self.branch_overlap_cancel_apply_controller_floor > 0.0:
+                            floor = self.branch_overlap_cancel_apply_controller_floor
+                            branch_overlap_cancel_apply_controller = torch.clamp(
+                                (branch_overlap_cancel_apply_controller - floor) / (1.0 - floor),
+                                min=0.0,
+                                max=1.0,
+                            )
+                        branch_overlap_cancel_delta_blend = (
+                            branch_overlap_cancel_delta_blend * branch_overlap_cancel_apply_controller
+                        )
                     branch_overlap_cancel_delta_blend = (
                         branch_overlap_cancel_delta_blend * self.branch_overlap_cancel_max_blend
+                    )
+                    branch_overlap_cancel_delta_blend = (
+                        branch_overlap_cancel_delta_blend * self.branch_overlap_cancel_apply_band_mask
                     )
                     estimated_stft = estimated_stft - (
                         branch_overlap_cancel_estimate_stft * branch_overlap_cancel_delta_blend
@@ -834,6 +903,7 @@ class STFTMaskBaseline(nn.Module):
             "branch_overlap_refine_present_veto": branch_overlap_refine_present_veto,
             "branch_overlap_cancel_ratio": branch_overlap_cancel_ratio,
             "branch_overlap_cancel_delta_blend": branch_overlap_cancel_delta_blend,
+            "branch_overlap_cancel_apply_controller": branch_overlap_cancel_apply_controller,
             "mixture_stft": mix_stft,
             "estimated_stft": estimated_stft,
             "estimated_stft_base": estimated_stft_base,
