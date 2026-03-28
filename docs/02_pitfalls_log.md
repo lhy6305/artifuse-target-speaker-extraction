@@ -2039,6 +2039,74 @@
   - controller-only
   - 或其它不直接接管 final output 的 integration。
 
+### 62. 显式 split target-present / target-absent local control 语义虽然能继续推正 synthetic 与 whole-tradeoff，但 gate-side present head 仍可能把 `0007` local `speech_only` leak 与 `0009` absent local suppression 一起拉坏
+
+事实：
+
+- `v120` 相对 `v113`：
+  - 新增了：
+    - `enable_branch_overlap_refine_present_head = true`
+    - `branch_overlap_refine_present_source_mode = current_residual`
+  - 并且只训练：
+    - `branch_overlap_refine_present_head`
+  - synthetic 四条固定验收全部正向：
+    - abstention `+1.2922 dB`
+    - same-gender keep `+0.9844 dB`
+    - hard-present keep `+0.7738 dB`
+    - hard-present artifact proxy `+0.7100 dB`
+  - whole-utterance near-real：
+    - `more_interference_leaky = v113:4`
+    - `better_retention_minus_leak = v120:2, tie:1, not_applicable:1`
+    - `tradeoff gate = pass`
+  - overlap-local：
+    - `more_speech_interference_leaky = v113:2, v120:2`
+    - `better_retention_minus_speech_leak = tie:1, v120:1, v113:1, not_applicable:1`
+    - `better_retention_minus_total_leak = tie:1, v120:2, not_applicable:1`
+- 最关键的是：
+  - `near_real_0006`
+    - `more_speech_interference_leaky = v113`
+    - `better_retention_minus_speech_leak = v120`
+    - `delta_retention_minus_speech_leak_db = +3.3014 dB`
+  - 但 `near_real_0007`
+    - `more_speech_interference_leaky = v120`
+    - `better_retention_minus_speech_leak = v113`
+    - `delta_speech_interference_capture_db = +8.0218 dB`
+    - `delta_retention_minus_speech_leak_db = -8.3666 dB`
+  - 且 `near_real_0009`
+    - `more_speech_interference_leaky = v120`
+    - `delta_speech_interference_capture_db = +9.3707 dB`
+- `export_ab_listening_pack.py` relative `v113`
+  仍是：
+  - `0 candidate sample`
+
+原因：
+
+- split local-control semantics 本身是有效的；
+- 但只要 present head 仍主要靠：
+  - branch gate
+  - current residual
+  两个信号自行决定何时出手，
+  它就还是可能把优化优先落到：
+  - whole-tradeoff
+  - total-leak
+  - `0006` 这类较容易受益的 target-present speech case；
+- 却不能自动保证：
+  - `0007` 这类 hard-present `speech_only` local leak
+  - `0009` 这类 target-absent speech peak
+  不被一起拉坏。
+
+要求：
+
+- 后续若继续 split local-control semantics，
+  不应只做：
+  - `present_max_delta`
+  - `present_source_mode`
+  的同构 sweep；
+- 下一轮必须直接补：
+  - present head 的 target-absent veto / activation guard
+  - 或其它更显式的 target-present 激活约束，
+  否则 `0007 / 0009` 会继续一起成为 blocker。
+
 ## 近期关键案例入口
 
 - `reports/daily/2026-03-26_overlap_abstention_proxy_v3_v4_and_v71_v72_followup.md`

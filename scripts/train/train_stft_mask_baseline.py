@@ -123,6 +123,14 @@ def parse_args() -> argparse.Namespace:
         help="Add a zero-init complex residual canceller on top of the branch decoder output.",
     )
     parser.add_argument(
+        "--model-enable-branch-overlap-refine-present-head",
+        action="store_true",
+        help=(
+            "Add a second zero-init present-only residual refiner on top of the branch decoder output. "
+            "This head always acts inside the branch gate region."
+        ),
+    )
+    parser.add_argument(
         "--model-enable-branch-overlap-cancel-head",
         action="store_true",
         help="Add a dedicated overlap residual canceller head on top of the branch decoder output.",
@@ -158,6 +166,12 @@ def parse_args() -> argparse.Namespace:
         "--model-branch-overlap-refine-source-mode",
         choices=["mixture", "branch_base", "residual"],
         default="mixture",
+    )
+    parser.add_argument("--model-branch-overlap-refine-present-max-delta", type=float, default=0.15)
+    parser.add_argument(
+        "--model-branch-overlap-refine-present-source-mode",
+        choices=["mixture", "branch_base", "residual", "current_residual"],
+        default="residual",
     )
     parser.add_argument("--model-branch-overlap-cancel-max-delta", type=float, default=0.15)
     parser.add_argument(
@@ -438,6 +452,7 @@ def build_model_config(args: argparse.Namespace) -> dict[str, int]:
         "enable_branch_decoder_head": args.model_enable_branch_decoder_head,
         "enable_branch_abstention_gate": args.model_enable_branch_abstention_gate,
         "enable_branch_overlap_refine_head": args.model_enable_branch_overlap_refine_head,
+        "enable_branch_overlap_refine_present_head": args.model_enable_branch_overlap_refine_present_head,
         "enable_branch_overlap_cancel_head": args.model_enable_branch_overlap_cancel_head,
         "enable_branch_overlap_dual_decoder_head": args.model_enable_branch_overlap_dual_decoder_head,
         "enable_adapter_temporal_model": args.model_enable_adapter_temporal_model,
@@ -447,6 +462,8 @@ def build_model_config(args: argparse.Namespace) -> dict[str, int]:
         "branch_overlap_refine_max_delta": args.model_branch_overlap_refine_max_delta,
         "branch_overlap_refine_gate_mode": args.model_branch_overlap_refine_gate_mode,
         "branch_overlap_refine_source_mode": args.model_branch_overlap_refine_source_mode,
+        "branch_overlap_refine_present_max_delta": args.model_branch_overlap_refine_present_max_delta,
+        "branch_overlap_refine_present_source_mode": args.model_branch_overlap_refine_present_source_mode,
         "branch_overlap_cancel_max_delta": args.model_branch_overlap_cancel_max_delta,
         "branch_overlap_cancel_gate_mode": args.model_branch_overlap_cancel_gate_mode,
         "branch_overlap_cancel_source_mode": args.model_branch_overlap_cancel_source_mode,
@@ -648,6 +665,7 @@ def load_model_state_dict_for_init(model: nn.Module, checkpoint_state_dict: dict
         "branch_decoder_mask_head.",
         "branch_decoder_gate_head.",
         "branch_overlap_refine_head.",
+        "branch_overlap_refine_present_head.",
         "branch_overlap_cancel_head.",
         "branch_overlap_dual_decoder_temporal_model.",
         "branch_overlap_dual_decoder_head.",

@@ -179,6 +179,9 @@
   - `v118`
     - 含义：`v109 + overlap dual controller floor 0007-like v1`
     - 状态：首个 `gate floor` dual-controller pilot；phone-artifact / bandwidth 没再坏，但四条 synthetic 固定验收 relative `v109` 全线回退，near-real 也重新走成 retention-up + leak-up，不继续
+  - `v120`
+    - 含义：`v113 + split target-present / target-absent local control current_residual v1`
+    - 状态：首个显式 split local-control semantics pilot；relative `v113` 四条 synthetic 固定验收全绿，whole near-real tradeoff 也继续正向；但 `near_real_0007` overlap-local `speech_only` leak 与 `near_real_0009` absent local suppression 仍未转正，`export_ab_listening_pack` relative `v113` 仍是 `0 candidate sample`，不导听审
   - `v82`
     - 含义：`present_overlap_residual_leak_purification v1` 首轮 mask pilot
     - 状态：objective 前进明显，但 `v81 vs v82` 听审为 `4 / 4 tie`
@@ -872,6 +875,18 @@
       - bandwidth / transients：
         - `tie:4 / tie:4`
         - 说明失败不再是电话音，而是 direct-output leak drift
+  - `v120` 已进一步证明：
+    - 显式分开的 target-present / target-absent local control 语义
+      不是 near-no-op；
+    - `v113 + gate-side present head + current_residual source`
+      relative `v113`：
+      - synthetic 四条固定验收全绿
+      - whole near-real tradeoff gate 通过
+      - `near_real_0006` overlap-local 已继续前进；
+    - 但它仍没解掉：
+      - `near_real_0007` local `speech_only` leak
+      - `near_real_0009` absent local suppression
+      这两个 blocker；
   - 当前默认下一步再次更新为：
     - 收口 `v118`
     - 不继续 `v118+`
@@ -879,6 +894,14 @@
     - 若继续 dual 语义，
       只能走 auxiliary / controller-only 接法，
       不再继续 `direct dual-target final-output path`
+    - 收口 `v120`
+    - split local-control semantics 保持活跃
+    - 不导听审
+    - 若继续 `0007` 子题，
+      下一轮应直接补：
+      - present head 的 target-absent veto / activation guard
+      - 或其它更显式的 target-present 激活约束
+      而不是只做 `present_max_delta / source_mode` 的同构 sweep
 
 ## 当前核心子题
 

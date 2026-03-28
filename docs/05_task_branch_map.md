@@ -1872,6 +1872,31 @@ checkpoint：
       - auxiliary-only
       - controller-only
       - 或其它不直接接管 final output 的 integration
+- `v120` 已进一步证明：
+  - 显式 split target-present / target-absent local control
+    这条语义不是 near-no-op；
+  - `v113 + present-only refine head + current_residual source`
+    relative `v113`：
+    - synthetic 四条固定验收全绿
+    - whole near-real tradeoff gate 通过
+    - `near_real_0006` overlap-local 已继续前进；
+  - 但它仍没有把真正卡住的：
+    - `near_real_0007` local `speech_only` leak
+    - `near_real_0009` absent local suppression
+    解掉；
+  - 当前默认下一步再次更新为：
+    - 收口 `v120`
+    - preserve/bypass family 保持活跃
+    - split local-control semantics 保持活跃
+    - 不导听审
+    - 若继续 `0007` 子题，
+      下一轮应直接补：
+      - present head 的 target-absent veto / activation guard
+      - 或其它更显式的 target-present 激活约束
+      而不是只做：
+      - `present_max_delta`
+      - `present_source_mode`
+      的同构 sweep
 
 执行前必须保持六条验收同时在场：
 
