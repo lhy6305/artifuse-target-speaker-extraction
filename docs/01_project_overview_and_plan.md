@@ -182,6 +182,12 @@
   - `v120`
     - 含义：`v113 + split target-present / target-absent local control current_residual v1`
     - 状态：首个显式 split local-control semantics pilot；relative `v113` 四条 synthetic 固定验收全绿，whole near-real tradeoff 也继续正向；但 `near_real_0007` overlap-local `speech_only` leak 与 `near_real_0009` absent local suppression 仍未转正，`export_ab_listening_pack` relative `v113` 仍是 `0 candidate sample`，不导听审
+  - `v121`
+    - 含义：`v120 + hard present gate floor 0.8`
+    - 状态：证明 present-head activation guard 的方向本身成立；`near_real_0009` absent local speech leak 与 `near_real_0007` local `speech_only` leak relative `v120` 都被拉回，但 synthetic 四条固定验收回退、whole near-real tradeoff fail，不继续
+  - `v122`
+    - 含义：`v120 + soft present gate power 2.0`
+    - 状态：relative `v120` 四条 synthetic 固定验收重新全绿，whole near-real tradeoff gate 通过，overlap-local total leak 继续全样本下降，`near_real_0006 / 0009` local speech leak 也继续改善；但 `near_real_0007` local `speech_only` leak 仍未转正，`export_ab_listening_pack` relative `v120` 仍是 `0 candidate sample`，继续保留但暂不导听审
   - `v82`
     - 含义：`present_overlap_residual_leak_purification v1` 首轮 mask pilot
     - 状态：objective 前进明显，但 `v81 vs v82` 听审为 `4 / 4 tie`
@@ -887,6 +893,23 @@
       - `near_real_0007` local `speech_only` leak
       - `near_real_0009` absent local suppression
       这两个 blocker；
+  - `v121` 已进一步证明：
+    - hard present activation floor 确实能动到：
+      - `near_real_0007` local `speech_only` leak
+      - `near_real_0009` absent local suppression
+    - 但 hard floor 过硬，
+      会把 synthetic 四条固定验收与 whole near-real tradeoff 一起拉坏；
+    - 因此不能继续 `hard floor` family；
+  - `v122` 已进一步证明：
+    - soft `gate^2` activation shaping 才是更正确的 continuation；
+    - relative `v120`：
+      - synthetic 四条固定验收重新全绿
+      - whole near-real tradeoff gate 通过
+      - overlap-local `more_total_interference_leaky = v120:4`
+      - `near_real_0006 / 0009` local speech leak 继续改善；
+    - 但它仍没有把：
+      - `near_real_0007` local `speech_only` leak
+      真正推成正向；
   - 当前默认下一步再次更新为：
     - 收口 `v118`
     - 不继续 `v118+`
@@ -896,12 +919,17 @@
       不再继续 `direct dual-target final-output path`
     - 收口 `v120`
     - split local-control semantics 保持活跃
-    - 不导听审
+    - 收口 `v121`
+    - `v122` 作为当前最佳自动口径 continuation 保持活跃
+    - 仍不导听审
     - 若继续 `0007` 子题，
       下一轮应直接补：
-      - present head 的 target-absent veto / activation guard
-      - 或其它更显式的 target-present 激活约束
-      而不是只做 `present_max_delta / source_mode` 的同构 sweep
+      - present head 对 `speech_only local leak` 的显式局部目标 / selector
+      - 或其它不会重新伤到 whole-tradeoff 的 soft veto 机制
+      而不是回到：
+      - `hard floor`
+      - 或 `present_max_delta / gate threshold`
+      的同构 sweep
 
 ## 当前核心子题
 

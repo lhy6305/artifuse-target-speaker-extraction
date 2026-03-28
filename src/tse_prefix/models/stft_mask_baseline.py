@@ -34,6 +34,8 @@ class STFTMaskBaseline(nn.Module):
         branch_overlap_refine_source_mode: str = "mixture",
         branch_overlap_refine_present_max_delta: float = 0.15,
         branch_overlap_refine_present_source_mode: str = "residual",
+        branch_overlap_refine_present_gate_power: float = 1.0,
+        branch_overlap_refine_present_gate_floor: float = 0.0,
         branch_overlap_cancel_max_delta: float = 0.15,
         branch_overlap_cancel_gate_mode: str = "complement",
         branch_overlap_cancel_source_mode: str = "residual",
@@ -69,6 +71,8 @@ class STFTMaskBaseline(nn.Module):
         self.branch_overlap_refine_source_mode = branch_overlap_refine_source_mode
         self.branch_overlap_refine_present_max_delta = branch_overlap_refine_present_max_delta
         self.branch_overlap_refine_present_source_mode = branch_overlap_refine_present_source_mode
+        self.branch_overlap_refine_present_gate_power = branch_overlap_refine_present_gate_power
+        self.branch_overlap_refine_present_gate_floor = branch_overlap_refine_present_gate_floor
         self.branch_overlap_cancel_max_delta = branch_overlap_cancel_max_delta
         self.branch_overlap_cancel_gate_mode = branch_overlap_cancel_gate_mode
         self.branch_overlap_cancel_source_mode = branch_overlap_cancel_source_mode
@@ -118,6 +122,14 @@ class STFTMaskBaseline(nn.Module):
             raise ValueError(
                 "branch_overlap_refine_present_source_mode must be one of: "
                 "mixture, branch_base, residual, current_residual."
+            )
+        if branch_overlap_refine_present_gate_power <= 0.0:
+            raise ValueError(
+                "branch_overlap_refine_present_gate_power must be strictly positive."
+            )
+        if not 0.0 <= branch_overlap_refine_present_gate_floor < 1.0:
+            raise ValueError(
+                "branch_overlap_refine_present_gate_floor must satisfy 0.0 <= floor < 1.0."
             )
         if branch_overlap_cancel_gate_mode not in ("none", "gate", "complement"):
             raise ValueError(
@@ -396,6 +408,15 @@ class STFTMaskBaseline(nn.Module):
         scaled = (blend - floor) / (1.0 - floor)
         return torch.clamp(scaled, min=0.0, max=1.0)
 
+    @staticmethod
+    def apply_blend_power(
+        blend: torch.Tensor,
+        power: float,
+    ) -> torch.Tensor:
+        if power == 1.0:
+            return blend
+        return torch.clamp(blend, min=0.0, max=1.0).pow(power)
+
     def stft(self, waveform: torch.Tensor) -> torch.Tensor:
         return torch.stft(
             waveform,
@@ -578,9 +599,18 @@ class STFTMaskBaseline(nn.Module):
                 )
                 present_real, present_imag = torch.chunk(branch_overlap_refine_present_params, 2, dim=1)
                 branch_overlap_refine_present_ratio = torch.complex(present_real, present_imag)
-                branch_overlap_refine_present_ratio = (
-                    branch_overlap_refine_present_ratio * branch_decoder_frame_gate
-                )
+                present_gate = branch_decoder_frame_gate
+                if self.branch_overlap_refine_present_gate_power != 1.0:
+                    present_gate = self.apply_blend_power(
+                        present_gate,
+                        self.branch_overlap_refine_present_gate_power,
+                    )
+                if self.branch_overlap_refine_present_gate_floor > 0.0:
+                    present_gate = self.apply_blend_floor(
+                        present_gate,
+                        self.branch_overlap_refine_present_gate_floor,
+                    )
+                branch_overlap_refine_present_ratio = branch_overlap_refine_present_ratio * present_gate
                 refine_present_source_stft = mix_stft
                 if self.branch_overlap_refine_present_source_mode == "branch_base":
                     refine_present_source_stft = estimated_stft_branch_base

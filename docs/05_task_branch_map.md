@@ -1884,19 +1884,39 @@ checkpoint：
     - `near_real_0007` local `speech_only` leak
     - `near_real_0009` absent local suppression
     解掉；
-  - 当前默认下一步再次更新为：
-    - 收口 `v120`
-    - preserve/bypass family 保持活跃
-    - split local-control semantics 保持活跃
-    - 不导听审
-    - 若继续 `0007` 子题，
-      下一轮应直接补：
-      - present head 的 target-absent veto / activation guard
-      - 或其它更显式的 target-present 激活约束
-      而不是只做：
-      - `present_max_delta`
-      - `present_source_mode`
-      的同构 sweep
+- `v121` 已进一步证明：
+  - hard present activation floor 的方向本身是对的，
+    因为它确实动到了：
+    - `0007` local `speech_only` leak
+    - `0009` absent local suppression
+  - 但 hard floor 本身过硬，
+    会把 synthetic 与 whole-tradeoff 一起拉坏；
+  - 因此不继续 `hard floor` family；
+- `v122` 已进一步证明：
+  - soft `gate^2` activation shaping 才是更对的 continuation；
+  - relative `v120`：
+    - synthetic 四条固定验收重新全绿
+    - whole near-real tradeoff gate 通过
+    - overlap-local total leak 继续全样本下降
+    - `0006 / 0009` local speech leak 继续改善；
+  - 但 `0007` local `speech_only` leak 仍未转正；
+- 当前默认下一步再次更新为：
+  - 收口 `v120`
+  - preserve/bypass family 保持活跃
+  - split local-control semantics 保持活跃
+  - 收口 `v121`
+  - `v122` 作为当前最佳自动口径 continuation 保持活跃
+  - 仍不导听审
+  - 若继续 `0007` 子题，
+    下一轮应直接补：
+    - present head 对 `speech_only local leak` 的显式局部目标 / selector
+    - 或其它不会重新伤到 whole-tradeoff 的 soft veto 机制
+    而不是回到：
+    - `hard floor`
+    - `present_max_delta`
+    - `present_source_mode`
+    - `gate threshold`
+    的同构 sweep
 
 执行前必须保持六条验收同时在场：
 

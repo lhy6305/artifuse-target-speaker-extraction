@@ -2107,6 +2107,92 @@
   - 或其它更显式的 target-present 激活约束，
   否则 `0007 / 0009` 会继续一起成为 blocker。
 
+### 63. hard present activation floor 证明了 activation guard 方向是对的，但 hard floor 本身过硬；soft `gate^2` shaping 可以把问题从 `0007 / 0009` 双 blocker 收口成单一 `0007 speech_only local leak` blocker
+
+事实：
+
+- `v121 = v120 + hard present gate floor 0.8`
+  relative `v120`：
+  - synthetic：
+    - abstention `-0.6085 dB`
+    - same-gender keep `-0.2018 dB`
+    - hard-present keep `-0.2776 dB`
+    - artifact proxy `+0.1089 dB`
+  - whole near-real：
+    - `more_interference_leaky = tie:1, v121:3`
+    - `better_retention_minus_leak = tie:1, v120:2, not_applicable:1`
+    - `tradeoff gate = fail`
+  - overlap-local：
+    - `near_real_0009`
+      - `delta_speech_interference_capture_db = -9.7150 dB`
+    - `near_real_0007`
+      - `delta_speech_interference_capture_db = -8.1160 dB`
+      - `delta_retention_minus_speech_leak_db = +8.2985 dB`
+      - 但 `delta_total_interference_capture_db = +1.2538 dB`
+      - `delta_retention_minus_total_leak_db = -1.0713 dB`
+- `v122 = v120 + soft present gate power 2.0`
+  relative `v120`：
+  - synthetic 四条固定验收重新全绿：
+    - abstention `+0.6248 dB`
+    - same-gender keep `+0.6687 dB`
+    - hard-present keep `+0.4796 dB`
+    - artifact proxy `+0.5698 dB`
+  - whole near-real：
+    - `more_interference_leaky = v120:3, tie:1`
+    - `better_retention_minus_leak = v122:1, tie:2, not_applicable:1`
+    - `tradeoff gate = pass`
+  - overlap-local：
+    - `more_speech_interference_leaky = v120:3, tie:1`
+    - `more_total_interference_leaky = v120:4`
+    - `better_retention_minus_total_leak = tie:1, v122:2, not_applicable:1`
+    - `near_real_0006`
+      - `delta_speech_interference_capture_db = -3.0518 dB`
+      - `delta_retention_minus_speech_leak_db = +2.9720 dB`
+    - `near_real_0009`
+      - `delta_speech_interference_capture_db = -1.4628 dB`
+    - `near_real_0007`
+      - `delta_speech_interference_capture_db = +0.4987 dB`
+      - `delta_total_interference_capture_db = -2.1068 dB`
+      - `delta_retention_minus_speech_leak_db = -0.7969 dB`
+      - `delta_retention_minus_total_leak_db = +1.8086 dB`
+- `export_ab_listening_pack.py`
+  relative `v120`：
+  - `v122` 仍是 `0 candidate sample`
+
+原因：
+
+- hard floor 的价值只在于证明：
+  - activation guard 不是错方向；
+- 但 hard floor 会把中低 gate 的 present region 直接砍掉，
+  于是 whole / synthetic 很容易一起回退；
+- soft `gate^2` shaping 则保留了：
+  - 低 gate 区域更弱
+  - 高 gate 区域仍可连续出手
+  这类更平滑的激活约束，
+  因而能同时守住：
+  - synthetic
+  - whole-tradeoff
+  - total leak
+- 但 soft shaping 本身仍主要在优化：
+  - whole leak
+  - total local leak
+  还不足以保证：
+  - `near_real_0007` 的 `speech_only local leak`
+  直接转正。
+
+要求：
+
+- 不再回到：
+  - `hard floor`
+  - `gate threshold`
+  这类同构 activation sweep；
+- split local-control semantics 的下一轮应直接补：
+  - `speech_only local leak` 导向的显式局部目标 / selector
+  - 或其它不会重新伤到 whole-tradeoff 的 soft veto 机制；
+- 当前可保留的 active continuation 是：
+  - `v122`
+  不是 `v121`。
+
 ## 近期关键案例入口
 
 - `reports/daily/2026-03-26_overlap_abstention_proxy_v3_v4_and_v71_v72_followup.md`

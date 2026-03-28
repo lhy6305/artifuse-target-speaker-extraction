@@ -173,6 +173,8 @@ def parse_args() -> argparse.Namespace:
         choices=["mixture", "branch_base", "residual", "current_residual"],
         default="residual",
     )
+    parser.add_argument("--model-branch-overlap-refine-present-gate-power", type=float, default=1.0)
+    parser.add_argument("--model-branch-overlap-refine-present-gate-floor", type=float, default=0.0)
     parser.add_argument("--model-branch-overlap-cancel-max-delta", type=float, default=0.15)
     parser.add_argument(
         "--model-branch-overlap-cancel-gate-mode",
@@ -464,6 +466,8 @@ def build_model_config(args: argparse.Namespace) -> dict[str, int]:
         "branch_overlap_refine_source_mode": args.model_branch_overlap_refine_source_mode,
         "branch_overlap_refine_present_max_delta": args.model_branch_overlap_refine_present_max_delta,
         "branch_overlap_refine_present_source_mode": args.model_branch_overlap_refine_present_source_mode,
+        "branch_overlap_refine_present_gate_power": args.model_branch_overlap_refine_present_gate_power,
+        "branch_overlap_refine_present_gate_floor": args.model_branch_overlap_refine_present_gate_floor,
         "branch_overlap_cancel_max_delta": args.model_branch_overlap_cancel_max_delta,
         "branch_overlap_cancel_gate_mode": args.model_branch_overlap_cancel_gate_mode,
         "branch_overlap_cancel_source_mode": args.model_branch_overlap_cancel_source_mode,

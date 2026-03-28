@@ -1,0 +1,142 @@
+{
+  "pack_dir": "reports/eval/ab_inference_residual_speech_leak_floor_v1_v120_vs_v121_all",
+  "num_samples": 4,
+  "n_fft": 1024,
+  "hop_length": 256,
+  "rolloff_percent": 0.95,
+  "narrow_rolloff_threshold_hz": 250.0,
+  "narrow_upper_vs_mid_threshold_db": 1.0,
+  "narrow_frame_upper_p90_threshold": 0.15,
+  "narrow_score_threshold": 2,
+  "narrower_candidate_counts": {
+    "tie": 4
+  },
+  "top_abs_rolloff_deltas": [
+    {
+      "sample_id": "near_real_0003",
+      "file_a_label": "v120",
+      "file_b_label": "v121",
+      "delta_rolloff_hz_b_minus_a": 0.0,
+      "delta_upper_vs_mid_db_b_minus_a": 0.045126471531558465,
+      "delta_frame_upper_share_p90_b_minus_a": 0.028764492273330666,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 0,
+      "narrowing_score_file_b": 0,
+      "narrowing_evidence_file_a": [],
+      "narrowing_evidence_file_b": [],
+      "better_output": "",
+      "note": "residual-speech-leak floor focus; target present with domain-matched friend speech, all current frontier candidates still have moderate leakage"
+    },
+    {
+      "sample_id": "near_real_0006",
+      "file_a_label": "v120",
+      "file_b_label": "v121",
+      "delta_rolloff_hz_b_minus_a": 0.0,
+      "delta_upper_vs_mid_db_b_minus_a": 0.03263332996245971,
+      "delta_frame_upper_share_p90_b_minus_a": 0.004556300491094636,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 0,
+      "narrowing_score_file_b": 0,
+      "narrowing_evidence_file_a": [],
+      "narrowing_evidence_file_b": [],
+      "better_output": "",
+      "note": "residual-speech-leak floor focus; target present with external guodegang speech, all current frontier candidates still have heavy leakage"
+    },
+    {
+      "sample_id": "near_real_0007",
+      "file_a_label": "v120",
+      "file_b_label": "v121",
+      "delta_rolloff_hz_b_minus_a": 0.0,
+      "delta_upper_vs_mid_db_b_minus_a": -1.4947215023737197,
+      "delta_frame_upper_share_p90_b_minus_a": -0.008260688185691853,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 0,
+      "narrowing_score_file_b": 1,
+      "narrowing_evidence_file_a": [],
+      "narrowing_evidence_file_b": [
+        "lower_upper_vs_mid"
+      ],
+      "better_output": "",
+      "note": "residual-speech-leak floor focus; hard target-present friend-speech plus music case, all current frontier candidates still show moderate leakage and moderate artifact"
+    },
+    {
+      "sample_id": "near_real_0009",
+      "file_a_label": "v120",
+      "file_b_label": "v121",
+      "delta_rolloff_hz_b_minus_a": 0.0,
+      "delta_upper_vs_mid_db_b_minus_a": 0.20528249944587884,
+      "delta_frame_upper_share_p90_b_minus_a": 0.04486210867762566,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 0,
+      "narrowing_score_file_b": 0,
+      "narrowing_evidence_file_a": [],
+      "narrowing_evidence_file_b": [],
+      "better_output": "",
+      "note": "residual-speech-leak floor focus; target absent with external speech only, all current frontier candidates still have moderate leakage"
+    }
+  ],
+  "top_abs_upper_vs_mid_deltas": [
+    {
+      "sample_id": "near_real_0007",
+      "file_a_label": "v120",
+      "file_b_label": "v121",
+      "delta_rolloff_hz_b_minus_a": 0.0,
+      "delta_upper_vs_mid_db_b_minus_a": -1.4947215023737197,
+      "delta_frame_upper_share_p90_b_minus_a": -0.008260688185691853,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 0,
+      "narrowing_score_file_b": 1,
+      "narrowing_evidence_file_a": [],
+      "narrowing_evidence_file_b": [
+        "lower_upper_vs_mid"
+      ],
+      "better_output": "",
+      "note": "residual-speech-leak floor focus; hard target-present friend-speech plus music case, all current frontier candidates still show moderate leakage and moderate artifact"
+    },
+    {
+      "sample_id": "near_real_0009",
+      "file_a_label": "v120",
+      "file_b_label": "v121",
+      "delta_rolloff_hz_b_minus_a": 0.0,
+      "delta_upper_vs_mid_db_b_minus_a": 0.20528249944587884,
+      "delta_frame_upper_share_p90_b_minus_a": 0.04486210867762566,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 0,
+      "narrowing_score_file_b": 0,
+      "narrowing_evidence_file_a": [],
+      "narrowing_evidence_file_b": [],
+      "better_output": "",
+      "note": "residual-speech-leak floor focus; target absent with external speech only, all current frontier candidates still have moderate leakage"
+    },
+    {
+      "sample_id": "near_real_0003",
+      "file_a_label": "v120",
+      "file_b_label": "v121",
+      "delta_rolloff_hz_b_minus_a": 0.0,
+      "delta_upper_vs_mid_db_b_minus_a": 0.045126471531558465,
+      "delta_frame_upper_share_p90_b_minus_a": 0.028764492273330666,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 0,
+      "narrowing_score_file_b": 0,
+      "narrowing_evidence_file_a": [],
+      "narrowing_evidence_file_b": [],
+      "better_output": "",
+      "note": "residual-speech-leak floor focus; target present with domain-matched friend speech, all current frontier candidates still have moderate leakage"
+    },
+    {
+      "sample_id": "near_real_0006",
+      "file_a_label": "v120",
+      "file_b_label": "v121",
+      "delta_rolloff_hz_b_minus_a": 0.0,
+      "delta_upper_vs_mid_db_b_minus_a": 0.03263332996245971,
+      "delta_frame_upper_share_p90_b_minus_a": 0.004556300491094636,
+      "narrower_candidate": "tie",
+      "narrowing_score_file_a": 0,
+      "narrowing_score_file_b": 0,
+      "narrowing_evidence_file_a": [],
+      "narrowing_evidence_file_b": [],
+      "better_output": "",
+      "note": "residual-speech-leak floor focus; target present with external guodegang speech, all current frontier candidates still have heavy leakage"
+    }
+  ]
+}
