@@ -2710,6 +2710,184 @@ checkpoint：
           - 所以
             `v157 + no-teacher refine_base sibling`
             当前也推不动输出
+        - `v165`
+          则把
+          `present-total local asset`
+          这条解释正式收掉：
+          - 新的
+            `hardlocal_totalrisk_bundle_v1`
+            已把 selector
+            扩到
+            train `33 / 129`
+            / val `7 / 41`
+          - 训练信号持续非零
+          - 但 relative `v157`
+            五条 fixed checks
+            仍全部精确
+            `0.0 dB`
+          - 说明
+            `v157 + no-teacher refine_base`
+            已经不是
+            asset 宽度问题，
+            而是结构性 no-op
+        - `v166 / v167`
+          则把新的
+          `branch_base_blend`
+          output path
+          一并判掉：
+          - `v166`
+            relative `v157`
+            四条 fixed checks
+            `-2.8127 / -2.2610 / -1.8606 / -1.7204 dB`
+            / local proxy `+0.6618 dB`
+          - `v167`
+            `max_blend = 0.1`
+            后仍更差：
+            `-3.1254 / -2.3924 / -1.9762 / -1.8001 dB`
+            / local proxy `+0.7356 dB`
+          - 两轮里
+            controller head
+            相对 `v157`
+            权重 bitwise 不变，
+            train / val
+            `gate_absent_mean / gate_keep_mean`
+            也始终是 `0.0`
+          - 所以当前
+            `branch_base_blend`
+            应视为
+            inference-path rewrite reject，
+            不再继续扫
+            `max_blend`
+        - Correction:
+          `v166 / v167`
+          后来确认只是 selector-mismatch scratch，
+          不能再作为
+          `branch_base_blend`
+          的正式机制证据。
+          正确边界应改成：
+          - `v168`
+            才是 restored selectors 后的
+            `branch_base_blend`
+            正式 reject：
+            fixed
+            `-2.8097 / -2.2604 / -1.8620 / -1.7195 dB`
+            / local `+0.6641 dB`
+          - `v169 / v170`
+            则把
+            `refine_base_blend`
+            一起收口：
+            `v169 = -1.8759 / -1.7629 / -1.3051 / -1.4098 dB`
+            / local `+0.5827 dB`
+            ，
+            `v170 = -2.0514 / -1.8388 / -1.3761 / -1.4598 dB`
+            / local `+0.6458 dB`
+          - `v171`
+            再把
+            `pre_present_subtract`
+            timing route
+            收到 mixed reject：
+            fixed checks near-tie，
+            local
+            `near_real_0007 total leak = -1.5087 dB`
+            首次转正，
+            但 whole
+            `near_real_0007`
+            变成
+            `delta_interference_capture_db = +27.3024 dB`
+            / `delta_retention_minus_leak_db = -27.3334 dB`
+          - `v172`
+            把路线改成
+            parallel pre-present total-risk controller
+            后，
+            relative `v157`
+            四条 fixed checks
+            首次同时微正
+            `+0.0659 / +0.0348 / +0.0288 / +0.0221 dB`
+            / local `-0.0537 dB`，
+            且
+            `near_real_0007 total leak = -1.4142 dB`
+            与
+            `near_real_0009`
+            absent whole leak
+            `= -3.1018 dB`
+            一起给出机制正证据；
+            但
+            `near_real_0007`
+            whole / speech-only
+            仍分别回退
+            `+23.1863 dB`
+            /
+            `+2.9102 dB`
+          - `v173`
+            只把
+            `pre_present_max_blend`
+            收到
+            `0.1`
+            后，
+            证明这条 family
+            的问题不是强度过大，
+            而是 selectivity 不够：
+            `0007`
+            whole / speech-only
+            regression
+            缩到
+            `+16.5421 / +1.5764 dB`
+            ，
+            但
+            `0007 total leak`
+            改善也同步缩到
+            `-0.6784 dB`
+          - `v174`
+            改成
+            `pre_present_controller_floor = 0.1`
+            做 selectivity，
+            但 relative
+            `v172`
+            只剩
+            `+7.92e-05 dB`
+            abstention
+            /
+            `-4.47e-05 dB`
+            local proxy
+            变化，
+            是 practical no-op
+          - `v175`
+            再给同一个
+            pre-present controller
+            加
+            outside-overlap abstain
+            负监督，
+            训练指标会动，
+            但 relative
+            `v172`
+            输出仍只有
+            `+1.22e-04 dB`
+            abstention
+            /
+            `-2.35e-05 dB`
+            local proxy
+            变化，
+            仍是 practical no-op
+          - `v176`
+            首次把
+            `branch_overlap_cancel_head`
+            与
+            pre-present controller
+            一起解冻，
+            不再只是同一个 frozen head 的 loss-side 微调；
+            但 relative
+            `v172`
+            输出仍只有
+            `+7.91e-05 dB`
+            abstention
+            /
+            `-4.47e-05 dB`
+            local proxy
+            变化，
+            所以这条
+            controller + cancel-head
+            joint-unfreeze
+            仍是 practical no-op
       - 当前默认下一步：
         - 保留 `v157`
           为 active base
@@ -2725,12 +2903,35 @@ checkpoint：
           上的 sparse
           no-teacher
           `refine_base` sibling
+        - 不再扫
+          `branch_base_blend`
+          / `branch_base_blend + max_blend`
+        - 不再扫
+          `refine_base_blend`
+          / `refine_base_blend + max_blend`
+        - 不再扫
+          plain `pre_present_subtract`
+        - 不再扫
+          parallel pre-present total-risk controller
+          `max_blend`
+        - 不再扫
+          `pre_present_controller_floor`
+        - 不再扫
+          same-head
+          outside-overlap abstain
+          supervision / reweight
+        - 不再扫
+          `branch_overlap_cancel_head + pre-present controller`
+          joint unfreeze
         - 下一步若继续，
-          应先补更宽的
-          `present-total`
-          local selector / asset，
-          或直接换新的
-          output apply path
+          应放弃
+          frozen single-head
+          selectivity 微调，
+          也不再停留在
+          cancel-head
+          这一层的小范围联合解冻；
+          下一步应改更大的 decision source
+          或联合解冻更大的 path
 
 执行前必须保持六条验收同时在场：
 
@@ -2791,6 +2992,10 @@ checkpoint：
 - `reports/daily/2026-03-28_applycontroller_interval_veto_v153_v158_followup.md`
 - `reports/daily/2026-03-28_applycontroller_interval_veto_localapply_v159_v160_followup.md`
 - `reports/daily/2026-03-28_splitcontroller_and_refinebase_on_v157_v161_v164_followup.md`
+- `reports/daily/2026-03-28_totalrisk_bundle_and_branchbaseblend_on_v157_v165_v167_followup.md`
+- `reports/daily/2026-03-28_branchbase_refinebase_and_prepresentsubtract_on_v157_v168_v171_followup.md`
+- `reports/daily/2026-03-28_parallel_prepresent_totalrisk_controller_on_v157_v172_v173_followup.md`
+- `reports/daily/2026-03-28_parallel_prepresent_totalrisk_selectivity_v174_v175_followup.md`
 - `reports/daily/2026-03-28_overlap_refine_preservebypass_hardlocal_selector_v115_followup.md`
 - `reports/daily/2026-03-28_overlap_refine_preservebypass_0007like_predproj_v116_followup.md`
 - `reports/daily/2026-03-28_overlap_refine_preservebypass_0007like_gateguided_v117_followup.md`

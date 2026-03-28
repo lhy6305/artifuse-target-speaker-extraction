@@ -40,6 +40,8 @@ class LossBreakdown:
     gate_absent_mean: torch.Tensor
     gate_abstain_mean: torch.Tensor
     gate_keep_mean: torch.Tensor
+    gate_pre_present_keep_mean: torch.Tensor
+    gate_pre_present_abstain_mean: torch.Tensor
     gate_target_l1: torch.Tensor
 
 
@@ -671,6 +673,8 @@ def compute_losses(
     gate_absent_values: torch.Tensor | None = None,
     gate_abstain_values: torch.Tensor | None = None,
     gate_keep_values: torch.Tensor | None = None,
+    gate_pre_present_keep_values: torch.Tensor | None = None,
+    gate_pre_present_abstain_values: torch.Tensor | None = None,
     gate_target_source_values: torch.Tensor | None = None,
     overlap_cancel_prediction: torch.Tensor | None = None,
     reconstruction_extra_prediction: torch.Tensor | None = None,
@@ -696,11 +700,15 @@ def compute_losses(
     gate_absent_sample_weights: torch.Tensor | None = None,
     gate_abstain_sample_weights: torch.Tensor | None = None,
     gate_keep_sample_weights: torch.Tensor | None = None,
+    gate_pre_present_keep_sample_weights: torch.Tensor | None = None,
+    gate_pre_present_abstain_sample_weights: torch.Tensor | None = None,
     gate_target_sample_weights: torch.Tensor | None = None,
     gate_target_values: torch.Tensor | None = None,
     gate_absent_intervals: list[list[dict[str, float]]] | None = None,
     gate_abstain_intervals: list[list[dict[str, float]]] | None = None,
     gate_keep_intervals: list[list[dict[str, float]]] | None = None,
+    gate_pre_present_keep_intervals: list[list[dict[str, float]]] | None = None,
+    gate_pre_present_abstain_intervals: list[list[dict[str, float]]] | None = None,
     gate_target_intervals: list[list[dict[str, float]]] | None = None,
     sample_rate: int = 16000,
     stft_weight: float = 0.5,
@@ -732,6 +740,8 @@ def compute_losses(
     gate_absent_weight: float = 0.0,
     gate_abstain_weight: float = 0.0,
     gate_keep_weight: float = 0.0,
+    gate_pre_present_keep_weight: float = 0.0,
+    gate_pre_present_abstain_weight: float = 0.0,
     gate_target_weight: float = 0.0,
     interference_loss_mode: str = "prediction_projection_ratio",
     interference_extra_loss_mode: str = "prediction_projection_ratio",
@@ -989,6 +999,14 @@ def compute_losses(
     resolved_gate_absent_values = gate_absent_values if gate_absent_values is not None else gate_values
     resolved_gate_abstain_values = gate_abstain_values if gate_abstain_values is not None else gate_values
     resolved_gate_keep_values = gate_keep_values if gate_keep_values is not None else gate_values
+    resolved_gate_pre_present_keep_values = (
+        gate_pre_present_keep_values if gate_pre_present_keep_values is not None else gate_values
+    )
+    resolved_gate_pre_present_abstain_values = (
+        gate_pre_present_abstain_values
+        if gate_pre_present_abstain_values is not None
+        else resolved_gate_pre_present_keep_values
+    )
     resolved_gate_target_values = (
         gate_target_source_values if gate_target_source_values is not None else gate_values
     )
@@ -1017,6 +1035,24 @@ def compute_losses(
         target_value=1.0,
         sample_weights=gate_keep_sample_weights,
         intervals_batch=gate_keep_intervals,
+        sample_rate=sample_rate,
+    )
+    gate_pre_present_keep_term = weighted_gate_target_loss(
+        gate_values=resolved_gate_pre_present_keep_values,
+        lengths=lengths,
+        model=model,
+        target_value=1.0,
+        sample_weights=gate_pre_present_keep_sample_weights,
+        intervals_batch=gate_pre_present_keep_intervals,
+        sample_rate=sample_rate,
+    )
+    gate_pre_present_abstain_term = weighted_gate_target_loss(
+        gate_values=resolved_gate_pre_present_abstain_values,
+        lengths=lengths,
+        model=model,
+        target_value=0.0,
+        sample_weights=gate_pre_present_abstain_sample_weights,
+        intervals_batch=gate_pre_present_abstain_intervals,
         sample_rate=sample_rate,
     )
     gate_target_term = weighted_gate_target_loss(
@@ -1062,6 +1098,8 @@ def compute_losses(
         + (gate_absent_term * gate_absent_weight)
         + (gate_abstain_term * gate_abstain_weight)
         + (gate_keep_term * gate_keep_weight)
+        + (gate_pre_present_keep_term * gate_pre_present_keep_weight)
+        + (gate_pre_present_abstain_term * gate_pre_present_abstain_weight)
         + (gate_target_term * gate_target_weight)
     )
     return LossBreakdown(
@@ -1097,5 +1135,7 @@ def compute_losses(
         gate_absent_mean=gate_absent_term,
         gate_abstain_mean=gate_abstain_term,
         gate_keep_mean=gate_keep_term,
+        gate_pre_present_keep_mean=gate_pre_present_keep_term,
+        gate_pre_present_abstain_mean=gate_pre_present_abstain_term,
         gate_target_l1=gate_target_term,
     )

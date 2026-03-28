@@ -1,5 +1,15 @@
 # 2026-03-28 total-risk bundle and `branch_base_blend` on `v157`: `v165 / v166 / v167` follow-up
 
+## Correction
+
+- Later verification showed:
+  `v166 / v167`
+  were selector-mismatch scratches, not valid mechanism evidence.
+- The corrected
+  `branch_base_blend / refine_base_blend`
+  results are recorded in:
+  `reports/daily/2026-03-28_branchbase_refinebase_and_prepresentsubtract_on_v157_v168_v171_followup.md`
+
 ## Summary
 
 - Goal:

@@ -160,6 +160,14 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--model-enable-branch-overlap-cancel-pre-present-controller",
+        action="store_true",
+        help=(
+            "Add a second controller head that applies overlap-cancel on the pre-present refine path "
+            "before the present-only refiner runs."
+        ),
+    )
+    parser.add_argument(
         "--model-enable-branch-overlap-dual-decoder-head",
         action="store_true",
         help=(
@@ -221,7 +229,13 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--model-branch-overlap-cancel-apply-mode",
-        choices=["subtract", "branch_base_blend", "auxiliary_only"],
+        choices=[
+            "subtract",
+            "pre_present_subtract",
+            "branch_base_blend",
+            "refine_base_blend",
+            "auxiliary_only",
+        ],
         default="subtract",
     )
     parser.add_argument(
@@ -235,6 +249,8 @@ def parse_args() -> argparse.Namespace:
         default="none",
     )
     parser.add_argument("--model-branch-overlap-cancel-max-blend", type=float, default=1.0)
+    parser.add_argument("--model-branch-overlap-cancel-pre-present-max-blend", type=float, default=0.0)
+    parser.add_argument("--model-branch-overlap-cancel-pre-present-controller-floor", type=float, default=0.0)
     parser.add_argument("--model-branch-overlap-cancel-apply-controller-floor", type=float, default=0.0)
     parser.add_argument("--model-branch-overlap-cancel-apply-max-freq-ratio", type=float, default=1.0)
     parser.add_argument("--model-branch-overlap-dual-decoder-max-delta", type=float, default=0.15)
@@ -280,6 +296,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--loss-gate-absent-weight", type=float, default=0.0)
     parser.add_argument("--loss-gate-abstain-weight", type=float, default=0.0)
     parser.add_argument("--loss-gate-keep-weight", type=float, default=0.0)
+    parser.add_argument("--loss-gate-pre-present-keep-weight", type=float, default=0.0)
+    parser.add_argument("--loss-gate-pre-present-abstain-weight", type=float, default=0.0)
     parser.add_argument("--loss-gate-target-weight", type=float, default=0.0)
     parser.add_argument(
         "--loss-gate-supervision-source",
@@ -509,6 +527,9 @@ def build_model_config(args: argparse.Namespace) -> dict[str, int]:
         "enable_branch_overlap_cancel_apply_absent_controller": (
             args.model_enable_branch_overlap_cancel_apply_absent_controller
         ),
+        "enable_branch_overlap_cancel_pre_present_controller": (
+            args.model_enable_branch_overlap_cancel_pre_present_controller
+        ),
         "enable_branch_overlap_dual_decoder_head": args.model_enable_branch_overlap_dual_decoder_head,
         "enable_adapter_temporal_model": args.model_enable_adapter_temporal_model,
         "adapter_gru_layers": args.model_adapter_gru_layers,
@@ -533,6 +554,12 @@ def build_model_config(args: argparse.Namespace) -> dict[str, int]:
         "branch_overlap_cancel_ratio_mode": args.model_branch_overlap_cancel_ratio_mode,
         "branch_overlap_cancel_delta_blend_mode": args.model_branch_overlap_cancel_delta_blend_mode,
         "branch_overlap_cancel_max_blend": args.model_branch_overlap_cancel_max_blend,
+        "branch_overlap_cancel_pre_present_max_blend": (
+            args.model_branch_overlap_cancel_pre_present_max_blend
+        ),
+        "branch_overlap_cancel_pre_present_controller_floor": (
+            args.model_branch_overlap_cancel_pre_present_controller_floor
+        ),
         "branch_overlap_cancel_apply_controller_floor": (
             args.model_branch_overlap_cancel_apply_controller_floor
         ),
@@ -598,6 +625,8 @@ def build_loss_config(args: argparse.Namespace) -> dict[str, float]:
         "gate_absent_weight": args.loss_gate_absent_weight,
         "gate_abstain_weight": args.loss_gate_abstain_weight,
         "gate_keep_weight": args.loss_gate_keep_weight,
+        "gate_pre_present_keep_weight": args.loss_gate_pre_present_keep_weight,
+        "gate_pre_present_abstain_weight": args.loss_gate_pre_present_abstain_weight,
         "gate_target_weight": args.loss_gate_target_weight,
         "gate_supervision_source": args.loss_gate_supervision_source,
         "gate_target_mode": args.loss_gate_target_mode,
@@ -742,6 +771,7 @@ def load_model_state_dict_for_init(model: nn.Module, checkpoint_state_dict: dict
         "branch_overlap_cancel_head.",
         "branch_overlap_cancel_apply_controller_head.",
         "branch_overlap_cancel_apply_absent_controller_head.",
+        "branch_overlap_cancel_pre_present_controller_head.",
         "branch_overlap_dual_decoder_temporal_model.",
         "branch_overlap_dual_decoder_head.",
         "adapter_mask_head.",
@@ -841,6 +871,46 @@ def build_interval_presence_sample_weights(
     )
 
 
+def build_complement_intervals(
+    intervals_batch: list[list[dict[str, float]]],
+    lengths: torch.Tensor,
+    sample_rate: int,
+) -> list[list[dict[str, float]]]:
+    complement_batch: list[list[dict[str, float]]] = []
+    for intervals, length in zip(intervals_batch, lengths.detach().cpu().tolist()):
+        valid_duration_sec = max(0.0, float(length) / float(sample_rate))
+        if valid_duration_sec <= 0.0:
+            complement_batch.append([])
+            continue
+
+        normalized_intervals: list[tuple[float, float]] = []
+        for interval in intervals:
+            start_sec = max(0.0, min(valid_duration_sec, float(interval.get("start_sec", 0.0))))
+            end_sec = max(start_sec, min(valid_duration_sec, float(interval.get("end_sec", start_sec))))
+            if end_sec > start_sec:
+                normalized_intervals.append((start_sec, end_sec))
+        normalized_intervals.sort()
+
+        merged_intervals: list[tuple[float, float]] = []
+        for start_sec, end_sec in normalized_intervals:
+            if not merged_intervals or start_sec > merged_intervals[-1][1]:
+                merged_intervals.append((start_sec, end_sec))
+            else:
+                merged_intervals[-1] = (merged_intervals[-1][0], max(merged_intervals[-1][1], end_sec))
+
+        cursor_sec = 0.0
+        complement_intervals: list[dict[str, float]] = []
+        for start_sec, end_sec in merged_intervals:
+            if start_sec > cursor_sec:
+                complement_intervals.append({"start_sec": cursor_sec, "end_sec": start_sec})
+            cursor_sec = max(cursor_sec, end_sec)
+        if cursor_sec < valid_duration_sec:
+            complement_intervals.append({"start_sec": cursor_sec, "end_sec": valid_duration_sec})
+        complement_batch.append(complement_intervals)
+
+    return complement_batch
+
+
 def evaluate(
     model: STFTMaskBaseline,
     dataloader: DataLoader,
@@ -881,6 +951,8 @@ def evaluate(
     total_gate_absent = 0.0
     total_gate_abstain = 0.0
     total_gate_keep = 0.0
+    total_gate_pre_present_keep = 0.0
+    total_gate_pre_present_abstain = 0.0
     total_gate_target = 0.0
     batch_count = 0
     sample_count = 0
@@ -1017,14 +1089,24 @@ def evaluate(
             gate_absent_values = None
             gate_abstain_values = None
             gate_keep_values = None
+            gate_pre_present_keep_values = outputs.get("branch_overlap_cancel_pre_present_controller")
+            gate_pre_present_abstain_values = gate_pre_present_keep_values
             gate_target_source_values = None
             gate_absent_sample_weights = absent_presence_sample_weights
             gate_abstain_sample_weights = interference_extra_sample_weights
             gate_keep_sample_weights = branch_protect_sample_weights
+            gate_pre_present_keep_sample_weights = overlap_cancel_sample_weights
+            gate_pre_present_abstain_sample_weights = overlap_cancel_sample_weights
             gate_target_intervals = None
             gate_absent_intervals = None
             gate_abstain_intervals = None
             gate_keep_intervals = None
+            gate_pre_present_keep_intervals = batch["target_overlap_intervals"]
+            gate_pre_present_abstain_intervals = build_complement_intervals(
+                batch["target_overlap_intervals"],
+                batch["target_lengths"],
+                sample_rate=int(loss_config.get("sample_rate", 16000)),
+            )
             if gate_supervision_source == "overlap_cancel_apply_controller":
                 gate_values = outputs.get("branch_overlap_cancel_apply_controller")
                 gate_absent_sample_weights = absent_union_sample_weights
@@ -1085,6 +1167,8 @@ def evaluate(
                 gate_absent_values=gate_absent_values,
                 gate_abstain_values=gate_abstain_values,
                 gate_keep_values=gate_keep_values,
+                gate_pre_present_keep_values=gate_pre_present_keep_values,
+                gate_pre_present_abstain_values=gate_pre_present_abstain_values,
                 gate_target_source_values=gate_target_source_values,
                 reconstruction_sample_weights=reconstruction_sample_weights,
                 reconstruction_extra_sample_weights=reconstruction_extra_sample_weights,
@@ -1104,11 +1188,15 @@ def evaluate(
                 gate_absent_sample_weights=gate_absent_sample_weights,
                 gate_abstain_sample_weights=gate_abstain_sample_weights,
                 gate_keep_sample_weights=gate_keep_sample_weights,
+                gate_pre_present_keep_sample_weights=gate_pre_present_keep_sample_weights,
+                gate_pre_present_abstain_sample_weights=gate_pre_present_abstain_sample_weights,
                 gate_target_sample_weights=gate_target_sample_weights,
                 gate_target_values=gate_target_values,
                 gate_absent_intervals=gate_absent_intervals,
                 gate_abstain_intervals=gate_abstain_intervals,
                 gate_keep_intervals=gate_keep_intervals,
+                gate_pre_present_keep_intervals=gate_pre_present_keep_intervals,
+                gate_pre_present_abstain_intervals=gate_pre_present_abstain_intervals,
                 gate_target_intervals=gate_target_intervals,
                 **compute_loss_kwargs,
             )
@@ -1168,6 +1256,8 @@ def evaluate(
             total_gate_absent += float(losses.gate_absent_mean.item()) * batch_size
             total_gate_abstain += float(losses.gate_abstain_mean.item()) * batch_size
             total_gate_keep += float(losses.gate_keep_mean.item()) * batch_size
+            total_gate_pre_present_keep += float(losses.gate_pre_present_keep_mean.item()) * batch_size
+            total_gate_pre_present_abstain += float(losses.gate_pre_present_abstain_mean.item()) * batch_size
             total_gate_target += float(losses.gate_target_l1.item()) * batch_size
             batch_count += 1
             sample_count += batch_size
@@ -1205,6 +1295,8 @@ def evaluate(
             "gate_absent_mean": 0.0,
             "gate_abstain_mean": 0.0,
             "gate_keep_mean": 0.0,
+            "gate_pre_present_keep_mean": 0.0,
+            "gate_pre_present_abstain_mean": 0.0,
             "gate_target_l1": 0.0,
         }
     else:
@@ -1257,6 +1349,8 @@ def evaluate(
             "gate_absent_mean": total_gate_absent / sample_count,
             "gate_abstain_mean": total_gate_abstain / sample_count,
             "gate_keep_mean": total_gate_keep / sample_count,
+            "gate_pre_present_keep_mean": total_gate_pre_present_keep / sample_count,
+            "gate_pre_present_abstain_mean": total_gate_pre_present_abstain / sample_count,
             "gate_target_l1": total_gate_target / sample_count,
         }
     selector_metrics = {}
@@ -1387,6 +1481,8 @@ def main() -> None:
         epoch_gate_absent = 0.0
         epoch_gate_abstain = 0.0
         epoch_gate_keep = 0.0
+        epoch_gate_pre_present_keep = 0.0
+        epoch_gate_pre_present_abstain = 0.0
         epoch_gate_target = 0.0
         step_count = 0
         epoch_sample_count = 0
@@ -1523,14 +1619,24 @@ def main() -> None:
             gate_absent_values = None
             gate_abstain_values = None
             gate_keep_values = None
+            gate_pre_present_keep_values = outputs.get("branch_overlap_cancel_pre_present_controller")
+            gate_pre_present_abstain_values = gate_pre_present_keep_values
             gate_target_source_values = None
             gate_absent_sample_weights = absent_presence_sample_weights
             gate_abstain_sample_weights = interference_extra_sample_weights
             gate_keep_sample_weights = branch_protect_sample_weights
+            gate_pre_present_keep_sample_weights = overlap_cancel_sample_weights
+            gate_pre_present_abstain_sample_weights = overlap_cancel_sample_weights
             gate_target_intervals = None
             gate_absent_intervals = None
             gate_abstain_intervals = None
             gate_keep_intervals = None
+            gate_pre_present_keep_intervals = batch["target_overlap_intervals"]
+            gate_pre_present_abstain_intervals = build_complement_intervals(
+                batch["target_overlap_intervals"],
+                batch["target_lengths"],
+                sample_rate=int(loss_config.get("sample_rate", 16000)),
+            )
             if gate_supervision_source == "overlap_cancel_apply_controller":
                 gate_values = outputs.get("branch_overlap_cancel_apply_controller")
                 gate_absent_sample_weights = absent_union_sample_weights
@@ -1591,6 +1697,8 @@ def main() -> None:
                 gate_absent_values=gate_absent_values,
                 gate_abstain_values=gate_abstain_values,
                 gate_keep_values=gate_keep_values,
+                gate_pre_present_keep_values=gate_pre_present_keep_values,
+                gate_pre_present_abstain_values=gate_pre_present_abstain_values,
                 gate_target_source_values=gate_target_source_values,
                 reconstruction_sample_weights=reconstruction_sample_weights,
                 reconstruction_extra_sample_weights=reconstruction_extra_sample_weights,
@@ -1610,11 +1718,15 @@ def main() -> None:
                 gate_absent_sample_weights=gate_absent_sample_weights,
                 gate_abstain_sample_weights=gate_abstain_sample_weights,
                 gate_keep_sample_weights=gate_keep_sample_weights,
+                gate_pre_present_keep_sample_weights=gate_pre_present_keep_sample_weights,
+                gate_pre_present_abstain_sample_weights=gate_pre_present_abstain_sample_weights,
                 gate_target_sample_weights=gate_target_sample_weights,
                 gate_target_values=gate_target_values,
                 gate_absent_intervals=gate_absent_intervals,
                 gate_abstain_intervals=gate_abstain_intervals,
                 gate_keep_intervals=gate_keep_intervals,
+                gate_pre_present_keep_intervals=gate_pre_present_keep_intervals,
+                gate_pre_present_abstain_intervals=gate_pre_present_abstain_intervals,
                 gate_target_intervals=gate_target_intervals,
                 **compute_loss_kwargs,
             )
@@ -1683,6 +1795,8 @@ def main() -> None:
             epoch_gate_absent += float(losses.gate_absent_mean.item()) * batch_size
             epoch_gate_abstain += float(losses.gate_abstain_mean.item()) * batch_size
             epoch_gate_keep += float(losses.gate_keep_mean.item()) * batch_size
+            epoch_gate_pre_present_keep += float(losses.gate_pre_present_keep_mean.item()) * batch_size
+            epoch_gate_pre_present_abstain += float(losses.gate_pre_present_abstain_mean.item()) * batch_size
             epoch_gate_target += float(losses.gate_target_l1.item()) * batch_size
             epoch_sample_count += batch_size
 
@@ -1766,6 +1880,12 @@ def main() -> None:
                             "gate_absent_mean": round(float(losses.gate_absent_mean.item()), 6),
                             "gate_abstain_mean": round(float(losses.gate_abstain_mean.item()), 6),
                             "gate_keep_mean": round(float(losses.gate_keep_mean.item()), 6),
+                            "gate_pre_present_keep_mean": round(
+                                float(losses.gate_pre_present_keep_mean.item()), 6
+                            ),
+                            "gate_pre_present_abstain_mean": round(
+                                float(losses.gate_pre_present_abstain_mean.item()), 6
+                            ),
                             "gate_target_l1": round(float(losses.gate_target_l1.item()), 6),
                         },
                         ensure_ascii=False,
@@ -1826,6 +1946,10 @@ def main() -> None:
             "gate_absent_mean": epoch_gate_absent / max(1, epoch_sample_count),
             "gate_abstain_mean": epoch_gate_abstain / max(1, epoch_sample_count),
             "gate_keep_mean": epoch_gate_keep / max(1, epoch_sample_count),
+            "gate_pre_present_keep_mean": epoch_gate_pre_present_keep / max(1, epoch_sample_count),
+            "gate_pre_present_abstain_mean": (
+                epoch_gate_pre_present_abstain / max(1, epoch_sample_count)
+            ),
             "gate_target_l1": epoch_gate_target / max(1, epoch_sample_count),
         }
         train_selector_metrics = {
@@ -1904,6 +2028,10 @@ def main() -> None:
                 "train_gate_absent_mean": train_metrics["gate_absent_mean"],
                 "train_gate_abstain_mean": train_metrics["gate_abstain_mean"],
                 "train_gate_keep_mean": train_metrics["gate_keep_mean"],
+                "train_gate_pre_present_keep_mean": train_metrics["gate_pre_present_keep_mean"],
+                "train_gate_pre_present_abstain_mean": (
+                    train_metrics["gate_pre_present_abstain_mean"]
+                ),
                 "train_gate_target_l1": train_metrics["gate_target_l1"],
                 "train_selector_metrics": train_selector_metrics,
                 "val_loss": val_metrics["loss"],
@@ -1958,6 +2086,10 @@ def main() -> None:
                 "val_gate_absent_mean": val_metrics["gate_absent_mean"],
                 "val_gate_abstain_mean": val_metrics["gate_abstain_mean"],
                 "val_gate_keep_mean": val_metrics["gate_keep_mean"],
+                "val_gate_pre_present_keep_mean": val_metrics["gate_pre_present_keep_mean"],
+                "val_gate_pre_present_abstain_mean": (
+                    val_metrics["gate_pre_present_abstain_mean"]
+                ),
                 "val_gate_target_l1": val_metrics["gate_target_l1"],
                 "val_selector_metrics": val_selector_metrics,
             }

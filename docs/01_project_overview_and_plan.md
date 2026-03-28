@@ -1980,6 +1980,153 @@
           inference-path rewrite reject，
           不值得再扫
           `max_blend`
+      - Correction:
+        `v166 / v167`
+        were later verified as selector-mismatch scratches, not valid
+        `branch_base_blend`
+        evidence.
+        The corrected family conclusion is:
+        - `v168`
+          is the real
+          `branch_base_blend`
+          run with restored
+          `overlap_cancel / absent`
+          selectors,
+          and it still rejects at
+          `-2.8097 / -2.2604 / -1.8620 / -1.7195 dB`
+          on the four fixed checks,
+          with local proxy
+          `+0.6641 dB`
+        - `v169 / v170`
+          close
+          `refine_base_blend`
+          and its
+          `max_blend`
+          calibration:
+          `v169 = -1.8759 / -1.7629 / -1.3051 / -1.4098 dB`
+          / local `+0.5827 dB`,
+          `v170 = -2.0514 / -1.8388 / -1.3761 / -1.4598 dB`
+          / local `+0.6458 dB`
+        - `v171`
+          verifies
+          `pre_present_subtract`:
+          fixed checks stay near-tie
+          `-0.0064 / +0.0019 / -0.0058 / -0.0051 dB`
+          / local `-0.0103 dB`,
+          and local
+          `near_real_0007 total leak`
+          finally flips to
+          `-1.5087 dB`;
+          but whole
+          `near_real_0007`
+          collapses in the wrong direction
+          with
+          `delta_interference_capture_db = +27.3024 dB`
+          and
+          `delta_retention_minus_leak_db = -27.3334 dB`,
+          so it is still reject
+        - `v172`
+          adds a parallel
+          pre-present total-risk controller
+          on top of
+          `v157`
+          and becomes the first post-
+          `v157`
+          continuation with all four fixed checks positive at once:
+          `+0.0659 / +0.0348 / +0.0288 / +0.0221 dB`
+          / local `-0.0537 dB`;
+          near-real also gives the first clean two-sided evidence point on this route:
+          `near_real_0007 total leak = -1.4142 dB`
+          and
+          `near_real_0009`
+          absent whole leak
+          `= -3.1018 dB`;
+          but
+          `near_real_0007`
+          whole / speech-only still regress
+          with
+          `delta_interference_capture_db = +23.1863 dB`
+          ,
+          `delta_retention_minus_leak_db = -23.2420 dB`
+          and local
+          `speech_only = +2.9102 dB`,
+          so it stays a mechanism-positive evidence point only
+        - `v173`
+          lowers only
+          `pre_present_max_blend`
+          from
+          `0.2`
+          to
+          `0.1`
+          and confirms this is not a simple over-strength problem:
+          fixed checks remain micro-positive
+          `+0.0341 / +0.0175 / +0.0149 / +0.0117 dB`
+          / local `-0.0263 dB`,
+          and
+          `near_real_0007`
+          whole / speech-only regressions shrink to
+          `+16.5421 dB`
+          and
+          `+1.5764 dB`
+          while
+          `0007 total leak`
+          improvement also shrinks to
+          `-0.6784 dB`;
+          thus
+          `pre_present_max_blend`
+          sweep is closed
+        - `v174`
+          tries selectivity via
+          `pre_present_controller_floor = 0.1`
+          instead of amplitude shrinkage;
+          training-side controller mean does collapse
+          (`val_gate_pre_present_keep_mean = 0.0069`),
+          but relative
+          `v172`
+          output change is only
+          `+7.92e-05 dB`
+          on abstention
+          and
+          `-4.47e-05 dB`
+          on local proxy,
+          so it is practical no-op
+        - `v175`
+          adds explicit
+          outside-overlap abstain supervision
+          on the same
+          pre-present controller
+          (`val_gate_pre_present_abstain_mean = 0.0695`),
+          but relative
+          `v172`
+          the output still only moves by
+          `+1.22e-04 dB`
+          on abstention
+          and
+          `-2.35e-05 dB`
+          on local proxy;
+          therefore same-head keep/abstain selectivity supervision is also practical no-op
+        - `v176`
+          jointly unfreezes
+          `branch_overlap_cancel_head`
+          together with the same
+          pre-present controller
+          to finally change the decision source rather than only reweighting the frozen head;
+          training metrics are clearly non-trivial
+          (`train_gate_pre_present_keep_mean = 0.0118`,
+          `val_gate_pre_present_keep_mean = 0.0063`,
+          `train_gate_pre_present_abstain_mean = 0.3955`,
+          `val_gate_pre_present_abstain_mean = 0.2612`),
+          but relative
+          `v172`
+          output still only moves by
+          `+7.91e-05 dB`
+          on abstention
+          and
+          `-4.47e-05 dB`
+          on local proxy;
+          therefore
+          `branch_overlap_cancel_head + pre-present controller`
+          joint unfreeze is also practical no-op
     - 当前默认不再继续扫：
       - `predicted_activity`
       - `predicted_activity + max_blend`
@@ -2002,6 +2149,18 @@
         hard-present-artifact sibling
       - `branch_base_blend`
       - `branch_base_blend + max_blend`
+      - `refine_base_blend`
+      - `refine_base_blend + max_blend`
+      - plain `pre_present_subtract`
+      - parallel pre-present total-risk controller
+        `max_blend`
+        sweep
+      - `pre_present_controller_floor`
+      - same-head
+        outside-overlap abstain
+        supervision / reweight
+      - `branch_overlap_cancel_head + pre-present controller`
+        joint unfreeze
     - 下一步若继续，
       默认应改做：
       - 保留 `v157`
@@ -2011,11 +2170,24 @@
         split-controller
         或 sparse sibling
         no-teacher rerun
-      - 直接改
-        非 `branch_base`
-        的新 output apply path，
-        或保证 controller supervision
-        真正生效的路由
+      - 不再只是把同一个 shared controller
+        往 `present_head` 前面移动
+      - 不再只靠 amplitude calibration
+        收缩同一个
+        pre-present total-risk controller
+      - 不再假设 frozen
+        pre-present controller head
+        单独靠 keep / abstain
+        loss
+        就能学出缺失的 selectivity
+      - 下一步若继续，
+        应改 decision source：
+        不再只解冻
+        `branch_overlap_cancel_head`
+        这一层，
+        而要联合解冻更大的 pre-present path，
+        或给 total-risk controller
+        更显式的目标
       - 否则
         `near_real_0007 total leak`
         这条监督
@@ -2086,6 +2258,11 @@
 - `reports/daily/2026-03-28_applycontroller_interval_veto_v153_v158_followup.md`
 - `reports/daily/2026-03-28_applycontroller_interval_veto_localapply_v159_v160_followup.md`
 - `reports/daily/2026-03-28_splitcontroller_and_refinebase_on_v157_v161_v164_followup.md`
+- `reports/daily/2026-03-28_totalrisk_bundle_and_branchbaseblend_on_v157_v165_v167_followup.md`
+- `reports/daily/2026-03-28_branchbase_refinebase_and_prepresentsubtract_on_v157_v168_v171_followup.md`
+- `reports/daily/2026-03-28_parallel_prepresent_totalrisk_controller_on_v157_v172_v173_followup.md`
+- `reports/daily/2026-03-28_parallel_prepresent_totalrisk_selectivity_v174_v175_followup.md`
+- `reports/daily/2026-03-28_parallel_prepresent_jointcancelhead_v176_followup.md`
 
 ## 文档维护规则
 

@@ -3183,6 +3183,177 @@
       `branch_base_blend`
       或
       `branch_base_blend + max_blend`
+  - Correction:
+    `v166 / v167`
+    后来确认只是 selector-mismatch scratch，
+    不能再当作
+    `branch_base_blend`
+    的正式机制证据。
+    修正后的边界应改写为：
+    - `v168`
+      才是 restored selectors 后的真实
+      `branch_base_blend`
+      reject：
+      `-2.8097 / -2.2604 / -1.8620 / -1.7195 dB`
+      / local `+0.6641 dB`
+    - `v169 / v170`
+      则说明
+      `refine_base_blend`
+      只是把 guardrail 伤害收窄，
+      但仍不过线：
+      `v169 = -1.8759 / -1.7629 / -1.3051 / -1.4098 dB`
+      / local `+0.5827 dB`
+      ，
+      `v170 = -2.0514 / -1.8388 / -1.3761 / -1.4598 dB`
+      / local `+0.6458 dB`
+    - `v171`
+      再证明：
+      单把 overlap-cancel 时序前移到
+      `present_head`
+      之前，
+      fixed checks
+      虽可保 near-tie，
+      且 local
+      `near_real_0007 total leak = -1.5087 dB`
+      首次转正，
+      但 whole
+      `near_real_0007`
+      仍会严重变差：
+      `delta_interference_capture_db = +27.3024 dB`
+      / `delta_retention_minus_leak_db = -27.3334 dB`
+    - `v172`
+      说明并不是所有
+      `pre_present`
+      路由都会立刻打穿四条 fixed guardrail：
+      parallel pre-present total-risk controller
+      relative `v157`
+      四条 fixed checks
+      首次一起转成正向
+      `+0.0659 / +0.0348 / +0.0288 / +0.0221 dB`
+      ，且
+      `near_real_0007 total leak = -1.4142 dB`
+      、
+      `near_real_0009`
+      absent whole leak
+      `= -3.1018 dB`
+      也都给出正确方向证据；
+      但
+      `near_real_0007`
+      whole 仍明显回退
+      `+23.1863 dB`
+      ，local
+      `speech_only`
+      也仍回退
+      `+2.9102 dB`
+      ，所以这条 family 的真正问题是 selectivity，
+      不是简单的“不能 pre-present”
+    - `v173`
+      再把
+      `pre_present_max_blend`
+      从
+      `0.2`
+      收到
+      `0.1`
+      后，
+      只会把正负效应一起缩小：
+      `near_real_0007`
+      whole regression
+      `+23.1863 -> +16.5421 dB`
+      ，
+      local
+      `speech_only`
+      `+2.9102 -> +1.5764 dB`
+      ，
+      但
+      `0007 total leak`
+      改善也同步缩到
+      `-1.4142 -> -0.6784 dB`
+      ，
+      `0009`
+      absent whole gain也从
+      `-3.1018 -> -1.4132 dB`
+      ；
+      因此这不是 strength calibration
+      能解决的问题
+    - `v174`
+      再证明：
+      对同一个
+      pre-present controller
+      做 post-sigmoid floor
+      只会改训练侧均值，
+      不会实质改输出；
+      relative
+      `v172`
+      只有
+      `+7.92e-05 dB`
+      abstention
+      和
+      `-4.47e-05 dB`
+      local proxy
+      变化，
+      属于 practical no-op
+    - `v175`
+      再证明：
+      给同一个
+      pre-present controller
+      增加
+      outside-overlap abstain
+      负监督，
+      即便
+      `gate_pre_present_abstain_mean`
+      显著非零，
+      relative
+      `v172`
+      输出仍只有
+      `+1.22e-04 dB`
+      abstention
+      和
+      `-2.35e-05 dB`
+      local proxy
+      变化，
+      仍是 practical no-op
+    - `v176`
+      再把
+      `branch_overlap_cancel_head`
+      与同一个
+      pre-present controller
+      联合解冻，
+      确实不再是训练侧 no-op：
+      最终
+      `train_gate_pre_present_keep_mean = 0.0118`
+      /
+      `val_gate_pre_present_keep_mean = 0.0063`
+      ，
+      `train_gate_pre_present_abstain_mean = 0.3955`
+      /
+      `val_gate_pre_present_abstain_mean = 0.2612`
+      都显著非零；
+      但 relative
+      `v172`
+      输出仍只有
+      `+7.91e-05 dB`
+      abstention
+      和
+      `-4.47e-05 dB`
+      local proxy
+      变化，
+      说明这条
+      controller + cancel-head
+      小范围联合解冻
+      仍不足以把机制正信号写回输出
+  - 因此当前也不再继续扫：
+    - `refine_base_blend`
+    - `refine_base_blend + max_blend`
+    - plain `pre_present_subtract`
+    - parallel pre-present total-risk controller
+      `max_blend`
+      sweep
+    - `pre_present_controller_floor`
+    - same-head
+      outside-overlap abstain
+      supervision / reweight
+    - `branch_overlap_cancel_head + pre-present controller`
+      joint unfreeze
   - 当前默认不再继续扫：
     - `interval-veto union-bundle gate_keep_weight`
     - 同构的
@@ -3261,6 +3432,10 @@
 - `reports/daily/2026-03-28_applycontroller_interval_veto_v153_v158_followup.md`
 - `reports/daily/2026-03-28_applycontroller_interval_veto_localapply_v159_v160_followup.md`
 - `reports/daily/2026-03-28_splitcontroller_and_refinebase_on_v157_v161_v164_followup.md`
+- `reports/daily/2026-03-28_totalrisk_bundle_and_branchbaseblend_on_v157_v165_v167_followup.md`
+- `reports/daily/2026-03-28_branchbase_refinebase_and_prepresentsubtract_on_v157_v168_v171_followup.md`
+- `reports/daily/2026-03-28_parallel_prepresent_totalrisk_controller_on_v157_v172_v173_followup.md`
+- `reports/daily/2026-03-28_parallel_prepresent_totalrisk_selectivity_v174_v175_followup.md`
 - `reports/daily/2026-03-28_overlap_refine_preservebypass_0007like_localpush_v114_followup.md`
 - `reports/daily/2026-03-28_overlap_refine_preservebypass_hardlocal_selector_v115_followup.md`
 - `reports/daily/2026-03-28_overlap_refine_preservebypass_0007like_predproj_v116_followup.md`
