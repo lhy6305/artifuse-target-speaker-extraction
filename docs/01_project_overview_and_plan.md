@@ -8,6 +8,60 @@
 - 更早分卷索引见：
   - `docs/archive/project_overview/README.md`
 
+## 2026-03-28 仓库健康度自检与口径修正
+
+- 已完成一次覆盖：
+  - `docs/ / configs/ / src/ / scripts/ / reports/ / experiments/ / data/manifests/ / 根目录`
+  的仓库健康度与规范性静态自检；
+- 已落盘日报：
+  - `reports/daily/2026-03-28_repo_health_and_convention_audit.md`
+- 静态自检后，本轮已继续完成：
+  - `scripts/train/train_stft_mask_baseline.py`
+    与 `scripts/eval/eval_stft_mask_baseline.py`
+    的共用 runtime helper 收口；
+  - `src/tse_prefix/pipeline/loss_selectors.py`
+    对 `focus_interference_pools / focus_interference_speaker_names`
+    的全层 `any-match` 修正；
+  - active overlap family 的旧实验重评估，
+    结果落在：
+    - `reports/daily/2026-03-28_old_experiment_reevaluation.md`
+    - `reports/eval/reeval_2026-03-28_active_overlap_family`
+
+当前已确认：
+
+- 核心 Python 代码可通过：
+  - `.\python.exe -m py_compile`
+- 训练 / 评估当前已共用：
+  - `build_compute_loss_kwargs`
+  - `build_gate_target_values`
+  - `resolve_primary_prediction`
+  - `resolve_selector_sample_weights`
+- 评估主流程已补齐：
+  - `branch_protect_teacher_overlap_l1`
+  - `overlap_dual_*`
+  - `selector_metrics`
+  - teacher checkpoint metadata fallback
+- 训练 / 评估主指标当前已改成按 `sample_count` 聚合，
+  不再按 `batch_count` 平均；
+- `focus_interference_pools / speaker_names`
+  当前已按 `_all` 字段做全层命中匹配；
+- 已对 active overlap family `38` 个 checkpoint 完成重评估：
+  - `38 / 38` 成功；
+  - `selector fraction changes = 0`
+  - old top5 与 reeval top5 的交集仍为 `5 / 5`
+
+当前剩余优先项：
+
+- 文档与入口脚本继续拆分：
+  - `docs/01 / 02 / 05`
+  - `scripts/train/train_stft_mask_baseline.py`
+  - `scripts/eval/eval_stft_mask_baseline.py`
+  - `scripts/eval/listening_pack_gui.py`
+- 目录卫生：
+  - 根目录仍有 `ssh-key-private`
+  - `reports/tmp_metric.wav` 仍落在正式报告目录
+  - 多处 `__pycache__/` 仍在源码树中制造噪声
+
 ## 项目定位
 
 本项目是独立于 VC 主线的前置目标说话人提取模块，目标是：

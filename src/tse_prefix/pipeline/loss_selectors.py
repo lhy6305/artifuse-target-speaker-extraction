@@ -52,6 +52,24 @@ def _normalize_optional_bool(value: Any) -> bool | None:
     raise ValueError(f"Unsupported optional bool selector value: {value!r}")
 
 
+def _matches_any_string(
+    values_batch: list[Any],
+    accepted_values: set[str],
+    *,
+    device: torch.device,
+) -> torch.Tensor:
+    return torch.tensor(
+        [
+            1.0
+            if any(str(value) in accepted_values for value in values if str(value))
+            else 0.0
+            for values in values_batch
+        ],
+        dtype=torch.float32,
+        device=device,
+    )
+
+
 def selector_config_keys(
     prefixes: tuple[str, ...] = (
         "reconstruction",
@@ -173,9 +191,12 @@ def _build_branch_selector_sample_weights(
             device=device,
         )
     if pools:
-        weights = weights * torch.tensor(
-            [1.0 if pool in pools else 0.0 for pool in batch["interference_pools"]],
-            dtype=torch.float32,
+        pool_values = batch.get("interference_pools_all")
+        if pool_values is None:
+            pool_values = [[pool] for pool in batch["interference_pools"]]
+        weights = weights * _matches_any_string(
+            pool_values,
+            pools,
             device=device,
         )
     if profiles:
@@ -185,9 +206,12 @@ def _build_branch_selector_sample_weights(
             device=device,
         )
     if speaker_names:
-        weights = weights * torch.tensor(
-            [1.0 if name in speaker_names else 0.0 for name in batch["interference_speaker_names"]],
-            dtype=torch.float32,
+        speaker_values = batch.get("interference_speaker_names_all")
+        if speaker_values is None:
+            speaker_values = [[name] for name in batch["interference_speaker_names"]]
+        weights = weights * _matches_any_string(
+            speaker_values,
+            speaker_names,
             device=device,
         )
 

@@ -649,6 +649,8 @@ def compute_losses(
     overlap_interference_extra_sample_weights: torch.Tensor | None = None,
     overlap_cancel_sample_weights: torch.Tensor | None = None,
     overlap_dual_sample_weights: torch.Tensor | None = None,
+    overlap_dual_target_prediction: torch.Tensor | None = None,
+    overlap_dual_residual_prediction: torch.Tensor | None = None,
     branch_protect_sample_weights: torch.Tensor | None = None,
     branch_protect_teacher_sample_weights: torch.Tensor | None = None,
     absent_sample_weights: torch.Tensor | None = None,
@@ -703,6 +705,14 @@ def compute_losses(
         prediction.new_zeros(prediction.shape)
         if overlap_cancel_prediction is None
         else overlap_cancel_prediction
+    )
+    overlap_dual_target_prediction = (
+        prediction if overlap_dual_target_prediction is None else overlap_dual_target_prediction
+    )
+    overlap_dual_residual_prediction = (
+        mixture - overlap_dual_target_prediction
+        if overlap_dual_residual_prediction is None
+        else overlap_dual_residual_prediction
     )
     waveform_term = waveform_l1_loss(prediction, target, lengths)
     stft_term = stft_l1_loss(prediction, target, model)
@@ -879,7 +889,7 @@ def compute_losses(
         sample_weights=overlap_cancel_sample_weights,
     )
     overlap_dual_mix_consistency_term = interval_waveform_l1_loss(
-        prediction=prediction + overlap_cancel_prediction,
+        prediction=overlap_dual_target_prediction + overlap_dual_residual_prediction,
         target=mixture,
         lengths=lengths,
         intervals_batch=overlap_intervals,
@@ -887,7 +897,7 @@ def compute_losses(
         sample_weights=overlap_dual_sample_weights,
     )
     overlap_dual_residual_target_projection_term = interval_projection_ratio_loss(
-        prediction=mixture_aligned - prediction_aligned,
+        prediction=overlap_dual_residual_prediction,
         target=target_aligned,
         lengths=lengths,
         intervals_batch=overlap_intervals,

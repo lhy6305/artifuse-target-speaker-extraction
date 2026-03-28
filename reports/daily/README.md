@@ -7,25 +7,20 @@
   - 通过本目录 `README.md` 和 `index_YYYY-MM.md` 做月度索引与跳读入口。
 
 - 月度索引：
-  - `index_2026-03.md` | `142` 份日报 | 日期 `2026-03-16` 至 `2026-03-24`
+  - `index_2026-03.md` | `228` 份文件 | 日期 `2026-03-16` 至 `2026-03-28`
 
 - 最近新增日报：
-  - `2026-03-24_candidate_v7_v65_sink_final_case_divergence_split.md` | `423` 行
-  - `2026-03-24_candidate_v7_v65_sink_reference_gain_edge_case_branch_split.md` | `446` 行
-  - `2026-03-24_candidate_v7_v65_sink_reference_gain_edge_residual_split.md` | `325` 行
-  - `2026-03-24_candidate_v7_v65_sink_duration_cosine_boundary_routing_split.md` | `209` 行
-  - `2026-03-24_candidate_v7_v65_sink_duration_cosine_shell_split.md` | `188` 行
-  - `2026-03-24_candidate_v7_v65_sink_duration_vs_cosine_split.md` | `210` 行
-  - `2026-03-24_candidate_v7_v65_sink_partial_mean_duration_cosine_split.md` | `253` 行
-  - `2026-03-23_candidate_v7_v65_sink_weak_gain_hinge_split.md` | `248` 行
-  - `2026-03-23_candidate_v7_v65_sink_target_transient_mean_vs_share.md` | `189` 行
-  - `2026-03-23_candidate_v7_v65_sink_reference_vs_target_transient_split.md` | `262` 行
-  - `2026-03-23_candidate_v7_v65_sink_reference_gain_hinge_split.md` | `266` 行
-  - `2026-03-23_candidate_v7_v65_sink_partial_mean_hinge_split.md` | `182` 行
-  - `2026-03-23_candidate_v7_v65_sink_mean_gate_partner_split.md` | `219` 行
-  - `2026-03-23_candidate_v7_v65_sink_isolation.md` | `276` 行
-  - `2026-03-23_candidate_v7_v65_sink_factor_slice_support.md` | `270` 行
-  - `2026-03-23_candidate_v7_v65_sink_factor_contrast.md` | `270` 行
+  - `2026-03-28_old_experiment_reevaluation.md` | `32` 行
+  - `2026-03-28_repo_health_and_convention_audit.md` | `268` 行
+  - `2026-03-28_overlap_refine_preservebypass_hardlocal_selector_v115_followup.md` | `228` 行
+  - `2026-03-28_overlap_refine_preservebypass_0007like_predproj_v116_followup.md` | `220` 行
+  - `2026-03-28_overlap_refine_preservebypass_0007like_localpush_v114_followup.md` | `238` 行
+  - `2026-03-28_overlap_refine_preservebypass_0007like_gateguided_v117_followup.md` | `246` 行
+  - `2026-03-28_overlap_dual_controller_floor_0007like_v118_followup.md` | `183` 行
+  - `2026-03-27_v81_vs_v109_listening_review.md` | `58` 行
+  - `2026-03-27_v81_vs_v107_listening_review.md` | `79` 行
+  - `2026-03-27_v81_vs_v106_listening_review.md` | `73` 行
+  - `2026-03-27_v81_vs_v103_listening_review.md` | `67` 行
 
 建议读取顺序：
 

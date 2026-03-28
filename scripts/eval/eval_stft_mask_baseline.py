@@ -40,10 +40,15 @@ from tse_prefix.pipeline.baseline_train import (
     weighted_sisdr_loss,
 )
 from tse_prefix.pipeline.loss_selectors import (
-    build_branch_selector_sample_weights,
     build_selector_sample_weights,
-    merge_selector_sample_weights,
-    selector_config_keys,
+    summarize_selector_weights,
+)
+from tse_prefix.pipeline.runtime_helpers import (
+    build_compute_loss_kwargs,
+    build_gate_target_values,
+    resolve_branch_extra_prediction,
+    resolve_primary_prediction,
+    resolve_selector_sample_weights,
 )
 
 
@@ -64,6 +69,15 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         default=ROOT / "reports" / "eval" / "baseline_stft_mask_smoke_eval",
     )
+    parser.add_argument(
+        "--teacher-checkpoint",
+        type=Path,
+        default=None,
+        help=(
+            "Optional frozen teacher checkpoint used for hard-present overlap teacher veto losses. "
+            "When omitted, eval falls back to the teacher_checkpoint stored inside --checkpoint metadata."
+        ),
+    )
     parser.add_argument("--batch-size", type=int, default=2)
     parser.add_argument("--num-workers", type=int, default=0)
     parser.add_argument("--sample-rate", type=int, default=16000)
@@ -81,8 +95,12 @@ def move_batch_to_device(batch: dict, device: torch.device) -> dict:
         "reference",
         "reference_lengths",
         "target_present_ratios",
+        "target_energy_ratios",
         "target_transient_presence_minus_mid_db_means",
         "target_transient_presence_share_means",
+        "interference_transient_presence_minus_mid_db_means",
+        "interference_transient_presence_share_means",
+        "target_interference_logspec_cosines",
         "overlap_ratios",
         "interference_gain_dbs",
     ]:
@@ -120,153 +138,6 @@ def target_present_ratio_bucket(ratio: float) -> str:
     return "ratio_ge_0.95"
 
 
-def build_compute_loss_kwargs(loss_config: dict) -> dict:
-    gate_target_config_keys = {
-        "gate_target_mode",
-        "gate_target_energy_center",
-        "gate_target_energy_scale",
-        "gate_target_transient_share_center",
-        "gate_target_transient_share_scale",
-        "gate_target_transient_db_center",
-        "gate_target_transient_db_scale",
-        "gate_target_energy_weight",
-        "gate_target_transient_share_weight",
-        "gate_target_transient_db_weight",
-        "gate_target_min_value",
-        "gate_target_max_value",
-        "use_branch_prerefine_as_primary_prediction",
-    }
-    return {
-        key: value
-        for key, value in loss_config.items()
-        if key
-        not in selector_config_keys(
-            prefixes=(
-                "reconstruction",
-                "transient",
-                "interference",
-                "overlap_interference",
-                "overlap_cancel",
-                "overlap_dual",
-                "absent",
-                "branch_protect",
-                "branch_protect_teacher",
-            )
-        )
-        and key not in gate_target_config_keys
-    }
-
-
-def _sigmoid_score(values: torch.Tensor, center: float, scale: float) -> torch.Tensor:
-    return torch.sigmoid((values - float(center)) / max(float(scale), 1e-6))
-
-
-def build_gate_target_values(
-    batch: dict,
-    device: torch.device,
-    loss_config: dict[str, float],
-) -> torch.Tensor | None:
-    if float(loss_config.get("gate_target_weight", 0.0)) <= 0.0:
-        return None
-    if str(loss_config.get("gate_target_mode", "none")) != "audibility":
-        return None
-
-    feature_specs = (
-        (
-            batch["target_energy_ratios"].to(device=device, dtype=torch.float32),
-            float(loss_config.get("gate_target_energy_center", 0.13)),
-            float(loss_config.get("gate_target_energy_scale", 0.035)),
-            float(loss_config.get("gate_target_energy_weight", 0.75)),
-        ),
-        (
-            batch["target_transient_presence_share_means"].to(device=device, dtype=torch.float32),
-            float(loss_config.get("gate_target_transient_share_center", 0.18)),
-            float(loss_config.get("gate_target_transient_share_scale", 0.08)),
-            float(loss_config.get("gate_target_transient_share_weight", 0.15)),
-        ),
-        (
-            batch["target_transient_presence_minus_mid_db_means"].to(device=device, dtype=torch.float32),
-            float(loss_config.get("gate_target_transient_db_center", 3.5)),
-            float(loss_config.get("gate_target_transient_db_scale", 2.5)),
-            float(loss_config.get("gate_target_transient_db_weight", 0.10)),
-        ),
-    )
-
-    weighted_sum = torch.zeros(len(batch["sample_ids"]), dtype=torch.float32, device=device)
-    weight_sum = torch.zeros(len(batch["sample_ids"]), dtype=torch.float32, device=device)
-    for values, center, scale, weight in feature_specs:
-        if weight <= 0.0:
-            continue
-        valid_mask = ~torch.isnan(values)
-        if not torch.any(valid_mask):
-            continue
-        scores = _sigmoid_score(values, center=center, scale=scale)
-        weighted_sum = weighted_sum + (torch.where(valid_mask, scores, torch.zeros_like(scores)) * weight)
-        weight_sum = weight_sum + (valid_mask.float() * weight)
-
-    base_scores = torch.where(
-        weight_sum > 0.0,
-        weighted_sum / weight_sum.clamp_min(1e-6),
-        torch.zeros_like(weighted_sum),
-    )
-    min_value = float(loss_config.get("gate_target_min_value", 0.0))
-    max_value = float(loss_config.get("gate_target_max_value", 1.0))
-    target_values = min_value + (base_scores * max(0.0, max_value - min_value))
-    return torch.clamp(target_values, min=min_value, max=max_value)
-
-
-def resolve_branch_extra_prediction(outputs: dict[str, torch.Tensor]) -> torch.Tensor | None:
-    if outputs.get("branch_decoder_mask") is not None:
-        return outputs["estimated_waveform"]
-    return None
-
-
-def resolve_primary_prediction(
-    outputs: dict[str, torch.Tensor],
-    use_branch_prerefine_as_primary_prediction: bool,
-) -> torch.Tensor:
-    if use_branch_prerefine_as_primary_prediction and outputs.get("estimated_waveform_branch_base") is not None:
-        return outputs["estimated_waveform_branch_base"]
-    return outputs.get("estimated_waveform_base", outputs["estimated_waveform"])
-
-
-def resolve_selector_sample_weights(
-    batch: dict,
-    device: torch.device,
-    loss_config: dict[str, float],
-    prefix: str,
-    extra_weight_keys: tuple[str, ...],
-) -> tuple[torch.Tensor | None, torch.Tensor | None, torch.Tensor | None]:
-    if any(float(loss_config.get(key, 0.0)) > 0.0 for key in extra_weight_keys):
-        base_sample_weights = build_branch_selector_sample_weights(
-            batch=batch,
-            device=device,
-            loss_config=loss_config,
-            prefix=prefix,
-            branch_name="",
-        )
-        extra_sample_weights = build_branch_selector_sample_weights(
-            batch=batch,
-            device=device,
-            loss_config=loss_config,
-            prefix=prefix,
-            branch_name="extra_",
-        )
-        union_sample_weights = merge_selector_sample_weights(
-            base_sample_weights,
-            extra_sample_weights,
-        )
-        return base_sample_weights, extra_sample_weights, union_sample_weights
-
-    base_sample_weights = build_selector_sample_weights(
-        batch=batch,
-        device=device,
-        loss_config=loss_config,
-        prefix=prefix,
-    )
-    return base_sample_weights, None, base_sample_weights
-
-
 def load_checkpoint(path: Path, device: torch.device) -> dict:
     try:
         return torch.load(path, map_location=device, weights_only=True)
@@ -290,12 +161,37 @@ def build_model_from_checkpoint(checkpoint: dict, device: torch.device) -> tuple
     return model, model_config
 
 
-def serialize_repo_path(path: Path) -> str:
+def serialize_repo_path(path: Path | None) -> str | None:
+    if path is None:
+        return None
     resolved = path.resolve()
     try:
         return resolved.relative_to(ROOT.resolve()).as_posix()
     except ValueError:
         return resolved.as_posix()
+
+
+def resolve_teacher_checkpoint_path(
+    explicit_path: Path | None,
+    checkpoint: dict,
+    checkpoint_path: Path,
+) -> Path | None:
+    if explicit_path is not None:
+        return explicit_path.resolve()
+
+    metadata_path = checkpoint.get("teacher_checkpoint")
+    if not metadata_path:
+        return None
+
+    candidate = Path(str(metadata_path))
+    if candidate.is_absolute():
+        return candidate.resolve()
+
+    for base_dir in (ROOT, checkpoint_path.parent):
+        resolved = (base_dir / candidate).resolve()
+        if resolved.exists():
+            return resolved
+    return (ROOT / candidate).resolve()
 
 
 def main() -> None:
@@ -323,6 +219,18 @@ def main() -> None:
     checkpoint = load_checkpoint(args.checkpoint, device)
     model, model_config = build_model_from_checkpoint(checkpoint, device)
     model.eval()
+    teacher_checkpoint_path = resolve_teacher_checkpoint_path(
+        explicit_path=args.teacher_checkpoint,
+        checkpoint=checkpoint,
+        checkpoint_path=args.checkpoint,
+    )
+    teacher_model: STFTMaskBaseline | None = None
+    if teacher_checkpoint_path is not None:
+        teacher_checkpoint = load_checkpoint(teacher_checkpoint_path, device)
+        teacher_model, _ = build_model_from_checkpoint(teacher_checkpoint, device)
+        teacher_model.eval()
+        for parameter in teacher_model.parameters():
+            parameter.requires_grad_(False)
 
     totals = {
         "loss": 0.0,
@@ -332,8 +240,11 @@ def main() -> None:
         "reconstruction_stft_l1": 0.0,
         "reconstruction_extra_waveform_l1": 0.0,
         "reconstruction_extra_stft_l1": 0.0,
+        "sisdr_loss": 0.0,
         "sisdr_db": 0.0,
         "branch_protect_guard_sisdr_loss": 0.0,
+        "branch_protect_overlap_base_align_l1": 0.0,
+        "branch_protect_teacher_overlap_l1": 0.0,
         "interference_extra_guard_sisdr_loss": 0.0,
         "interference_extra_base_align_l1": 0.0,
         "interference_extra_base_delta_projection_ratio": 0.0,
@@ -345,6 +256,8 @@ def main() -> None:
         "overlap_interference_extra_projection_ratio": 0.0,
         "overlap_cancel_waveform_l1": 0.0,
         "overlap_cancel_target_projection_ratio": 0.0,
+        "overlap_dual_mix_consistency_l1": 0.0,
+        "overlap_dual_residual_target_projection_ratio": 0.0,
         "absent_interval_l1": 0.0,
         "absent_extra_interval_l1": 0.0,
         "gate_abstain_mean": 0.0,
@@ -352,6 +265,7 @@ def main() -> None:
         "gate_target_l1": 0.0,
     }
     batch_count = 0
+    sample_count = 0
     pattern_metrics: dict[str, dict[str, float | int]] = defaultdict(
         lambda: {
             "count": 0,
@@ -369,9 +283,13 @@ def main() -> None:
             "overlap_interference_extra_projection_ratio": 0.0,
             "overlap_cancel_waveform_l1": 0.0,
             "overlap_cancel_target_projection_ratio": 0.0,
+            "overlap_dual_mix_consistency_l1": 0.0,
+            "overlap_dual_residual_target_projection_ratio": 0.0,
             "absent_interval_l1": 0.0,
             "absent_extra_interval_l1": 0.0,
             "branch_protect_guard_sisdr_loss": 0.0,
+            "branch_protect_overlap_base_align_l1": 0.0,
+            "branch_protect_teacher_overlap_l1": 0.0,
             "interference_extra_base_align_l1": 0.0,
             "interference_extra_base_delta_projection_ratio": 0.0,
             "gate_abstain_mean": 0.0,
@@ -396,9 +314,13 @@ def main() -> None:
             "overlap_interference_extra_projection_ratio": 0.0,
             "overlap_cancel_waveform_l1": 0.0,
             "overlap_cancel_target_projection_ratio": 0.0,
+            "overlap_dual_mix_consistency_l1": 0.0,
+            "overlap_dual_residual_target_projection_ratio": 0.0,
             "absent_interval_l1": 0.0,
             "absent_extra_interval_l1": 0.0,
             "branch_protect_guard_sisdr_loss": 0.0,
+            "branch_protect_overlap_base_align_l1": 0.0,
+            "branch_protect_teacher_overlap_l1": 0.0,
             "interference_extra_base_align_l1": 0.0,
             "interference_extra_base_delta_projection_ratio": 0.0,
             "gate_abstain_mean": 0.0,
@@ -423,9 +345,13 @@ def main() -> None:
             "overlap_interference_extra_projection_ratio": 0.0,
             "overlap_cancel_waveform_l1": 0.0,
             "overlap_cancel_target_projection_ratio": 0.0,
+            "overlap_dual_mix_consistency_l1": 0.0,
+            "overlap_dual_residual_target_projection_ratio": 0.0,
             "absent_interval_l1": 0.0,
             "absent_extra_interval_l1": 0.0,
             "branch_protect_guard_sisdr_loss": 0.0,
+            "branch_protect_overlap_base_align_l1": 0.0,
+            "branch_protect_teacher_overlap_l1": 0.0,
             "interference_extra_base_align_l1": 0.0,
             "interference_extra_base_delta_projection_ratio": 0.0,
             "gate_abstain_mean": 0.0,
@@ -436,16 +362,45 @@ def main() -> None:
     saved = 0
     loss_config = checkpoint.get("loss_config", {})
     compute_loss_kwargs = build_compute_loss_kwargs(loss_config)
+    selector_totals = {
+        prefix: {"active": False, "selected_count": 0, "total_count": 0}
+        for prefix in (
+            "reconstruction",
+            "reconstruction_extra",
+            "transient",
+            "transient_extra",
+            "interference",
+            "interference_extra",
+            "overlap_interference",
+            "overlap_interference_extra",
+            "overlap_cancel",
+            "overlap_dual",
+            "absent",
+            "absent_extra",
+            "branch_protect",
+            "branch_protect_teacher",
+        )
+    }
 
     with torch.no_grad():
         for batch in dataloader:
             batch = move_batch_to_device(batch, device)
+            batch_size = len(batch["sample_ids"])
             outputs = model(
                 mixture=batch["mixture"],
                 mixture_lengths=batch["mixture_lengths"],
                 reference=batch["reference"],
                 reference_lengths=batch["reference_lengths"],
             )
+            teacher_prediction = None
+            if teacher_model is not None:
+                teacher_outputs = teacher_model(
+                    mixture=batch["mixture"],
+                    mixture_lengths=batch["mixture_lengths"],
+                    reference=batch["reference"],
+                    reference_lengths=batch["reference_lengths"],
+                )
+                teacher_prediction = teacher_outputs["estimated_waveform"]
             reconstruction_sample_weights, reconstruction_extra_sample_weights, reconstruction_union_sample_weights = (
                 resolve_selector_sample_weights(
                     batch=batch,
@@ -478,7 +433,7 @@ def main() -> None:
                     ),
                 )
             )
-            overlap_interference_sample_weights, overlap_interference_extra_sample_weights, _ = (
+            overlap_interference_sample_weights, overlap_interference_extra_sample_weights, overlap_interference_union_sample_weights = (
                 resolve_selector_sample_weights(
                     batch=batch,
                     device=device,
@@ -495,6 +450,12 @@ def main() -> None:
                 device=device,
                 loss_config=loss_config,
                 prefix="overlap_cancel",
+            )
+            overlap_dual_sample_weights = build_selector_sample_weights(
+                batch=batch,
+                device=device,
+                loss_config=loss_config,
+                prefix="overlap_dual",
             )
             absent_sample_weights, absent_extra_sample_weights, absent_union_sample_weights = (
                 resolve_selector_sample_weights(
@@ -523,6 +484,26 @@ def main() -> None:
                 if gate_target_values is not None
                 else None
             )
+            for prefix, weights in (
+                ("reconstruction", reconstruction_union_sample_weights),
+                ("reconstruction_extra", reconstruction_extra_sample_weights),
+                ("transient", transient_union_sample_weights),
+                ("transient_extra", transient_extra_sample_weights),
+                ("interference", interference_union_sample_weights),
+                ("interference_extra", interference_extra_sample_weights),
+                ("overlap_interference", overlap_interference_union_sample_weights),
+                ("overlap_interference_extra", overlap_interference_extra_sample_weights),
+                ("overlap_cancel", overlap_cancel_sample_weights),
+                ("overlap_dual", overlap_dual_sample_weights),
+                ("absent", absent_union_sample_weights),
+                ("absent_extra", absent_extra_sample_weights),
+                ("branch_protect", branch_protect_sample_weights),
+                ("branch_protect_teacher", branch_protect_teacher_sample_weights),
+            ):
+                stats = summarize_selector_weights(weights, len(batch["sample_ids"]))
+                selector_totals[prefix]["active"] = selector_totals[prefix]["active"] or bool(stats["active"])
+                selector_totals[prefix]["selected_count"] += int(stats["selected_count"])
+                selector_totals[prefix]["total_count"] += int(stats["total_count"])
             primary_prediction = resolve_primary_prediction(
                 outputs,
                 use_branch_prerefine_as_primary_prediction=bool(
@@ -535,6 +516,7 @@ def main() -> None:
                 prediction=primary_prediction,
                 reconstruction_extra_prediction=reconstruction_extra_prediction,
                 extra_prediction=extra_prediction,
+                teacher_prediction=teacher_prediction,
                 mixture=batch["mixture"],
                 target=batch["target"],
                 lengths=batch["target_lengths"],
@@ -551,7 +533,10 @@ def main() -> None:
                 overlap_interference_sample_weights=overlap_interference_sample_weights,
                 overlap_interference_extra_sample_weights=overlap_interference_extra_sample_weights,
                 overlap_cancel_prediction=outputs.get("branch_overlap_cancel_estimate_waveform"),
+                overlap_dual_target_prediction=outputs.get("branch_overlap_dual_target_waveform"),
+                overlap_dual_residual_prediction=outputs.get("branch_overlap_dual_residual_waveform"),
                 overlap_cancel_sample_weights=overlap_cancel_sample_weights,
+                overlap_dual_sample_weights=overlap_dual_sample_weights,
                 branch_protect_sample_weights=branch_protect_sample_weights,
                 branch_protect_teacher_sample_weights=branch_protect_teacher_sample_weights,
                 absent_sample_weights=absent_sample_weights,
@@ -563,42 +548,64 @@ def main() -> None:
                 **compute_loss_kwargs,
             )
 
-            totals["loss"] += float(losses.total.item())
-            totals["waveform_l1"] += float(losses.waveform_l1.item())
-            totals["stft_l1"] += float(losses.stft_l1.item())
-            totals["reconstruction_waveform_l1"] += float(losses.reconstruction_waveform_l1.item())
-            totals["reconstruction_stft_l1"] += float(losses.reconstruction_stft_l1.item())
-            totals["reconstruction_extra_waveform_l1"] += float(losses.reconstruction_extra_waveform_l1.item())
-            totals["reconstruction_extra_stft_l1"] += float(losses.reconstruction_extra_stft_l1.item())
-            totals["sisdr_db"] += float(losses.sisdr_db.item())
-            totals["branch_protect_guard_sisdr_loss"] += float(losses.branch_protect_guard_sisdr_loss.item())
-            totals["interference_extra_guard_sisdr_loss"] += float(losses.interference_extra_guard_sisdr_loss.item())
-            totals["interference_extra_base_align_l1"] += float(losses.interference_extra_base_align_l1.item())
+            totals["loss"] += float(losses.total.item()) * batch_size
+            totals["waveform_l1"] += float(losses.waveform_l1.item()) * batch_size
+            totals["stft_l1"] += float(losses.stft_l1.item()) * batch_size
+            totals["reconstruction_waveform_l1"] += float(losses.reconstruction_waveform_l1.item()) * batch_size
+            totals["reconstruction_stft_l1"] += float(losses.reconstruction_stft_l1.item()) * batch_size
+            totals["reconstruction_extra_waveform_l1"] += (
+                float(losses.reconstruction_extra_waveform_l1.item()) * batch_size
+            )
+            totals["reconstruction_extra_stft_l1"] += float(losses.reconstruction_extra_stft_l1.item()) * batch_size
+            totals["sisdr_loss"] += float(losses.sisdr_loss.item()) * batch_size
+            totals["sisdr_db"] += float(losses.sisdr_db.item()) * batch_size
+            totals["branch_protect_guard_sisdr_loss"] += (
+                float(losses.branch_protect_guard_sisdr_loss.item()) * batch_size
+            )
+            totals["branch_protect_overlap_base_align_l1"] += (
+                float(losses.branch_protect_overlap_base_align_l1.item()) * batch_size
+            )
+            totals["branch_protect_teacher_overlap_l1"] += (
+                float(losses.branch_protect_teacher_overlap_l1.item()) * batch_size
+            )
+            totals["interference_extra_guard_sisdr_loss"] += (
+                float(losses.interference_extra_guard_sisdr_loss.item()) * batch_size
+            )
+            totals["interference_extra_base_align_l1"] += (
+                float(losses.interference_extra_base_align_l1.item()) * batch_size
+            )
             totals["interference_extra_base_delta_projection_ratio"] += float(
                 losses.interference_extra_base_delta_projection_ratio.item()
-            )
-            totals["transient_presence_l1"] += float(losses.transient_presence_l1.item())
-            totals["transient_extra_presence_l1"] += float(losses.transient_extra_presence_l1.item())
-            totals["interference_projection_ratio"] += float(losses.interference_projection_ratio.item())
+            ) * batch_size
+            totals["transient_presence_l1"] += float(losses.transient_presence_l1.item()) * batch_size
+            totals["transient_extra_presence_l1"] += float(losses.transient_extra_presence_l1.item()) * batch_size
+            totals["interference_projection_ratio"] += float(losses.interference_projection_ratio.item()) * batch_size
             totals["interference_extra_projection_ratio"] += float(
                 losses.interference_extra_projection_ratio.item()
-            )
+            ) * batch_size
             totals["overlap_interference_projection_ratio"] += float(
                 losses.overlap_interference_projection_ratio.item()
-            )
+            ) * batch_size
             totals["overlap_interference_extra_projection_ratio"] += float(
                 losses.overlap_interference_extra_projection_ratio.item()
-            )
-            totals["overlap_cancel_waveform_l1"] += float(losses.overlap_cancel_waveform_l1.item())
+            ) * batch_size
+            totals["overlap_cancel_waveform_l1"] += float(losses.overlap_cancel_waveform_l1.item()) * batch_size
             totals["overlap_cancel_target_projection_ratio"] += float(
                 losses.overlap_cancel_target_projection_ratio.item()
+            ) * batch_size
+            totals["overlap_dual_mix_consistency_l1"] += (
+                float(losses.overlap_dual_mix_consistency_l1.item()) * batch_size
             )
-            totals["absent_interval_l1"] += float(losses.absent_interval_l1.item())
-            totals["absent_extra_interval_l1"] += float(losses.absent_extra_interval_l1.item())
-            totals["gate_abstain_mean"] += float(losses.gate_abstain_mean.item())
-            totals["gate_keep_mean"] += float(losses.gate_keep_mean.item())
-            totals["gate_target_l1"] += float(losses.gate_target_l1.item())
+            totals["overlap_dual_residual_target_projection_ratio"] += (
+                float(losses.overlap_dual_residual_target_projection_ratio.item()) * batch_size
+            )
+            totals["absent_interval_l1"] += float(losses.absent_interval_l1.item()) * batch_size
+            totals["absent_extra_interval_l1"] += float(losses.absent_extra_interval_l1.item()) * batch_size
+            totals["gate_abstain_mean"] += float(losses.gate_abstain_mean.item()) * batch_size
+            totals["gate_keep_mean"] += float(losses.gate_keep_mean.item()) * batch_size
+            totals["gate_target_l1"] += float(losses.gate_target_l1.item()) * batch_size
             batch_count += 1
+            sample_count += batch_size
 
             primary_predictions, targets, lengths = align_waveforms(
                 primary_prediction,
@@ -621,9 +628,13 @@ def main() -> None:
                 batch["target"],
                 batch["target_lengths"],
             )
-            resolved_overlap_cancel_prediction = outputs.get(
-                "branch_overlap_cancel_estimate_waveform",
-                primary_prediction,
+            resolved_overlap_cancel_prediction = outputs.get("branch_overlap_cancel_estimate_waveform")
+            if resolved_overlap_cancel_prediction is None:
+                resolved_overlap_cancel_prediction = primary_prediction
+            overlap_cancel_predictions, _, _ = align_waveforms(
+                resolved_overlap_cancel_prediction,
+                batch["target"],
+                batch["target_lengths"],
             )
 
             for idx, pattern in enumerate(batch["temporal_patterns"]):
@@ -781,7 +792,7 @@ def main() -> None:
                 )
                 sample_overlap_cancel = float(
                     interval_waveform_l1_loss(
-                        prediction=resolved_overlap_cancel_prediction[idx : idx + 1],
+                        prediction=overlap_cancel_predictions[idx : idx + 1],
                         target=mixtures_aligned[idx : idx + 1] - targets[idx : idx + 1],
                         lengths=lengths[idx : idx + 1],
                         intervals_batch=[batch["target_overlap_intervals"][idx]],
@@ -795,7 +806,7 @@ def main() -> None:
                 )
                 sample_overlap_cancel_target_projection = float(
                     interval_projection_ratio_loss(
-                        prediction=resolved_overlap_cancel_prediction[idx : idx + 1],
+                        prediction=overlap_cancel_predictions[idx : idx + 1],
                         target=targets[idx : idx + 1],
                         lengths=lengths[idx : idx + 1],
                         intervals_batch=[batch["target_overlap_intervals"][idx]],
@@ -843,6 +854,42 @@ def main() -> None:
                         zero_mean=True,
                     ).item()
                 )
+                sample_branch_protect_overlap_base_align = float(
+                    interval_waveform_l1_loss(
+                        prediction=extra_predictions[idx : idx + 1],
+                        target=primary_predictions[idx : idx + 1],
+                        lengths=lengths[idx : idx + 1],
+                        intervals_batch=[batch["target_overlap_intervals"][idx]],
+                        sample_rate=int(loss_config.get("sample_rate", args.sample_rate)),
+                        sample_weights=(
+                            branch_protect_sample_weights[idx : idx + 1]
+                            if branch_protect_sample_weights is not None
+                            else None
+                        ),
+                    ).item()
+                )
+                sample_branch_protect_teacher_overlap = (
+                    0.0
+                    if teacher_prediction is None
+                    else float(
+                        interval_waveform_l1_loss(
+                            prediction=extra_predictions[idx : idx + 1],
+                            target=teacher_prediction[idx : idx + 1],
+                            lengths=lengths[idx : idx + 1],
+                            intervals_batch=[batch["target_overlap_intervals"][idx]],
+                            sample_rate=int(loss_config.get("sample_rate", args.sample_rate)),
+                            sample_weights=(
+                                branch_protect_teacher_sample_weights[idx : idx + 1]
+                                if branch_protect_teacher_sample_weights is not None
+                                else (
+                                    branch_protect_sample_weights[idx : idx + 1]
+                                    if branch_protect_sample_weights is not None
+                                    else None
+                                )
+                            ),
+                        ).item()
+                    )
+                )
                 sample_interference_extra_base_align = float(
                     weighted_waveform_l1_loss(
                         prediction=extra_predictions[idx : idx + 1],
@@ -865,6 +912,34 @@ def main() -> None:
                         sample_weights=(
                             interference_extra_sample_weights[idx : idx + 1]
                             if interference_extra_sample_weights is not None
+                            else None
+                        ),
+                    ).item()
+                )
+                sample_overlap_dual_mix_consistency = float(
+                    interval_waveform_l1_loss(
+                        prediction=primary_predictions[idx : idx + 1] + overlap_cancel_predictions[idx : idx + 1],
+                        target=batch["mixture"][idx : idx + 1],
+                        lengths=lengths[idx : idx + 1],
+                        intervals_batch=[batch["target_overlap_intervals"][idx]],
+                        sample_rate=int(loss_config.get("sample_rate", args.sample_rate)),
+                        sample_weights=(
+                            overlap_dual_sample_weights[idx : idx + 1]
+                            if overlap_dual_sample_weights is not None
+                            else None
+                        ),
+                    ).item()
+                )
+                sample_overlap_dual_residual_target_projection = float(
+                    interval_projection_ratio_loss(
+                        prediction=mixtures_aligned[idx : idx + 1] - primary_predictions[idx : idx + 1],
+                        target=targets[idx : idx + 1],
+                        lengths=lengths[idx : idx + 1],
+                        intervals_batch=[batch["target_overlap_intervals"][idx]],
+                        sample_rate=int(loss_config.get("sample_rate", args.sample_rate)),
+                        sample_weights=(
+                            overlap_dual_sample_weights[idx : idx + 1]
+                            if overlap_dual_sample_weights is not None
                             else None
                         ),
                     ).item()
@@ -944,9 +1019,19 @@ def main() -> None:
                 pattern_metrics[pattern]["overlap_cancel_target_projection_ratio"] += (
                     sample_overlap_cancel_target_projection
                 )
+                pattern_metrics[pattern]["overlap_dual_mix_consistency_l1"] += sample_overlap_dual_mix_consistency
+                pattern_metrics[pattern]["overlap_dual_residual_target_projection_ratio"] += (
+                    sample_overlap_dual_residual_target_projection
+                )
                 pattern_metrics[pattern]["absent_interval_l1"] += sample_absent
                 pattern_metrics[pattern]["absent_extra_interval_l1"] += sample_absent_extra
                 pattern_metrics[pattern]["branch_protect_guard_sisdr_loss"] += sample_branch_protect_guard
+                pattern_metrics[pattern]["branch_protect_overlap_base_align_l1"] += (
+                    sample_branch_protect_overlap_base_align
+                )
+                pattern_metrics[pattern]["branch_protect_teacher_overlap_l1"] += (
+                    sample_branch_protect_teacher_overlap
+                )
                 pattern_metrics[pattern]["interference_extra_base_align_l1"] += sample_interference_extra_base_align
                 pattern_metrics[pattern]["interference_extra_base_delta_projection_ratio"] += (
                     sample_interference_extra_base_delta_projection
@@ -973,9 +1058,19 @@ def main() -> None:
                 recipe_metrics[recipe]["overlap_cancel_target_projection_ratio"] += (
                     sample_overlap_cancel_target_projection
                 )
+                recipe_metrics[recipe]["overlap_dual_mix_consistency_l1"] += sample_overlap_dual_mix_consistency
+                recipe_metrics[recipe]["overlap_dual_residual_target_projection_ratio"] += (
+                    sample_overlap_dual_residual_target_projection
+                )
                 recipe_metrics[recipe]["absent_interval_l1"] += sample_absent
                 recipe_metrics[recipe]["absent_extra_interval_l1"] += sample_absent_extra
                 recipe_metrics[recipe]["branch_protect_guard_sisdr_loss"] += sample_branch_protect_guard
+                recipe_metrics[recipe]["branch_protect_overlap_base_align_l1"] += (
+                    sample_branch_protect_overlap_base_align
+                )
+                recipe_metrics[recipe]["branch_protect_teacher_overlap_l1"] += (
+                    sample_branch_protect_teacher_overlap
+                )
                 recipe_metrics[recipe]["interference_extra_base_align_l1"] += sample_interference_extra_base_align
                 recipe_metrics[recipe]["interference_extra_base_delta_projection_ratio"] += (
                     sample_interference_extra_base_delta_projection
@@ -1002,9 +1097,21 @@ def main() -> None:
                 ratio_bucket_metrics[ratio_bucket]["overlap_cancel_target_projection_ratio"] += (
                     sample_overlap_cancel_target_projection
                 )
+                ratio_bucket_metrics[ratio_bucket]["overlap_dual_mix_consistency_l1"] += (
+                    sample_overlap_dual_mix_consistency
+                )
+                ratio_bucket_metrics[ratio_bucket]["overlap_dual_residual_target_projection_ratio"] += (
+                    sample_overlap_dual_residual_target_projection
+                )
                 ratio_bucket_metrics[ratio_bucket]["absent_interval_l1"] += sample_absent
                 ratio_bucket_metrics[ratio_bucket]["absent_extra_interval_l1"] += sample_absent_extra
                 ratio_bucket_metrics[ratio_bucket]["branch_protect_guard_sisdr_loss"] += sample_branch_protect_guard
+                ratio_bucket_metrics[ratio_bucket]["branch_protect_overlap_base_align_l1"] += (
+                    sample_branch_protect_overlap_base_align
+                )
+                ratio_bucket_metrics[ratio_bucket]["branch_protect_teacher_overlap_l1"] += (
+                    sample_branch_protect_teacher_overlap
+                )
                 ratio_bucket_metrics[ratio_bucket]["interference_extra_base_align_l1"] += (
                     sample_interference_extra_base_align
                 )
@@ -1056,9 +1163,19 @@ def main() -> None:
                                 "overlap_cancel_target_projection_ratio": (
                                     sample_overlap_cancel_target_projection
                                 ),
+                                "overlap_dual_mix_consistency_l1": sample_overlap_dual_mix_consistency,
+                                "overlap_dual_residual_target_projection_ratio": (
+                                    sample_overlap_dual_residual_target_projection
+                                ),
                                 "absent_interval_l1": sample_absent,
                                 "absent_extra_interval_l1": sample_absent_extra,
                                 "branch_protect_guard_sisdr_loss": sample_branch_protect_guard,
+                                "branch_protect_overlap_base_align_l1": (
+                                    sample_branch_protect_overlap_base_align
+                                ),
+                                "branch_protect_teacher_overlap_l1": (
+                                    sample_branch_protect_teacher_overlap
+                                ),
                                 "interference_extra_base_align_l1": sample_interference_extra_base_align,
                                 "interference_extra_base_delta_projection_ratio": (
                                     sample_interference_extra_base_delta_projection
@@ -1080,6 +1197,7 @@ def main() -> None:
     summary = {
         "manifest": serialize_repo_path(args.manifest),
         "checkpoint": serialize_repo_path(args.checkpoint),
+        "teacher_checkpoint": serialize_repo_path(teacher_checkpoint_path),
         "device": device.type,
         "batch_size": args.batch_size,
         "sample_rate": args.sample_rate,
@@ -1090,10 +1208,23 @@ def main() -> None:
         "end_time": datetime.now().isoformat(timespec="seconds"),
         "elapsed_sec": round(time.time() - start_ts, 3),
         "num_batches": batch_count,
-        "num_samples": len(dataset),
+        "num_samples": sample_count,
         "metrics": {
-            key: (value / max(1, batch_count))
+            key: (value / max(1, sample_count))
             for key, value in totals.items()
+        },
+        "selector_metrics": {
+            prefix: {
+                "active": bool(totals["active"]),
+                "selected_count": int(totals["selected_count"]),
+                "total_count": int(totals["total_count"]),
+                "selected_fraction": (
+                    float(totals["selected_count"]) / float(totals["total_count"])
+                    if int(totals["total_count"]) > 0
+                    else None
+                ),
+            }
+            for prefix, totals in selector_totals.items()
         },
         "pattern_metrics": {
             pattern: {
@@ -1132,8 +1263,20 @@ def main() -> None:
                 "avg_overlap_cancel_target_projection_ratio": (
                     values["overlap_cancel_target_projection_ratio"] / max(1, int(values["count"]))
                 ),
+                "avg_overlap_dual_mix_consistency_l1": (
+                    values["overlap_dual_mix_consistency_l1"] / max(1, int(values["count"]))
+                ),
+                "avg_overlap_dual_residual_target_projection_ratio": (
+                    values["overlap_dual_residual_target_projection_ratio"] / max(1, int(values["count"]))
+                ),
                 "avg_branch_protect_guard_sisdr_loss": (
                     values["branch_protect_guard_sisdr_loss"] / max(1, int(values["count"]))
+                ),
+                "avg_branch_protect_overlap_base_align_l1": (
+                    values["branch_protect_overlap_base_align_l1"] / max(1, int(values["count"]))
+                ),
+                "avg_branch_protect_teacher_overlap_l1": (
+                    values["branch_protect_teacher_overlap_l1"] / max(1, int(values["count"]))
                 ),
                 "avg_interference_extra_base_align_l1": (
                     values["interference_extra_base_align_l1"] / max(1, int(values["count"]))
@@ -1188,8 +1331,20 @@ def main() -> None:
                 "avg_overlap_cancel_target_projection_ratio": (
                     values["overlap_cancel_target_projection_ratio"] / max(1, int(values["count"]))
                 ),
+                "avg_overlap_dual_mix_consistency_l1": (
+                    values["overlap_dual_mix_consistency_l1"] / max(1, int(values["count"]))
+                ),
+                "avg_overlap_dual_residual_target_projection_ratio": (
+                    values["overlap_dual_residual_target_projection_ratio"] / max(1, int(values["count"]))
+                ),
                 "avg_branch_protect_guard_sisdr_loss": (
                     values["branch_protect_guard_sisdr_loss"] / max(1, int(values["count"]))
+                ),
+                "avg_branch_protect_overlap_base_align_l1": (
+                    values["branch_protect_overlap_base_align_l1"] / max(1, int(values["count"]))
+                ),
+                "avg_branch_protect_teacher_overlap_l1": (
+                    values["branch_protect_teacher_overlap_l1"] / max(1, int(values["count"]))
                 ),
                 "avg_interference_extra_base_align_l1": (
                     values["interference_extra_base_align_l1"] / max(1, int(values["count"]))
@@ -1244,8 +1399,20 @@ def main() -> None:
                 "avg_overlap_cancel_target_projection_ratio": (
                     values["overlap_cancel_target_projection_ratio"] / max(1, int(values["count"]))
                 ),
+                "avg_overlap_dual_mix_consistency_l1": (
+                    values["overlap_dual_mix_consistency_l1"] / max(1, int(values["count"]))
+                ),
+                "avg_overlap_dual_residual_target_projection_ratio": (
+                    values["overlap_dual_residual_target_projection_ratio"] / max(1, int(values["count"]))
+                ),
                 "avg_branch_protect_guard_sisdr_loss": (
                     values["branch_protect_guard_sisdr_loss"] / max(1, int(values["count"]))
+                ),
+                "avg_branch_protect_overlap_base_align_l1": (
+                    values["branch_protect_overlap_base_align_l1"] / max(1, int(values["count"]))
+                ),
+                "avg_branch_protect_teacher_overlap_l1": (
+                    values["branch_protect_teacher_overlap_l1"] / max(1, int(values["count"]))
                 ),
                 "avg_interference_extra_base_align_l1": (
                     values["interference_extra_base_align_l1"] / max(1, int(values["count"]))

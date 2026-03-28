@@ -41,6 +41,7 @@ class STFTMaskBaseline(nn.Module):
         branch_overlap_dual_decoder_max_delta: float = 0.15,
         branch_overlap_dual_decoder_gate_mode: str = "complement",
         branch_overlap_dual_decoder_source_mode: str = "residual",
+        branch_overlap_dual_decoder_apply_mode: str = "final_output",
         branch_overlap_dual_decoder_max_blend: float = 1.0,
         branch_overlap_dual_decoder_gate_floor: float = 0.0,
     ) -> None:
@@ -72,6 +73,7 @@ class STFTMaskBaseline(nn.Module):
         self.branch_overlap_dual_decoder_max_delta = branch_overlap_dual_decoder_max_delta
         self.branch_overlap_dual_decoder_gate_mode = branch_overlap_dual_decoder_gate_mode
         self.branch_overlap_dual_decoder_source_mode = branch_overlap_dual_decoder_source_mode
+        self.branch_overlap_dual_decoder_apply_mode = branch_overlap_dual_decoder_apply_mode
         self.branch_overlap_dual_decoder_max_blend = branch_overlap_dual_decoder_max_blend
         self.branch_overlap_dual_decoder_gate_floor = branch_overlap_dual_decoder_gate_floor
 
@@ -125,8 +127,14 @@ class STFTMaskBaseline(nn.Module):
             raise ValueError(
                 "branch_overlap_dual_decoder_source_mode must be one of: mixture, branch_base, residual."
             )
+        if branch_overlap_dual_decoder_apply_mode not in ("final_output", "gate_controller"):
+            raise ValueError(
+                "branch_overlap_dual_decoder_apply_mode must be one of: final_output, gate_controller."
+            )
         if not 0.0 <= branch_overlap_dual_decoder_gate_floor < 1.0:
             raise ValueError("branch_overlap_dual_decoder_gate_floor must satisfy 0.0 <= floor < 1.0.")
+        if branch_overlap_dual_decoder_apply_mode == "gate_controller" and not enable_branch_abstention_gate:
+            raise ValueError("branch_overlap_dual_decoder_apply_mode=gate_controller requires enable_branch_abstention_gate.")
 
         if conditioning_mode == "legacy_bias":
             self.mix_proj = nn.Linear(self.freq_bins, hidden_dim)
@@ -493,6 +501,9 @@ class STFTMaskBaseline(nn.Module):
         branch_overlap_cancel_estimate_waveform = None
         branch_overlap_dual_target_stft = None
         branch_overlap_dual_target_waveform = None
+        branch_overlap_dual_residual_stft = None
+        branch_overlap_dual_residual_waveform = None
+        branch_overlap_dual_controller = None
         if self.branch_decoder_temporal_model is not None and self.branch_decoder_mask_head is not None:
             branch_encoded, _ = self.branch_decoder_temporal_model(temporal_input)
             branch_decoder_mask = self.branch_decoder_mask_head(branch_encoded).transpose(1, 2)
@@ -579,8 +590,8 @@ class STFTMaskBaseline(nn.Module):
                     dual_source_stft = estimated_stft_branch_base
                 elif self.branch_overlap_dual_decoder_source_mode == "residual":
                     dual_source_stft = mix_stft - estimated_stft_branch_base
-                branch_overlap_cancel_estimate_stft = dual_source_stft * branch_overlap_cancel_ratio
-                branch_overlap_dual_target_stft = mix_stft - branch_overlap_cancel_estimate_stft
+                branch_overlap_dual_residual_stft = dual_source_stft * branch_overlap_cancel_ratio
+                branch_overlap_dual_target_stft = mix_stft - branch_overlap_dual_residual_stft
                 dual_blend = None
                 if branch_decoder_frame_gate is not None:
                     if self.branch_overlap_dual_decoder_gate_mode == "gate":
@@ -594,13 +605,34 @@ class STFTMaskBaseline(nn.Module):
                     self.branch_overlap_dual_decoder_gate_floor,
                 )
                 dual_blend = dual_blend * self.branch_overlap_dual_decoder_max_blend
-                estimated_stft = estimated_stft_branch_base + (
-                    dual_blend * (branch_overlap_dual_target_stft - estimated_stft_branch_base)
-                )
+                if self.branch_overlap_dual_decoder_apply_mode == "final_output":
+                    estimated_stft = estimated_stft_branch_base + (
+                        dual_blend * (branch_overlap_dual_target_stft - estimated_stft_branch_base)
+                    )
+                else:
+                    dual_controller_strength = torch.abs(branch_overlap_dual_residual_stft).mean(
+                        dim=1,
+                        keepdim=True,
+                    )
+                    dual_source_strength = torch.abs(dual_source_stft).mean(dim=1, keepdim=True).clamp_min(1e-6)
+                    branch_overlap_dual_controller = torch.clamp(
+                        dual_controller_strength / dual_source_strength,
+                        min=0.0,
+                        max=1.0,
+                    )
+                    controlled_gate = branch_decoder_frame_gate * (
+                        1.0 - (dual_blend * branch_overlap_dual_controller)
+                    )
+                    estimated_stft = mix_stft * (branch_decoder_mask * controlled_gate)
             estimated_waveform = self.istft(estimated_stft, mixture_lengths)
             if branch_overlap_cancel_estimate_stft is not None:
                 branch_overlap_cancel_estimate_waveform = self.istft(
                     branch_overlap_cancel_estimate_stft,
+                    mixture_lengths,
+                )
+            if branch_overlap_dual_residual_stft is not None:
+                branch_overlap_dual_residual_waveform = self.istft(
+                    branch_overlap_dual_residual_stft,
                     mixture_lengths,
                 )
             if branch_overlap_dual_target_stft is not None:
@@ -632,4 +664,6 @@ class STFTMaskBaseline(nn.Module):
             "branch_overlap_cancel_estimate_waveform": branch_overlap_cancel_estimate_waveform,
             "branch_overlap_dual_target_stft": branch_overlap_dual_target_stft,
             "branch_overlap_dual_target_waveform": branch_overlap_dual_target_waveform,
+            "branch_overlap_dual_residual_waveform": branch_overlap_dual_residual_waveform,
+            "branch_overlap_dual_controller": branch_overlap_dual_controller,
         }

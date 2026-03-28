@@ -10,6 +10,124 @@
 
 ## 活跃坑点
 
+### 0. 评估主流程必须与训练链共用同一套 loss / selector / summary 口径；脚本升级后旧摘要要视为待重评估资产
+
+事实：
+
+- `2026-03-28` 已把训练 / 评估共用逻辑收口到：
+  - `src/tse_prefix/pipeline/runtime_helpers.py`
+- 当前 `scripts/eval/eval_stft_mask_baseline.py`
+  已补齐：
+  - `branch_protect_teacher_overlap_l1`
+  - `overlap_dual_*`
+  - `selector_metrics`
+  - teacher checkpoint metadata fallback
+- 同日已对 active overlap family 做旧实验重评估：
+  - `reports/daily/2026-03-28_old_experiment_reevaluation.md`
+  - `reports/eval/reeval_2026-03-28_active_overlap_family`
+
+要求：
+
+- 训练与评估必须共用同一套 metric registry / selector plumbing；
+- 不能把脚本升级前导出的旧 `eval_summary.json / sample_meta.json`
+  和升级后新导出的结果混着当成同口径资产；
+- 尤其是 dual / teacher 类 checkpoint，
+  默认应优先使用 `2026-03-28` 之后的重评估结果。
+
+影响：
+
+- 这类问题通常不会直接报错；
+- 但会悄悄污染 `summary.json / eval_summary.json / sample_meta.json`；
+- 进而影响 checkpoint 排序和人工裁决入口；
+- 本轮虽然已修正脚本，
+  但修正前资产若不重评估，仍会继续误导判断。
+
+### 0.1 按 `interference_pool / speaker` 筛样时，必须按全层语义匹配；历史 selector hit 统计可能已过期
+
+事实：
+
+- `src/tse_prefix/data/synthetic_dataset.py`
+  已同时产出：
+  - 第一层字段：
+    - `interference_pool`
+    - `interference_speaker_name`
+  - 全层汇总字段：
+    - `interference_pools_all`
+    - `interference_speaker_names_all`
+- 但 `src/tse_prefix/pipeline/loss_selectors.py`
+  已在 `2026-03-28` 修正为：
+  - 优先读取 `interference_pools_all / interference_speaker_names_all`
+  - 按全层 `any-match`
+  - 仅在 `_all` 缺失时回退到单层字段
+
+要求：
+
+- mixed-interference 样本上，pool / speaker selector 必须按“任一层命中”或明确约定的全层语义处理；
+- 历史上依赖这组 selector 的 checkpoint，
+  若要重新比较命中率或 loss summary，
+  应优先看修正后重新导出的结果。
+
+影响：
+
+- 这会导致 targeted loss 命中集与设计口径不一致；
+- 尤其会伤到：
+  - `speech + music`
+  - 多层 speech hard-negative
+  等混合 recipe 的实验解释。
+
+### 0.2 训练 / 评估主指标必须按 sample 聚合；旧的 batch-average 结果不能当成完全同口径
+
+事实：
+
+- `2026-03-28` 已把：
+  - `scripts/train/train_stft_mask_baseline.py`
+  - `scripts/eval/eval_stft_mask_baseline.py`
+  的主指标聚合
+  从 `batch_count / step_count`
+  改为按 `sample_count` 平均。
+
+要求：
+
+- 比较 `2026-03-28` 前后的 train / eval summary 时，
+  必须记住聚合口径发生过一次切换；
+- 若要做严格横向比较，
+  默认应使用修正后重导出的结果。
+
+影响：
+
+- 这类偏差通常不大，
+  但会持续污染多个 checkpoint 之间的细粒度排序；
+- batch size 不整除时尤其明显。
+
+### 0.3 活跃文档与主入口脚本体量不能继续自然膨胀
+
+事实：
+
+- `docs/01_project_overview_and_plan.md`
+  - `1328` 行
+- `docs/02_pitfalls_log.md`
+  - `1636` 行
+- `docs/05_task_branch_map.md`
+  - `1608` 行
+- `scripts/train/train_stft_mask_baseline.py`
+  - `1709` 行
+- `scripts/eval/eval_stft_mask_baseline.py`
+  - `1401` 行
+- `scripts/eval/listening_pack_gui.py`
+  - `1087` 行
+
+要求：
+
+- 活跃摘要继续留在主文档；
+- 但详细历史、专项逻辑、GUI 组件、metric helpers、selector helpers
+  都应继续拆分；
+- 不能等到“已经难以通读”后再一次性救火。
+
+影响：
+
+- 体量过大本身就会放大遗漏概率；
+- 也会让局部改动更难看出是否破坏了实验口径。
+
 ### 1. PowerShell 默认不是 UTF-8，读取和写入必须显式指定
 
 事实：
