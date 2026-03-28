@@ -33,6 +33,7 @@ class LossBreakdown:
     overlap_cancel_target_projection_ratio: torch.Tensor
     overlap_cancel_absent_mix_l1: torch.Tensor
     overlap_dual_mix_consistency_l1: torch.Tensor
+    overlap_dual_residual_waveform_l1: torch.Tensor
     overlap_dual_residual_target_projection_ratio: torch.Tensor
     overlap_dual_absent_mix_l1: torch.Tensor
     absent_interval_l1: torch.Tensor
@@ -733,6 +734,7 @@ def compute_losses(
     overlap_cancel_target_projection_weight: float = 0.0,
     overlap_cancel_absent_mix_weight: float = 0.0,
     overlap_dual_mix_consistency_weight: float = 0.0,
+    overlap_dual_residual_waveform_weight: float = 0.0,
     overlap_dual_residual_target_projection_weight: float = 0.0,
     overlap_dual_absent_mix_weight: float = 0.0,
     absent_weight: float = 0.0,
@@ -964,6 +966,15 @@ def compute_losses(
         sample_rate=sample_rate,
         sample_weights=overlap_dual_sample_weights,
     )
+    overlap_dual_residual_target = mixture_aligned - target_aligned
+    overlap_dual_residual_waveform_term = interval_waveform_l1_loss(
+        prediction=overlap_dual_residual_prediction,
+        target=overlap_dual_residual_target,
+        lengths=lengths,
+        intervals_batch=overlap_intervals,
+        sample_rate=sample_rate,
+        sample_weights=overlap_dual_sample_weights,
+    )
     overlap_dual_residual_target_projection_term = interval_projection_ratio_loss(
         prediction=overlap_dual_residual_prediction,
         target=target_aligned,
@@ -1088,6 +1099,7 @@ def compute_losses(
         + (overlap_cancel_target_projection_term * overlap_cancel_target_projection_weight)
         + (overlap_cancel_absent_mix_term * overlap_cancel_absent_mix_weight)
         + (overlap_dual_mix_consistency_term * overlap_dual_mix_consistency_weight)
+        + (overlap_dual_residual_waveform_term * overlap_dual_residual_waveform_weight)
         + (
             overlap_dual_residual_target_projection_term
             * overlap_dual_residual_target_projection_weight
@@ -1128,6 +1140,7 @@ def compute_losses(
         overlap_cancel_target_projection_ratio=overlap_cancel_target_projection_term,
         overlap_cancel_absent_mix_l1=overlap_cancel_absent_mix_term,
         overlap_dual_mix_consistency_l1=overlap_dual_mix_consistency_term,
+        overlap_dual_residual_waveform_l1=overlap_dual_residual_waveform_term,
         overlap_dual_residual_target_projection_ratio=overlap_dual_residual_target_projection_term,
         overlap_dual_absent_mix_l1=overlap_dual_absent_mix_term,
         absent_interval_l1=absent_term,

@@ -143,8 +143,6 @@ class STFTMaskBaseline(nn.Module):
             )
         if enable_branch_overlap_dual_decoder_head and not enable_branch_decoder_head:
             raise ValueError("Branch overlap dual decoder requires enable_branch_decoder_head.")
-        if enable_branch_overlap_cancel_head and enable_branch_overlap_dual_decoder_head:
-            raise ValueError("Branch overlap canceller and overlap dual decoder are mutually exclusive.")
         if branch_overlap_refine_gate_mode not in ("none", "gate", "complement"):
             raise ValueError(
                 "branch_overlap_refine_gate_mode must be one of: none, gate, complement."

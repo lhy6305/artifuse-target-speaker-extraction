@@ -289,6 +289,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--loss-overlap-cancel-target-projection-weight", type=float, default=0.0)
     parser.add_argument("--loss-overlap-cancel-absent-mix-weight", type=float, default=0.0)
     parser.add_argument("--loss-overlap-dual-mix-consistency-weight", type=float, default=0.0)
+    parser.add_argument("--loss-overlap-dual-residual-waveform-weight", type=float, default=0.0)
     parser.add_argument("--loss-overlap-dual-residual-target-projection-weight", type=float, default=0.0)
     parser.add_argument("--loss-overlap-dual-absent-mix-weight", type=float, default=0.0)
     parser.add_argument("--loss-absent-weight", type=float, default=0.0)
@@ -616,6 +617,7 @@ def build_loss_config(args: argparse.Namespace) -> dict[str, float]:
         "overlap_cancel_target_projection_weight": args.loss_overlap_cancel_target_projection_weight,
         "overlap_cancel_absent_mix_weight": args.loss_overlap_cancel_absent_mix_weight,
         "overlap_dual_mix_consistency_weight": args.loss_overlap_dual_mix_consistency_weight,
+        "overlap_dual_residual_waveform_weight": args.loss_overlap_dual_residual_waveform_weight,
         "overlap_dual_residual_target_projection_weight": (
             args.loss_overlap_dual_residual_target_projection_weight
         ),
@@ -762,7 +764,7 @@ def resolve_teacher_checkpoint_path(
 
 def load_model_state_dict_for_init(model: nn.Module, checkpoint_state_dict: dict[str, torch.Tensor]) -> None:
     missing_keys, unexpected_keys = model.load_state_dict(checkpoint_state_dict, strict=False)
-    allowed_missing_prefixes = (
+    allowed_optional_prefixes = (
         "branch_decoder_temporal_model.",
         "branch_decoder_mask_head.",
         "branch_decoder_gate_head.",
@@ -781,12 +783,15 @@ def load_model_state_dict_for_init(model: nn.Module, checkpoint_state_dict: dict
         "adapter_temporal_model.",
     )
     disallowed_missing = [
-        key for key in missing_keys if not any(key.startswith(prefix) for prefix in allowed_missing_prefixes)
+        key for key in missing_keys if not any(key.startswith(prefix) for prefix in allowed_optional_prefixes)
     ]
-    if disallowed_missing or unexpected_keys:
+    disallowed_unexpected = [
+        key for key in unexpected_keys if not any(key.startswith(prefix) for prefix in allowed_optional_prefixes)
+    ]
+    if disallowed_missing or disallowed_unexpected:
         raise RuntimeError(
             "Unexpected state-dict mismatch when loading init checkpoint: "
-            f"missing={disallowed_missing}, unexpected={unexpected_keys}"
+            f"missing={disallowed_missing}, unexpected={disallowed_unexpected}"
         )
     if any(key.startswith("branch_decoder_") for key in missing_keys) and hasattr(model, "reset_branch_decoder_from_base"):
         model.reset_branch_decoder_from_base()
@@ -944,6 +949,7 @@ def evaluate(
     total_overlap_cancel_target_projection = 0.0
     total_overlap_cancel_absent_mix = 0.0
     total_overlap_dual_mix_consistency = 0.0
+    total_overlap_dual_residual_waveform = 0.0
     total_overlap_dual_residual_target_projection = 0.0
     total_overlap_dual_absent_mix = 0.0
     total_absent = 0.0
@@ -1245,6 +1251,9 @@ def evaluate(
             total_overlap_dual_mix_consistency += (
                 float(losses.overlap_dual_mix_consistency_l1.item()) * batch_size
             )
+            total_overlap_dual_residual_waveform += float(
+                losses.overlap_dual_residual_waveform_l1.item()
+            ) * batch_size
             total_overlap_dual_residual_target_projection += float(
                 losses.overlap_dual_residual_target_projection_ratio.item()
             ) * batch_size
@@ -1288,6 +1297,7 @@ def evaluate(
             "overlap_cancel_target_projection_ratio": 0.0,
             "overlap_cancel_absent_mix_l1": 0.0,
             "overlap_dual_mix_consistency_l1": 0.0,
+            "overlap_dual_residual_waveform_l1": 0.0,
             "overlap_dual_residual_target_projection_ratio": 0.0,
             "overlap_dual_absent_mix_l1": 0.0,
             "absent_interval_l1": 0.0,
@@ -1337,6 +1347,9 @@ def evaluate(
             ),
             "overlap_dual_mix_consistency_l1": (
                 total_overlap_dual_mix_consistency / sample_count
+            ),
+            "overlap_dual_residual_waveform_l1": (
+                total_overlap_dual_residual_waveform / sample_count
             ),
             "overlap_dual_residual_target_projection_ratio": (
                 total_overlap_dual_residual_target_projection / sample_count
@@ -1474,6 +1487,7 @@ def main() -> None:
         epoch_overlap_cancel_target_projection = 0.0
         epoch_overlap_cancel_absent_mix = 0.0
         epoch_overlap_dual_mix_consistency = 0.0
+        epoch_overlap_dual_residual_waveform = 0.0
         epoch_overlap_dual_residual_target_projection = 0.0
         epoch_overlap_dual_absent_mix = 0.0
         epoch_absent = 0.0
@@ -1784,6 +1798,9 @@ def main() -> None:
             epoch_overlap_dual_mix_consistency += (
                 float(losses.overlap_dual_mix_consistency_l1.item()) * batch_size
             )
+            epoch_overlap_dual_residual_waveform += float(
+                losses.overlap_dual_residual_waveform_l1.item()
+            ) * batch_size
             epoch_overlap_dual_residual_target_projection += float(
                 losses.overlap_dual_residual_target_projection_ratio.item()
             ) * batch_size
@@ -1867,6 +1884,9 @@ def main() -> None:
                             "overlap_dual_mix_consistency_l1": round(
                                 float(losses.overlap_dual_mix_consistency_l1.item()), 6
                             ),
+                            "overlap_dual_residual_waveform_l1": round(
+                                float(losses.overlap_dual_residual_waveform_l1.item()), 6
+                            ),
                             "overlap_dual_residual_target_projection_ratio": round(
                                 float(losses.overlap_dual_residual_target_projection_ratio.item()), 6
                             ),
@@ -1934,6 +1954,9 @@ def main() -> None:
             ),
             "overlap_dual_mix_consistency_l1": (
                 epoch_overlap_dual_mix_consistency / max(1, epoch_sample_count)
+            ),
+            "overlap_dual_residual_waveform_l1": (
+                epoch_overlap_dual_residual_waveform / max(1, epoch_sample_count)
             ),
             "overlap_dual_residual_target_projection_ratio": (
                 epoch_overlap_dual_residual_target_projection / max(1, epoch_sample_count)
@@ -2017,6 +2040,9 @@ def main() -> None:
                 "train_overlap_dual_mix_consistency_l1": (
                     train_metrics["overlap_dual_mix_consistency_l1"]
                 ),
+                "train_overlap_dual_residual_waveform_l1": (
+                    train_metrics["overlap_dual_residual_waveform_l1"]
+                ),
                 "train_overlap_dual_residual_target_projection_ratio": (
                     train_metrics["overlap_dual_residual_target_projection_ratio"]
                 ),
@@ -2074,6 +2100,9 @@ def main() -> None:
                 ),
                 "val_overlap_dual_mix_consistency_l1": (
                     val_metrics["overlap_dual_mix_consistency_l1"]
+                ),
+                "val_overlap_dual_residual_waveform_l1": (
+                    val_metrics["overlap_dual_residual_waveform_l1"]
                 ),
                 "val_overlap_dual_residual_target_projection_ratio": (
                     val_metrics["overlap_dual_residual_target_projection_ratio"]
