@@ -3057,27 +3057,169 @@
     - 所以
       `branch_overlap_cancel_apply_controller_floor`
       也不再继续
+  - `v161`
+    补齐了 split-controller
+    家族的失败边界：
+    - joint 训练
+      keep / absent
+      两个 controller
+      会把 keep side
+      直接压到近死
+    - 结果不是 fixed checks
+      先爆，
+      而是
+      `near_real_0007`
+      whole / local
+      尤其
+      `speech_only`
+      明显变差
+    - 所以不能把
+      `0007 total leak`
+      和 absent veto
+      继续放在
+      同一个乘法 split-controller
+      里硬解
+  - `v162`
+    说明：
+    - 把 keep controller
+      固定住、
+      只加 absent veto
+      可以避开
+      `v161`
+      的崩坏
+    - 但 whole / local
+      会直接退成
+      近乎 exact tie
+    - 也就是说，
+      这条 absent-veto-only
+      split route
+      是安全但无效，
+      不值得继续
+  - `v163 / v164`
+    则补齐了另一条边界：
+    - 在 `v157`
+      上挂
+      no-teacher
+      `refine_base`
+      sibling，
+      即使 training-side
+      `overlap_interference_projection_ratio`
+      非零，
+      inference 仍可精确 no-op
+    - `v163`
+      的
+      hardlocal total-leak
+      selector
+      只有
+      `3 / 99`
+    - `v164`
+      放宽到
+      `hard_present_artifact_proxy_v1_all`
+      后，
+      train 也只到
+      `8 / 99`
+      / val `1 / 37`
+    - relative `v157`
+      五条 fixed checks
+      全是
+      `0.0 dB`
+    - 说明当前这条
+      present-total sibling
+      不是单纯缺 teacher，
+      但当时还不能排除
+      local supervision 资产
+      仍偏窄
+  - `v165`
+    则把这个资产解释也一起排掉：
+    - 新的
+      `hardlocal_totalrisk_bundle_v1`
+      已把 selector
+      真正扩到
+      train `33 / 129`
+      / val `7 / 41`
+    - 训练期
+      `overlap_interference_projection_ratio`
+      持续非零
+    - 但 relative `v157`
+      五条 fixed checks
+      仍全部精确
+      `0.0 dB`
+    - 说明当前
+      `v157 + no-teacher refine_base`
+      这条 present-total sibling
+      已经不是“asset 不够宽”的问题，
+      而是结构性推不动输出
+  - `v166 / v167`
+    则补出新的 output-path 边界：
+    - 新增
+      `branch_overlap_cancel_apply_mode = branch_base_blend`
+      后，
+      relative `v157`
+      targeted
+      `local_speech_leak_proxy_v1`
+      会明显转正：
+      - `v166 = +0.6618 dB`
+      - `v167 = +0.7356 dB`
+    - 但四条 fixed guardrails
+      会系统性一起崩：
+      - `v166 = -2.8127 / -2.2610 / -1.8606 / -1.7204 dB`
+      - `v167 = -3.1254 / -2.3924 / -1.9762 / -1.8001 dB`
+    - 而且两轮里
+      controller head
+      相对
+      `v157`
+      权重全部 bitwise 不变，
+      train / val
+      `gate_absent_mean / gate_keep_mean`
+      也始终是
+      `0.0`
+    - 这说明当前
+      `branch_base_blend`
+      不会把 controller supervision
+      真正训活，
+      更像纯 inference rewrite
+    - 结论是：
+      不要继续扫
+      `branch_base_blend`
+      或
+      `branch_base_blend + max_blend`
   - 当前默认不再继续扫：
     - `interval-veto union-bundle gate_keep_weight`
     - 同构的
       keep-side reweight
     - `branch_overlap_cancel_apply_max_freq_ratio`
     - `branch_overlap_cancel_apply_controller_floor`
+    - split keep / absent
+      apply-controller
+    - absent-veto-only
+      split controller
+    - `v157`
+      上的
+      no-teacher
+      `refine_base`
+      hardlocaltotal /
+      hard-present-artifact sibling
+    - `branch_base_blend`
+    - `branch_base_blend + max_blend`
   - 如果后续还要继续：
     默认应改做：
     - 以 `v157`
       为 active base
-    - 不再只改
-      apply 稀疏度
-      或频带形状
-    - 而是直接拆
-      controller supervision
-    - 让
+    - 不再继续扫
+      split-controller
+      或 sparse sibling
+    - 直接换
+      非 `branch_base`
+      的新 output apply path，
+      或保证 controller supervision
+      真正活着的路由
+    - 否则
       `0007 total leak`
-      不再作为
-      absent-veto
-      同一个 scalar controller
-      的副作用
+      会继续卡在
+      “targeted local 变好、
+      global keep/abstention
+      一起打穿”
+      这一类错误语义上
 
 ## 近期关键案例入口
 
@@ -3118,6 +3260,7 @@
 - `reports/daily/2026-03-28_applycontroller_on_v142_v150_v152_followup.md`
 - `reports/daily/2026-03-28_applycontroller_interval_veto_v153_v158_followup.md`
 - `reports/daily/2026-03-28_applycontroller_interval_veto_localapply_v159_v160_followup.md`
+- `reports/daily/2026-03-28_splitcontroller_and_refinebase_on_v157_v161_v164_followup.md`
 - `reports/daily/2026-03-28_overlap_refine_preservebypass_0007like_localpush_v114_followup.md`
 - `reports/daily/2026-03-28_overlap_refine_preservebypass_hardlocal_selector_v115_followup.md`
 - `reports/daily/2026-03-28_overlap_refine_preservebypass_0007like_predproj_v116_followup.md`

@@ -152,6 +152,14 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--model-enable-branch-overlap-cancel-apply-absent-controller",
+        action="store_true",
+        help=(
+            "Add a second sigmoid veto head for overlap-cancel direct apply so absent supervision "
+            "does not share the same scalar controller with keep supervision."
+        ),
+    )
+    parser.add_argument(
         "--model-enable-branch-overlap-dual-decoder-head",
         action="store_true",
         help=(
@@ -213,7 +221,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--model-branch-overlap-cancel-apply-mode",
-        choices=["subtract", "auxiliary_only"],
+        choices=["subtract", "branch_base_blend", "auxiliary_only"],
         default="subtract",
     )
     parser.add_argument(
@@ -275,7 +283,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--loss-gate-target-weight", type=float, default=0.0)
     parser.add_argument(
         "--loss-gate-supervision-source",
-        choices=["branch_decoder_frame_gate", "overlap_cancel_apply_controller"],
+        choices=[
+            "branch_decoder_frame_gate",
+            "overlap_cancel_apply_controller",
+            "overlap_cancel_apply_controller_split",
+        ],
         default="branch_decoder_frame_gate",
     )
     parser.add_argument(
@@ -493,6 +505,9 @@ def build_model_config(args: argparse.Namespace) -> dict[str, int]:
         "enable_branch_overlap_cancel_head": args.model_enable_branch_overlap_cancel_head,
         "enable_branch_overlap_cancel_apply_controller": (
             args.model_enable_branch_overlap_cancel_apply_controller
+        ),
+        "enable_branch_overlap_cancel_apply_absent_controller": (
+            args.model_enable_branch_overlap_cancel_apply_absent_controller
         ),
         "enable_branch_overlap_dual_decoder_head": args.model_enable_branch_overlap_dual_decoder_head,
         "enable_adapter_temporal_model": args.model_enable_adapter_temporal_model,
@@ -726,6 +741,7 @@ def load_model_state_dict_for_init(model: nn.Module, checkpoint_state_dict: dict
         "branch_overlap_refine_present_head.",
         "branch_overlap_cancel_head.",
         "branch_overlap_cancel_apply_controller_head.",
+        "branch_overlap_cancel_apply_absent_controller_head.",
         "branch_overlap_dual_decoder_temporal_model.",
         "branch_overlap_dual_decoder_head.",
         "adapter_mask_head.",
@@ -998,6 +1014,10 @@ def evaluate(
                 loss_config.get("gate_supervision_source", "branch_decoder_frame_gate")
             )
             gate_values = outputs.get("branch_decoder_frame_gate")
+            gate_absent_values = None
+            gate_abstain_values = None
+            gate_keep_values = None
+            gate_target_source_values = None
             gate_absent_sample_weights = absent_presence_sample_weights
             gate_abstain_sample_weights = interference_extra_sample_weights
             gate_keep_sample_weights = branch_protect_sample_weights
@@ -1007,6 +1027,16 @@ def evaluate(
             gate_keep_intervals = None
             if gate_supervision_source == "overlap_cancel_apply_controller":
                 gate_values = outputs.get("branch_overlap_cancel_apply_controller")
+                gate_absent_sample_weights = absent_union_sample_weights
+                gate_abstain_sample_weights = None
+                gate_keep_sample_weights = overlap_cancel_sample_weights
+                gate_absent_intervals = batch["target_absent_intervals"]
+                gate_keep_intervals = batch["target_overlap_intervals"]
+            elif gate_supervision_source == "overlap_cancel_apply_controller_split":
+                gate_values = outputs.get("branch_overlap_cancel_apply_controller")
+                gate_absent_values = outputs.get("branch_overlap_cancel_apply_absent_controller")
+                gate_keep_values = outputs.get("branch_overlap_cancel_apply_keep_controller")
+                gate_target_source_values = gate_values
                 gate_absent_sample_weights = absent_union_sample_weights
                 gate_abstain_sample_weights = None
                 gate_keep_sample_weights = overlap_cancel_sample_weights
@@ -1052,6 +1082,10 @@ def evaluate(
                 overlap_intervals=batch["target_overlap_intervals"],
                 model=model,
                 gate_values=gate_values,
+                gate_absent_values=gate_absent_values,
+                gate_abstain_values=gate_abstain_values,
+                gate_keep_values=gate_keep_values,
+                gate_target_source_values=gate_target_source_values,
                 reconstruction_sample_weights=reconstruction_sample_weights,
                 reconstruction_extra_sample_weights=reconstruction_extra_sample_weights,
                 transient_sample_weights=transient_sample_weights,
@@ -1486,6 +1520,10 @@ def main() -> None:
                 loss_config.get("gate_supervision_source", "branch_decoder_frame_gate")
             )
             gate_values = outputs.get("branch_decoder_frame_gate")
+            gate_absent_values = None
+            gate_abstain_values = None
+            gate_keep_values = None
+            gate_target_source_values = None
             gate_absent_sample_weights = absent_presence_sample_weights
             gate_abstain_sample_weights = interference_extra_sample_weights
             gate_keep_sample_weights = branch_protect_sample_weights
@@ -1495,6 +1533,16 @@ def main() -> None:
             gate_keep_intervals = None
             if gate_supervision_source == "overlap_cancel_apply_controller":
                 gate_values = outputs.get("branch_overlap_cancel_apply_controller")
+                gate_absent_sample_weights = absent_union_sample_weights
+                gate_abstain_sample_weights = None
+                gate_keep_sample_weights = overlap_cancel_sample_weights
+                gate_absent_intervals = batch["target_absent_intervals"]
+                gate_keep_intervals = batch["target_overlap_intervals"]
+            elif gate_supervision_source == "overlap_cancel_apply_controller_split":
+                gate_values = outputs.get("branch_overlap_cancel_apply_controller")
+                gate_absent_values = outputs.get("branch_overlap_cancel_apply_absent_controller")
+                gate_keep_values = outputs.get("branch_overlap_cancel_apply_keep_controller")
+                gate_target_source_values = gate_values
                 gate_absent_sample_weights = absent_union_sample_weights
                 gate_abstain_sample_weights = None
                 gate_keep_sample_weights = overlap_cancel_sample_weights
@@ -1540,6 +1588,10 @@ def main() -> None:
                 overlap_intervals=batch["target_overlap_intervals"],
                 model=model,
                 gate_values=gate_values,
+                gate_absent_values=gate_absent_values,
+                gate_abstain_values=gate_abstain_values,
+                gate_keep_values=gate_keep_values,
+                gate_target_source_values=gate_target_source_values,
                 reconstruction_sample_weights=reconstruction_sample_weights,
                 reconstruction_extra_sample_weights=reconstruction_extra_sample_weights,
                 transient_sample_weights=transient_sample_weights,

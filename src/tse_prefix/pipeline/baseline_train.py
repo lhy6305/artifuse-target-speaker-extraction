@@ -668,6 +668,10 @@ def compute_losses(
     overlap_intervals: list[list[dict[str, float]]],
     model,
     gate_values: torch.Tensor | None = None,
+    gate_absent_values: torch.Tensor | None = None,
+    gate_abstain_values: torch.Tensor | None = None,
+    gate_keep_values: torch.Tensor | None = None,
+    gate_target_source_values: torch.Tensor | None = None,
     overlap_cancel_prediction: torch.Tensor | None = None,
     reconstruction_extra_prediction: torch.Tensor | None = None,
     extra_prediction: torch.Tensor | None = None,
@@ -982,8 +986,14 @@ def compute_losses(
         sample_rate=sample_rate,
         sample_weights=absent_extra_sample_weights,
     )
+    resolved_gate_absent_values = gate_absent_values if gate_absent_values is not None else gate_values
+    resolved_gate_abstain_values = gate_abstain_values if gate_abstain_values is not None else gate_values
+    resolved_gate_keep_values = gate_keep_values if gate_keep_values is not None else gate_values
+    resolved_gate_target_values = (
+        gate_target_source_values if gate_target_source_values is not None else gate_values
+    )
     gate_absent_term = weighted_gate_target_loss(
-        gate_values=gate_values,
+        gate_values=resolved_gate_absent_values,
         lengths=lengths,
         model=model,
         target_value=0.0,
@@ -992,7 +1002,7 @@ def compute_losses(
         sample_rate=sample_rate,
     )
     gate_abstain_term = weighted_gate_target_loss(
-        gate_values=gate_values,
+        gate_values=resolved_gate_abstain_values,
         lengths=lengths,
         model=model,
         target_value=0.0,
@@ -1001,7 +1011,7 @@ def compute_losses(
         sample_rate=sample_rate,
     )
     gate_keep_term = weighted_gate_target_loss(
-        gate_values=gate_values,
+        gate_values=resolved_gate_keep_values,
         lengths=lengths,
         model=model,
         target_value=1.0,
@@ -1010,7 +1020,7 @@ def compute_losses(
         sample_rate=sample_rate,
     )
     gate_target_term = weighted_gate_target_loss(
-        gate_values=gate_values,
+        gate_values=resolved_gate_target_values,
         lengths=lengths,
         model=model,
         target_values=gate_target_values,

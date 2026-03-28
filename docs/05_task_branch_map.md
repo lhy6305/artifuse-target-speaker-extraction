@@ -2652,6 +2652,64 @@ checkpoint：
           `0007 total leak`
           稍缩，
           但 whole 仍转差
+        - `v161`
+          则把
+          split keep / absent
+          controller
+          这条路直接判掉：
+          fixed checks
+          仍近 tie，
+          但
+          `near_real_0007`
+          whole / local
+          尤其
+          `speech_only`
+          明显变差
+        - `v162`
+          说明：
+          - absent-veto-only
+            split controller
+            可以保住
+            `v157`
+            的安全边界
+          - 但 whole / local
+            都会退成
+            几乎 exact tie
+          - 所以是
+            mechanism-safe but ineffective
+        - `v163`
+          说明：
+          - 在
+            `v157`
+            上直接挂
+            no-teacher
+            `refine_base`
+            hardlocaltotal sibling
+            仍是 no-op
+          - 因为当前
+            present-total
+            local selector
+            只有
+            `3 / 99`
+            / `3 / 37`
+        - `v164`
+          则把这条边界补实：
+          - selector
+            放宽到
+            `hard_present_artifact_proxy_v1_all`
+            后，
+            train 也只到
+            `8 / 99`
+            / val `1 / 37`
+          - training signal
+            非零，
+            但 relative `v157`
+            五条 fixed checks
+            仍全部
+            `0.0 dB`
+          - 所以
+            `v157 + no-teacher refine_base sibling`
+            当前也推不动输出
       - 当前默认下一步：
         - 保留 `v157`
           为 active base
@@ -2659,10 +2717,20 @@ checkpoint：
           `gate_keep_weight`
           / `apply band`
           / `controller floor`
-        - 直接拆
-          controller supervision，
-          而不是继续只改
-          local apply 形状
+        - 不再扫
+          split keep / absent
+          controller
+        - 不再扫
+          `v157`
+          上的 sparse
+          no-teacher
+          `refine_base` sibling
+        - 下一步若继续，
+          应先补更宽的
+          `present-total`
+          local selector / asset，
+          或直接换新的
+          output apply path
 
 执行前必须保持六条验收同时在场：
 
@@ -2722,6 +2790,7 @@ checkpoint：
 - `reports/daily/2026-03-28_applycontroller_on_v142_v150_v152_followup.md`
 - `reports/daily/2026-03-28_applycontroller_interval_veto_v153_v158_followup.md`
 - `reports/daily/2026-03-28_applycontroller_interval_veto_localapply_v159_v160_followup.md`
+- `reports/daily/2026-03-28_splitcontroller_and_refinebase_on_v157_v161_v164_followup.md`
 - `reports/daily/2026-03-28_overlap_refine_preservebypass_hardlocal_selector_v115_followup.md`
 - `reports/daily/2026-03-28_overlap_refine_preservebypass_0007like_predproj_v116_followup.md`
 - `reports/daily/2026-03-28_overlap_refine_preservebypass_0007like_gateguided_v117_followup.md`

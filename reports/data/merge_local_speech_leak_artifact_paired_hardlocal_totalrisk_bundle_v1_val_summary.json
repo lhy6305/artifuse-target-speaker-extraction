@@ -1,0 +1,66 @@
+{
+  "input_manifests": [
+    "data/synthetic/val_manifest_local_speech_leak_artifact_paired_hardlocal_bundle_v1.jsonl",
+    "data/synthetic/val_manifest_hard_present_artifact_local_proxy_v1.jsonl"
+  ],
+  "output_manifest": "data/synthetic/val_manifest_local_speech_leak_artifact_paired_hardlocal_totalrisk_bundle_v1.jsonl",
+  "sample_ids_output": "data/synthetic/sample_ids_local_speech_leak_artifact_paired_hardlocal_totalrisk_bundle_v1_val.txt",
+  "dedupe_key": "sample_id",
+  "duplicate_key_count": 3,
+  "duplicate_keys": [
+    "val_000343_hard_present_artifact_local_v1",
+    "val_000416_hard_present_artifact_local_v1",
+    "val_000495_hard_present_artifact_local_v1"
+  ],
+  "input_summaries": [
+    {
+      "manifest": "data/synthetic/val_manifest_local_speech_leak_artifact_paired_hardlocal_bundle_v1.jsonl",
+      "summary": {
+        "count": 37,
+        "recipe_counts": {
+          "target_clean_plus_music": 14,
+          "target_clean_speech": 11,
+          "target_hard_plus_music": 5,
+          "target_hard_speech": 7
+        },
+        "temporal_pattern_counts": {
+          "target_full": 37
+        },
+        "interference_pool_counts": {
+          "": 37
+        }
+      }
+    },
+    {
+      "manifest": "data/synthetic/val_manifest_hard_present_artifact_local_proxy_v1.jsonl",
+      "summary": {
+        "count": 7,
+        "recipe_counts": {
+          "target_clean_plus_music": 6,
+          "target_hard_plus_music": 1
+        },
+        "temporal_pattern_counts": {
+          "target_full": 7
+        },
+        "interference_pool_counts": {
+          "": 7
+        }
+      }
+    }
+  ],
+  "output_summary": {
+    "count": 41,
+    "recipe_counts": {
+      "target_clean_plus_music": 17,
+      "target_clean_speech": 11,
+      "target_hard_plus_music": 6,
+      "target_hard_speech": 7
+    },
+    "temporal_pattern_counts": {
+      "target_full": 41
+    },
+    "interference_pool_counts": {
+      "": 41
+    }
+  }
+}

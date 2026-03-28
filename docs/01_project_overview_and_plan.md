@@ -1848,6 +1848,138 @@
           但不足以抵消
           `0007`
           的主 blocker
+      - `v161`
+        把
+        `split keep / absent`
+        apply-controller
+        真正训起来了，
+        但 joint 训练会把
+        keep side
+        明显压塌：
+        - fixed checks
+          仍接近 tie
+        - 但 whole `0007`
+          `delta_interference_capture_db = +27.0105 dB`
+        - local `0007 speech_only`
+          也回退
+          `+5.4442 dB`
+        - 说明这条 split-controller
+          不能作为当前 family
+          的延续
+      - `v162`
+        则把
+        keep controller
+        冻回 `v157`
+        风格、
+        只加 absent veto：
+        - 训练口径上
+          mechanism 是真的，
+          `val_gate_keep_mean ~= 0.0759`
+        - 但 fixed / whole / local
+          都近乎 exact tie
+        - `near_real_0007`
+          whole 仅
+          `+0.1007 / -0.1006 dB`
+        - local `0007 / 0009`
+          也都只剩误差级摆动
+        - 结论是
+          mechanism-safe but ineffective
+      - `v163`
+        改成在
+        `v157`
+        上挂
+        no-teacher
+        `refine_base`
+        sibling，
+        直接打
+        hardlocal total-leak selector：
+        - 但这个 selector
+          在当前资产上
+          只有
+          train `3 / 99`
+          / val `3 / 37`
+        - relative `v157`
+          五条 fixed checks
+          全是精确
+          `0.0 dB`
+        - 判定为
+          structural no-op
+      - `v164`
+        又把 sibling selector
+        放宽到
+        `hard_present_artifact_proxy_v1_all`：
+        - train 命中
+          提到 `8 / 99`
+        - val
+          仍只有 `1 / 37`
+        - 训练信号非零，
+          但 relative `v157`
+          五条 fixed checks
+          仍是精确
+          `0.0 dB`
+        - 说明
+          `v157 + no-teacher refine_base sibling`
+          这条 present-total
+          支路当前也推不动输出
+      - `v165`
+        则把“是不是 asset 还不够宽”
+        这条解释一起关掉：
+        - 新的
+          `hardlocal_totalrisk_bundle_v1`
+          已把 selector
+          真正扩到
+          train `33 / 129`
+          / val `7 / 41`
+        - 训练期
+          `overlap_interference_projection_ratio`
+          持续非零
+        - 但 relative `v157`
+          五条 fixed checks
+          仍全部精确
+          `0.0 dB`
+        - 说明问题已经不是
+          `present-total local asset`
+          太窄，
+          而是
+          `v157 + no-teacher refine_base`
+          这条路本身推不动输出
+      - `v166 / v167`
+        则把新的
+        `branch_base_blend`
+        output apply path
+        直接判掉：
+        - `v166`
+          relative `v157`
+          四条 fixed checks
+          全线重度转负：
+          `-2.8127 / -2.2610 / -1.8606 / -1.7204 dB`
+          但 targeted
+          `local_speech_leak_proxy_v1`
+          却转正
+          `+0.6618 dB`
+        - `v167`
+          把
+          `max_blend`
+          收到
+          `0.1`
+          后反而更差：
+          `-3.1254 / -2.3924 / -1.9762 / -1.8001 dB`
+          / local proxy `+0.7356 dB`
+        - 两轮还有同一个实现边界：
+          controller head
+          相对
+          `v157`
+          权重全部 bitwise 不变，
+          train / val
+          `gate_absent_mean / gate_keep_mean`
+          也始终是
+          `0.0`
+        - 所以当前
+          `branch_base_blend`
+          本质上是
+          inference-path rewrite reject，
+          不值得再扫
+          `max_blend`
     - 当前默认不再继续扫：
       - `predicted_activity`
       - `predicted_activity + max_blend`
@@ -1858,20 +1990,40 @@
       - `interval-veto union-bundle gate_keep_weight`
       - `branch_overlap_cancel_apply_max_freq_ratio`
       - `branch_overlap_cancel_apply_controller_floor`
+      - split keep / absent
+        apply-controller
+      - absent-veto-only
+        split controller
+      - `v157`
+        之上的
+        no-teacher
+        `refine_base`
+        hardlocaltotal /
+        hard-present-artifact sibling
+      - `branch_base_blend`
+      - `branch_base_blend + max_blend`
     - 下一步若继续，
       默认应改做：
       - 保留 `v157`
         作为这条 family
         的 active base
-      - 不再只改
-        apply 形状，
-        而是直接拆
-        controller supervision
-      - 让
+      - 不再继续扫
+        split-controller
+        或 sparse sibling
+        no-teacher rerun
+      - 直接改
+        非 `branch_base`
+        的新 output apply path，
+        或保证 controller supervision
+        真正生效的路由
+      - 否则
         `near_real_0007 total leak`
-        不再作为
-        absent-veto
-        同一个 scalar controller
+        这条监督
+        仍会卡在
+        `3 / 99`
+        到
+        `8 / 99`
+        级别的稀疏口径
         的副作用
       - 而不是再扫
         `gate_keep_weight`
@@ -1933,6 +2085,7 @@
 - `reports/daily/2026-03-28_applycontroller_on_v142_v150_v152_followup.md`
 - `reports/daily/2026-03-28_applycontroller_interval_veto_v153_v158_followup.md`
 - `reports/daily/2026-03-28_applycontroller_interval_veto_localapply_v159_v160_followup.md`
+- `reports/daily/2026-03-28_splitcontroller_and_refinebase_on_v157_v161_v164_followup.md`
 
 ## 文档维护规则
 
