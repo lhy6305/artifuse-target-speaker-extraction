@@ -200,6 +200,39 @@
   - `v126`
     - 含义：`v125 + present-head complement-ratio veto 0.5`
     - 状态：首个把 split 的 complement suppress 语义直接接到 present head 上的 veto pilot；relative `v125` 四条 synthetic 固定验收继续小幅全绿，whole near-real 上 `0007` 的 `interference / retention-minus-leak` 再次转正，但 overlap-local 仍只修到 `total leak`，没有把 `0007 speech_only local leak` 或 `0009 absent local suppression` 推成决定性收益；保留为当前最佳 automatic continuation，不导听审
+  - `v127`
+    - 含义：`v126 + true absent anchor bundle + absent_extra 0.02`
+    - 状态：首次把真正带 `target_absent_intervals` 的 clean-speech absent rows 并进当前 `0007_like` bundle，并证明 `absent_extra` 在 local absent window 上确实能强力压 `near_real_0009` 的 leak；但 relative `v126` 四条 synthetic 固定验收全线转负，whole near-real 也变成 `more_interference_leaky = v127:3, tie:1`，`near_real_0007 / 0003 / 0006` 的 overall tradeoff 明显转坏；判定为“true absent supervision 本体有效，但 current present-head routing 错位”的 reject，不继续
+  - `v128`
+    - 含义：`v126 + true absent anchor bundle + absent_extra 0.02 + complement-head only routing`
+    - 状态：首个 true-absent decoupled routing pilot；relative `v126` 四条 synthetic 固定验收重新全绿，证明问题不在 absent supervision 本体，而在 routing；但 whole near-real 仍是 `more_interference_leaky = v128:2, tie:2`，`near_real_0007` 的 whole leak 依旧明显更差，不能升格
+  - `v129`
+    - 含义：`v128 + absent_extra 0.01`
+    - 状态：`v128` 的最小 reweight continuation；relative `v128` 四条 synthetic 固定验收继续微正，并把 `near_real_0007` 的 whole/local 漂移明显往回收，但同时把 `near_real_0009` absent whole/local 吐回一部分；relative `v126` 仍未翻正，因此只保留为 decoupled true-absent 支线最佳 continuation，不升格
+  - `v130`
+    - 含义：`v129 + complement-head gate_power 2.0`
+    - 状态：首个 complement-head gate-shaping pilot；relative `v129` 四条 synthetic 固定验收全线明显转负，说明这条 `gate_power / gate_floor` shaping 方向会直接伤 guardrail；直接 reject，不补 near-real
+  - `v131`
+    - 含义：`v126 + true-absent dual-controller absent-mix v1`
+    - 状态：首个把 true-absent supervision 直接打到 dual residual/controller branch、再通过 `gate_controller` 接回主输出路由的 pilot；训练 selector 命中真实有效，但 relative `v126` 四条 synthetic 固定验收再次全线明显转负：abstention `-3.0643 dB`、same-gender keep `-2.3636 dB`、hard-present keep `-1.9456 dB`、artifact proxy `-1.7674 dB`；说明即便不直接监督 final output，只要 absent 控制仍通过 global gate 回灌 present path，whole guardrail 仍会系统性受损；直接 reject，不补 near-real
+  - `v132`
+    - 含义：`v126 + true-absent dual current-output absent-mix v1`
+    - 状态：把 `v131` 的 dual absent-supervised 分支从 `gate_controller` 改成 `current_output` 局部 blend，测试 “去掉 global gate recoupling 后是否能保住 guardrail”；结果 relative `v126` 四条 synthetic 固定验收仍然全线转负，而且 abstention 更差：`-6.6014 / -1.3396 / -2.3761 / -2.4415 dB`；说明不只是 `global gate` 有问题，只要 dual absent-supervised branch 直接改 final output，guardrail 仍会系统性受损；直接 reject，不补 near-real
+  - `v133`
+    - 含义：`v126 + true-absent gate-absent 0.04 v1` 初版 scratch
+    - 状态：无效 scratch，不计入正式实验序列；初版 `gate_absent_sample_weights` 误接到了 `absent_union_sample_weights`，而这轮没有显式 absent selector，导致 `train / val_gate_absent_mean` 四个 epoch 全是 `0.0`；修完按 `target_absent_intervals` 直接建 sample weights 后，正式结果转入 `v134`
+  - `v134`
+    - 含义：`v126 + true-absent gate-absent 0.04 v1`
+    - 状态：首个真实 gate-head-only absent pilot；`gate_absent` 明确不是 no-op，`train_gate_absent_mean = 0.4410 -> 0.1905`、`val_gate_absent_mean = 0.2315 -> 0.1255`，但 relative `v126` 四条 synthetic 固定验收仍全线转负：`-2.2058 / -0.9064 / -1.7109 / -2.1404 dB`；证明 gate-only absent supervision 本体有效，但 current gate head 仍会系统性伤 guardrail；直接 reject，不补 near-real
+  - `v135`
+    - 含义：`v126 + true-absent gate-absent 0.02 + gate-keep 0.02`
+    - 状态：给 `v134` 同一条 gate-head-only absent 路线补 sparse `branch_protect` keep anchors 的 rescue pilot；`gate_absent / gate_keep` 都真实生效，`branch_protect` selector 命中 `3 / 203` train、`3 / 63` val，但 relative `v126` 四条 synthetic 固定验收仍全线转负，而且比 `v134` 更差：`-2.2891 / -1.0121 / -1.8372 / -2.5225 dB`；说明 `gate_absent + sparse gate_keep` 也救不回 current gate head，gate-head-only absent-veto family 先收口
+  - `v136`
+    - 含义：`v126 + true-absent auxiliary-only overlap-cancel absent-mix 0.02`
+    - 状态：首个不直接改 final output、改用 `branch_overlap_cancel_head` 做 true-absent indirect transfer 的 credible pilot；`overlap_cancel` selector 命中 `95 / 203` train、`24 / 63` val，`overlap_cancel_absent_mix_l1` 显著非零，说明不是 no-op。relative `v126` 四条 synthetic 固定验收仅轻微负向：`-0.1477 / -0.0324 / -0.0211 / -0.1126 dB`；near-real 虽仍失败，但第一次给出局部正证据：`near_real_0009` absent local leak `-13.5689 dB`，`near_real_0007 speech_only` local leak `-1.7290 dB`，同时 `0007 total leak` 仍转差、whole `more_interference_leaky = v136:3, tie:1`。因此保留为 mechanism-positive evidence point，但不升格、不出听审
+  - `v137`
+    - 含义：`v136 + overlap_cancel_absent_mix_weight 0.01`
+    - 状态：对 `v136` 的最小 reweight continuation；训练 selector 和 `overlap_cancel_absent_mix_l1` 仍真实生效，但 relative `v126` 四条 synthetic 固定验收比 `v136` 全部更差：`-0.1718 / -0.0715 / -0.0347 / -0.2080 dB`；说明这条 auxiliary-only indirect path 的问题不是简单的 weight 偏大，`overlap_cancel_absent_mix_weight` sweep 不再继续，`v137` 直接 reject，不补 near-real
   - `v82`
     - 含义：`present_overlap_residual_leak_purification v1` 首轮 mask pilot
     - 状态：objective 前进明显，但 `v81 vs v82` 听审为 `4 / 4 tie`
@@ -976,6 +1009,93 @@
     - 说明 complement-ratio veto
       已经是一个真实方向，
       但还不是足以导听审的最终机制；
+  - `v127` 已进一步证明：
+    - 真正带 `target_absent_intervals` 的 absent anchor 训练资产是存在且可物化的，
+      不能再把 `v40` 类历史 absent proxy
+      当成“真实 absent interval 数据”；
+    - true absent supervision
+      relative `v126`
+      确实能把 `near_real_0009`
+      的 local absent leak
+      大幅拉低：
+      - `delta_speech_interference_capture_db = -9.3758 dB`
+    - 但它一旦直接接入当前
+      `split-present present-head-only`
+      路径，
+      就会把 present-side 的 whole / total-leak tradeoff 一起拖坏：
+      - `near_real_0007`
+        - `delta_interference_capture_db = +6.3493 dB`
+        - `delta_retention_minus_leak_db = -6.0824 dB`
+      - `near_real_0003`
+        - `delta_interference_capture_db = +1.0259 dB`
+      - `near_real_0006`
+        - `delta_interference_capture_db = +0.9269 dB`
+    - 说明当前错的不是 absent supervision 本体，
+      而是 routing / coupling；
+  - `v128 / v129 / v130` 已进一步证明：
+    - 若把 true absent supervision
+      从 `present-head-only` path
+      解耦到 `complement-head-only` route，
+      fixed synthetic guardrail
+      可以重新稳定为正向；
+    - 其中 `v129`
+      relative `v128`
+      已把 `near_real_0007`
+      的 whole/local 漂移明显回收：
+      - `delta_interference_capture_db = -6.2120 dB`
+      - `delta_retention_minus_leak_db = +6.2530 dB`
+      - `delta_speech_interference_capture_db = -2.4872 dB`
+    - 但 `v129`
+      同时把 `near_real_0009`
+      的 absent suppression
+      吐回一部分：
+      - whole `delta_interference_capture_db = +0.2374 dB`
+      - local `delta_speech_interference_capture_db = +4.1453 dB`
+    - 因而 `v129`
+      虽然是 decoupled true-absent 支线当前最佳 continuation，
+      仍不能越过 `v126`
+      成为全局最佳 automatic continuation；
+    - 进一步地，
+      `v130`
+      已证明 complement-head
+      `gate_power / gate_floor`
+      shaping 这条轴不值得继续：
+      - relative `v129`
+        - abstention `-0.3591 dB`
+        - same-gender keep `-0.2566 dB`
+        - hard-present keep `-0.3005 dB`
+        - artifact proxy `-0.1715 dB`
+      - 因而这条 shaping 方向直接收口；
+    - 再进一步，
+      `v131`
+      已证明即便把 true absent supervision
+      改打到 dual residual/controller branch，
+      只要最终仍通过
+      `gate_controller`
+      回灌主输出路由，
+      fixed synthetic guardrail
+      仍会整体受损：
+      - relative `v126`
+        - abstention `-3.0643 dB`
+        - same-gender keep `-2.3636 dB`
+        - hard-present keep `-1.9456 dB`
+        - artifact proxy `-1.7674 dB`
+      - 因而 `gate_controller + absent-mix`
+        这条接法也直接收口；
+    - `v132`
+      又进一步证明：
+      即便去掉 `global gate recoupling`，
+      把 dual target 改成对当前输出做局部 blend，
+      只要这条 true-absent dual 分支
+      仍直接改 final output，
+      guardrail 仍会整体受损：
+      - relative `v126`
+        - abstention `-6.6014 dB`
+        - same-gender keep `-1.3396 dB`
+        - hard-present keep `-2.3761 dB`
+        - artifact proxy `-2.4415 dB`
+      - 因而 `current_output + absent-mix`
+        这条接法也直接收口；
   - 当前默认下一步再次更新为：
     - 收口 `v118`
     - 不继续 `v118+`
@@ -983,6 +1103,13 @@
     - 若继续 dual 语义，
       只能走 auxiliary / controller-only 接法，
       不再继续 `direct dual-target final-output path`
+    - 若继续 true-absent dual 语义，
+      也不再继续
+      `gate_controller + absent-mix`
+      这种会回灌 global gate 的接法
+    - 也不再继续
+      `current_output + absent-mix`
+      这种 dual-target direct-output 接法
     - 收口 `v120`
     - split local-control semantics 保持活跃
     - 收口 `v121`
@@ -994,12 +1121,31 @@
       - `hardlocal selector`
       - `gate_power` 同构 sweep
       - `present_veto_strength / power`
+      - `absent_extra_weight`
+      - `complement-head gate_power / gate_floor`
+      - `overlap_dual_absent_mix_weight`
+      - `current_output` 同构 sweep
       - 或 `present_max_delta / gate threshold`
       的同构 sweep
     - 下一轮若继续 split local-control semantics，
-      默认应直接改机制或训练资产去打：
+      默认不能再把 true absent supervision
+      直接灌进当前 `present-head-only` update path；
+      也不能再靠 complement-head gate shaping
+      做同构压缩；
+      也不能再通过
+      `gate_controller + absent-mix`
+      这种 global recoupling
+      做同构回灌；
+      也不能再通过
+      `current_output + absent-mix`
+      这种 local direct-output rewrite
+      做同构接管；
+      若继续打：
       - `near_real_0007 speech_only local leak`
       - `target-absent veto`
+      则需要新的解耦 routing，
+      例如 branch / controller-only path，
+      或只在 target-absent local window 内生效的局部目标
 
 ## 当前核心子题
 
@@ -1545,6 +1691,7 @@
 - `reports/daily/2026-03-28_overlap_refine_preservebypass_0007like_predproj_v116_followup.md`
 - `reports/daily/2026-03-28_overlap_refine_preservebypass_0007like_gateguided_v117_followup.md`
 - `reports/daily/2026-03-28_overlap_dual_controller_floor_0007like_v118_followup.md`
+- `reports/daily/2026-03-28_true_absent_auxcancel_indirect_v136_v137_followup.md`
 
 ## 文档维护规则
 

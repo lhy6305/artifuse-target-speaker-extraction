@@ -31,10 +31,13 @@ class LossBreakdown:
     overlap_interference_extra_projection_ratio: torch.Tensor
     overlap_cancel_waveform_l1: torch.Tensor
     overlap_cancel_target_projection_ratio: torch.Tensor
+    overlap_cancel_absent_mix_l1: torch.Tensor
     overlap_dual_mix_consistency_l1: torch.Tensor
     overlap_dual_residual_target_projection_ratio: torch.Tensor
+    overlap_dual_absent_mix_l1: torch.Tensor
     absent_interval_l1: torch.Tensor
     absent_extra_interval_l1: torch.Tensor
+    gate_absent_mean: torch.Tensor
     gate_abstain_mean: torch.Tensor
     gate_keep_mean: torch.Tensor
     gate_target_l1: torch.Tensor
@@ -655,6 +658,7 @@ def compute_losses(
     branch_protect_teacher_sample_weights: torch.Tensor | None = None,
     absent_sample_weights: torch.Tensor | None = None,
     absent_extra_sample_weights: torch.Tensor | None = None,
+    gate_absent_sample_weights: torch.Tensor | None = None,
     gate_abstain_sample_weights: torch.Tensor | None = None,
     gate_keep_sample_weights: torch.Tensor | None = None,
     gate_target_sample_weights: torch.Tensor | None = None,
@@ -680,10 +684,13 @@ def compute_losses(
     overlap_interference_extra_weight: float = 0.0,
     overlap_cancel_waveform_weight: float = 0.0,
     overlap_cancel_target_projection_weight: float = 0.0,
+    overlap_cancel_absent_mix_weight: float = 0.0,
     overlap_dual_mix_consistency_weight: float = 0.0,
     overlap_dual_residual_target_projection_weight: float = 0.0,
+    overlap_dual_absent_mix_weight: float = 0.0,
     absent_weight: float = 0.0,
     absent_extra_weight: float = 0.0,
+    gate_absent_weight: float = 0.0,
     gate_abstain_weight: float = 0.0,
     gate_keep_weight: float = 0.0,
     gate_target_weight: float = 0.0,
@@ -888,6 +895,14 @@ def compute_losses(
         sample_rate=sample_rate,
         sample_weights=overlap_cancel_sample_weights,
     )
+    overlap_cancel_absent_mix_term = interval_waveform_l1_loss(
+        prediction=overlap_cancel_prediction,
+        target=mixture,
+        lengths=lengths,
+        intervals_batch=absent_intervals,
+        sample_rate=sample_rate,
+        sample_weights=overlap_cancel_sample_weights,
+    )
     overlap_dual_mix_consistency_term = interval_waveform_l1_loss(
         prediction=overlap_dual_target_prediction + overlap_dual_residual_prediction,
         target=mixture,
@@ -901,6 +916,14 @@ def compute_losses(
         target=target_aligned,
         lengths=lengths,
         intervals_batch=overlap_intervals,
+        sample_rate=sample_rate,
+        sample_weights=overlap_dual_sample_weights,
+    )
+    overlap_dual_absent_mix_term = interval_waveform_l1_loss(
+        prediction=overlap_dual_residual_prediction,
+        target=mixture,
+        lengths=lengths,
+        intervals_batch=absent_intervals,
         sample_rate=sample_rate,
         sample_weights=overlap_dual_sample_weights,
     )
@@ -919,6 +942,13 @@ def compute_losses(
         absent_intervals=absent_intervals,
         sample_rate=sample_rate,
         sample_weights=absent_extra_sample_weights,
+    )
+    gate_absent_term = weighted_gate_target_loss(
+        gate_values=gate_values,
+        lengths=lengths,
+        model=model,
+        target_value=0.0,
+        sample_weights=gate_absent_sample_weights,
     )
     gate_abstain_term = weighted_gate_target_loss(
         gate_values=gate_values,
@@ -963,13 +993,16 @@ def compute_losses(
         + (overlap_interference_extra_term * overlap_interference_extra_weight)
         + (overlap_cancel_term * overlap_cancel_waveform_weight)
         + (overlap_cancel_target_projection_term * overlap_cancel_target_projection_weight)
+        + (overlap_cancel_absent_mix_term * overlap_cancel_absent_mix_weight)
         + (overlap_dual_mix_consistency_term * overlap_dual_mix_consistency_weight)
         + (
             overlap_dual_residual_target_projection_term
             * overlap_dual_residual_target_projection_weight
         )
+        + (overlap_dual_absent_mix_term * overlap_dual_absent_mix_weight)
         + (absent_term * absent_weight)
         + (absent_extra_term * absent_extra_weight)
+        + (gate_absent_term * gate_absent_weight)
         + (gate_abstain_term * gate_abstain_weight)
         + (gate_keep_term * gate_keep_weight)
         + (gate_target_term * gate_target_weight)
@@ -998,10 +1031,13 @@ def compute_losses(
         overlap_interference_extra_projection_ratio=overlap_interference_extra_term,
         overlap_cancel_waveform_l1=overlap_cancel_term,
         overlap_cancel_target_projection_ratio=overlap_cancel_target_projection_term,
+        overlap_cancel_absent_mix_l1=overlap_cancel_absent_mix_term,
         overlap_dual_mix_consistency_l1=overlap_dual_mix_consistency_term,
         overlap_dual_residual_target_projection_ratio=overlap_dual_residual_target_projection_term,
+        overlap_dual_absent_mix_l1=overlap_dual_absent_mix_term,
         absent_interval_l1=absent_term,
         absent_extra_interval_l1=absent_extra_term,
+        gate_absent_mean=gate_absent_term,
         gate_abstain_mean=gate_abstain_term,
         gate_keep_mean=gate_keep_term,
         gate_target_l1=gate_target_term,

@@ -1,0 +1,73 @@
+{
+  "input_manifests": [
+    "data/synthetic/train_manifest_local_speech_leak_artifact_paired_0007_like_bundle_v1.jsonl",
+    "data/synthetic/train_manifest_absent_anchor_v40_cleancarve_noexactoverlap_v1.jsonl"
+  ],
+  "output_manifest": "data/synthetic/train_manifest_local_speech_leak_artifact_paired_0007_like_plus_absent_anchor_bundle_v1.jsonl",
+  "sample_ids_output": "data/synthetic/sample_ids_local_speech_leak_artifact_paired_0007_like_plus_absent_anchor_bundle_v1_train.txt",
+  "dedupe_key": "sample_id",
+  "duplicate_key_count": 11,
+  "duplicate_keys": [
+    "train_000225",
+    "train_000358",
+    "train_000597",
+    "train_000835",
+    "train_001079",
+    "train_001278",
+    "train_001599",
+    "train_001639",
+    "train_001795",
+    "train_001843",
+    "train_002042"
+  ],
+  "input_summaries": [
+    {
+      "manifest": "data/synthetic/train_manifest_local_speech_leak_artifact_paired_0007_like_bundle_v1.jsonl",
+      "summary": {
+        "count": 108,
+        "recipe_counts": {
+          "target_clean_plus_music": 36,
+          "target_clean_speech": 34,
+          "target_hard_plus_music": 21,
+          "target_hard_speech": 17
+        },
+        "temporal_pattern_counts": {
+          "target_full": 108
+        },
+        "interference_pool_counts": {
+          "": 108
+        }
+      }
+    },
+    {
+      "manifest": "data/synthetic/train_manifest_absent_anchor_v40_cleancarve_noexactoverlap_v1.jsonl",
+      "summary": {
+        "count": 90,
+        "recipe_counts": {
+          "target_clean_speech": 90
+        },
+        "temporal_pattern_counts": {
+          "target_full": 90
+        },
+        "interference_pool_counts": {
+          "": 90
+        }
+      }
+    }
+  ],
+  "output_summary": {
+    "count": 187,
+    "recipe_counts": {
+      "target_clean_plus_music": 36,
+      "target_clean_speech": 113,
+      "target_hard_plus_music": 21,
+      "target_hard_speech": 17
+    },
+    "temporal_pattern_counts": {
+      "target_full": 187
+    },
+    "interference_pool_counts": {
+      "": 187
+    }
+  }
+}

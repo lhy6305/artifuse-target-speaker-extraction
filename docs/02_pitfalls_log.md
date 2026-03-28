@@ -2319,6 +2319,336 @@
     不能只靠当前 `0007_like bundle`
     反复微调。
 
+- `v127 = v126 + true absent anchor bundle + absent_extra 0.02`
+  relative `v126`：
+  - 先澄清：
+    - `sample_ids_v40_absent_reconstructionextra_v6_cleancarve_noexactoverlap`
+      不是“真实 absent interval 训练资产”；
+    - 它对应 rows 实际仍是：
+      - `target_full`
+      - `target_absent_intervals = []`
+    - 因而 true absent supervision
+      不能继续拿 `v40` 类历史 absent proxy
+      代替。
+  - 本轮新资产：
+    - `target_clean_speech`
+    - `target_absent_head / tail`
+    - `speech_only`
+    - `overlap >= 0.8`
+    - train `95`
+    - val `24`
+    - merged bundle 变成：
+      - train `203`
+      - val `63`
+  - selector 命中：
+    - `absent_extra = 95 / 203` train
+    - `absent_extra = 24 / 63` val
+    - 说明这次不是空 selector
+  - synthetic 四条固定验收全线转负：
+    - abstention `-0.1881 dB`
+    - same-gender keep `-0.1060 dB`
+    - hard-present keep `-0.1184 dB`
+    - artifact proxy `-0.0378 dB`
+  - whole near-real：
+    - `more_interference_leaky = v127:3, tie:1`
+    - `better_retention_minus_leak = v126:2, tie:1, not_applicable:1`
+    - `near_real_0007`
+      - `delta_interference_capture_db = +6.3493 dB`
+      - `delta_retention_minus_leak_db = -6.0824 dB`
+    - `near_real_0003`
+      - `delta_interference_capture_db = +1.0259 dB`
+    - `near_real_0006`
+      - `delta_interference_capture_db = +0.9269 dB`
+  - overlap-local：
+    - `near_real_0009`
+      - `delta_speech_interference_capture_db = -9.3758 dB`
+      - true absent local suppression 明显成立
+    - `near_real_0007`
+      - `delta_speech_interference_capture_db = -3.3370 dB`
+      - `delta_total_interference_capture_db = +2.0839 dB`
+      - `delta_retention_minus_speech_leak_db = +3.5401 dB`
+      - `delta_retention_minus_total_leak_db = -1.8808 dB`
+      - 即 speech-only local leak 更干净，
+        但 total leak / overall tradeoff 更差
+  - 结论：
+    - true absent supervision 本体有效；
+    - 但当前 `split-present present-head-only`
+      routing / coupling 错位；
+    - 不导听审，
+      不继续扫 `absent_extra_weight`。
+
+- `v128 = v126 + true absent anchor bundle + absent_extra 0.02 + complement-head only routing`
+  relative `v126`：
+  - 与 `v127` 的唯一区别不是监督本体，
+    而是 trainable path 改成：
+    - `branch_overlap_refine_head`
+    - 而不再直接更新 `present-head-only`
+  - synthetic 四条固定验收重新全线转正：
+    - abstention `+0.2733 dB`
+    - same-gender keep `+0.1355 dB`
+    - hard-present keep `+0.2477 dB`
+    - artifact proxy `+0.1029 dB`
+  - 说明：
+    - true absent supervision 的问题
+      不在 supervision 本体，
+      而在 routing
+  - 但 whole near-real 仍不能保留：
+    - `more_interference_leaky = v128:2, tie:2`
+    - `better_retention_minus_leak = v126:1, tie:2, not_applicable:1`
+    - `near_real_0007`
+      - `delta_interference_capture_db = +8.5356 dB`
+      - `delta_retention_minus_leak_db = -8.3363 dB`
+    - `near_real_0009`
+      - `delta_interference_capture_db = +1.5064 dB`
+  - overlap-local：
+    - `near_real_0009`
+      - `delta_speech_interference_capture_db = -5.6247 dB`
+    - `near_real_0006`
+      - `delta_speech_interference_capture_db = -1.3851 dB`
+    - `near_real_0007`
+      - `delta_speech_interference_capture_db = -0.8117 dB`
+      - `delta_total_interference_capture_db = +2.5239 dB`
+  - 结论：
+    - routing hypothesis 成立，
+      但 `v128` 仍不是可升格 continuation。
+
+- `v129 = v128 + absent_extra 0.01`
+  relative `v128`：
+  - 只做一档最小 reweight，
+    不改训练资产，
+    不改 trainable path
+  - synthetic 四条固定验收继续微正：
+    - abstention `+0.0424 dB`
+    - same-gender keep `+0.0366 dB`
+    - hard-present keep `+0.0541 dB`
+    - artifact proxy `+0.0063 dB`
+  - whole near-real：
+    - `more_interference_leaky = tie:3, v128:1`
+    - `better_retention_minus_leak = tie:2, v129:1, not_applicable:1`
+    - `near_real_0007`
+      - `delta_interference_capture_db = -6.2120 dB`
+      - `delta_retention_minus_leak_db = +6.2530 dB`
+    - 但 `near_real_0009`
+      - `delta_interference_capture_db = +0.2374 dB`
+  - overlap-local：
+    - `near_real_0007`
+      - `delta_speech_interference_capture_db = -2.4872 dB`
+      - `delta_total_interference_capture_db = -1.0267 dB`
+    - `near_real_0009`
+      - `delta_speech_interference_capture_db = +4.1453 dB`
+  - 因而 relative `v126`：
+    - `near_real_0007`
+      - whole `delta_interference_capture_db = +2.3236 dB`
+      - local `delta_speech_interference_capture_db = -3.2989 dB`
+    - `near_real_0009`
+      - whole `delta_interference_capture_db = +1.7438 dB`
+      - local `delta_speech_interference_capture_db = -1.4794 dB`
+  - 结论：
+    - `v129` 是 decoupled true-absent 支线当前最佳 continuation，
+      但仍不能替代 `v126` 成为主线最佳 automatic continuation。
+
+- `v130 = v129 + complement-head gate_power 2.0`
+  relative `v129`：
+  - 新增最小机制：
+    - `branch_overlap_refine_head`
+      增加 `gate_power / gate_floor`
+  - 首档 pilot 直接失败：
+    - abstention `-0.3591 dB`
+    - same-gender keep `-0.2566 dB`
+    - hard-present keep `-0.3005 dB`
+    - artifact proxy `-0.1715 dB`
+  - 因为四条固定验收已全线明显转负，
+    本轮不再补 near-real
+  - 结论：
+    - complement-head `gate_power / gate_floor`
+      shaping 这条轴不值得继续，
+      直接收口。
+
+- `v131 = v126 + true-absent dual-controller absent-mix v1`
+  relative `v126`：
+  - 这轮不再把 true absent supervision
+    直接打到 final output，
+    而是改为：
+    - 新开 `branch_overlap_dual_decoder_head`
+    - `apply_mode = gate_controller`
+    - 对 `overlap_dual_residual_prediction`
+      在 true-absent local window 上做 `mixture` 对齐
+  - 训练 selector 命中有效，
+    不是 no-op：
+    - `overlap_dual = 95 / 203` train
+    - `overlap_dual = 24 / 63` val
+  - 但四条 fixed synthetic checks
+    再次全线明显转负：
+    - abstention `-3.0643 dB`
+    - same-gender keep `-2.3636 dB`
+    - hard-present keep `-1.9456 dB`
+    - artifact proxy `-1.7674 dB`
+  - 结论：
+    - 问题不只是
+      “true absent supervision
+      不能直接灌进 final output”；
+    - 更进一步地，
+      只要 absent controller
+      最终仍通过 `gate_controller`
+      回灌到 global present path，
+      就会系统性伤到：
+      - abstention
+      - present keep
+      - artifact guardrail
+    - 因而
+      `overlap_dual_absent_mix_weight`
+      及其同构的
+      `gate_controller + absent-mix`
+      接法不再继续，
+      直接收口。
+
+- `v132 = v126 + true-absent dual current-output absent-mix v1`
+  relative `v126`：
+  - 这轮把 `v131`
+    的 dual branch apply
+    从 `gate_controller`
+    改为 `current_output` 局部 blend，
+    希望只改当前输出的 absent-like 局部区域，
+    不再经过 global gate 重算
+  - 训练 selector 仍有效，
+    不是 no-op：
+    - `overlap_dual = 95 / 203` train
+    - `overlap_dual = 24 / 63` val
+  - 但四条 fixed synthetic checks
+    还是全线明显转负，
+    而且 abstention 比 `v131` 更差：
+    - abstention `-6.6014 dB`
+    - same-gender keep `-1.3396 dB`
+    - hard-present keep `-2.3761 dB`
+    - artifact proxy `-2.4415 dB`
+  - 结论：
+    - 问题不只在
+      `gate_controller`
+      这种 global recoupling；
+    - 即便 dual target
+      只对当前输出做局部 rewrite，
+      只要 true-absent dual branch
+      直接改 final output，
+      也会系统性伤到：
+      - abstention
+      - present keep
+      - artifact guardrail
+    - 因而
+      `current_output + absent-mix`
+      这条接法也不再继续，
+      直接收口。
+
+- `v133` 暴露了一个 gate-only supervision 接线坑：
+  - 初版 `gate_absent_sample_weights`
+    直接沿用了
+    `absent_union_sample_weights`
+  - 但当 run
+    没有显式配置
+    `absent_* selector`
+    时，
+    `resolve_selector_sample_weights(...)`
+    会返回 `None`
+  - `weighted_gate_target_loss(...)`
+    在 `sample_weights is None`
+    时直接变成 `0.0`
+  - 结果就是：
+    - `train_gate_absent_mean = 0.0`
+    - `val_gate_absent_mean = 0.0`
+    - 表面上像是 “训练稳定”，
+      实际上是整条 `gate_absent`
+      根本没命中
+  - 后续凡是做 gate-only absent supervision，
+    必须优先核对：
+    - `gate_absent_sample_weights`
+      是否直接从
+      `target_absent_intervals`
+      构造
+    - `train / val_gate_absent_mean`
+      是否显著非零
+
+- `v134 / v135` 共同补充了一个更强边界：
+  - `v134`
+    已证明：
+    - `target_absent_intervals -> gate=0`
+      这条 gate-head-only supervision
+      机制是真实生效的，
+      不是 no-op
+  - `v135`
+    又证明：
+    - 即便再给当前 gate head
+      补 sparse
+      `branch_protect`
+      keep anchors，
+      也救不回 fixed guardrails
+  - 因而当前默认不再继续扫：
+    - `gate_absent_weight`
+    - `gate_keep_weight`
+    - `gate-head-only absent veto / keep`
+  - 如果还要继续 true-absent indirect path，
+    默认应换到：
+    - `auxiliary_only / monitor-only`
+      分支
+    - 而不是继续直接监督
+      `branch_decoder_frame_gate`
+
+- `v136 / v137` 补充了
+  `auxiliary_only` true-absent indirect path
+  的新边界：
+  - `v136`
+    已证明：
+    - 通过
+      `branch_overlap_cancel_head`
+      做
+      `auxiliary_only`
+      absent-local indirect supervision
+      是真实生效的，
+      不是 no-op
+    - 它可以在局部窗口里
+      给出正确方向的真收益：
+      - `near_real_0009`
+        absent local leak
+        显著下降
+      - `near_real_0007 speech_only`
+        local leak
+        也显著下降
+  - 但 `v136`
+    同时也证明：
+    - `speech_only local leak`
+      变好
+      不等于
+      `total leak`
+      会一起变好
+    - 更不等于
+      whole near-real
+      会变好；
+      `0003 / 0006 / 0007`
+      仍会整体更 leak
+  - `v137`
+    又进一步证明：
+    - 把
+      `overlap_cancel_absent_mix_weight`
+      从 `0.02`
+      降到 `0.01`
+      并不能把这条机制
+      拉回 guardrail 安全区；
+    - 四条 fixed synthetic checks
+      反而比 `v136`
+      全部更差
+  - 因而当前默认不再继续扫：
+    - `overlap_cancel_absent_mix_weight`
+    - `auxcancel absent-mix`
+      的同构 reweight
+  - 如果还要继续这条 indirect path，
+    默认应改成：
+    - 更局部的
+      `monitor-only / local-window-only`
+      apply 机制
+    - 或直接转向
+      `near_real_0007 total leak`
+      目标，
+      而不是继续优化
+      broad absent-local mixture target
+
 ## 近期关键案例入口
 
 - `reports/daily/2026-03-26_overlap_abstention_proxy_v3_v4_and_v71_v72_followup.md`
@@ -2351,6 +2681,7 @@
 - `reports/daily/2026-03-27_local_speech_leak_artifact_paired_0007like_selfanchor_v111_followup.md`
 - `reports/daily/2026-03-27_overlap_cancel_splitpath_0007like_v112_followup.md`
 - `reports/daily/2026-03-27_overlap_refine_preservebypass_0007like_selfanchor_v113_followup.md`
+- `reports/daily/2026-03-28_true_absent_auxcancel_indirect_v136_v137_followup.md`
 - `reports/daily/2026-03-28_overlap_refine_preservebypass_0007like_localpush_v114_followup.md`
 - `reports/daily/2026-03-28_overlap_refine_preservebypass_hardlocal_selector_v115_followup.md`
 - `reports/daily/2026-03-28_overlap_refine_preservebypass_0007like_predproj_v116_followup.md`

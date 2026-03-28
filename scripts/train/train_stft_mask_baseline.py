@@ -162,6 +162,8 @@ def parse_args() -> argparse.Namespace:
         choices=["none", "gate", "complement"],
         default="gate",
     )
+    parser.add_argument("--model-branch-overlap-refine-gate-power", type=float, default=1.0)
+    parser.add_argument("--model-branch-overlap-refine-gate-floor", type=float, default=0.0)
     parser.add_argument(
         "--model-branch-overlap-refine-source-mode",
         choices=["mixture", "branch_base", "residual"],
@@ -222,7 +224,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--model-branch-overlap-dual-decoder-apply-mode",
-        choices=["final_output", "gate_controller"],
+        choices=["final_output", "current_output", "gate_controller"],
         default="final_output",
     )
     parser.add_argument("--model-branch-overlap-dual-decoder-max-blend", type=float, default=1.0)
@@ -243,10 +245,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--loss-overlap-interference-extra-weight", type=float, default=0.0)
     parser.add_argument("--loss-overlap-cancel-waveform-weight", type=float, default=0.0)
     parser.add_argument("--loss-overlap-cancel-target-projection-weight", type=float, default=0.0)
+    parser.add_argument("--loss-overlap-cancel-absent-mix-weight", type=float, default=0.0)
     parser.add_argument("--loss-overlap-dual-mix-consistency-weight", type=float, default=0.0)
     parser.add_argument("--loss-overlap-dual-residual-target-projection-weight", type=float, default=0.0)
+    parser.add_argument("--loss-overlap-dual-absent-mix-weight", type=float, default=0.0)
     parser.add_argument("--loss-absent-weight", type=float, default=0.0)
     parser.add_argument("--loss-absent-extra-weight", type=float, default=0.0)
+    parser.add_argument("--loss-gate-absent-weight", type=float, default=0.0)
     parser.add_argument("--loss-gate-abstain-weight", type=float, default=0.0)
     parser.add_argument("--loss-gate-keep-weight", type=float, default=0.0)
     parser.add_argument("--loss-gate-target-weight", type=float, default=0.0)
@@ -470,6 +475,8 @@ def build_model_config(args: argparse.Namespace) -> dict[str, int]:
         "adapter_mask_max_delta": args.model_adapter_mask_max_delta,
         "branch_overlap_refine_max_delta": args.model_branch_overlap_refine_max_delta,
         "branch_overlap_refine_gate_mode": args.model_branch_overlap_refine_gate_mode,
+        "branch_overlap_refine_gate_power": args.model_branch_overlap_refine_gate_power,
+        "branch_overlap_refine_gate_floor": args.model_branch_overlap_refine_gate_floor,
         "branch_overlap_refine_source_mode": args.model_branch_overlap_refine_source_mode,
         "branch_overlap_refine_present_max_delta": args.model_branch_overlap_refine_present_max_delta,
         "branch_overlap_refine_present_source_mode": args.model_branch_overlap_refine_present_source_mode,
@@ -535,12 +542,15 @@ def build_loss_config(args: argparse.Namespace) -> dict[str, float]:
         "overlap_interference_extra_weight": args.loss_overlap_interference_extra_weight,
         "overlap_cancel_waveform_weight": args.loss_overlap_cancel_waveform_weight,
         "overlap_cancel_target_projection_weight": args.loss_overlap_cancel_target_projection_weight,
+        "overlap_cancel_absent_mix_weight": args.loss_overlap_cancel_absent_mix_weight,
         "overlap_dual_mix_consistency_weight": args.loss_overlap_dual_mix_consistency_weight,
         "overlap_dual_residual_target_projection_weight": (
             args.loss_overlap_dual_residual_target_projection_weight
         ),
+        "overlap_dual_absent_mix_weight": args.loss_overlap_dual_absent_mix_weight,
         "absent_weight": args.loss_absent_weight,
         "absent_extra_weight": args.loss_absent_extra_weight,
+        "gate_absent_weight": args.loss_gate_absent_weight,
         "gate_abstain_weight": args.loss_gate_abstain_weight,
         "gate_keep_weight": args.loss_gate_keep_weight,
         "gate_target_weight": args.loss_gate_target_weight,
@@ -769,6 +779,17 @@ def configure_trainable_parameters(
     }
 
 
+def build_interval_presence_sample_weights(
+    intervals_batch: list[list[dict[str, float]]],
+    device: torch.device,
+) -> torch.Tensor:
+    return torch.tensor(
+        [1.0 if intervals else 0.0 for intervals in intervals_batch],
+        dtype=torch.float32,
+        device=device,
+    )
+
+
 def evaluate(
     model: STFTMaskBaseline,
     dataloader: DataLoader,
@@ -800,10 +821,13 @@ def evaluate(
     total_overlap_interference_extra = 0.0
     total_overlap_cancel = 0.0
     total_overlap_cancel_target_projection = 0.0
+    total_overlap_cancel_absent_mix = 0.0
     total_overlap_dual_mix_consistency = 0.0
     total_overlap_dual_residual_target_projection = 0.0
+    total_overlap_dual_absent_mix = 0.0
     total_absent = 0.0
     total_absent_extra = 0.0
+    total_gate_absent = 0.0
     total_gate_abstain = 0.0
     total_gate_keep = 0.0
     total_gate_target = 0.0
@@ -913,6 +937,10 @@ def evaluate(
                     extra_weight_keys=("absent_extra_weight",),
                 )
             )
+            absent_presence_sample_weights = build_interval_presence_sample_weights(
+                batch["target_absent_intervals"],
+                device=device,
+            )
             branch_protect_sample_weights = build_selector_sample_weights(
                 batch=batch,
                 device=device,
@@ -985,6 +1013,7 @@ def evaluate(
                 branch_protect_teacher_sample_weights=branch_protect_teacher_sample_weights,
                 absent_sample_weights=absent_sample_weights,
                 absent_extra_sample_weights=absent_extra_sample_weights,
+                gate_absent_sample_weights=absent_presence_sample_weights,
                 gate_abstain_sample_weights=interference_extra_sample_weights,
                 gate_keep_sample_weights=branch_protect_sample_weights,
                 gate_target_sample_weights=gate_target_sample_weights,
@@ -1030,14 +1059,21 @@ def evaluate(
             total_overlap_cancel_target_projection += float(
                 losses.overlap_cancel_target_projection_ratio.item()
             ) * batch_size
+            total_overlap_cancel_absent_mix += float(
+                losses.overlap_cancel_absent_mix_l1.item()
+            ) * batch_size
             total_overlap_dual_mix_consistency += (
                 float(losses.overlap_dual_mix_consistency_l1.item()) * batch_size
             )
             total_overlap_dual_residual_target_projection += float(
                 losses.overlap_dual_residual_target_projection_ratio.item()
             ) * batch_size
+            total_overlap_dual_absent_mix += float(
+                losses.overlap_dual_absent_mix_l1.item()
+            ) * batch_size
             total_absent += float(losses.absent_interval_l1.item()) * batch_size
             total_absent_extra += float(losses.absent_extra_interval_l1.item()) * batch_size
+            total_gate_absent += float(losses.gate_absent_mean.item()) * batch_size
             total_gate_abstain += float(losses.gate_abstain_mean.item()) * batch_size
             total_gate_keep += float(losses.gate_keep_mean.item()) * batch_size
             total_gate_target += float(losses.gate_target_l1.item()) * batch_size
@@ -1068,10 +1104,13 @@ def evaluate(
             "overlap_interference_extra_projection_ratio": 0.0,
             "overlap_cancel_waveform_l1": 0.0,
             "overlap_cancel_target_projection_ratio": 0.0,
+            "overlap_cancel_absent_mix_l1": 0.0,
             "overlap_dual_mix_consistency_l1": 0.0,
             "overlap_dual_residual_target_projection_ratio": 0.0,
+            "overlap_dual_absent_mix_l1": 0.0,
             "absent_interval_l1": 0.0,
             "absent_extra_interval_l1": 0.0,
+            "gate_absent_mean": 0.0,
             "gate_abstain_mean": 0.0,
             "gate_keep_mean": 0.0,
             "gate_target_l1": 0.0,
@@ -1109,14 +1148,21 @@ def evaluate(
             "overlap_cancel_target_projection_ratio": (
                 total_overlap_cancel_target_projection / sample_count
             ),
+            "overlap_cancel_absent_mix_l1": (
+                total_overlap_cancel_absent_mix / sample_count
+            ),
             "overlap_dual_mix_consistency_l1": (
                 total_overlap_dual_mix_consistency / sample_count
             ),
             "overlap_dual_residual_target_projection_ratio": (
                 total_overlap_dual_residual_target_projection / sample_count
             ),
+            "overlap_dual_absent_mix_l1": (
+                total_overlap_dual_absent_mix / sample_count
+            ),
             "absent_interval_l1": total_absent / sample_count,
             "absent_extra_interval_l1": total_absent_extra / sample_count,
+            "gate_absent_mean": total_gate_absent / sample_count,
             "gate_abstain_mean": total_gate_abstain / sample_count,
             "gate_keep_mean": total_gate_keep / sample_count,
             "gate_target_l1": total_gate_target / sample_count,
@@ -1239,10 +1285,13 @@ def main() -> None:
         epoch_overlap_interference_extra = 0.0
         epoch_overlap_cancel = 0.0
         epoch_overlap_cancel_target_projection = 0.0
+        epoch_overlap_cancel_absent_mix = 0.0
         epoch_overlap_dual_mix_consistency = 0.0
         epoch_overlap_dual_residual_target_projection = 0.0
+        epoch_overlap_dual_absent_mix = 0.0
         epoch_absent = 0.0
         epoch_absent_extra = 0.0
+        epoch_gate_absent = 0.0
         epoch_gate_abstain = 0.0
         epoch_gate_keep = 0.0
         epoch_gate_target = 0.0
@@ -1352,6 +1401,10 @@ def main() -> None:
                     extra_weight_keys=("absent_extra_weight",),
                 )
             )
+            absent_presence_sample_weights = build_interval_presence_sample_weights(
+                batch["target_absent_intervals"],
+                device=device,
+            )
             branch_protect_sample_weights = build_selector_sample_weights(
                 batch=batch,
                 device=device,
@@ -1424,6 +1477,7 @@ def main() -> None:
                 branch_protect_teacher_sample_weights=branch_protect_teacher_sample_weights,
                 absent_sample_weights=absent_sample_weights,
                 absent_extra_sample_weights=absent_extra_sample_weights,
+                gate_absent_sample_weights=absent_presence_sample_weights,
                 gate_abstain_sample_weights=interference_extra_sample_weights,
                 gate_keep_sample_weights=branch_protect_sample_weights,
                 gate_target_sample_weights=gate_target_sample_weights,
@@ -1478,14 +1532,21 @@ def main() -> None:
             epoch_overlap_cancel_target_projection += float(
                 losses.overlap_cancel_target_projection_ratio.item()
             ) * batch_size
+            epoch_overlap_cancel_absent_mix += float(
+                losses.overlap_cancel_absent_mix_l1.item()
+            ) * batch_size
             epoch_overlap_dual_mix_consistency += (
                 float(losses.overlap_dual_mix_consistency_l1.item()) * batch_size
             )
             epoch_overlap_dual_residual_target_projection += float(
                 losses.overlap_dual_residual_target_projection_ratio.item()
             ) * batch_size
+            epoch_overlap_dual_absent_mix += float(
+                losses.overlap_dual_absent_mix_l1.item()
+            ) * batch_size
             epoch_absent += float(losses.absent_interval_l1.item()) * batch_size
             epoch_absent_extra += float(losses.absent_extra_interval_l1.item()) * batch_size
+            epoch_gate_absent += float(losses.gate_absent_mean.item()) * batch_size
             epoch_gate_abstain += float(losses.gate_abstain_mean.item()) * batch_size
             epoch_gate_keep += float(losses.gate_keep_mean.item()) * batch_size
             epoch_gate_target += float(losses.gate_target_l1.item()) * batch_size
@@ -1552,16 +1613,23 @@ def main() -> None:
                             "overlap_cancel_target_projection_ratio": round(
                                 float(losses.overlap_cancel_target_projection_ratio.item()), 6
                             ),
+                            "overlap_cancel_absent_mix_l1": round(
+                                float(losses.overlap_cancel_absent_mix_l1.item()), 6
+                            ),
                             "overlap_dual_mix_consistency_l1": round(
                                 float(losses.overlap_dual_mix_consistency_l1.item()), 6
                             ),
                             "overlap_dual_residual_target_projection_ratio": round(
                                 float(losses.overlap_dual_residual_target_projection_ratio.item()), 6
                             ),
+                            "overlap_dual_absent_mix_l1": round(
+                                float(losses.overlap_dual_absent_mix_l1.item()), 6
+                            ),
                             "absent_interval_l1": round(float(losses.absent_interval_l1.item()), 6),
                             "absent_extra_interval_l1": round(
                                 float(losses.absent_extra_interval_l1.item()), 6
                             ),
+                            "gate_absent_mean": round(float(losses.gate_absent_mean.item()), 6),
                             "gate_abstain_mean": round(float(losses.gate_abstain_mean.item()), 6),
                             "gate_keep_mean": round(float(losses.gate_keep_mean.item()), 6),
                             "gate_target_l1": round(float(losses.gate_target_l1.item()), 6),
@@ -1607,14 +1675,21 @@ def main() -> None:
             "overlap_cancel_target_projection_ratio": (
                 epoch_overlap_cancel_target_projection / max(1, epoch_sample_count)
             ),
+            "overlap_cancel_absent_mix_l1": (
+                epoch_overlap_cancel_absent_mix / max(1, epoch_sample_count)
+            ),
             "overlap_dual_mix_consistency_l1": (
                 epoch_overlap_dual_mix_consistency / max(1, epoch_sample_count)
             ),
             "overlap_dual_residual_target_projection_ratio": (
                 epoch_overlap_dual_residual_target_projection / max(1, epoch_sample_count)
             ),
+            "overlap_dual_absent_mix_l1": (
+                epoch_overlap_dual_absent_mix / max(1, epoch_sample_count)
+            ),
             "absent_interval_l1": epoch_absent / max(1, epoch_sample_count),
             "absent_extra_interval_l1": epoch_absent_extra / max(1, epoch_sample_count),
+            "gate_absent_mean": epoch_gate_absent / max(1, epoch_sample_count),
             "gate_abstain_mean": epoch_gate_abstain / max(1, epoch_sample_count),
             "gate_keep_mean": epoch_gate_keep / max(1, epoch_sample_count),
             "gate_target_l1": epoch_gate_target / max(1, epoch_sample_count),
@@ -1678,14 +1753,21 @@ def main() -> None:
                 "train_overlap_cancel_target_projection_ratio": (
                     train_metrics["overlap_cancel_target_projection_ratio"]
                 ),
+                "train_overlap_cancel_absent_mix_l1": (
+                    train_metrics["overlap_cancel_absent_mix_l1"]
+                ),
                 "train_overlap_dual_mix_consistency_l1": (
                     train_metrics["overlap_dual_mix_consistency_l1"]
                 ),
                 "train_overlap_dual_residual_target_projection_ratio": (
                     train_metrics["overlap_dual_residual_target_projection_ratio"]
                 ),
+                "train_overlap_dual_absent_mix_l1": (
+                    train_metrics["overlap_dual_absent_mix_l1"]
+                ),
                 "train_absent_interval_l1": train_metrics["absent_interval_l1"],
                 "train_absent_extra_interval_l1": train_metrics["absent_extra_interval_l1"],
+                "train_gate_absent_mean": train_metrics["gate_absent_mean"],
                 "train_gate_abstain_mean": train_metrics["gate_abstain_mean"],
                 "train_gate_keep_mean": train_metrics["gate_keep_mean"],
                 "train_gate_target_l1": train_metrics["gate_target_l1"],
@@ -1725,14 +1807,21 @@ def main() -> None:
                 "val_overlap_cancel_target_projection_ratio": (
                     val_metrics["overlap_cancel_target_projection_ratio"]
                 ),
+                "val_overlap_cancel_absent_mix_l1": (
+                    val_metrics["overlap_cancel_absent_mix_l1"]
+                ),
                 "val_overlap_dual_mix_consistency_l1": (
                     val_metrics["overlap_dual_mix_consistency_l1"]
                 ),
                 "val_overlap_dual_residual_target_projection_ratio": (
                     val_metrics["overlap_dual_residual_target_projection_ratio"]
                 ),
+                "val_overlap_dual_absent_mix_l1": (
+                    val_metrics["overlap_dual_absent_mix_l1"]
+                ),
                 "val_absent_interval_l1": val_metrics["absent_interval_l1"],
                 "val_absent_extra_interval_l1": val_metrics["absent_extra_interval_l1"],
+                "val_gate_absent_mean": val_metrics["gate_absent_mean"],
                 "val_gate_abstain_mean": val_metrics["gate_abstain_mean"],
                 "val_gate_keep_mean": val_metrics["gate_keep_mean"],
                 "val_gate_target_l1": val_metrics["gate_target_l1"],

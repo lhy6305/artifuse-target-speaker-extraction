@@ -1,0 +1,65 @@
+{
+  "input_manifests": [
+    "data/synthetic/val_manifest_local_speech_leak_artifact_paired_0007_like_bundle_v1.jsonl",
+    "data/synthetic/val_manifest_absent_anchor_v40_cleancarve_noexactoverlap_v1.jsonl"
+  ],
+  "output_manifest": "data/synthetic/val_manifest_local_speech_leak_artifact_paired_0007_like_plus_absent_anchor_bundle_v1.jsonl",
+  "sample_ids_output": "data/synthetic/sample_ids_local_speech_leak_artifact_paired_0007_like_plus_absent_anchor_bundle_v1_val.txt",
+  "dedupe_key": "sample_id",
+  "duplicate_key_count": 3,
+  "duplicate_keys": [
+    "val_000182",
+    "val_000331",
+    "val_000430"
+  ],
+  "input_summaries": [
+    {
+      "manifest": "data/synthetic/val_manifest_local_speech_leak_artifact_paired_0007_like_bundle_v1.jsonl",
+      "summary": {
+        "count": 39,
+        "recipe_counts": {
+          "target_clean_plus_music": 12,
+          "target_clean_speech": 16,
+          "target_hard_plus_music": 4,
+          "target_hard_speech": 7
+        },
+        "temporal_pattern_counts": {
+          "target_full": 39
+        },
+        "interference_pool_counts": {
+          "": 39
+        }
+      }
+    },
+    {
+      "manifest": "data/synthetic/val_manifest_absent_anchor_v40_cleancarve_noexactoverlap_v1.jsonl",
+      "summary": {
+        "count": 20,
+        "recipe_counts": {
+          "target_clean_speech": 20
+        },
+        "temporal_pattern_counts": {
+          "target_full": 20
+        },
+        "interference_pool_counts": {
+          "": 20
+        }
+      }
+    }
+  ],
+  "output_summary": {
+    "count": 56,
+    "recipe_counts": {
+      "target_clean_plus_music": 12,
+      "target_clean_speech": 33,
+      "target_hard_plus_music": 4,
+      "target_hard_speech": 7
+    },
+    "temporal_pattern_counts": {
+      "target_full": 56
+    },
+    "interference_pool_counts": {
+      "": 56
+    }
+  }
+}

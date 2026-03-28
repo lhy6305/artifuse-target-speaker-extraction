@@ -31,6 +31,8 @@ class STFTMaskBaseline(nn.Module):
         adapter_mask_max_delta: float = 0.25,
         branch_overlap_refine_max_delta: float = 0.15,
         branch_overlap_refine_gate_mode: str = "gate",
+        branch_overlap_refine_gate_power: float = 1.0,
+        branch_overlap_refine_gate_floor: float = 0.0,
         branch_overlap_refine_source_mode: str = "mixture",
         branch_overlap_refine_present_max_delta: float = 0.15,
         branch_overlap_refine_present_source_mode: str = "residual",
@@ -71,6 +73,8 @@ class STFTMaskBaseline(nn.Module):
         self.adapter_mask_max_delta = adapter_mask_max_delta
         self.branch_overlap_refine_max_delta = branch_overlap_refine_max_delta
         self.branch_overlap_refine_gate_mode = branch_overlap_refine_gate_mode
+        self.branch_overlap_refine_gate_power = branch_overlap_refine_gate_power
+        self.branch_overlap_refine_gate_floor = branch_overlap_refine_gate_floor
         self.branch_overlap_refine_source_mode = branch_overlap_refine_source_mode
         self.branch_overlap_refine_present_max_delta = branch_overlap_refine_present_max_delta
         self.branch_overlap_refine_present_source_mode = branch_overlap_refine_present_source_mode
@@ -109,11 +113,17 @@ class STFTMaskBaseline(nn.Module):
             raise ValueError("Branch overlap dual decoder requires enable_branch_decoder_head.")
         if enable_branch_overlap_cancel_head and enable_branch_overlap_dual_decoder_head:
             raise ValueError("Branch overlap canceller and overlap dual decoder are mutually exclusive.")
-        if enable_branch_overlap_refine_head and enable_branch_overlap_dual_decoder_head:
-            raise ValueError("Branch overlap refiner and overlap dual decoder are mutually exclusive for now.")
         if branch_overlap_refine_gate_mode not in ("none", "gate", "complement"):
             raise ValueError(
                 "branch_overlap_refine_gate_mode must be one of: none, gate, complement."
+            )
+        if branch_overlap_refine_gate_power <= 0.0:
+            raise ValueError(
+                "branch_overlap_refine_gate_power must be strictly positive."
+            )
+        if not 0.0 <= branch_overlap_refine_gate_floor < 1.0:
+            raise ValueError(
+                "branch_overlap_refine_gate_floor must satisfy 0.0 <= floor < 1.0."
             )
         if branch_overlap_refine_source_mode not in ("mixture", "branch_base", "residual"):
             raise ValueError(
@@ -187,9 +197,10 @@ class STFTMaskBaseline(nn.Module):
             raise ValueError(
                 "branch_overlap_dual_decoder_source_mode must be one of: mixture, branch_base, residual."
             )
-        if branch_overlap_dual_decoder_apply_mode not in ("final_output", "gate_controller"):
+        if branch_overlap_dual_decoder_apply_mode not in ("final_output", "current_output", "gate_controller"):
             raise ValueError(
-                "branch_overlap_dual_decoder_apply_mode must be one of: final_output, gate_controller."
+                "branch_overlap_dual_decoder_apply_mode must be one of: "
+                "final_output, current_output, gate_controller."
             )
         if not 0.0 <= branch_overlap_dual_decoder_gate_floor < 1.0:
             raise ValueError("branch_overlap_dual_decoder_gate_floor must satisfy 0.0 <= floor < 1.0.")
@@ -611,10 +622,32 @@ class STFTMaskBaseline(nn.Module):
                 refine_real, refine_imag = torch.chunk(branch_overlap_refine_params, 2, dim=1)
                 branch_overlap_refine_ratio = torch.complex(refine_real, refine_imag)
                 if branch_decoder_frame_gate is not None:
+                    refine_gate = branch_decoder_frame_gate
                     if self.branch_overlap_refine_gate_mode == "gate":
-                        branch_overlap_refine_ratio = branch_overlap_refine_ratio * branch_decoder_frame_gate
+                        if self.branch_overlap_refine_gate_power != 1.0:
+                            refine_gate = self.apply_blend_power(
+                                refine_gate,
+                                self.branch_overlap_refine_gate_power,
+                            )
+                        if self.branch_overlap_refine_gate_floor > 0.0:
+                            refine_gate = self.apply_blend_floor(
+                                refine_gate,
+                                self.branch_overlap_refine_gate_floor,
+                            )
+                        branch_overlap_refine_ratio = branch_overlap_refine_ratio * refine_gate
                     elif self.branch_overlap_refine_gate_mode == "complement":
-                        branch_overlap_refine_ratio = branch_overlap_refine_ratio * (1.0 - branch_decoder_frame_gate)
+                        refine_gate = 1.0 - refine_gate
+                        if self.branch_overlap_refine_gate_power != 1.0:
+                            refine_gate = self.apply_blend_power(
+                                refine_gate,
+                                self.branch_overlap_refine_gate_power,
+                            )
+                        if self.branch_overlap_refine_gate_floor > 0.0:
+                            refine_gate = self.apply_blend_floor(
+                                refine_gate,
+                                self.branch_overlap_refine_gate_floor,
+                            )
+                        branch_overlap_refine_ratio = branch_overlap_refine_ratio * refine_gate
                 refine_source_stft = mix_stft
                 if self.branch_overlap_refine_source_mode == "branch_base":
                     refine_source_stft = estimated_stft_branch_base
@@ -748,6 +781,10 @@ class STFTMaskBaseline(nn.Module):
                 if self.branch_overlap_dual_decoder_apply_mode == "final_output":
                     estimated_stft = estimated_stft_branch_base + (
                         dual_blend * (branch_overlap_dual_target_stft - estimated_stft_branch_base)
+                    )
+                elif self.branch_overlap_dual_decoder_apply_mode == "current_output":
+                    estimated_stft = estimated_stft + (
+                        dual_blend * (branch_overlap_dual_target_stft - estimated_stft)
                     )
                 else:
                     dual_controller_strength = torch.abs(branch_overlap_dual_residual_stft).mean(
