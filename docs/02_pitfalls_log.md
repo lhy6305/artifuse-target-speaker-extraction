@@ -2158,6 +2158,67 @@
 - `export_ab_listening_pack.py`
   relative `v120`：
   - `v122` 仍是 `0 candidate sample`
+- `v123 = v122 + hardlocal speech_only selector/bundle v1`
+  relative `v122`：
+  - synthetic 四条固定验收仍全绿
+  - whole near-real tradeoff gate 通过
+  - 但 overlap-local：
+    - `near_real_0007`
+      - `delta_speech_interference_capture_db = +1.3089 dB`
+      - `delta_retention_minus_speech_leak_db = -1.4342 dB`
+    - `near_real_0009`
+      - `delta_speech_interference_capture_db = +1.8143 dB`
+  - 说明 hardlocal `speech_only` 子域继续把优化拉向：
+    - whole / total-leak
+    而不是：
+    - `0007` local `speech_only` leak
+    - `0009` absent local suppression
+- `v124 = v122 + soft present gate power 3.0`
+  relative `v122`：
+  - synthetic 已出现明确回退：
+    - abstention `-0.1189 dB`
+    - hard-present keep `-0.0468 dB`
+  - 不再补 near-real，直接判定：
+    - activation shaping 不能继续往 `3.0+` 扫
+- `v125 = v122 + soft present gate power 2.5`
+  relative `v122`：
+  - synthetic 四条固定验收恢复小幅全绿：
+    - abstention `+0.0600 dB`
+    - same-gender keep `+0.1311 dB`
+    - hard-present keep `+0.0751 dB`
+    - artifact proxy `+0.1221 dB`
+  - whole near-real：
+    - `tradeoff gate = pass`
+    - `near_real_0007`
+      - `delta_interference_capture_db = -0.7946 dB`
+      - `delta_retention_minus_leak_db = +0.7309 dB`
+  - overlap-local：
+    - `near_real_0009`
+      - `delta_speech_interference_capture_db = -2.9284 dB`
+    - `near_real_0007`
+      - `delta_speech_interference_capture_db = -0.4983 dB`
+      - `delta_total_interference_capture_db = -0.5610 dB`
+      - `delta_retention_minus_speech_leak_db = +0.4330 dB`
+      - `delta_retention_minus_total_leak_db = +0.4957 dB`
+  - 自动阈值上仍多是 `tie`，
+    但它已经是当前 split local-control semantics
+    relative `v122` 首次同时把：
+    - `0007`
+    - `0009`
+    往正确方向推进；
+  - blind listening pack 已落盘：
+    - `reports/eval/ab_listening_pack_residual_speech_leak_floor_v1_v122_vs_v125_blind`
+  - focused 听审已完成：
+    - `tie = 4`
+    - `v122 = 0`
+    - `v125 = 0`
+  - pack 第 1 条 `near_real_0003`
+    备注为：
+    - `B样本有误差级别的伪影高于A。`
+  - 结论更新为：
+    - automatic 上的正向 drift 仍未转成可听优势；
+    - 核心痛点仍未解决；
+    - `v125` 不升格，只保留为当前最好的 automatic continuation。
 
 原因：
 
@@ -2187,11 +2248,76 @@
   - `gate threshold`
   这类同构 activation sweep；
 - split local-control semantics 的下一轮应直接补：
-  - `speech_only local leak` 导向的显式局部目标 / selector
-  - 或其它不会重新伤到 whole-tradeoff 的 soft veto 机制；
+  - 当前先不再继续扫：
+    - `hardlocal selector`
+    - `gate_power`
+    - `gate threshold / present_max_delta`
+  - 默认直接改机制去打：
+    - `0007 speech_only local leak`
+    - `target-absent veto`；
 - 当前可保留的 active continuation 是：
-  - `v122`
-  不是 `v121`。
+  - `v125`
+  但它只是 automatic continuation，
+  不是可听胜出的候选；
+- `v121 / v123 / v124`
+  仍全部收口，不再回看。
+- `v126 = v125 + present-head complement-ratio veto 0.5`
+  relative `v125`：
+  - synthetic 四条固定验收继续小幅全绿：
+    - abstention `+0.0235 dB`
+    - same-gender keep `+0.0336 dB`
+    - hard-present keep `+0.0146 dB`
+    - artifact proxy `+0.0298 dB`
+  - whole near-real：
+    - `more_interference_leaky = tie:3, v125:1`
+    - `better_retention_minus_leak = tie:2, v126:1, not_applicable:1`
+    - 核心收益集中在：
+      - `near_real_0007`
+        - `delta_interference_capture_db = -1.4286 dB`
+        - `delta_retention_minus_leak_db = +1.3823 dB`
+  - overlap-local：
+    - `more_speech_interference_leaky = tie:4`
+    - `more_total_interference_leaky = tie:3, v125:1`
+    - `near_real_0007`
+      - `delta_speech_interference_capture_db = +0.0284 dB`
+      - `delta_total_interference_capture_db = -0.7020 dB`
+      - `delta_retention_minus_speech_leak_db = -0.0782 dB`
+      - `delta_retention_minus_total_leak_db = +0.6521 dB`
+    - `near_real_0009`
+      - `delta_speech_interference_capture_db = +0.1498 dB`
+  - 结论：
+    - complement-ratio veto 是真实方向；
+    - 但当前只把 `0007` 的 whole / total-leak 再推前一点；
+    - 还没有把：
+      - `0007 speech_only local leak`
+      - `0009 absent local suppression`
+      变成决定性收益；
+    - `v126` 可接替 `v125`
+      成为当前最佳 automatic continuation，
+      但仍不导听审。
+
+补充事实：
+
+- 当前 `train / val_manifest_local_speech_leak_artifact_paired_0007_like_bundle_v1`
+  实际不含 absent 样本；
+- 因而在这套 `0007_like` 训练资产上，
+  直接靠 `absent / absent_extra` selector
+  去验证 `target-absent veto`
+  本质上是空转。
+
+要求更新为：
+
+- 不继续做：
+  - `present_veto_strength / power`
+  的同构 sweep；
+- 若下一轮还要打 `target-absent veto`，
+  默认需要：
+  - 一套真正含 absent anchor 的训练资产，
+    或
+  - 与 `0007 speech_only local leak`
+    绑定的新机制，
+    不能只靠当前 `0007_like bundle`
+    反复微调。
 
 ## 近期关键案例入口
 

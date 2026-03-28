@@ -34,6 +34,11 @@ def serialize_repo_path(path: Path | None) -> str:
         return resolved.as_posix()
 
 
+def write_utf8_text(path: Path, text: str) -> None:
+    with path.open("w", encoding="utf-8", newline="\n") as fh:
+        fh.write(text)
+
+
 def load_json(path: Path) -> Any:
     with path.open("r", encoding="utf-8") as fh:
         return json.load(fh)
@@ -303,10 +308,9 @@ def main() -> None:
     }
 
     output_json = args.output_json or (pack_dir / "listening_review_decoded_summary.json")
-    output_json.write_text(
+    write_utf8_text(
+        output_json,
         json.dumps(output, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-        newline="\n",
     )
 
     print(

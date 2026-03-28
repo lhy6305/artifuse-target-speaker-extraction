@@ -188,6 +188,18 @@
   - `v122`
     - 含义：`v120 + soft present gate power 2.0`
     - 状态：relative `v120` 四条 synthetic 固定验收重新全绿，whole near-real tradeoff gate 通过，overlap-local total leak 继续全样本下降，`near_real_0006 / 0009` local speech leak 也继续改善；但 `near_real_0007` local `speech_only` leak 仍未转正，`export_ab_listening_pack` relative `v120` 仍是 `0 candidate sample`，继续保留但暂不导听审
+  - `v123`
+    - 含义：`v122 + hardlocal speech_only selector/bundle v1`
+    - 状态：relative `v122` 四条 synthetic 固定验收仍全绿，whole near-real tradeoff gate 也通过；但 `near_real_0007` local `speech_only` leak 与 `near_real_0009` absent local suppression 一起回退，判定为“hardlocal 子域继续把优化拉向 whole / total-leak”的失败，不继续
+  - `v124`
+    - 含义：`v122 + soft present gate power 3.0`
+    - 状态：relative `v122` 在 `overlap_abstention / hard_present_keep` 两条固定验收上已出现明确回退，说明 activation shaping 再往上推会重新伤到 guardrail；不继续，也不补 near-real
+  - `v125`
+    - 含义：`v122 + soft present gate power 2.5`
+    - 状态：relative `v122` 四条 synthetic 固定验收保持小幅正向，whole near-real tradeoff gate 继续通过；overlap-local 上首次同时把 `near_real_0007` 与 `near_real_0009` 往正确方向推进，但 `v122 vs v125` focused 听审结果为 `tie = 4, v122 = 0, v125 = 0`，且 pack 第 1 条 `near_real_0003` 备注为 `B样本有误差级别的伪影高于A。`；判定为 automatic 正向但未转成可听优势，不升格
+  - `v126`
+    - 含义：`v125 + present-head complement-ratio veto 0.5`
+    - 状态：首个把 split 的 complement suppress 语义直接接到 present head 上的 veto pilot；relative `v125` 四条 synthetic 固定验收继续小幅全绿，whole near-real 上 `0007` 的 `interference / retention-minus-leak` 再次转正，但 overlap-local 仍只修到 `total leak`，没有把 `0007 speech_only local leak` 或 `0009 absent local suppression` 推成决定性收益；保留为当前最佳 automatic continuation，不导听审
   - `v82`
     - 含义：`present_overlap_residual_leak_purification v1` 首轮 mask pilot
     - 状态：objective 前进明显，但 `v81 vs v82` 听审为 `4 / 4 tie`
@@ -910,6 +922,60 @@
     - 但它仍没有把：
       - `near_real_0007` local `speech_only` leak
       真正推成正向；
+  - `v123` 已进一步证明：
+    - 把 hardlocal `speech_only` 子域拿来做额外抑制，
+      仍会把优化继续拉向：
+      - whole-tradeoff
+      - total leak
+    - 而不是稳定修好：
+      - `near_real_0007` local `speech_only` leak
+      - `near_real_0009` absent local suppression；
+  - `v124 / v125` 已一起收口 activation shaping 轴：
+    - `gate_power = 3.0`
+      会重新伤到：
+      - `overlap_abstention`
+      - `hard_present_keep`
+      这条点位直接废弃；
+    - `gate_power = 2.5`
+      则保住了四条 synthetic 固定验收，
+      whole near-real tradeoff 也继续通过；
+    - relative `v122`，
+      `v125` 的 overlap-local 关键增量为：
+      - `near_real_0009`
+        - `delta_speech_interference_capture_db = -2.9284 dB`
+      - `near_real_0007`
+        - `delta_speech_interference_capture_db = -0.4983 dB`
+        - `delta_total_interference_capture_db = -0.5610 dB`
+        - `delta_retention_minus_speech_leak_db = +0.4330 dB`
+        - `delta_retention_minus_total_leak_db = +0.4957 dB`
+      虽然 automatic 阈值上仍多是 `tie`，
+      且 focused 听审最终仍是：
+      - `tie = 4`
+      - `v122 = 0`
+      - `v125 = 0`
+      说明这已经是当前 split local-control semantics
+      relative `v122` 最好的 automatic 前进点，
+      但仍未跨过主观可感知阈值；
+  - `v126` 已进一步证明：
+    - model-side `present <- complement_ratio veto`
+      这条机制是有效的；
+    - relative `v125`，
+      四条 synthetic 固定验收继续全线微正，
+      说明这不是拿 guardrail 换局部收益；
+    - whole near-real 的关键收益继续集中在：
+      - `near_real_0007`
+        - `delta_interference_capture_db = -1.4286 dB`
+        - `delta_retention_minus_leak_db = +1.3823 dB`
+    - 但 overlap-local 上，
+      它仍主要在改善：
+      - `0007 total leak`
+      而不是：
+      - `0007 speech_only local leak`
+      同时 `0009 absent local suppression`
+      也没有继续往前；
+    - 说明 complement-ratio veto
+      已经是一个真实方向，
+      但还不是足以导听审的最终机制；
   - 当前默认下一步再次更新为：
     - 收口 `v118`
     - 不继续 `v118+`
@@ -920,16 +986,20 @@
     - 收口 `v120`
     - split local-control semantics 保持活跃
     - 收口 `v121`
-    - `v122` 作为当前最佳自动口径 continuation 保持活跃
-    - 仍不导听审
-    - 若继续 `0007` 子题，
-      下一轮应直接补：
-      - present head 对 `speech_only local leak` 的显式局部目标 / selector
-      - 或其它不会重新伤到 whole-tradeoff 的 soft veto 机制
-      而不是回到：
-      - `hard floor`
+    - 收口 `v123 / v124 / v125`
+    - `v126` 接替 `v125`
+      成为当前最佳 split local-control semantics automatic continuation，
+      但不升格
+    - 不再继续扫：
+      - `hardlocal selector`
+      - `gate_power` 同构 sweep
+      - `present_veto_strength / power`
       - 或 `present_max_delta / gate threshold`
       的同构 sweep
+    - 下一轮若继续 split local-control semantics，
+      默认应直接改机制或训练资产去打：
+      - `near_real_0007 speech_only local leak`
+      - `target-absent veto`
 
 ## 当前核心子题
 

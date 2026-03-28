@@ -63,6 +63,11 @@ def serialize_repo_path(path: Path) -> str:
         return resolved.as_posix()
 
 
+def write_utf8_text(path: Path, text: str) -> None:
+    with path.open("w", encoding="utf-8", newline="\n") as fh:
+        fh.write(text)
+
+
 def load_checkpoint(path: Path, device: torch.device) -> dict:
     try:
         return torch.load(path, map_location=device, weights_only=True)
@@ -237,15 +242,13 @@ def main() -> None:
         "loss_config_a": loss_config_a,
         "loss_config_b": loss_config_b,
     }
-    (args.output_dir / "summary.json").write_text(
+    write_utf8_text(
+        args.output_dir / "summary.json",
         json.dumps(summary, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-        newline="\n",
     )
-    (args.output_dir / "per_sample_metrics.jsonl").write_text(
+    write_utf8_text(
+        args.output_dir / "per_sample_metrics.jsonl",
         "".join(json.dumps(row, ensure_ascii=False) + "\n" for row in rows_sorted_improve),
-        encoding="utf-8",
-        newline="\n",
     )
 
     print(

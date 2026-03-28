@@ -69,6 +69,12 @@ def serialize_repo_path(path: Path) -> str:
         return resolved.as_posix()
 
 
+def write_utf8_text(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="\n") as fh:
+        fh.write(text)
+
+
 def load_checkpoint(path: Path, device: torch.device) -> dict:
     try:
         return torch.load(path, map_location=device, weights_only=True)
@@ -256,10 +262,9 @@ def main() -> None:
         }
         if target_path is not None:
             sample_meta["target_audio_path"] = serialize_repo_path(target_path)
-        (sample_dir / "sample_meta.json").write_text(
+        write_utf8_text(
+            sample_dir / "sample_meta.json",
             json.dumps(sample_meta, ensure_ascii=False, indent=2) + "\n",
-            encoding="utf-8",
-            newline="\n",
         )
 
         exported_rows.append(sample_meta)
@@ -294,13 +299,13 @@ def main() -> None:
         "num_exported_samples": len(exported_rows),
         "samples": exported_rows,
     }
-    (args.output_dir / "summary.json").write_text(
+    write_utf8_text(
+        args.output_dir / "summary.json",
         json.dumps(summary, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-        newline="\n",
     )
     if args.blind:
-        (args.output_dir / "blind_key.json").write_text(
+        write_utf8_text(
+            args.output_dir / "blind_key.json",
             json.dumps(
                 {
                     "label_a": args.label_a,
@@ -312,8 +317,6 @@ def main() -> None:
                 indent=2,
             )
             + "\n",
-            encoding="utf-8",
-            newline="\n",
         )
 
     with (args.output_dir / "listening_sheet.csv").open("w", encoding="utf-8", newline="") as fh:
@@ -324,7 +327,8 @@ def main() -> None:
         writer.writeheader()
         writer.writerows(score_sheet_rows)
 
-    (args.output_dir / "listening_rubric.json").write_text(
+    write_utf8_text(
+        args.output_dir / "listening_rubric.json",
         json.dumps(
             {
                 "better_output_choices": BETTER_OUTPUT_CHOICES,
@@ -336,8 +340,6 @@ def main() -> None:
             indent=2,
         )
         + "\n",
-        encoding="utf-8",
-        newline="\n",
     )
 
     template_lines = [
@@ -361,10 +363,9 @@ def main() -> None:
         "- export audio is always downmixed to mono before scoring, so mixture/reference/target/candidates share the same channel layout",
         "",
     ]
-    (args.output_dir / "README.md").write_text(
+    write_utf8_text(
+        args.output_dir / "README.md",
         "\n".join(template_lines),
-        encoding="utf-8",
-        newline="\n",
     )
 
     print(

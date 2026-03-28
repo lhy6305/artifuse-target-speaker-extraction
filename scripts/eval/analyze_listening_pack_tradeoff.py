@@ -66,6 +66,12 @@ def serialize_repo_path(path: Path) -> str:
         return resolved.as_posix()
 
 
+def write_utf8_text(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="\n") as fh:
+        fh.write(text)
+
+
 def load_json(path: Path) -> Any:
     with path.open("r", encoding="utf-8") as fh:
         return json.load(fh)
@@ -703,10 +709,9 @@ def main() -> None:
         )[: args.top_k],
     }
 
-    (output_dir / "summary.json").write_text(
+    write_utf8_text(
+        output_dir / "summary.json",
         json.dumps(summary, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-        newline="\n",
     )
 
     with (output_dir / "per_sample_pair_metrics.jsonl").open("w", encoding="utf-8", newline="\n") as fh:

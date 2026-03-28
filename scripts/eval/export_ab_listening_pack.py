@@ -123,6 +123,12 @@ def serialize_repo_path(path: Path) -> str:
         return resolved.as_posix()
 
 
+def write_utf8_text(path: Path, text: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8", newline="\n") as fh:
+        fh.write(text)
+
+
 def load_checkpoint(path: Path, device: torch.device) -> dict:
     try:
         return torch.load(path, map_location=device, weights_only=True)
@@ -274,10 +280,9 @@ def export_sample_bundle(
     save_audio(sample_dir / "reference.wav", reference * gain, sample_rate)
     save_audio(sample_dir / f"{export_name_a}.wav", estimate_a * gain, sample_rate)
     save_audio(sample_dir / f"{export_name_b}.wav", estimate_b * gain, sample_rate)
-    (sample_dir / "sample_meta.json").write_text(
+    write_utf8_text(
+        sample_dir / "sample_meta.json",
         json.dumps(metrics, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-        newline="\n",
     )
 
 
@@ -529,10 +534,9 @@ def main() -> None:
         "num_exported_samples": len(summary_rows),
         "exported_samples": summary_rows,
     }
-    (args.output_dir / "summary.json").write_text(
+    write_utf8_text(
+        args.output_dir / "summary.json",
         json.dumps(summary, ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-        newline="\n",
     )
     with (args.output_dir / "listening_sheet.csv").open("w", encoding="utf-8", newline="") as fh:
         writer = csv.DictWriter(
@@ -542,7 +546,8 @@ def main() -> None:
         writer.writeheader()
         writer.writerows(score_sheet_rows)
 
-    (args.output_dir / "listening_rubric.json").write_text(
+    write_utf8_text(
+        args.output_dir / "listening_rubric.json",
         json.dumps(
             {
                 "better_output_choices": BETTER_OUTPUT_CHOICES,
@@ -554,12 +559,11 @@ def main() -> None:
             indent=2,
         )
         + "\n",
-        encoding="utf-8",
-        newline="\n",
     )
 
     if args.blind:
-        (args.output_dir / "blind_key.json").write_text(
+        write_utf8_text(
+            args.output_dir / "blind_key.json",
             json.dumps(
                 {
                     "label_a": args.label_a,
@@ -571,8 +575,6 @@ def main() -> None:
                 indent=2,
             )
             + "\n",
-            encoding="utf-8",
-            newline="\n",
         )
 
     export_file_a = args.label_a if not args.blind else "candidate_a"
@@ -629,10 +631,9 @@ def main() -> None:
                 "",
             ]
         )
-    (args.output_dir / "README.md").write_text(
+    write_utf8_text(
+        args.output_dir / "README.md",
         "\n".join(readme_lines),
-        encoding="utf-8",
-        newline="\n",
     )
 
     print(

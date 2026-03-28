@@ -36,6 +36,9 @@ class STFTMaskBaseline(nn.Module):
         branch_overlap_refine_present_source_mode: str = "residual",
         branch_overlap_refine_present_gate_power: float = 1.0,
         branch_overlap_refine_present_gate_floor: float = 0.0,
+        branch_overlap_refine_present_veto_mode: str = "none",
+        branch_overlap_refine_present_veto_strength: float = 0.0,
+        branch_overlap_refine_present_veto_power: float = 1.0,
         branch_overlap_cancel_max_delta: float = 0.15,
         branch_overlap_cancel_gate_mode: str = "complement",
         branch_overlap_cancel_source_mode: str = "residual",
@@ -73,6 +76,9 @@ class STFTMaskBaseline(nn.Module):
         self.branch_overlap_refine_present_source_mode = branch_overlap_refine_present_source_mode
         self.branch_overlap_refine_present_gate_power = branch_overlap_refine_present_gate_power
         self.branch_overlap_refine_present_gate_floor = branch_overlap_refine_present_gate_floor
+        self.branch_overlap_refine_present_veto_mode = branch_overlap_refine_present_veto_mode
+        self.branch_overlap_refine_present_veto_strength = branch_overlap_refine_present_veto_strength
+        self.branch_overlap_refine_present_veto_power = branch_overlap_refine_present_veto_power
         self.branch_overlap_cancel_max_delta = branch_overlap_cancel_max_delta
         self.branch_overlap_cancel_gate_mode = branch_overlap_cancel_gate_mode
         self.branch_overlap_cancel_source_mode = branch_overlap_cancel_source_mode
@@ -130,6 +136,28 @@ class STFTMaskBaseline(nn.Module):
         if not 0.0 <= branch_overlap_refine_present_gate_floor < 1.0:
             raise ValueError(
                 "branch_overlap_refine_present_gate_floor must satisfy 0.0 <= floor < 1.0."
+            )
+        if branch_overlap_refine_present_veto_mode not in ("none", "complement_gate", "complement_ratio"):
+            raise ValueError(
+                "branch_overlap_refine_present_veto_mode must be one of: "
+                "none, complement_gate, complement_ratio."
+            )
+        if not 0.0 <= branch_overlap_refine_present_veto_strength <= 1.0:
+            raise ValueError(
+                "branch_overlap_refine_present_veto_strength must satisfy 0.0 <= strength <= 1.0."
+            )
+        if branch_overlap_refine_present_veto_power <= 0.0:
+            raise ValueError(
+                "branch_overlap_refine_present_veto_power must be strictly positive."
+            )
+        if (
+            branch_overlap_refine_present_veto_mode == "complement_ratio"
+            and enable_branch_overlap_refine_present_head
+            and not enable_branch_overlap_refine_head
+        ):
+            raise ValueError(
+                "branch_overlap_refine_present_veto_mode=complement_ratio "
+                "requires enable_branch_overlap_refine_head."
             )
         if branch_overlap_cancel_gate_mode not in ("none", "gate", "complement"):
             raise ValueError(
@@ -552,6 +580,7 @@ class STFTMaskBaseline(nn.Module):
         branch_decoder_frame_gate = None
         branch_overlap_refine_ratio = None
         branch_overlap_refine_present_ratio = None
+        branch_overlap_refine_present_veto = None
         branch_overlap_cancel_ratio = None
         branch_overlap_cancel_delta_blend = None
         estimated_stft_branch_base = None
@@ -610,6 +639,29 @@ class STFTMaskBaseline(nn.Module):
                         present_gate,
                         self.branch_overlap_refine_present_gate_floor,
                     )
+                if self.branch_overlap_refine_present_veto_mode != "none":
+                    veto_activity = None
+                    if self.branch_overlap_refine_present_veto_mode == "complement_gate":
+                        veto_activity = 1.0 - branch_decoder_frame_gate
+                    elif branch_overlap_refine_ratio is not None:
+                        veto_scale = max(self.branch_overlap_refine_max_delta, 1e-6)
+                        veto_activity = torch.abs(branch_overlap_refine_ratio) / veto_scale
+                    if veto_activity is not None:
+                        veto_activity = torch.clamp(veto_activity, min=0.0, max=1.0)
+                        if self.branch_overlap_refine_present_veto_power != 1.0:
+                            veto_activity = self.apply_blend_power(
+                                veto_activity,
+                                self.branch_overlap_refine_present_veto_power,
+                            )
+                        branch_overlap_refine_present_veto = 1.0 - (
+                            veto_activity * self.branch_overlap_refine_present_veto_strength
+                        )
+                        branch_overlap_refine_present_veto = torch.clamp(
+                            branch_overlap_refine_present_veto,
+                            min=0.0,
+                            max=1.0,
+                        )
+                        present_gate = present_gate * branch_overlap_refine_present_veto
                 branch_overlap_refine_present_ratio = branch_overlap_refine_present_ratio * present_gate
                 refine_present_source_stft = mix_stft
                 if self.branch_overlap_refine_present_source_mode == "branch_base":
@@ -742,6 +794,7 @@ class STFTMaskBaseline(nn.Module):
             "branch_decoder_frame_gate": branch_decoder_frame_gate,
             "branch_overlap_refine_ratio": branch_overlap_refine_ratio,
             "branch_overlap_refine_present_ratio": branch_overlap_refine_present_ratio,
+            "branch_overlap_refine_present_veto": branch_overlap_refine_present_veto,
             "branch_overlap_cancel_ratio": branch_overlap_cancel_ratio,
             "branch_overlap_cancel_delta_blend": branch_overlap_cancel_delta_blend,
             "mixture_stft": mix_stft,

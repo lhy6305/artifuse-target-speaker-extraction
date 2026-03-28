@@ -61,6 +61,11 @@ def serialize_repo_path(path: Path | None) -> str:
         return resolved.as_posix()
 
 
+def write_utf8_text(path: Path, text: str) -> None:
+    with path.open("w", encoding="utf-8", newline="\n") as fh:
+        fh.write(text)
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Browse, score, and export a listening pack.")
     parser.add_argument(
@@ -1139,10 +1144,9 @@ class ListeningPackApp:
         try:
             write_listening_rows(self.pack_dir, rows, self.pack_format)
             summary = self._build_export_summary(rows)
-            (self.pack_dir / EXPORT_SUMMARY_NAME).write_text(
+            write_utf8_text(
+                self.pack_dir / EXPORT_SUMMARY_NAME,
                 json.dumps(summary, ensure_ascii=False, indent=2) + "\n",
-                encoding="utf-8",
-                newline="\n",
             )
         except Exception as exc:
             messagebox.showerror("导出失败", str(exc))

@@ -1900,23 +1900,74 @@ checkpoint：
     - overlap-local total leak 继续全样本下降
     - `0006 / 0009` local speech leak 继续改善；
   - 但 `0007` local `speech_only` leak 仍未转正；
+- `v123` 已进一步证明：
+  - hardlocal `speech_only` 子域做额外抑制
+    不是这条线的答案；
+  - relative `v122` 虽然 synthetic / whole 都没坏，
+    但 `0007 / 0009` 的局部 speech leak 一起回退；
+- `v124 / v125` 已一起收口 soft gate power 轴：
+  - `v124 = gate_power 3.0`
+    已重新伤到 fixed synthetic guardrail，直接废弃；
+  - `v125 = gate_power 2.5`
+    则 relative `v122`：
+    - four fixed synthetic checks 全部小幅正向
+    - whole near-real tradeoff gate 继续通过
+    - `0009` absent local speech leak 明显下降
+    - `0007` local `speech_only / total leak` 也继续下降；
+  - blind listening pack：
+    - `reports/eval/ab_listening_pack_residual_speech_leak_floor_v1_v122_vs_v125_blind`
+    已完成 focused 听审，
+    结果为：
+    - `tie = 4`
+    - `v122 = 0`
+    - `v125 = 0`
+  - pack 第 1 条 `near_real_0003`
+    留下备注：
+    - `B样本有误差级别的伪影高于A。`
+  - 结论：
+    - `v125` 是当前这条轴上最好的 automatic continuation；
+    - 但主观上仍未形成可听胜出，
+      不升格；
+- `v126 = v125 + present-head complement-ratio veto 0.5`
+  - relative `v125`：
+    - four fixed synthetic checks 继续全线微正
+    - whole near-real：
+      - `more_interference_leaky = tie:3, v125:1`
+      - `better_retention_minus_leak = tie:2, v126:1, not_applicable:1`
+      - 关键收益集中在：
+        - `near_real_0007`
+          - `delta_interference_capture_db = -1.4286 dB`
+          - `delta_retention_minus_leak_db = +1.3823 dB`
+    - overlap-local：
+      - `more_total_interference_leaky = tie:3, v125:1`
+      - 但 `more_speech_interference_leaky = tie:4`
+      - `0007` 只把 total leak 再往前推，
+        没把 speech-only local leak 推成明确正向
+      - `0009` absent local suppression 也没有继续前进
+  - 结论：
+    - `v126` 接替 `v125`
+      成为当前最佳 split-local-control automatic continuation
+    - 但仍不进 focused 听审；
 - 当前默认下一步再次更新为：
   - 收口 `v120`
   - preserve/bypass family 保持活跃
   - split local-control semantics 保持活跃
   - 收口 `v121`
-  - `v122` 作为当前最佳自动口径 continuation 保持活跃
-  - 仍不导听审
-  - 若继续 `0007` 子题，
-    下一轮应直接补：
-    - present head 对 `speech_only local leak` 的显式局部目标 / selector
-    - 或其它不会重新伤到 whole-tradeoff 的 soft veto 机制
-    而不是回到：
-    - `hard floor`
-    - `present_max_delta`
-    - `present_source_mode`
-    - `gate threshold`
-    的同构 sweep
+  - 收口 `v123 / v124 / v125`
+  - `v126` 保留为当前最佳 split-local-control automatic continuation
+  - 不再继续扫：
+    - `hardlocal selector`
+    - `gate_power`
+    - `present_veto_strength / power`
+    - `gate threshold / present_max_delta`
+  - 下一轮默认直接改机制去打：
+    - `0007 speech_only local leak`
+    - `target-absent veto`
+  - 且需要记住：
+    - 当前 `0007_like bundle`
+      本身不含 absent 样本，
+      所以 loss-side absent veto
+      不能只在这套训练资产上验证
 
 执行前必须保持六条验收同时在场：
 
