@@ -223,6 +223,58 @@
 - Rule:
   do not replace the active base just because a branch wins on keep or abstention alone.
 
+### 16. Monitor coupling at small blend is real but not yet locally selective
+
+- `v191` showed that `branch_overlap_dual_monitor_max_blend = 0.02` on top of the frozen `v190` dual decoder
+  produces a genuinely real output coupling:
+  relative to `v190` (exact `0.0` on all five checks),
+  all five fixed synthetic deltas turned nonzero positive.
+- But the local blocker (`local_speech_leak_proxy_v1`) moved only `+0.0008 dB`,
+  effectively a tie.
+- The monitor head learned a general output-suppression signal,
+  not a locally targeted one.
+- Rule:
+  do not treat small-blend monitor coupling as equivalent to local-blocker improvement;
+  a local-blocker-specific objective on the monitor path is still needed.
+
+### 17. The direct monitor-supervision path already exists
+
+- The repository already exposes
+  `branch_overlap_dual_monitor_controller`
+  in model outputs.
+- The train and eval entry already accept
+  `gate_supervision_source = overlap_dual_monitor_controller`.
+- The `overlap_dual` selector path is already compatible with the active local blocker sample set.
+- The handoff restore on `2026-03-30` also found that
+  `data/manifests/`
+  was too broad for small selector id metadata;
+  a narrow allowlist was needed for
+  `data/manifests/selectors/**/*.txt`.
+- Rule:
+  before adding new code for monitor-local supervision,
+  first check whether the next branch can be launched by command and selector changes alone.
+
+### 18. Direct monitor-controller supervision alone can still miss the blocker
+
+- `v192` reused the safe `v191` coupling path and switched
+  `gate_supervision_source`
+  to
+  `overlap_dual_monitor_controller`
+  with the proven local-blocker selector.
+- Relative to `v191`,
+  abstention, same-gender keep, hard-present keep, and artifact proxy all improved slightly
+  (`+0.0151 / +0.0078 / +0.0043 / +0.0039 dB`),
+  but `local_speech_leak_proxy_v1` regressed
+  `-0.0149 dB`.
+- The frozen dual auxiliary predictor stayed intact:
+  `val_overlap_dual_residual_waveform_l1 = 0.015926`,
+  same as `v190` and `v191`.
+- Rule:
+  do not assume that moving gate supervision directly onto the monitor head
+  is enough to make the coupling locally selective.
+  It can still strengthen general safe suppression
+  while missing the local blocker.
+
 ## Current Do-Not-Continue List
 
 - `pre_present_max_blend` sweep
@@ -238,9 +290,15 @@
 - broader-path `auxiliary_only` target projection on top of `v179`
 - `dual final_output + max_blend 0` as a supposed non-writing auxiliary path
 - no-write `overlap_dual_mix_consistency + overlap_dual_residual_target_projection` on the active local blocker
+- monitor coupling at small blend alone without a local-blocker-specific objective
+- direct `overlap_dual_monitor_controller` supervision alone on top of `v191`
 
 ## Current Safe Defaults
 
 - Keep `v157` as the active base.
 - Keep `v172` as mechanism-positive evidence only.
-- If this branch resumes, prefer keep preservation that is orthogonal to the local objective over more calibration of the same route.
+- If this branch resumes, prefer direct monitor-path supervision before adding new monitor-path code.
+- After `v192`, prefer blocker-specific or audibility-style monitor targets over replaying the same direct monitor supervision.
+- Prefer keep preservation that is orthogonal to the local objective over more calibration of the same route.
+
+

@@ -18,7 +18,7 @@
 ## Current Scientific Snapshot
 
 - Date:
-  `2026-03-28`
+  `2026-03-29`
 - Active automatic base:
   `v157`
 - Mechanism-positive evidence point:
@@ -26,7 +26,13 @@
 - Current status:
   no listening candidate
 - Current decision:
-  keep `v157` as active base and close the broader-path waveform-local axis
+  keep `v157` as active base;
+  `v191` remains the structural monitor-coupling milestone;
+  `v192` rejected as a direct-monitor-supervision follow-up
+- Restored handoff status on `2026-03-30`:
+  the next blocker is not missing code;
+  direct monitor-controller supervision is already reachable with the current model outputs,
+  training entry, and selector plumbing
 
 ## Active Conclusions
 
@@ -152,6 +158,27 @@
 - The current branch boundary is now sharper:
   the blocker is no longer "find a non-trivial no-write local objective".
   The blocker is "couple a proven no-write auxiliary local path back to output behavior without collapsing into the old shared-route failures".
+- `v191 = v190 + enable_branch_overlap_dual_monitor_controller + monitor_max_blend 0.02`
+  is the first safe coupling evidence point:
+  relative `v157`,
+  all five active fixed checks turned nonzero positive
+  (`+0.0486 / +0.0162 / +0.0467 / +0.0278 / +0.0008 dB`),
+  but the local blocker stayed practical tie.
+- `v192 = v191 + gate_supervision_source overlap_dual_monitor_controller`
+  showed that direct monitor supervision alone still does not solve local selectivity.
+  Relative `v157`,
+  abstention, same-gender keep, hard-present keep, and artifact proxy all stayed small positive
+  (`+0.0637 / +0.0241 / +0.0510 / +0.0317 dB`),
+  but the local blocker moved wrong-way
+  `-0.0140 dB`.
+  Relative `v191`,
+  the four non-blocker checks improved only
+  `+0.0151 / +0.0078 / +0.0043 / +0.0039 dB`,
+  while the local blocker regressed
+  `-0.0149 dB`.
+  The frozen dual residual path stayed preserved
+  (`val_overlap_dual_residual_waveform_l1 = 0.015926`),
+  so the failure is monitor-head selectivity, not auxiliary-path collapse.
 
 ## Closed Axes
 
@@ -184,6 +211,7 @@
 - broader-path `auxiliary_only` target projection on top of `v179`
 - `dual final_output + max_blend 0` as a supposed non-writing auxiliary path
 - no-write `overlap_dual_mix_consistency + overlap_dual_residual_target_projection` on the active local blocker
+- direct `overlap_dual_monitor_controller` supervision alone on top of `v191`
 
 ## Active Branch Status
 
@@ -217,6 +245,10 @@
   `v189`
 - Non-trivial no-write auxiliary local-path evidence:
   `v190`
+- First positive-all-guardrails monitor-coupling evidence:
+  `v191`
+- Direct monitor-controller supervision reject:
+  `v192`
 
 ## Next Valid Directions
 
@@ -235,6 +267,15 @@
   - a materially larger path change only if it uses disjoint keep and local supervision paths
   - a non-trivial local objective on a truly disjoint trainable auxiliary path
   - a separate coupling path that reads a proven non-trivial auxiliary local predictor without reusing the old shared main-output route
+- Do not treat small-blend monitor coupling as equivalent to local-blocker improvement.
+- The most reasonable next options are:
+  - do not continue direct monitor-controller supervision alone on top of `v191`
+  - add a local-blocker-specific interval loss on the monitor controller output
+    so it is penalized when it fails to reduce output in local leak windows
+  - add an audibility-style gate target on the same monitor path
+    to test whether a softer sample-conditioned target is more selective than plain absent or keep supervision
+  - increase `monitor_max_blend` to check if stronger coupling starts to move the local blocker
+  - add a disjoint local objective directly on the monitor controller path using the proven selector
 
 ## Active Report Entry Points
 
@@ -248,4 +289,14 @@
 - `reports/daily/2026-03-29_auxiliary_only_targetproj_v187_followup.md`
 - `reports/daily/2026-03-29_dual_auxiliary_localpath_v188_v189_followup.md`
 - `reports/daily/2026-03-29_dual_auxiliary_residual_waveform_v190_followup.md`
+- `reports/daily/2026-03-29_dual_auxiliary_monitor_coupling_v191_followup.md`
+- `reports/daily/2026-03-30_handoff_restore_and_v192_launch_plan.md`
+- `reports/daily/2026-03-30_direct_monitor_supervision_v192_followup.md`
 - `reports/daily/2026-03-28_encoding_and_active_doc_audit.md`
+
+
+
+
+
+
+

@@ -202,6 +202,30 @@
   the no-write dual auxiliary path can be genuinely training-real,
   but it still needs a separate coupling path before it can affect output behavior
 
+### `v191`
+
+- Route:
+  `v190 + branch_overlap_dual_monitor_controller + monitor_max_blend 0.02`
+- Status:
+  positive-all-guardrails monitor-coupling evidence, still reject for promotion
+- Takeaway:
+  the coupling path is real and safe on fixed synthetic guardrails,
+  but the local blocker stayed near exact tie;
+  the monitor head is writing to output,
+  but not yet selectively enough inside the blocker windows
+
+### `v192`
+
+- Route:
+  `v191 + gate_supervision_source overlap_dual_monitor_controller`
+- Status:
+  direct monitor-controller supervision reject
+- Takeaway:
+  direct absent and overlap supervision on the existing monitor head
+  still did not align the coupling with the local blocker;
+  the four non-blocker checks improved slightly,
+  but the local blocker regressed relative to `v191`
+
 ## Closed Branch Families
 
 - `predicted_activity` direct-apply family
@@ -223,17 +247,24 @@
 - broader-path `auxiliary_only` target projection on top of `v179`
 - `dual final_output + max_blend 0` as a supposed non-writing auxiliary path
 - no-write `overlap_dual_mix_consistency + overlap_dual_residual_target_projection` on the active local blocker
+- direct `overlap_dual_monitor_controller` supervision alone on top of `v191`
 
 ## Next Valid Branches
 
+- an audibility-style gate target on `overlap_dual_monitor_controller`
 - a different local objective that does not share the same final-output degrees of freedom
 - keep-preserve supervision outside the local-blocker windows only if it does not still rewrite the same final-output path
-- a non-trivial local objective on a truly disjoint trainable auxiliary path
-- a separate coupling path that reads a proven non-trivial auxiliary local predictor
+- a local-blocker-specific interval loss on the monitor controller output
+- increased `monitor_max_blend` to check if stronger coupling moves the local blocker
+- a disjoint local objective directly on the monitor controller path using the proven selector
 - only if needed, a materially larger path change with disjoint keep and local supervision paths
 
 ## Immediate Rules
 
 - Keep `v157` as the active base.
 - Keep `v172` as the evidence point.
+- `v191` remains the structural monitor-coupling evidence point.
+- Do not replay `v192`-style direct monitor supervision alone.
 - Do not export listening packs from this family until the active local blocker turns the right way on fixed synthetic proxies.
+
+
