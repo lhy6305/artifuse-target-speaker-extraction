@@ -176,6 +176,15 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--model-enable-branch-overlap-dual-monitor-controller",
+        action="store_true",
+        help=(
+            "Add a separate scalar monitor controller head on top of the dual decoder so "
+            "auxiliary residual activity can be coupled back to output behavior without "
+            "sharing predictor parameters."
+        ),
+    )
+    parser.add_argument(
         "--model-enable-adapter-temporal-model",
         action="store_true",
         help="Add a dedicated bidirectional GRU inside the adapter branch before adapter mask prediction.",
@@ -271,6 +280,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--model-branch-overlap-dual-decoder-max-blend", type=float, default=1.0)
     parser.add_argument("--model-branch-overlap-dual-decoder-gate-floor", type=float, default=0.0)
+    parser.add_argument("--model-branch-overlap-dual-monitor-max-blend", type=float, default=0.0)
     parser.add_argument("--loss-stft-weight", type=float, default=0.5)
     parser.add_argument("--loss-sisdr-weight", type=float, default=0.0)
     parser.add_argument("--loss-branch-protect-guard-sisdr-weight", type=float, default=0.0)
@@ -306,6 +316,7 @@ def parse_args() -> argparse.Namespace:
             "branch_decoder_frame_gate",
             "overlap_cancel_apply_controller",
             "overlap_cancel_apply_controller_split",
+            "overlap_dual_monitor_controller",
         ],
         default="branch_decoder_frame_gate",
     )
@@ -532,6 +543,9 @@ def build_model_config(args: argparse.Namespace) -> dict[str, int]:
             args.model_enable_branch_overlap_cancel_pre_present_controller
         ),
         "enable_branch_overlap_dual_decoder_head": args.model_enable_branch_overlap_dual_decoder_head,
+        "enable_branch_overlap_dual_monitor_controller": (
+            args.model_enable_branch_overlap_dual_monitor_controller
+        ),
         "enable_adapter_temporal_model": args.model_enable_adapter_temporal_model,
         "adapter_gru_layers": args.model_adapter_gru_layers,
         "adapter_conditioning_mode": args.model_adapter_conditioning_mode,
@@ -571,6 +585,7 @@ def build_model_config(args: argparse.Namespace) -> dict[str, int]:
         "branch_overlap_dual_decoder_apply_mode": args.model_branch_overlap_dual_decoder_apply_mode,
         "branch_overlap_dual_decoder_max_blend": args.model_branch_overlap_dual_decoder_max_blend,
         "branch_overlap_dual_decoder_gate_floor": args.model_branch_overlap_dual_decoder_gate_floor,
+        "branch_overlap_dual_monitor_max_blend": args.model_branch_overlap_dual_monitor_max_blend,
     }
 
 
@@ -776,6 +791,7 @@ def load_model_state_dict_for_init(model: nn.Module, checkpoint_state_dict: dict
         "branch_overlap_cancel_pre_present_controller_head.",
         "branch_overlap_dual_decoder_temporal_model.",
         "branch_overlap_dual_decoder_head.",
+        "branch_overlap_dual_monitor_controller_head.",
         "adapter_mask_head.",
         "adapter_condition_proj.",
         "adapter_condition_scale.",
@@ -1128,6 +1144,14 @@ def evaluate(
                 gate_absent_sample_weights = absent_union_sample_weights
                 gate_abstain_sample_weights = None
                 gate_keep_sample_weights = overlap_cancel_sample_weights
+                gate_absent_intervals = batch["target_absent_intervals"]
+                gate_keep_intervals = batch["target_overlap_intervals"]
+            elif gate_supervision_source == "overlap_dual_monitor_controller":
+                gate_values = outputs.get("branch_overlap_dual_monitor_controller")
+                gate_target_source_values = gate_values
+                gate_absent_sample_weights = absent_union_sample_weights
+                gate_abstain_sample_weights = None
+                gate_keep_sample_weights = overlap_dual_sample_weights
                 gate_absent_intervals = batch["target_absent_intervals"]
                 gate_keep_intervals = batch["target_overlap_intervals"]
             for prefix, weights in (
@@ -1666,6 +1690,14 @@ def main() -> None:
                 gate_absent_sample_weights = absent_union_sample_weights
                 gate_abstain_sample_weights = None
                 gate_keep_sample_weights = overlap_cancel_sample_weights
+                gate_absent_intervals = batch["target_absent_intervals"]
+                gate_keep_intervals = batch["target_overlap_intervals"]
+            elif gate_supervision_source == "overlap_dual_monitor_controller":
+                gate_values = outputs.get("branch_overlap_dual_monitor_controller")
+                gate_target_source_values = gate_values
+                gate_absent_sample_weights = absent_union_sample_weights
+                gate_abstain_sample_weights = None
+                gate_keep_sample_weights = overlap_dual_sample_weights
                 gate_absent_intervals = batch["target_absent_intervals"]
                 gate_keep_intervals = batch["target_overlap_intervals"]
             for prefix, weights in (

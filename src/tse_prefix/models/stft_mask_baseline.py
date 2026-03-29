@@ -28,6 +28,7 @@ class STFTMaskBaseline(nn.Module):
         enable_branch_overlap_cancel_apply_absent_controller: bool = False,
         enable_branch_overlap_cancel_pre_present_controller: bool = False,
         enable_branch_overlap_dual_decoder_head: bool = False,
+        enable_branch_overlap_dual_monitor_controller: bool = False,
         enable_adapter_temporal_model: bool = False,
         adapter_gru_layers: int = 1,
         adapter_conditioning_mode: str = "none",
@@ -61,6 +62,7 @@ class STFTMaskBaseline(nn.Module):
         branch_overlap_dual_decoder_apply_mode: str = "final_output",
         branch_overlap_dual_decoder_max_blend: float = 1.0,
         branch_overlap_dual_decoder_gate_floor: float = 0.0,
+        branch_overlap_dual_monitor_max_blend: float = 0.0,
     ) -> None:
         super().__init__()
         self.n_fft = n_fft
@@ -82,6 +84,7 @@ class STFTMaskBaseline(nn.Module):
             enable_branch_overlap_cancel_pre_present_controller
         )
         self.enable_branch_overlap_dual_decoder_head = enable_branch_overlap_dual_decoder_head
+        self.enable_branch_overlap_dual_monitor_controller = enable_branch_overlap_dual_monitor_controller
         self.enable_adapter_temporal_model = enable_adapter_temporal_model
         self.adapter_conditioning_mode = adapter_conditioning_mode
         self.adapter_mask_max_delta = adapter_mask_max_delta
@@ -116,6 +119,7 @@ class STFTMaskBaseline(nn.Module):
         self.branch_overlap_dual_decoder_apply_mode = branch_overlap_dual_decoder_apply_mode
         self.branch_overlap_dual_decoder_max_blend = branch_overlap_dual_decoder_max_blend
         self.branch_overlap_dual_decoder_gate_floor = branch_overlap_dual_decoder_gate_floor
+        self.branch_overlap_dual_monitor_max_blend = branch_overlap_dual_monitor_max_blend
 
         if enable_adapter_mask_head and enable_branch_decoder_head:
             raise ValueError("Adapter mask head and branch decoder head are mutually exclusive for now.")
@@ -143,6 +147,8 @@ class STFTMaskBaseline(nn.Module):
             )
         if enable_branch_overlap_dual_decoder_head and not enable_branch_decoder_head:
             raise ValueError("Branch overlap dual decoder requires enable_branch_decoder_head.")
+        if enable_branch_overlap_dual_monitor_controller and not enable_branch_overlap_dual_decoder_head:
+            raise ValueError("Branch overlap dual monitor controller requires enable_branch_overlap_dual_decoder_head.")
         if branch_overlap_refine_gate_mode not in ("none", "gate", "complement"):
             raise ValueError(
                 "branch_overlap_refine_gate_mode must be one of: none, gate, complement."
@@ -254,6 +260,8 @@ class STFTMaskBaseline(nn.Module):
             )
         if not 0.0 <= branch_overlap_dual_decoder_gate_floor < 1.0:
             raise ValueError("branch_overlap_dual_decoder_gate_floor must satisfy 0.0 <= floor < 1.0.")
+        if not 0.0 <= branch_overlap_dual_monitor_max_blend <= 1.0:
+            raise ValueError("branch_overlap_dual_monitor_max_blend must satisfy 0.0 <= blend <= 1.0.")
         if branch_overlap_dual_decoder_apply_mode == "gate_controller" and not enable_branch_abstention_gate:
             raise ValueError("branch_overlap_dual_decoder_apply_mode=gate_controller requires enable_branch_abstention_gate.")
 
@@ -403,9 +411,19 @@ class STFTMaskBaseline(nn.Module):
                     nn.Linear(hidden_dim, self.freq_bins * 2),
                 )
                 self.reset_branch_overlap_dual_decoder_head()
+                if enable_branch_overlap_dual_monitor_controller:
+                    self.branch_overlap_dual_monitor_controller_head = nn.Sequential(
+                        nn.Linear(hidden_dim * 2, hidden_dim),
+                        nn.ReLU(),
+                        nn.Linear(hidden_dim, 1),
+                    )
+                    self.reset_branch_overlap_dual_monitor_controller_head()
+                else:
+                    self.branch_overlap_dual_monitor_controller_head = None
             else:
                 self.branch_overlap_dual_decoder_temporal_model = None
                 self.branch_overlap_dual_decoder_head = None
+                self.branch_overlap_dual_monitor_controller_head = None
             self.reset_branch_decoder_from_base()
             self.reset_branch_overlap_dual_decoder_from_branch()
         else:
@@ -420,6 +438,7 @@ class STFTMaskBaseline(nn.Module):
             self.branch_overlap_cancel_pre_present_controller_head = None
             self.branch_overlap_dual_decoder_temporal_model = None
             self.branch_overlap_dual_decoder_head = None
+            self.branch_overlap_dual_monitor_controller_head = None
         apply_band_bins = max(1, int(math.ceil(self.freq_bins * self.branch_overlap_cancel_apply_max_freq_ratio)))
         apply_band_mask = torch.zeros(1, self.freq_bins, 1)
         apply_band_mask[:, :apply_band_bins, :] = 1.0
@@ -545,6 +564,13 @@ class STFTMaskBaseline(nn.Module):
         final_layer = self.branch_overlap_dual_decoder_head[-1]
         nn.init.zeros_(final_layer.weight)
         nn.init.zeros_(final_layer.bias)
+
+    def reset_branch_overlap_dual_monitor_controller_head(self) -> None:
+        if self.branch_overlap_dual_monitor_controller_head is None:
+            return
+        final_layer = self.branch_overlap_dual_monitor_controller_head[-1]
+        nn.init.zeros_(final_layer.weight)
+        nn.init.constant_(final_layer.bias, -4.0)
 
     @staticmethod
     def apply_blend_floor(
@@ -718,6 +744,7 @@ class STFTMaskBaseline(nn.Module):
         branch_overlap_dual_residual_stft = None
         branch_overlap_dual_residual_waveform = None
         branch_overlap_dual_controller = None
+        branch_overlap_dual_monitor_controller = None
         if self.branch_decoder_temporal_model is not None and self.branch_decoder_mask_head is not None:
             branch_encoded, _ = self.branch_decoder_temporal_model(temporal_input)
             branch_decoder_mask = self.branch_decoder_mask_head(branch_encoded).transpose(1, 2)
@@ -1070,6 +1097,33 @@ class STFTMaskBaseline(nn.Module):
                         1.0 - (dual_blend * branch_overlap_dual_controller)
                     )
                     estimated_stft = mix_stft * (branch_decoder_mask * controlled_gate)
+                if self.branch_overlap_dual_monitor_controller_head is not None:
+                    dual_monitor_base = torch.sigmoid(
+                        self.branch_overlap_dual_monitor_controller_head(dual_encoded)
+                    ).transpose(1, 2)
+                    if branch_overlap_dual_controller is None:
+                        dual_controller_strength = torch.abs(branch_overlap_dual_residual_stft).mean(
+                            dim=1,
+                            keepdim=True,
+                        )
+                        dual_source_strength = torch.abs(dual_source_stft).mean(
+                            dim=1,
+                            keepdim=True,
+                        ).clamp_min(1e-6)
+                        branch_overlap_dual_controller = torch.clamp(
+                            dual_controller_strength / dual_source_strength,
+                            min=0.0,
+                            max=1.0,
+                        )
+                    branch_overlap_dual_monitor_controller = (
+                        dual_monitor_base * branch_overlap_dual_controller
+                    )
+                    if self.branch_overlap_dual_monitor_max_blend > 0.0:
+                        estimated_stft = estimated_stft - (
+                            branch_overlap_dual_residual_stft
+                            * branch_overlap_dual_monitor_controller
+                            * self.branch_overlap_dual_monitor_max_blend
+                        )
             estimated_waveform = self.istft(estimated_stft, mixture_lengths)
             if branch_overlap_cancel_estimate_stft is not None:
                 branch_overlap_cancel_estimate_waveform = self.istft(
@@ -1118,4 +1172,5 @@ class STFTMaskBaseline(nn.Module):
             "branch_overlap_dual_target_waveform": branch_overlap_dual_target_waveform,
             "branch_overlap_dual_residual_waveform": branch_overlap_dual_residual_waveform,
             "branch_overlap_dual_controller": branch_overlap_dual_controller,
+            "branch_overlap_dual_monitor_controller": branch_overlap_dual_monitor_controller,
         }
