@@ -732,6 +732,291 @@
   If this family continues,
   change the keep objective or the keep path itself.
 
+### 35. Low-weight teacher-overlap on the disjoint keep-output route can be real yet slightly worse everywhere
+
+- `v217`
+  added
+  `branch_protect_teacher_overlap_weight = 0.04`
+  on top of
+  `v212`,
+  using
+  `estimated_waveform_post_pre_present_controller`
+  and the safe
+  `v157`
+  teacher inside
+  `gate_keep_union_v2`.
+- The route was training-real:
+  `branch_protect_teacher`
+  stayed active
+  (`train 63 / 233, val 27 / 67`)
+  and
+  `val_branch_protect_teacher_overlap_l1`
+  stayed at about
+  `0.000295`.
+- But direct
+  `v212 -> v217`
+  compare moved
+  `-0.0196 / -0.0156 / -0.0123 / -0.0092 / -0.0029 dB`
+  on the five fixed proxies.
+- Rule:
+  do not assume an overlap-only teacher keep term is helpful on this disjoint route just because the selector is active and the loss is nonzero.
+  At low weight,
+  this family can still be practical tie while drifting slightly worse across all active checks.
+
+### 36. Higher teacher-overlap weight can repair guardrails a little without solving selectivity
+
+- `v218`
+  raised
+  `branch_protect_teacher_overlap_weight`
+  from
+  `0.04`
+  to
+  `0.2`
+  on the same route.
+- Direct
+  `v217 -> v218`
+  compare improved the four non-blocker checks
+  `+0.0406 / +0.0400 / +0.0199 / +0.0163 dB`,
+  but the local blocker still moved
+  `-0.0028 dB`.
+- Direct
+  `v212 -> v218`
+  compare still showed the same shape:
+  `+0.0210 / +0.0244 / +0.0076 / +0.0071 / -0.0057 dB`.
+- Rule:
+  do not keep sweeping
+  `branch_protect_teacher_overlap_weight`
+  on the same pre-present keep-output plus dual residual-correction family by default.
+  This scalar only moves the route a little along the same guardrail-versus-local exchange surface.
+
+### 37. Widening the keep path through the same cancel estimate can reopen a much steeper tradeoff
+
+- `v219`
+  kept the
+  `v212`
+  losses fixed,
+  but widened the trainable keep path by adding
+  `branch_overlap_cancel_head`
+  on top of the existing
+  `branch_overlap_cancel_pre_present_controller_head`
+  route.
+- This was clearly not a practical tie.
+  Relative
+  `v212`,
+  the five fixed proxies moved
+  `+0.6713 / +0.2892 / +0.6024 / +0.2629 / -0.0913 dB`.
+- Rule:
+  do not assume that more expressive keep-path capacity on the same cancel-estimate writer will improve selectivity.
+  On this family,
+  simple widening can strongly improve guardrails while worsening the local blocker even more,
+  which means it is still the same coupled output route.
+
+### 38. Small dual residual target-projection scalar retunes on the `v212` route are practical tie
+
+- `v220`
+  added
+  `overlap_dual_residual_target_projection_weight = 0.01`
+  on top of the
+  `v212`
+  disjoint route,
+  while keeping trainable modules and downstream application unchanged.
+- This run was training-real,
+  but direct
+  `v212 -> v220`
+  fixed-proxy deltas were only
+  `+0.0026 / +0.0034 / +0.0034 / +0.0024 / +0.0009 dB`.
+- `v221`
+  raised the same weight to
+  `0.02`,
+  and direct
+  `v220 -> v221`
+  deltas stayed tiny:
+  `-0.0025 / -0.0021 / -0.0043 / -0.0001 / +0.0006 dB`.
+- Rule:
+  do not keep micro-sweeping
+  `overlap_dual_residual_target_projection_weight`
+  on the same pre-present keep-output plus dual residual-correction family by default.
+  On this route,
+  the scalar is optimization-real,
+  but it does not produce meaningful local-blocker movement at the active fixed-proxy resolution.
+
+### 39. Some local-objective candidates are semantically empty on the active blocker selector
+
+- A smoke-only audit before
+  `v222`
+  showed that
+  `overlap_dual_absent_mix_weight`
+  is semantically dead on the active
+  `local_speech_leak_proxy_v1`
+  selector.
+- On that selector set,
+  the chosen samples do not expose useful
+  `target_absent_intervals`,
+  so the term stayed exact
+  `0.0`.
+- Rule:
+  do not launch absent-interval local objectives on this blocker family
+  unless interval metadata is checked first.
+
+### 40. Local target projection on the writable residual-correction branch is numerically dead here
+
+- A second smoke-only audit before
+  `v222`
+  tested a local-window target-projection term on the writable
+  `branch_overlap_dual_residual_correction_estimate_waveform`
+  branch.
+- The resulting metric stayed effectively zero
+  (`~1e-7`),
+  so the objective had no useful gradient scale at the active fixed-proxy resolution.
+- Rule:
+  do not assume that moving a projection-style loss onto a writable branch is enough by itself.
+  Check whether the term is numerically alive before promoting it to a real run.
+
+### 41. Local-window waveform supervision on the writable residual-correction branch is real, but scalar sweeping stays weak
+
+- `v222`
+  to
+  `v224`
+  were the first runs on the
+  `v212`
+  family to supervise the writable residual-correction branch directly inside
+  `local_proxy_intervals`.
+- This family is better aligned than the earlier
+  `v220 / v221`
+  scalar retune:
+  by
+  `v224`,
+  direct
+  `v212 -> v224`
+  deltas became
+  `+0.0260 / +0.0141 / +0.0169 / -0.0031 / +0.0149 dB`.
+- But the simple weight sweep
+  `0.5 -> 2.0 -> 8.0`
+  still stayed far below any meaningful threshold.
+- Rule:
+  do not keep micro-sweeping
+  `overlap_dual_residual_correction_local_waveform_weight`
+  by default.
+  If this family continues,
+  change the local objective more structurally,
+  or change the writable path rather than nudging the same scalar again.
+
+### 42. Local-window controller supervision on the same writable branch is also real, but first continuation is negative
+
+- `v225`
+  kept the
+  `v224`
+  local-window waveform path unchanged
+  and added direct local-window supervision on
+  `branch_overlap_dual_residual_correction_controller`.
+- The term was clearly active:
+  final
+  `val_overlap_dual_residual_correction_local_controller_l1 = 0.121247`.
+- But fixed-proxy behavior worsened relative to
+  `v224`:
+  `-0.0055 / -0.0091 / -0.0054 / +0.0136 / -0.0040 dB`.
+- Rule:
+  do not assume that explicit controller-local supervision automatically sharpens selectivity on this family.
+  The first controller-local continuation is optimization-real,
+  but output-negative.
+
+### 43. Local-window waveform supervision on the writable pre-present main-output route is real, but the first scalar sweep only steepens the same tradeoff
+
+- `v226`
+  moved the blocker-local waveform objective off the residual-correction add-on path
+  and onto the writable
+  `estimated_waveform_post_pre_present_controller`
+  route.
+- This route is real:
+  final
+  `val_extra_local_waveform_l1 = 0.001274`,
+  and relative
+  `v224`
+  the blocker improved by
+  `+0.0071 dB`.
+- But the first larger continuation
+  `v227`
+  showed the limit of this family:
+  relative
+  `v226`,
+  the blocker improved again
+  (`+0.0251 dB`)
+  while all four guardrails degraded
+  (`-0.0891 / -0.0392 / -0.0513 / -0.0385 dB`).
+- Rule:
+  do not assume that moving a local-window waveform loss onto a more central writable path is enough by itself.
+  After
+  `v227`,
+  do not keep micro-sweeping
+  `extra_local_waveform_weight`
+  on this route by default.
+
+### 44. Local-window SI-SDR on the same writable pre-present main-output route also reproduces the same high-tradeoff shape
+
+- `v228`
+  kept the
+  `v226`
+  writable pre-present main-output route and added an interval-concatenated local-window SI-SDR term.
+- The new term was clearly active:
+  final
+  `val_extra_local_sisdr_loss = 0.520717`.
+- But fixed-proxy behavior did not open a new regime.
+  Relative
+  `v226`,
+  the deltas became
+  `-0.0900 / -0.0407 / -0.0519 / -0.0396 / +0.0253 dB`,
+  which is effectively the same shape already seen in
+  `v227`.
+- Rule:
+  do not assume that replacing local waveform L1 with a stronger local quality objective on the same writable output path is enough by itself.
+  After
+  `v228`,
+  do not keep micro-sweeping
+  `extra_local_sisdr_weight`
+  on this route by default.
+
+### 45. A later writable supervision target is not enough if that route still lacks its own trainable writer
+
+- `v229`
+  moved
+  `extra_prediction_source`
+  from
+  `estimated_waveform_post_pre_present_controller`
+  to
+  `estimated_waveform_pre_dual_residual_correction`
+  while leaving the trainable set unchanged from
+  `v226`.
+- This was not a no-op,
+  but it was slightly negative:
+  relative
+  `v226`,
+  the fixed deltas became
+  `-0.0151 / -0.0092 / -0.0167 / -0.0061 / -0.0009 dB`.
+- Rule:
+  do not assume that supervising a later writable output automatically helps.
+  If the later route still has to backprop through frozen downstream behavior,
+  output-position-only retargeting can be slightly worse than the earlier writable route.
+
+### 46. Opening `branch_overlap_refine_present_head` on the later pre-dual route sharply steepens the tradeoff
+
+- `v230`
+  kept the
+  `v229`
+  later writable target and reopened
+  `branch_overlap_refine_present_head`.
+- This was clearly training-real,
+  but fixed behavior became immediate strong tradeoff:
+  relative
+  `v226`,
+  the fixed deltas became
+  `-1.1727 / -0.9902 / -0.4938 / -0.7442 / +1.0956 dB`.
+- Rule:
+  do not treat
+  `branch_overlap_refine_present_head`
+  as the obvious next widening on this later writable route.
+  The first such continuation does not recover selectivity;
+  it buys blocker gain by burning large guardrail margin.
+
 ## Current Do-Not-Continue List
 
 - `pre_present_max_blend` sweep
@@ -768,6 +1053,15 @@
 - prerefine keep-bypass continuation on that same dual residual-correction family
 - simple keep-output weight strengthening on the same pre-present keep-output plus dual residual-correction family
 - `branch_protect_guard_sisdr_weight` sweep on the same pre-present keep-output plus dual residual-correction family
+- `branch_protect_teacher_overlap_weight` sweep on the same pre-present keep-output plus dual residual-correction family
+- simple keep-path widening through `branch_overlap_cancel_head` on the same pre-present keep-output plus dual residual-correction family
+- `overlap_dual_residual_target_projection_weight` retune on the same pre-present keep-output plus dual residual-correction family
+- `overlap_dual_residual_correction_local_waveform_weight` micro-sweep on the same family
+- `overlap_dual_residual_correction_local_controller_weight` micro-sweep on the same family
+- `extra_local_waveform_weight` micro-sweep on the writable pre-present main-output route
+- `extra_local_sisdr_weight` micro-sweep on the same writable pre-present main-output route
+- output-position-only retargeting to `estimated_waveform_pre_dual_residual_correction`
+- simple `branch_overlap_refine_present_head` widening on that same pre-dual writable route
 
 ## Current Safe Defaults
 
@@ -793,5 +1087,53 @@
   Prefer a more expressive keep path if this family continues.
 - After `v216`, do not keep sweeping guard-SI-SDR weight on the same disjoint keep-output route.
   This axis is optimization-real but output-capped.
+- After `v218`, do not keep sweeping teacher-overlap weight on the same disjoint keep-output route.
+  It can slightly repair guardrails,
+  but it still gives back local blocker quality and does not open selectivity.
+- After `v219`, do not keep widening the same disjoint keep path only by adding modules that still write through the same cancel estimate.
+  This raises keep-route leverage,
+  but it steepens the guardrail-versus-local tradeoff instead of resolving it.
+- After `v221`, do not keep sweeping the same dual residual target-projection scalar on the
+  `v212`
+  disjoint route.
+  This retune is training-real,
+  but it remains practical tie and does not materially move the blocker.
+- After `v224`, do not keep micro-sweeping the same local-window residual-correction waveform weight by default.
+  This newer objective is better aligned than the earlier target-projection scalar,
+  but the first
+  `0.5 -> 2.0 -> 8.0`
+  sweep still stays below a meaningful regime change.
+- After `v225`, do not keep micro-sweeping the same local-window controller supervision weight by default.
+  This first controller-local continuation is training-real,
+  but it worsens the fixed-proxy surface relative to
+  `v224`.
+- After `v227`, do not keep micro-sweeping the same
+  `extra_local_waveform_weight`
+  on the writable
+  `estimated_waveform_post_pre_present_controller`
+  route by default.
+  The first
+  `0.5 -> 2.0`
+  sweep is optimization-real,
+  but it only steepens the same mild guardrail-versus-local tradeoff.
+- After `v228`, do not keep micro-sweeping the same
+  `extra_local_sisdr_weight`
+  on that same writable
+  `estimated_waveform_post_pre_present_controller`
+  route by default.
+  The first continuation is optimization-real,
+  but it almost exactly reproduces the already-closed
+  `v227`
+  guardrail-for-local tradeoff.
+- After `v229`, do not assume that a later writable supervision target is better by default.
+  The first move to
+  `estimated_waveform_pre_dual_residual_correction`
+  is slightly negative relative to
+  `v226`.
+- After `v230`, do not simply unfreeze
+  `branch_overlap_refine_present_head`
+  on that same later route by default.
+  This first widening is training-real,
+  but it sharply burns guardrail margin to buy blocker gain.
 
 

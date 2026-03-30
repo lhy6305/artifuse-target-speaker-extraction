@@ -836,6 +836,8 @@ class STFTMaskBaseline(nn.Module):
         branch_overlap_dual_cancel_estimate_waveform = None
         estimated_stft_post_pre_present_controller = None
         estimated_waveform_post_pre_present_controller = None
+        estimated_stft_post_refine_present = None
+        estimated_waveform_post_refine_present = None
         estimated_stft_pre_dual_residual_correction = None
         estimated_waveform_pre_dual_residual_correction = None
         branch_overlap_dual_residual_correction_controller = None
@@ -1022,6 +1024,7 @@ class STFTMaskBaseline(nn.Module):
                     estimated_stft = estimated_stft - (
                         refine_present_source_stft * branch_overlap_refine_present_ratio
                     )
+            estimated_stft_post_refine_present = estimated_stft
             if self.branch_overlap_cancel_head is not None:
                 branch_overlap_cancel_logits = self.branch_overlap_cancel_head(branch_encoded).transpose(1, 2)
                 if self.branch_overlap_cancel_ratio_mode == "phase_preserve":
@@ -1301,6 +1304,11 @@ class STFTMaskBaseline(nn.Module):
                     estimated_stft_post_pre_present_controller,
                     mixture_lengths,
                 )
+            if estimated_stft_post_refine_present is not None:
+                estimated_waveform_post_refine_present = self.istft(
+                    estimated_stft_post_refine_present,
+                    mixture_lengths,
+                )
             if estimated_stft_pre_dual_residual_correction is not None:
                 estimated_waveform_pre_dual_residual_correction = self.istft(
                     estimated_stft_pre_dual_residual_correction,
@@ -1350,6 +1358,7 @@ class STFTMaskBaseline(nn.Module):
             "estimated_waveform_post_pre_present_controller": (
                 estimated_waveform_post_pre_present_controller
             ),
+            "estimated_waveform_post_refine_present": estimated_waveform_post_refine_present,
             "estimated_waveform_pre_dual_residual_correction": (
                 estimated_waveform_pre_dual_residual_correction
             ),

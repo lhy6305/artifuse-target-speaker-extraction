@@ -139,6 +139,34 @@ def _compute_target_overlap_intervals(metadata: dict[str, Any]) -> list[dict[str
     return overlap_intervals
 
 
+def _compute_local_proxy_intervals(metadata: dict[str, Any]) -> list[dict[str, float]]:
+    local_proxy = metadata.get("local_proxy")
+    if not isinstance(local_proxy, dict):
+        return []
+
+    duration_sec = float(metadata.get("target_duration_sec", 0.0))
+    window_start_sec = float(local_proxy.get("window_start_sec", 0.0))
+    window_duration_sec = float(local_proxy.get("window_duration_sec", 0.0))
+    if window_duration_sec <= 0.0:
+        return []
+
+    window_start_sec = max(window_start_sec, 0.0)
+    window_end_sec = window_start_sec + window_duration_sec
+    if duration_sec > 0.0:
+        window_start_sec = min(window_start_sec, duration_sec)
+        window_end_sec = min(window_end_sec, duration_sec)
+    if window_end_sec <= window_start_sec:
+        return []
+
+    return [
+        {
+            "start_sec": window_start_sec,
+            "end_sec": window_end_sec,
+            "duration_sec": window_end_sec - window_start_sec,
+        }
+    ]
+
+
 def _infer_interference_speaker_name(audio_path: str | None) -> str:
     if not audio_path:
         return ""
@@ -329,6 +357,7 @@ class SyntheticTSEDataset(Dataset[dict[str, Any]]):
             "interference_speaker_names_all": list(interference_summary["speaker_names"]),
             "target_absent_intervals": list(metadata.get("target_absent_intervals", [])),
             "target_overlap_intervals": _compute_target_overlap_intervals(metadata),
+            "local_proxy_intervals": _compute_local_proxy_intervals(metadata),
             "metadata_path": _serialize_repo_path(sample.metadata_path, self.root),
         }
 
@@ -409,5 +438,6 @@ def synthetic_collate_fn(batch: list[dict[str, Any]]) -> dict[str, Any]:
         "interference_speaker_names_all": [item["interference_speaker_names_all"] for item in batch],
         "target_absent_intervals": [item["target_absent_intervals"] for item in batch],
         "target_overlap_intervals": [item["target_overlap_intervals"] for item in batch],
+        "local_proxy_intervals": [item["local_proxy_intervals"] for item in batch],
         "metadata_paths": [item["metadata_path"] for item in batch],
     }

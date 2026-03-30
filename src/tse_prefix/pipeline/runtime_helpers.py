@@ -129,6 +129,9 @@ def resolve_prediction_source(
         "estimated_waveform_post_pre_present_controller": outputs.get(
             "estimated_waveform_post_pre_present_controller"
         ),
+        "estimated_waveform_post_refine_present": outputs.get(
+            "estimated_waveform_post_refine_present"
+        ),
         "estimated_waveform_pre_dual_residual_correction": outputs.get(
             "estimated_waveform_pre_dual_residual_correction"
         ),
