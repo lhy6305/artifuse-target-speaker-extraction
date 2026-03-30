@@ -473,6 +473,87 @@
   the route can still collapse if both objectives remain coupled through the same downstream branch behavior;
   trainable-path disjointness alone is not enough
 
+### `v211`
+
+- Route:
+  `v206 + pre-present keep-output path on estimated_waveform_post_pre_present_controller + dual residual-correction`
+  with
+  `branch_overlap_cancel_pre_present_controller_head + branch_overlap_dual_residual_correction_head + branch_overlap_dual_residual_correction_controller_head`
+  trainable
+- Status:
+  disjoint-downstream keep-output safe-but-local-negative evidence
+- Takeaway:
+  this is the first continuation on top of the dual residual-correction family
+  that is disjoint both in trainable path and in downstream output application.
+  It avoids the catastrophic collapse seen in
+  `v209` and `v210`,
+  keeps all four non-blocker checks positive,
+  and only mildly regresses the active local blocker
+
+### `v212`
+
+- Route:
+  `v211` family with
+  `branch_overlap_dual_residual_correction_max_blend = 0.08`
+- Status:
+  higher-local-blend near-tie tradeoff evidence
+- Takeaway:
+  stronger local correction no longer collapses the family;
+  it moves onto a gentler local-versus-guardrail tradeoff surface,
+  with the blocker recovering toward tie
+  while the four non-blocker checks slip only slightly negative
+
+### `v213`
+
+- Route:
+  `v212` family with
+  `reconstruction_extra_waveform_weight = 0.4`
+  and
+  `reconstruction_extra_stft_weight = 0.2`
+- Status:
+  keep-weight-strengthening practical tie closure
+- Takeaway:
+  doubling the keep-output weights on this new disjoint route
+  is practical tie to
+  `v212`,
+  so the first simple keep-weight axis on this family is closed
+
+### `v214`
+
+- Route:
+  `v212 + branch_protect_guard_sisdr_weight 0.0002`
+  on the same
+  `estimated_waveform_post_pre_present_controller`
+  route
+- Status:
+  optimization-real practical tie evidence
+- Takeaway:
+  the first more expressive keep objective on this disjoint route is active,
+  but output-side it stays practical tie to
+  `v212`
+
+### `v215`
+
+- Route:
+  `v214` family with
+  `branch_protect_guard_sisdr_weight = 0.001`
+- Status:
+  higher-weight practical tie evidence
+- Takeaway:
+  increasing guard-SI-SDR pressure mostly raises optimization loss,
+  not fixed-proxy behavior
+
+### `v216`
+
+- Route:
+  `v215` family with
+  `branch_protect_guard_sisdr_weight = 0.003`
+- Status:
+  guard-SI-SDR sweep closure
+- Takeaway:
+  even the old stronger weight scale stays in the same practical-tie basin,
+  so the tested guard-SI-SDR weight sweep is closed on this family
+
 ## Closed Branch Families
 
 - `predicted_activity` direct-apply family
@@ -513,6 +594,8 @@
 - joint dual-path widening on that same family
 - same-head keep-backstop continuation on that same dual residual-correction family
 - prerefine keep-bypass continuation on that same dual residual-correction family
+- simple keep-output weight strengthening on the same pre-present keep-output plus dual residual-correction family
+- `branch_protect_guard_sisdr_weight` sweep on the same pre-present keep-output plus dual residual-correction family
 
 ## Next Valid Branches
 
@@ -529,6 +612,8 @@
 - a route whose keep-preserve path is disjoint in trainable modules,
   not only in sample selector
 - a route whose keep-preserve path is disjoint both in trainable modules and in downstream output application
+- a more expressive keep path on the same disjoint downstream route used by `v211` to `v213`
+- a qualitatively different keep objective on the same disjoint downstream route after `v216`
 - only if needed, a materially larger path change with disjoint keep and local supervision paths
 
 ## Immediate Rules
@@ -555,4 +640,6 @@
 - Do not replay `v208`-style joint dual-path widening on that same family.
 - Do not replay `v209`-style same-head keep backstop on that same family.
 - Do not replay `v210`-style prerefine keep bypass on that same family.
+- Do not replay `v213`-style simple keep-output weight doubling on that same disjoint-downstream family.
+- Do not replay `v214` to `v216`-style guard-SI-SDR weight sweeps on that same disjoint-downstream family.
 - Do not export listening packs from this family until the active local blocker turns the right way on fixed synthetic proxies.

@@ -647,6 +647,91 @@
   On this family,
   disjointness must hold both in trainable path and in downstream output application or control path.
 
+### 31. Disjoint downstream output application can avoid collapse without opening selectivity
+
+- `v211`
+  moved keep-preserve supervision onto the actual pre-present-controller-written intermediate output
+  while keeping the local blocker on the dual residual-correction route.
+- This was the first continuation on top of the dual residual-correction family
+  that stayed clearly safe on the four non-blocker guardrails:
+  relative
+  `v157`,
+  the fixed deltas were
+  `+0.0461 / +0.0227 / +0.0193 / +0.0433 / -0.0364 dB`.
+- `v212`
+  then raised the local correction blend and landed on a gentler exchange surface:
+  relative
+  `v157`,
+  the fixed deltas were
+  `-0.0311 / -0.0156 / -0.0139 / -0.0048 / +0.0006 dB`.
+- Rule:
+  do not mistake the absence of catastrophic collapse for a selective solution.
+  Even when keep-preserve and local supervision are disjoint in both trainable path and downstream application,
+  the route can still remain on a mild local-versus-guardrail tradeoff surface.
+
+### 32. Simple keep-output weight strengthening can be practical tie on the new disjoint route
+
+- `v213`
+  doubled
+  `reconstruction_extra_waveform_weight`
+  and
+  `reconstruction_extra_stft_weight`
+  on top of
+  `v212`.
+- Direct
+  `v212 -> v213`
+  compare stayed only
+  `-0.0004 / +0.0024 / -0.0003 / +0.0022 / +0.0015 dB`
+  on the five active fixed proxies.
+- Rule:
+  do not keep doubling keep-output weights on the same pre-present keep-output plus dual residual-correction family by default.
+  If this family continues,
+  use a more expressive keep path rather than the same scalar reweight.
+
+### 33. A keep objective can be optimization-real yet still output-capped on the disjoint route
+
+- `v214`, `v215`, and `v216`
+  all added
+  `branch_protect_guard_sisdr`
+  on the same
+  `estimated_waveform_post_pre_present_controller`
+  route.
+- Across the full tested weight sweep
+  `0.0002 -> 0.001 -> 0.003`,
+  the selector stayed active
+  (`train 63 / 233, val 27 / 67`)
+  and
+  `val_branch_protect_guard_sisdr_loss`
+  stayed around
+  `6.56`.
+- But fixed-proxy movement stayed in practical tie:
+  - `v212 -> v214`:
+    `+0.0003 / +0.0021 / -0.0001 / +0.0027 / +0.0051 dB`
+  - `v214 -> v215`:
+    `-0.0062 / -0.0066 / -0.0000 / +0.0014 / -0.0005 dB`
+  - `v215 -> v216`:
+    `+0.0038 / +0.0086 / +0.0033 / -0.0013 / -0.0083 dB`
+- Rule:
+  do not assume a nonzero keep loss on the disjoint route is enough to move actual output behavior.
+  This family can be optimization-real while still being effectively output-capped.
+
+### 34. Do not keep sweeping guard-SI-SDR weight on the same disjoint keep-output route
+
+- `v214`, `v215`, and `v216`
+  closed the tested
+  `branch_protect_guard_sisdr_weight`
+  sweep on the post-pre-present-controller path.
+- The main visible effect was higher
+  `val_loss`
+  (`0.270647 -> 0.275895 -> 0.289015`),
+  not better fixed-proxy behavior.
+- Rule:
+  do not keep sweeping
+  `branch_protect_guard_sisdr_weight`
+  on this same pre-present keep-output plus dual residual-correction family by default.
+  If this family continues,
+  change the keep objective or the keep path itself.
+
 ## Current Do-Not-Continue List
 
 - `pre_present_max_blend` sweep
@@ -681,6 +766,8 @@
 - simple joint dual-path widening on that same dual residual-correction family
 - same-head `branch_protect_overlap_base_align` keep backstop on that same dual residual-correction family
 - prerefine keep-bypass continuation on that same dual residual-correction family
+- simple keep-output weight strengthening on the same pre-present keep-output plus dual residual-correction family
+- `branch_protect_guard_sisdr_weight` sweep on the same pre-present keep-output plus dual residual-correction family
 
 ## Current Safe Defaults
 
@@ -699,5 +786,12 @@
 - After `v209`, do not backpropagate keep-preserve losses through the same dual residual-correction heads.
 - After `v210`, do not treat trainable-path disjointness by itself as sufficient.
   The next route must also be disjoint in downstream output application or control path.
+- After `v212`, do not mistake the new disjoint route for a solved selective regime.
+  It is gentler than the older residual-correction family,
+  but it is still a tradeoff surface.
+- After `v213`, do not keep scaling the same keep-output weights by default.
+  Prefer a more expressive keep path if this family continues.
+- After `v216`, do not keep sweeping guard-SI-SDR weight on the same disjoint keep-output route.
+  This axis is optimization-real but output-capped.
 
 

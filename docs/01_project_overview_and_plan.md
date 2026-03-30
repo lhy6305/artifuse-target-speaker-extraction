@@ -33,7 +33,9 @@
   the pre-present dual-teacher family is now closed through `v200`,
   the direct dual gate-controller family is now closed through `v202`,
   the dual-conditioned cancel-controller family is now closed through `v205`,
-  and the dual residual-correction family is now bounded through `v210`
+  the original dual residual-correction family is now bounded through `v210`,
+  and the first disjoint-downstream keep-output continuation on top of that family
+  is now mapped through `v216`
 - Restored handoff status on `2026-03-30`:
   the next blocker is not missing code;
   direct monitor-controller supervision is already reachable with the current model outputs,
@@ -494,6 +496,85 @@
   `v210`:
   same-head keep backstop already collapsed,
   and even the first trainable-path-disjoint keep-bypass continuation still collapses all five fixed proxies together.
+- `v211 = v206 + pre-present keep-output path on estimated_waveform_post_pre_present_controller + dual residual-correction`
+  is the first continuation in this family whose keep-preserve route is disjoint both:
+  in trainable path,
+  and in downstream output application.
+  Relative
+  `v157`,
+  abstention, same-gender keep, hard-present keep, and artifact proxy all improved
+  (`+0.0461 / +0.0227 / +0.0193 / +0.0433 dB`),
+  while the local blocker regressed only mildly
+  (`-0.0364 dB`).
+  This is the first safe non-collapsing continuation on top of the dual residual-correction family,
+  but it is still not promotion-worthy because the blocker stays wrong-way.
+- `v212 = v211 + branch_overlap_dual_residual_correction_max_blend 0.08`
+  moved along a gentler tradeoff surface than the earlier
+  `v206 -> v208`
+  family.
+  Relative
+  `v157`,
+  the local blocker recovered to practical tie
+  (`+0.0006 dB`),
+  while abstention, same-gender keep, hard-present keep, and artifact proxy slipped only slightly negative
+  (`-0.0311 / -0.0156 / -0.0139 / -0.0048 dB`).
+  So disjoint downstream application avoids collapse,
+  but it still does not open true selectivity.
+- `v213 = v212` with doubled keep-output weights
+  (`reconstruction_extra_waveform_weight 0.4`,
+  `reconstruction_extra_stft_weight 0.2`)
+  was practical tie to
+  `v212`
+  on the active proxy set.
+  Direct
+  `v212 -> v213`
+  compare stayed only
+  `-0.0004 / +0.0024 / -0.0003 / +0.0022 / +0.0015 dB`.
+  So the first keep-output-weight strengthening axis on this family is closed.
+- The pre-present keep-output plus dual residual-correction continuation family is now bounded in its first three tested forms:
+  safe but local-negative
+  (`v211`),
+  near-tie tradeoff
+  (`v212`),
+  and keep-weight-strengthening practical tie
+  (`v213`).
+- `v214 = v212 + branch_protect_guard_sisdr_weight 0.0002`
+  tested the first more expressive keep objective on the same disjoint-downstream route.
+  It is training-real:
+  `branch_protect train 63 / 233, val 27 / 67`,
+  final
+  `val_branch_protect_guard_sisdr_loss = 6.560211`.
+  But relative
+  `v212`,
+  the fixed deltas stayed only
+  `+0.0003 / +0.0021 / -0.0001 / +0.0027 / +0.0051 dB`,
+  so output-side it is practical tie.
+- `v215 = v214` with
+  `branch_protect_guard_sisdr_weight 0.001`
+  only raised optimization pressure,
+  not output movement.
+  Relative
+  `v214`,
+  the fixed deltas stayed only
+  `-0.0062 / -0.0066 / -0.0000 / +0.0014 / -0.0005 dB`.
+- `v216 = v215` with
+  `branch_protect_guard_sisdr_weight 0.003`
+  closed the tested weight sweep.
+  Relative
+  `v215`,
+  the fixed deltas stayed only
+  `+0.0038 / +0.0086 / +0.0033 / -0.0013 / -0.0083 dB`.
+  Relative
+  `v157`,
+  all five fixed checks still stayed near tie
+  (`-0.0333 / -0.0115 / -0.0107 / -0.0020 / -0.0031 dB`).
+- The
+  `branch_protect_guard_sisdr_weight`
+  sweep on the pre-present keep-output plus dual residual-correction route is now closed:
+  across
+  `0.0002 -> 0.001 -> 0.003`,
+  the keep loss is optimization-real,
+  but output-capped at the active proxy resolution.
 
 ## Closed Axes
 
@@ -545,6 +626,8 @@
 - joint dual-path widening on that same dual residual-correction family
 - same-head `branch_protect_overlap_base_align` keep backstop on top of `v206`
 - prerefine keep-bypass on pre-dual output on top of `v206`
+- simple keep-output weight strengthening on the pre-present keep-output plus dual residual-correction family
+- `branch_protect_guard_sisdr_weight` sweep on that same pre-present keep-output plus dual residual-correction family
 
 ## Active Branch Status
 
@@ -612,6 +695,16 @@
   `v209`
 - Trainable-path-disjoint prerefine keep-bypass collapse on top of `v206`:
   `v210`
+- Disjoint-downstream keep-output safe-but-local-negative evidence on top of `v206`:
+  `v211`
+- Higher local-blend near-tie tradeoff on that same disjoint-downstream family:
+  `v212`
+- Stronger keep-output weights practical tie on that same family:
+  `v213`
+- Guard-SI-SDR keep-objective practical ties on that same family:
+  `v214`
+  to
+  `v216`
 
 ## Next Valid Directions
 
@@ -645,6 +738,11 @@
 - If this branch continues,
   the next route must be disjoint both in trainable path and in downstream output application,
   not only avoid backpropagating keep preservation through the same residual-correction heads.
+- Do not continue simple keep-output weight strengthening on the same pre-present keep-output plus dual residual-correction family.
+- Do not continue `branch_protect_guard_sisdr_weight` sweeps on that same pre-present keep-output plus dual residual-correction family.
+- If this newer family continues,
+  prefer a qualitatively different keep objective or a more expressive keep path on the same disjoint downstream route,
+  not another small-to-medium scalar retune on the same guard-SI-SDR term.
 
 ## Active Report Entry Points
 
@@ -671,5 +769,7 @@
 - `reports/daily/2026-03-30_dualresidualcorrection_v206_v208_followup.md`
 - `reports/daily/2026-03-30_dualresidual_keepbackstop_v209_followup.md`
 - `reports/daily/2026-03-30_dualresidual_refinekeepbypass_v210_followup.md`
+- `reports/daily/2026-03-30_prepresentkeepoutput_dualresidual_v211_v213_followup.md`
+- `reports/daily/2026-03-30_prepresentkeepoutput_guardsisdr_v214_v216_followup.md`
 - `reports/daily/2026-03-28_encoding_and_active_doc_audit.md`
 
