@@ -33,6 +33,7 @@ from tse_prefix.pipeline import (
 )
 from tse_prefix.pipeline.baseline_train import (
     base_delta_interference_projection_loss,
+    interval_gate_l1_loss,
     interval_projection_ratio_loss,
     interval_waveform_l1_loss,
     overlap_interval_interference_projection_loss,
@@ -47,9 +48,42 @@ from tse_prefix.pipeline.runtime_helpers import (
     build_compute_loss_kwargs,
     build_gate_target_values,
     resolve_branch_extra_prediction,
+    resolve_prediction_source,
     resolve_primary_prediction,
     resolve_selector_sample_weights,
 )
+
+
+def resolve_overlap_dual_controller_distill_prediction(
+    outputs: dict[str, torch.Tensor],
+    source: str,
+) -> torch.Tensor | None:
+    if source == "overlap_cancel_pre_present_controller":
+        return outputs.get("branch_overlap_cancel_pre_present_controller")
+    if source == "overlap_dual_cancel_controller":
+        return outputs.get("branch_overlap_dual_cancel_controller")
+    if source == "overlap_dual_residual_correction_controller":
+        return outputs.get("branch_overlap_dual_residual_correction_controller")
+    return outputs.get("branch_overlap_cancel_apply_controller")
+
+
+def resolve_gate_supervision_values(
+    outputs: dict[str, torch.Tensor | None],
+    gate_supervision_source: str,
+) -> torch.Tensor | None:
+    if gate_supervision_source == "overlap_cancel_apply_controller":
+        return outputs.get("branch_overlap_cancel_apply_controller")
+    if gate_supervision_source == "overlap_cancel_apply_controller_split":
+        return outputs.get("branch_overlap_cancel_apply_controller")
+    if gate_supervision_source == "overlap_dual_monitor_controller":
+        return outputs.get("branch_overlap_dual_monitor_controller")
+    if gate_supervision_source == "overlap_dual_cancel_controller":
+        return outputs.get("branch_overlap_dual_cancel_controller")
+    if gate_supervision_source == "overlap_dual_residual_correction_controller":
+        return outputs.get("branch_overlap_dual_residual_correction_controller")
+    if gate_supervision_source == "overlap_dual_controlled_gate":
+        return outputs.get("branch_overlap_dual_controlled_gate")
+    return outputs.get("branch_decoder_frame_gate")
 
 
 def parse_args() -> argparse.Namespace:
@@ -257,6 +291,9 @@ def main() -> None:
         "overlap_cancel_waveform_l1": 0.0,
         "overlap_cancel_target_projection_ratio": 0.0,
         "overlap_dual_mix_consistency_l1": 0.0,
+        "overlap_dual_monitor_waveform_l1": 0.0,
+        "overlap_dual_residual_correction_waveform_l1": 0.0,
+        "overlap_dual_controller_distill_l1": 0.0,
         "overlap_dual_residual_target_projection_ratio": 0.0,
         "absent_interval_l1": 0.0,
         "absent_extra_interval_l1": 0.0,
@@ -284,6 +321,9 @@ def main() -> None:
             "overlap_cancel_waveform_l1": 0.0,
             "overlap_cancel_target_projection_ratio": 0.0,
             "overlap_dual_mix_consistency_l1": 0.0,
+            "overlap_dual_monitor_waveform_l1": 0.0,
+            "overlap_dual_residual_correction_waveform_l1": 0.0,
+            "overlap_dual_controller_distill_l1": 0.0,
             "overlap_dual_residual_target_projection_ratio": 0.0,
             "absent_interval_l1": 0.0,
             "absent_extra_interval_l1": 0.0,
@@ -315,6 +355,9 @@ def main() -> None:
             "overlap_cancel_waveform_l1": 0.0,
             "overlap_cancel_target_projection_ratio": 0.0,
             "overlap_dual_mix_consistency_l1": 0.0,
+            "overlap_dual_monitor_waveform_l1": 0.0,
+            "overlap_dual_residual_correction_waveform_l1": 0.0,
+            "overlap_dual_controller_distill_l1": 0.0,
             "overlap_dual_residual_target_projection_ratio": 0.0,
             "absent_interval_l1": 0.0,
             "absent_extra_interval_l1": 0.0,
@@ -346,6 +389,9 @@ def main() -> None:
             "overlap_cancel_waveform_l1": 0.0,
             "overlap_cancel_target_projection_ratio": 0.0,
             "overlap_dual_mix_consistency_l1": 0.0,
+            "overlap_dual_monitor_waveform_l1": 0.0,
+            "overlap_dual_residual_correction_waveform_l1": 0.0,
+            "overlap_dual_controller_distill_l1": 0.0,
             "overlap_dual_residual_target_projection_ratio": 0.0,
             "absent_interval_l1": 0.0,
             "absent_extra_interval_l1": 0.0,
@@ -361,6 +407,9 @@ def main() -> None:
     )
     saved = 0
     loss_config = checkpoint.get("loss_config", {})
+    overlap_dual_controller_distill_source = str(
+        loss_config.get("overlap_dual_controller_distill_source", "overlap_cancel_apply_controller")
+    )
     compute_loss_kwargs = build_compute_loss_kwargs(loss_config)
     selector_totals = {
         prefix: {"active": False, "selected_count": 0, "total_count": 0}
@@ -484,6 +533,9 @@ def main() -> None:
                 if gate_target_values is not None
                 else None
             )
+            gate_supervision_source = str(
+                loss_config.get("gate_supervision_source", "branch_decoder_frame_gate")
+            )
             for prefix, weights in (
                 ("reconstruction", reconstruction_union_sample_weights),
                 ("reconstruction_extra", reconstruction_extra_sample_weights),
@@ -510,8 +562,19 @@ def main() -> None:
                     loss_config.get("use_branch_prerefine_as_primary_prediction", False)
                 ),
             )
-            reconstruction_extra_prediction = outputs["estimated_waveform"]
-            extra_prediction = resolve_branch_extra_prediction(outputs)
+            reconstruction_extra_prediction = resolve_prediction_source(
+                outputs,
+                str(loss_config.get("extra_prediction_source", "estimated_waveform")),
+            )
+            extra_prediction = reconstruction_extra_prediction
+            if extra_prediction is None:
+                extra_prediction = resolve_branch_extra_prediction(outputs)
+            if reconstruction_extra_prediction is None:
+                reconstruction_extra_prediction = outputs["estimated_waveform"]
+            resolved_gate_values = resolve_gate_supervision_values(
+                outputs,
+                gate_supervision_source,
+            )
             losses = compute_losses(
                 prediction=primary_prediction,
                 reconstruction_extra_prediction=reconstruction_extra_prediction,
@@ -523,7 +586,7 @@ def main() -> None:
                 absent_intervals=batch["target_absent_intervals"],
                 overlap_intervals=batch["target_overlap_intervals"],
                 model=model,
-                gate_values=outputs.get("branch_decoder_frame_gate"),
+                gate_values=resolved_gate_values,
                 reconstruction_sample_weights=reconstruction_sample_weights,
                 reconstruction_extra_sample_weights=reconstruction_extra_sample_weights,
                 transient_sample_weights=transient_sample_weights,
@@ -535,6 +598,16 @@ def main() -> None:
                 overlap_cancel_prediction=outputs.get("branch_overlap_cancel_estimate_waveform"),
                 overlap_dual_target_prediction=outputs.get("branch_overlap_dual_target_waveform"),
                 overlap_dual_residual_prediction=outputs.get("branch_overlap_dual_residual_waveform"),
+                overlap_dual_monitor_prediction=outputs.get("branch_overlap_dual_monitor_estimate_waveform"),
+                overlap_dual_residual_correction_prediction=outputs.get(
+                    "branch_overlap_dual_residual_correction_estimate_waveform"
+                ),
+                overlap_cancel_controller_prediction=outputs.get("branch_overlap_cancel_apply_controller"),
+                overlap_dual_controller_prediction=resolve_overlap_dual_controller_distill_prediction(
+                    outputs,
+                    overlap_dual_controller_distill_source,
+                ),
+                overlap_dual_controller_target=outputs.get("branch_overlap_dual_controller"),
                 overlap_cancel_sample_weights=overlap_cancel_sample_weights,
                 overlap_cancel_absent_mix_sample_weights=absent_union_sample_weights,
                 overlap_dual_sample_weights=overlap_dual_sample_weights,
@@ -597,6 +670,15 @@ def main() -> None:
             totals["overlap_dual_mix_consistency_l1"] += (
                 float(losses.overlap_dual_mix_consistency_l1.item()) * batch_size
             )
+            totals["overlap_dual_monitor_waveform_l1"] += (
+                float(losses.overlap_dual_monitor_waveform_l1.item()) * batch_size
+            )
+            totals["overlap_dual_residual_correction_waveform_l1"] += (
+                float(losses.overlap_dual_residual_correction_waveform_l1.item()) * batch_size
+            )
+            totals["overlap_dual_controller_distill_l1"] += (
+                float(losses.overlap_dual_controller_distill_l1.item()) * batch_size
+            )
             totals["overlap_dual_residual_target_projection_ratio"] += (
                 float(losses.overlap_dual_residual_target_projection_ratio.item()) * batch_size
             )
@@ -637,6 +719,29 @@ def main() -> None:
                 batch["target"],
                 batch["target_lengths"],
             )
+            resolved_overlap_dual_monitor_prediction = outputs.get("branch_overlap_dual_monitor_estimate_waveform")
+            if resolved_overlap_dual_monitor_prediction is None:
+                resolved_overlap_dual_monitor_prediction = resolved_overlap_cancel_prediction
+            overlap_dual_monitor_predictions, _, _ = align_waveforms(
+                resolved_overlap_dual_monitor_prediction,
+                batch["target"],
+                batch["target_lengths"],
+            )
+            resolved_overlap_dual_residual_correction_prediction = outputs.get(
+                "branch_overlap_dual_residual_correction_estimate_waveform"
+            )
+            if resolved_overlap_dual_residual_correction_prediction is None:
+                resolved_overlap_dual_residual_correction_prediction = resolved_overlap_dual_monitor_prediction
+            overlap_dual_residual_correction_predictions, _, _ = align_waveforms(
+                resolved_overlap_dual_residual_correction_prediction,
+                batch["target"],
+                batch["target_lengths"],
+            )
+            resolved_overlap_dual_controller_prediction = resolve_overlap_dual_controller_distill_prediction(
+                outputs,
+                overlap_dual_controller_distill_source,
+            )
+            resolved_overlap_dual_controller_target = outputs.get("branch_overlap_dual_controller")
 
             for idx, pattern in enumerate(batch["temporal_patterns"]):
                 length_int = int(lengths[idx].item())
@@ -931,6 +1036,57 @@ def main() -> None:
                         ),
                     ).item()
                 )
+                sample_overlap_dual_monitor_waveform = float(
+                    interval_waveform_l1_loss(
+                        prediction=overlap_dual_monitor_predictions[idx : idx + 1],
+                        target=primary_predictions[idx : idx + 1] - targets[idx : idx + 1],
+                        lengths=lengths[idx : idx + 1],
+                        intervals_batch=[batch["target_overlap_intervals"][idx]],
+                        sample_rate=int(loss_config.get("sample_rate", args.sample_rate)),
+                        sample_weights=(
+                            overlap_dual_sample_weights[idx : idx + 1]
+                            if overlap_dual_sample_weights is not None
+                            else None
+                        ),
+                    ).item()
+                )
+                sample_overlap_dual_residual_correction_waveform = float(
+                    interval_waveform_l1_loss(
+                        prediction=overlap_dual_residual_correction_predictions[idx : idx + 1],
+                        target=primary_predictions[idx : idx + 1] - targets[idx : idx + 1],
+                        lengths=lengths[idx : idx + 1],
+                        intervals_batch=[batch["target_overlap_intervals"][idx]],
+                        sample_rate=int(loss_config.get("sample_rate", args.sample_rate)),
+                        sample_weights=(
+                            overlap_dual_sample_weights[idx : idx + 1]
+                            if overlap_dual_sample_weights is not None
+                            else None
+                        ),
+                    ).item()
+                )
+                sample_overlap_dual_controller_distill = float(
+                    interval_gate_l1_loss(
+                        prediction=(
+                            resolved_overlap_dual_controller_prediction[idx : idx + 1]
+                            if resolved_overlap_dual_controller_prediction is not None
+                            else None
+                        ),
+                        target=(
+                            resolved_overlap_dual_controller_target[idx : idx + 1]
+                            if resolved_overlap_dual_controller_target is not None
+                            else None
+                        ),
+                        lengths=lengths[idx : idx + 1],
+                        intervals_batch=[batch["target_overlap_intervals"][idx]],
+                        model=model,
+                        sample_rate=int(loss_config.get("sample_rate", args.sample_rate)),
+                        sample_weights=(
+                            overlap_dual_sample_weights[idx : idx + 1]
+                            if overlap_dual_sample_weights is not None
+                            else None
+                        ),
+                    ).item()
+                )
                 sample_overlap_dual_residual_target_projection = float(
                     interval_projection_ratio_loss(
                         prediction=mixtures_aligned[idx : idx + 1] - primary_predictions[idx : idx + 1],
@@ -945,13 +1101,16 @@ def main() -> None:
                         ),
                     ).item()
                 )
+                sample_gate_values = resolve_gate_supervision_values(
+                    {
+                        key: value[idx : idx + 1] if value is not None else None
+                        for key, value in outputs.items()
+                    },
+                    gate_supervision_source,
+                )
                 sample_gate_abstain = float(
                     weighted_gate_target_loss(
-                        gate_values=(
-                            outputs["branch_decoder_frame_gate"][idx : idx + 1]
-                            if outputs.get("branch_decoder_frame_gate") is not None
-                            else None
-                        ),
+                        gate_values=sample_gate_values,
                         lengths=lengths[idx : idx + 1],
                         model=model,
                         target_value=0.0,
@@ -964,11 +1123,7 @@ def main() -> None:
                 )
                 sample_gate_keep = float(
                     weighted_gate_target_loss(
-                        gate_values=(
-                            outputs["branch_decoder_frame_gate"][idx : idx + 1]
-                            if outputs.get("branch_decoder_frame_gate") is not None
-                            else None
-                        ),
+                        gate_values=sample_gate_values,
                         lengths=lengths[idx : idx + 1],
                         model=model,
                         target_value=1.0,
@@ -981,11 +1136,7 @@ def main() -> None:
                 )
                 sample_gate_target = float(
                     weighted_gate_target_loss(
-                        gate_values=(
-                            outputs["branch_decoder_frame_gate"][idx : idx + 1]
-                            if outputs.get("branch_decoder_frame_gate") is not None
-                            else None
-                        ),
+                        gate_values=sample_gate_values,
                         lengths=lengths[idx : idx + 1],
                         model=model,
                         target_values=(
@@ -1021,6 +1172,13 @@ def main() -> None:
                     sample_overlap_cancel_target_projection
                 )
                 pattern_metrics[pattern]["overlap_dual_mix_consistency_l1"] += sample_overlap_dual_mix_consistency
+                pattern_metrics[pattern]["overlap_dual_monitor_waveform_l1"] += sample_overlap_dual_monitor_waveform
+                pattern_metrics[pattern]["overlap_dual_residual_correction_waveform_l1"] += (
+                    sample_overlap_dual_residual_correction_waveform
+                )
+                pattern_metrics[pattern]["overlap_dual_controller_distill_l1"] += (
+                    sample_overlap_dual_controller_distill
+                )
                 pattern_metrics[pattern]["overlap_dual_residual_target_projection_ratio"] += (
                     sample_overlap_dual_residual_target_projection
                 )
@@ -1060,6 +1218,13 @@ def main() -> None:
                     sample_overlap_cancel_target_projection
                 )
                 recipe_metrics[recipe]["overlap_dual_mix_consistency_l1"] += sample_overlap_dual_mix_consistency
+                recipe_metrics[recipe]["overlap_dual_monitor_waveform_l1"] += sample_overlap_dual_monitor_waveform
+                recipe_metrics[recipe]["overlap_dual_residual_correction_waveform_l1"] += (
+                    sample_overlap_dual_residual_correction_waveform
+                )
+                recipe_metrics[recipe]["overlap_dual_controller_distill_l1"] += (
+                    sample_overlap_dual_controller_distill
+                )
                 recipe_metrics[recipe]["overlap_dual_residual_target_projection_ratio"] += (
                     sample_overlap_dual_residual_target_projection
                 )
@@ -1100,6 +1265,15 @@ def main() -> None:
                 )
                 ratio_bucket_metrics[ratio_bucket]["overlap_dual_mix_consistency_l1"] += (
                     sample_overlap_dual_mix_consistency
+                )
+                ratio_bucket_metrics[ratio_bucket]["overlap_dual_monitor_waveform_l1"] += (
+                    sample_overlap_dual_monitor_waveform
+                )
+                ratio_bucket_metrics[ratio_bucket]["overlap_dual_residual_correction_waveform_l1"] += (
+                    sample_overlap_dual_residual_correction_waveform
+                )
+                ratio_bucket_metrics[ratio_bucket]["overlap_dual_controller_distill_l1"] += (
+                    sample_overlap_dual_controller_distill
                 )
                 ratio_bucket_metrics[ratio_bucket]["overlap_dual_residual_target_projection_ratio"] += (
                     sample_overlap_dual_residual_target_projection
@@ -1165,6 +1339,11 @@ def main() -> None:
                                     sample_overlap_cancel_target_projection
                                 ),
                                 "overlap_dual_mix_consistency_l1": sample_overlap_dual_mix_consistency,
+                                "overlap_dual_monitor_waveform_l1": sample_overlap_dual_monitor_waveform,
+                                "overlap_dual_residual_correction_waveform_l1": (
+                                    sample_overlap_dual_residual_correction_waveform
+                                ),
+                                "overlap_dual_controller_distill_l1": sample_overlap_dual_controller_distill,
                                 "overlap_dual_residual_target_projection_ratio": (
                                     sample_overlap_dual_residual_target_projection
                                 ),
@@ -1267,6 +1446,15 @@ def main() -> None:
                 "avg_overlap_dual_mix_consistency_l1": (
                     values["overlap_dual_mix_consistency_l1"] / max(1, int(values["count"]))
                 ),
+                "avg_overlap_dual_monitor_waveform_l1": (
+                    values["overlap_dual_monitor_waveform_l1"] / max(1, int(values["count"]))
+                ),
+                "avg_overlap_dual_residual_correction_waveform_l1": (
+                    values["overlap_dual_residual_correction_waveform_l1"] / max(1, int(values["count"]))
+                ),
+                "avg_overlap_dual_controller_distill_l1": (
+                    values["overlap_dual_controller_distill_l1"] / max(1, int(values["count"]))
+                ),
                 "avg_overlap_dual_residual_target_projection_ratio": (
                     values["overlap_dual_residual_target_projection_ratio"] / max(1, int(values["count"]))
                 ),
@@ -1335,6 +1523,15 @@ def main() -> None:
                 "avg_overlap_dual_mix_consistency_l1": (
                     values["overlap_dual_mix_consistency_l1"] / max(1, int(values["count"]))
                 ),
+                "avg_overlap_dual_monitor_waveform_l1": (
+                    values["overlap_dual_monitor_waveform_l1"] / max(1, int(values["count"]))
+                ),
+                "avg_overlap_dual_residual_correction_waveform_l1": (
+                    values["overlap_dual_residual_correction_waveform_l1"] / max(1, int(values["count"]))
+                ),
+                "avg_overlap_dual_controller_distill_l1": (
+                    values["overlap_dual_controller_distill_l1"] / max(1, int(values["count"]))
+                ),
                 "avg_overlap_dual_residual_target_projection_ratio": (
                     values["overlap_dual_residual_target_projection_ratio"] / max(1, int(values["count"]))
                 ),
@@ -1402,6 +1599,15 @@ def main() -> None:
                 ),
                 "avg_overlap_dual_mix_consistency_l1": (
                     values["overlap_dual_mix_consistency_l1"] / max(1, int(values["count"]))
+                ),
+                "avg_overlap_dual_monitor_waveform_l1": (
+                    values["overlap_dual_monitor_waveform_l1"] / max(1, int(values["count"]))
+                ),
+                "avg_overlap_dual_residual_correction_waveform_l1": (
+                    values["overlap_dual_residual_correction_waveform_l1"] / max(1, int(values["count"]))
+                ),
+                "avg_overlap_dual_controller_distill_l1": (
+                    values["overlap_dual_controller_distill_l1"] / max(1, int(values["count"]))
                 ),
                 "avg_overlap_dual_residual_target_projection_ratio": (
                     values["overlap_dual_residual_target_projection_ratio"] / max(1, int(values["count"]))

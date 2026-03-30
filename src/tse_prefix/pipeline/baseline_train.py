@@ -34,6 +34,9 @@ class LossBreakdown:
     overlap_cancel_absent_mix_l1: torch.Tensor
     overlap_dual_mix_consistency_l1: torch.Tensor
     overlap_dual_residual_waveform_l1: torch.Tensor
+    overlap_dual_monitor_waveform_l1: torch.Tensor
+    overlap_dual_residual_correction_waveform_l1: torch.Tensor
+    overlap_dual_controller_distill_l1: torch.Tensor
     overlap_dual_residual_target_projection_ratio: torch.Tensor
     overlap_dual_absent_mix_l1: torch.Tensor
     absent_interval_l1: torch.Tensor
@@ -408,6 +411,69 @@ def interval_waveform_l1_loss(
     return average_sample_losses(sample_losses, sample_weights, prediction)
 
 
+def interval_gate_l1_loss(
+    prediction: torch.Tensor | None,
+    target: torch.Tensor | None,
+    lengths: torch.Tensor,
+    intervals_batch: list[list[dict[str, float]]],
+    model,
+    sample_rate: int = 16000,
+    sample_weights: torch.Tensor | None = None,
+) -> torch.Tensor:
+    if prediction is None or target is None:
+        reference = prediction if prediction is not None else (target if target is not None else lengths)
+        return reference.new_tensor(0.0)
+
+    if prediction.ndim != 3 or prediction.shape[1] != 1:
+        raise ValueError("prediction gate tensor must have shape [batch, 1, frames]")
+    if target.ndim != 3 or target.shape[1] != 1:
+        raise ValueError("target gate tensor must have shape [batch, 1, frames]")
+
+    max_frames = min(prediction.shape[-1], target.shape[-1])
+    prediction = prediction[..., :max_frames]
+    target = target[..., :max_frames].detach()
+    frame_lengths = model.waveform_lengths_to_frame_lengths(lengths, max_frames=max_frames)
+    if frame_lengths is None:
+        return prediction.new_tensor(0.0)
+
+    sample_losses: list[torch.Tensor] = []
+    for pred_item, tgt_item, frame_length, intervals in zip(
+        prediction[:, 0, :],
+        target[:, 0, :],
+        frame_lengths,
+        intervals_batch,
+    ):
+        valid_frames = int(frame_length.item())
+        if valid_frames <= 0 or not intervals:
+            sample_losses.append(prediction.new_tensor(0.0))
+            continue
+
+        pred_item = pred_item[:valid_frames]
+        tgt_item = tgt_item[:valid_frames]
+        interval_losses: list[torch.Tensor] = []
+        total_interval_frames = 0
+        for interval in intervals:
+            start_index = int(round(float(interval["start_sec"]) * sample_rate))
+            end_index = int(round(float(interval["end_sec"]) * sample_rate))
+            start_frame = max(0, min(start_index // model.hop_length, valid_frames))
+            end_frame = max(
+                start_frame,
+                min(((end_index + model.hop_length - 1) // model.hop_length) + 1, valid_frames),
+            )
+            if end_frame <= start_frame:
+                continue
+            interval_losses.append(torch.abs(pred_item[start_frame:end_frame] - tgt_item[start_frame:end_frame]).sum())
+            total_interval_frames += end_frame - start_frame
+
+        if total_interval_frames <= 0:
+            sample_losses.append(prediction.new_tensor(0.0))
+            continue
+
+        sample_losses.append(torch.stack(interval_losses).sum() / float(total_interval_frames))
+
+    return average_sample_losses(sample_losses, sample_weights, prediction)
+
+
 def interval_projection_ratio_loss(
     prediction: torch.Tensor,
     target: torch.Tensor,
@@ -694,6 +760,11 @@ def compute_losses(
     overlap_dual_sample_weights: torch.Tensor | None = None,
     overlap_dual_target_prediction: torch.Tensor | None = None,
     overlap_dual_residual_prediction: torch.Tensor | None = None,
+    overlap_dual_monitor_prediction: torch.Tensor | None = None,
+    overlap_dual_residual_correction_prediction: torch.Tensor | None = None,
+    overlap_cancel_controller_prediction: torch.Tensor | None = None,
+    overlap_dual_controller_prediction: torch.Tensor | None = None,
+    overlap_dual_controller_target: torch.Tensor | None = None,
     branch_protect_sample_weights: torch.Tensor | None = None,
     branch_protect_teacher_sample_weights: torch.Tensor | None = None,
     absent_sample_weights: torch.Tensor | None = None,
@@ -735,6 +806,9 @@ def compute_losses(
     overlap_cancel_absent_mix_weight: float = 0.0,
     overlap_dual_mix_consistency_weight: float = 0.0,
     overlap_dual_residual_waveform_weight: float = 0.0,
+    overlap_dual_monitor_waveform_weight: float = 0.0,
+    overlap_dual_residual_correction_waveform_weight: float = 0.0,
+    overlap_dual_controller_distill_weight: float = 0.0,
     overlap_dual_residual_target_projection_weight: float = 0.0,
     overlap_dual_absent_mix_weight: float = 0.0,
     absent_weight: float = 0.0,
@@ -975,6 +1049,49 @@ def compute_losses(
         sample_rate=sample_rate,
         sample_weights=overlap_dual_sample_weights,
     )
+    overlap_dual_monitor_target = prediction_aligned - target_aligned
+    if overlap_dual_monitor_prediction is None:
+        overlap_dual_monitor_term = prediction.new_tensor(0.0)
+    else:
+        overlap_dual_monitor_term = interval_waveform_l1_loss(
+            prediction=overlap_dual_monitor_prediction,
+            target=overlap_dual_monitor_target,
+            lengths=lengths,
+            intervals_batch=overlap_intervals,
+            sample_rate=sample_rate,
+            sample_weights=overlap_dual_sample_weights,
+        )
+    if overlap_dual_residual_correction_prediction is None:
+        overlap_dual_residual_correction_term = prediction.new_tensor(0.0)
+    else:
+        overlap_dual_residual_correction_term = interval_waveform_l1_loss(
+            prediction=overlap_dual_residual_correction_prediction,
+            target=overlap_dual_monitor_target,
+            lengths=lengths,
+            intervals_batch=overlap_intervals,
+            sample_rate=sample_rate,
+            sample_weights=overlap_dual_sample_weights,
+        )
+    resolved_overlap_dual_controller_prediction = (
+        overlap_dual_controller_prediction
+        if overlap_dual_controller_prediction is not None
+        else overlap_cancel_controller_prediction
+    )
+    if (
+        resolved_overlap_dual_controller_prediction is None
+        or overlap_dual_controller_target is None
+    ):
+        overlap_dual_controller_distill_term = prediction.new_tensor(0.0)
+    else:
+        overlap_dual_controller_distill_term = interval_gate_l1_loss(
+            prediction=resolved_overlap_dual_controller_prediction,
+            target=overlap_dual_controller_target,
+            lengths=lengths,
+            intervals_batch=overlap_intervals,
+            model=model,
+            sample_rate=sample_rate,
+            sample_weights=overlap_dual_sample_weights,
+        )
     overlap_dual_residual_target_projection_term = interval_projection_ratio_loss(
         prediction=overlap_dual_residual_prediction,
         target=target_aligned,
@@ -1100,6 +1217,12 @@ def compute_losses(
         + (overlap_cancel_absent_mix_term * overlap_cancel_absent_mix_weight)
         + (overlap_dual_mix_consistency_term * overlap_dual_mix_consistency_weight)
         + (overlap_dual_residual_waveform_term * overlap_dual_residual_waveform_weight)
+        + (overlap_dual_monitor_term * overlap_dual_monitor_waveform_weight)
+        + (
+            overlap_dual_residual_correction_term
+            * overlap_dual_residual_correction_waveform_weight
+        )
+        + (overlap_dual_controller_distill_term * overlap_dual_controller_distill_weight)
         + (
             overlap_dual_residual_target_projection_term
             * overlap_dual_residual_target_projection_weight
@@ -1141,6 +1264,9 @@ def compute_losses(
         overlap_cancel_absent_mix_l1=overlap_cancel_absent_mix_term,
         overlap_dual_mix_consistency_l1=overlap_dual_mix_consistency_term,
         overlap_dual_residual_waveform_l1=overlap_dual_residual_waveform_term,
+        overlap_dual_monitor_waveform_l1=overlap_dual_monitor_term,
+        overlap_dual_residual_correction_waveform_l1=overlap_dual_residual_correction_term,
+        overlap_dual_controller_distill_l1=overlap_dual_controller_distill_term,
         overlap_dual_residual_target_projection_ratio=overlap_dual_residual_target_projection_term,
         overlap_dual_absent_mix_l1=overlap_dual_absent_mix_term,
         absent_interval_l1=absent_term,

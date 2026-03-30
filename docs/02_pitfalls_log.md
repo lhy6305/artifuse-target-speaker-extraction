@@ -275,6 +275,378 @@
   It can still strengthen general safe suppression
   while missing the local blocker.
 
+### 19. A head-only monitor target can become a practical no-op once the ceiling is already hit
+
+- `v193` added an audibility-style gate target on top of `v192`,
+  but it changed the four non-blocker checks only
+  `~+0.0003 to +0.0004 dB`
+  and regressed the local blocker
+  `-0.0004 dB`.
+- On the active local blocker set,
+  `branch_overlap_dual_monitor_controller`
+  was already almost equal to the frozen
+  `branch_overlap_dual_controller`
+  ceiling:
+  mean about
+  `0.1122`
+  versus
+  `0.1136`.
+- So a head-only target on the same path had almost no remaining degrees of freedom.
+- Rule:
+  before launching another monitor-head-only target branch,
+  check whether the trainable head is already saturating against a frozen upstream ceiling.
+
+### 20. Even blocker-specific monitor correction can still move in the wrong direction
+
+- `v194` widened training to
+  `branch_overlap_dual_decoder_head + branch_overlap_dual_monitor_controller_head`
+  and added a local interval objective on the actual monitor-applied correction path.
+- The target had to be defined against the current output residual
+  (`prediction - target`),
+  not full interference,
+  because
+  `monitor_max_blend = 0.02`
+  makes the monitor path only a small correction route.
+- This branch was training-real:
+  `val_overlap_dual_monitor_waveform_l1 = 0.004913`.
+- But relative `v193`,
+  abstention, same-gender keep, hard-present keep, and artifact proxy all improved
+  (`+0.0128 / +0.0078 / +0.0065 / +0.0043 dB`),
+  while `local_speech_leak_proxy_v1` regressed
+  `-0.0117 dB`.
+- Rule:
+  do not assume that making the monitor objective blocker-specific is enough.
+  The same family can still keep rewarding broader safe suppression
+  more than the active local blocker.
+
+### 21. Higher monitor blend closes the family in the same wrong direction
+
+- `v195` raised
+  `branch_overlap_dual_monitor_max_blend`
+  from
+  `0.02`
+  to
+  `0.08`
+  on top of the already training-real
+  `v194`
+  route.
+- Relative `v194`,
+  abstention, same-gender keep, hard-present keep, and artifact proxy all improved again
+  (`+0.0777 / +0.0488 / +0.0309 / +0.0231 dB`),
+  while `local_speech_leak_proxy_v1` regressed another
+  `-0.0872 dB`.
+- Relative `v157`,
+  the local blocker reached
+  `-0.1134 dB`,
+  and hard-present keep even picked up
+  `1`
+  regressed sample.
+- Rule:
+  do not continue this monitor family with more blend sweeps or target variants.
+  Higher coupling strength does not restore local selectivity here;
+  it amplifies the same wrong behavior.
+
+### 22. A conditionally missing teacher signal can silently turn a continuation into an exact no-op
+
+- `v196` tried to distill
+  `branch_overlap_cancel_apply_controller`
+  from
+  `branch_overlap_dual_controller`
+  on top of
+  `v190`.
+- But under
+  `branch_overlap_dual_decoder_apply_mode = current_output`
+  with no monitor head,
+  the model did not emit
+  `branch_overlap_dual_controller`
+  at all.
+- The new loss weight was present in config,
+  but the teacher tensor was absent,
+  so the run stayed exact tie to both
+  `v157`
+  and
+  `v190`
+  on all five fixed checks.
+- Rule:
+  before trusting a new teacher-style continuation,
+  verify that the intended teacher tensor is actually materialized
+  under the active model semantics.
+
+### 23. Pure apply-controller distill can move the blocker, but it spends guardrail margin through the same route
+
+- After materializing
+  `branch_overlap_dual_controller`
+  for the no-write dual path,
+  `v197`
+  became the first live teacher-bridge continuation on top of
+  `v190`.
+- It was training-real:
+  final
+  `val_overlap_dual_controller_distill_l1 = 0.113235`.
+- Relative
+  `v157`,
+  the local blocker improved
+  `+0.1082 dB`,
+  but abstention, same-gender keep, hard-present keep, and artifact proxy regressed
+  `-0.1949 / -0.0839 / -0.0889 / -0.0736 dB`.
+- `v198`
+  lowered
+  `overlap_dual_controller_distill_weight`
+  from
+  `1.0`
+  to
+  `0.5`
+  and landed in practical tie to
+  `v197`.
+- Rule:
+  do not keep sweeping plain apply-controller dual-teacher distill weights by default.
+  This family now looks like another shared-route tradeoff,
+  not a new selective regime.
+
+### 24. Pre-present dual-teacher write-back is safer, but it collapses toward no-op
+
+- `v199`
+  redirected the same dual-controller distill signal into
+  `branch_overlap_cancel_pre_present_controller`
+  instead of the pure apply-controller head.
+- Relative
+  `v157`,
+  the four non-blocker checks stayed tiny positive
+  (`+0.0101 / +0.0049 / +0.0045 / +0.0034 dB`),
+  while the local blocker stayed slightly wrong-way
+  (`-0.0079 dB`).
+- The route was still training-real:
+  final
+  `val_overlap_dual_controller_distill_l1 = 0.008762`.
+- `v200`
+  then jointly unfroze
+  `branch_overlap_cancel_head`
+  with the same pre-present controller,
+  but direct
+  `v199 -> v200`
+  compare was
+  exact
+  `0.0 dB`
+  on all five fixed proxies.
+- Rule:
+  do not keep sweeping head-only or joint-cancel variants on the same pre-present dual-teacher family.
+  This route is safer than pure apply-controller distill,
+  but it currently lacks enough expressivity to move the blocker.
+
+### 25. Direct dual gate-controller rewrite falls back into the old `v188` family
+
+- `v201`
+  changed the dual route on top of
+  `v190`
+  to
+  `branch_overlap_dual_decoder_apply_mode = gate_controller`
+  with
+  `gate_mode = gate`
+  and
+  `max_blend = 0.02`.
+- The run was training-real on the intended local selector:
+  `overlap_dual train 33 / 233, val 7 / 67`,
+  final
+  `val_overlap_dual_residual_waveform_l1 = 0.015890`.
+- But relative
+  `v157`,
+  the fixed proxy shape was immediate catastrophic tradeoff:
+  `-3.2598 / -2.4518 / -2.0349 / -1.8415 / +0.7576 dB`.
+- Direct
+  `v188 -> v201`
+  compare then showed practical tie on all five fixed proxies.
+- Rule:
+  do not assume that switching the dual route to direct gate rewrite escapes the old shared-output failure family.
+  On the active blocker,
+  this route currently collapses back into the same
+  `v188`
+  regime.
+
+### 26. The `v201` failure was not just a disconnected gate-loss bug
+
+- `v202`
+  exported the actual rewritten gate as
+  `branch_overlap_dual_controlled_gate`
+  and attached gate supervision directly to it.
+- Training-side this really changed the optimization boundary:
+  `val_gate_keep_mean = 0.165753`,
+  whereas
+  `v201`
+  had gate metrics effectively stuck at zero because the supervised tensor was frozen.
+- But output-side
+  `v202`
+  is still practical tie to
+  `v201`:
+  direct fixed-proxy deltas are only
+  `+0.0013 / +0.0011 / +0.0009 / +0.0000 / +0.0005 dB`.
+- Rule:
+  do not keep this family open by blaming
+  `v201`
+  only on a supervision disconnect.
+  After
+  `v202`,
+  direct dual gate rewrite through the existing gate path is scientifically closed.
+
+### 27. Writing dual evidence back through the existing overlap-cancel estimate still collapses toward near-no-op
+
+- `v203`
+  introduced a new
+  `branch_overlap_dual_cancel_controller_head`
+  that reads the proven no-write dual auxiliary evidence from
+  `v190`
+  and writes back through the existing overlap-cancel estimate path.
+- The route was training-real:
+  the selector stayed active
+  (`train 33 / 233, val 7 / 67`),
+  and final
+  `val_overlap_dual_controller_distill_l1 = 0.281731`.
+- But relative
+  `v157`,
+  the four non-blocker checks moved only
+  `+0.0026 / +0.0014 / +0.0013 / +0.0009 dB`,
+  while the local blocker still regressed
+  `-0.0015 dB`.
+- `v204`
+  raised
+  `branch_overlap_dual_cancel_max_blend`
+  from
+  `0.02`
+  to
+  `0.08`,
+  but only amplified the same tiny
+  guardrail-positive / local-negative
+  direction:
+  relative
+  `v203`,
+  the four non-blocker checks changed
+  `+0.0077 / +0.0042 / +0.0038 / +0.0026 dB`,
+  while the local blocker regressed another
+  `-0.0046 dB`.
+- `v205`
+  widened training to
+  `branch_overlap_dual_decoder_head + branch_overlap_dual_cancel_controller_head`,
+  but output-side it stayed practical tie to
+  `v203`:
+  direct fixed-proxy deltas were only
+  `+0.0010 / +0.0005 / +0.0005 / +0.0003 / -0.0006 dB`.
+- Rule:
+  do not keep sweeping small blend changes or small local widening on the dual-conditioned cancel-controller family.
+  If this branch continues,
+  avoid writing back only through the existing overlap-cancel estimate path itself.
+
+### 28. Dual residual-correction is real, but the tested axes still buy blocker gain by spending guardrail margin
+
+- `v206`
+  added a new dual-conditioned residual-correction family that writes directly on the current output residual
+  through its own complex correction head and scalar controller.
+- This route is genuinely real:
+  final
+  `val_overlap_dual_residual_correction_waveform_l1 = 0.004909`,
+  and relative
+  `v157`
+  the active local blocker improved
+  `+0.0088 dB`.
+- But
+  `v206`
+  was still practical near-no-op on the fixed proxies overall,
+  with small guardrail regressions
+  (`-0.0165 / -0.0079 / -0.0082 / -0.0045 dB`).
+- `v207`
+  raised the correction blend from
+  `0.02`
+  to
+  `0.08`
+  and amplified the same direction:
+  relative
+  `v157`,
+  the local blocker improved
+  `+0.0420 dB`,
+  while abstention, same-gender keep, hard-present keep, and artifact proxy regressed
+  `-0.0792 / -0.0385 / -0.0393 / -0.0235 dB`.
+- `v208`
+  widened training to the upstream dual temporal model and dual decoder head,
+  but it only moved farther along that same tradeoff surface:
+  relative
+  `v157`,
+  the local blocker improved
+  `+0.0863 dB`,
+  while the four guardrails regressed
+  `-0.0977 / -0.0623 / -0.0522 / -0.0452 dB`.
+- Rule:
+  do not keep scaling the same dual residual-correction family by simple blend sweeps or simple dual-path widening.
+  If this branch continues,
+  add a disjoint keep-preserve path outside the blocker windows,
+  not another local-only scaling change on the same correction route.
+
+### 29. A weak keep backstop can still collapse the dual residual-correction family if it hits the same heads
+
+- `v209`
+  added a weak
+  `branch_protect_overlap_base_align_weight = 0.01`
+  on
+  `gate_keep_union_v2`
+  samples,
+  while keeping the trainable set fixed to
+  `branch_overlap_dual_residual_correction_head + branch_overlap_dual_residual_correction_controller_head`.
+- This continuation was training-real:
+  `overlap_dual train 33 / 233, val 7 / 67`,
+  `branch_protect train 63 / 233, val 27 / 67`,
+  and final
+  `val_branch_protect_overlap_base_align_l1 = 0.015515`.
+- But output-side it was a full collapse,
+  not a mild tradeoff.
+  Relative
+  `v157`,
+  the five fixed proxies moved
+  `-16.4520 / -9.0633 / -13.4505 / -15.2722 / -5.9793 dB`,
+  and every fixed-proxy sample regressed.
+- Relative
+  `v206`,
+  the same collapse shape remained
+  (`-16.4355 / -9.0555 / -13.4424 / -15.2642 / -5.9881 dB`),
+  so this is not just failure to recover the small guardrail loss on
+  `v206`;
+  it destroys the whole route.
+- Rule:
+  do not add keep-preserve losses to the dual residual-correction family
+  if they backpropagate through the same residual-correction heads.
+  The keep path must be disjoint in trainable path,
+  not only in sample selector.
+
+### 30. Trainable-path disjointness alone is not enough on the dual residual-correction family
+
+- `v210`
+  moved the keep-preserve path onto a different trainable module set:
+  `branch_overlap_refine_head`
+  handled the keep bypass,
+  while
+  `branch_overlap_dual_residual_correction_head + branch_overlap_dual_residual_correction_controller_head`
+  still handled the local objective.
+- This continuation was training-real:
+  reconstruction selector coverage stayed
+  `train 63 / 233, val 27 / 67`,
+  overlap-dual stayed
+  `train 33 / 233, val 7 / 67`,
+  and both
+  `val_reconstruction_extra_waveform_l1`
+  and
+  `val_overlap_dual_residual_correction_waveform_l1`
+  stayed nonzero.
+- But output-side it still collapsed globally.
+  Relative
+  `v157`,
+  the five fixed proxies moved
+  `-14.0317 / -9.5738 / -11.9342 / -14.4076 / -5.8259 dB`,
+  and every fixed-proxy sample regressed.
+- Relative
+  `v206`,
+  the same collapse shape remained
+  (`-14.0152 / -9.5660 / -11.9260 / -14.3997 / -5.8348 dB`).
+- Rule:
+  do not assume a continuation is safe just because keep-preserve and local losses are disjoint in trainable modules.
+  On this family,
+  disjointness must hold both in trainable path and in downstream output application or control path.
+
 ## Current Do-Not-Continue List
 
 - `pre_present_max_blend` sweep
@@ -292,13 +664,40 @@
 - no-write `overlap_dual_mix_consistency + overlap_dual_residual_target_projection` on the active local blocker
 - monitor coupling at small blend alone without a local-blocker-specific objective
 - direct `overlap_dual_monitor_controller` supervision alone on top of `v191`
+- audibility-style gate target on top of the same small-blend monitor head
+- local current-output residual interval supervision on the same small-blend monitor family
+- higher-blend continuation on the same monitor family
+- naive dual-teacher distill launches that do not first confirm the teacher tensor exists
+- pure apply-controller dual-teacher distill weight sweeps on top of `v190`
+- head-only pre-present dual-teacher distill on top of `v190`
+- joint `branch_overlap_cancel_head + pre-present controller` widening on that same family
+- direct dual `gate_controller` coupling on top of `v190`
+- explicit controlled-gate supervision on that same direct dual `gate_controller` family
+- head-only dual-conditioned cancel-controller coupling on top of `v190`
+- higher-blend continuation on that same dual-conditioned cancel-controller family
+- joint `branch_overlap_dual_decoder_head + branch_overlap_dual_cancel_controller_head` widening on that same family
+- head-only dual residual-correction continuation beyond the already tested `blend 0.02 / 0.08` axis
+- simple higher-blend continuation on that same dual residual-correction family
+- simple joint dual-path widening on that same dual residual-correction family
+- same-head `branch_protect_overlap_base_align` keep backstop on that same dual residual-correction family
+- prerefine keep-bypass continuation on that same dual residual-correction family
 
 ## Current Safe Defaults
 
 - Keep `v157` as the active base.
 - Keep `v172` as mechanism-positive evidence only.
 - If this branch resumes, prefer direct monitor-path supervision before adding new monitor-path code.
-- After `v192`, prefer blocker-specific or audibility-style monitor targets over replaying the same direct monitor supervision.
-- Prefer keep preservation that is orthogonal to the local objective over more calibration of the same route.
+- After `v194`, do not keep stacking small-blend monitor target variants by default.
+- After `v195`, treat the monitor family as closed.
+- After `v196`, verify teacher-tensor materialization before reading a teacher-style run.
+- After `v198`, prefer coupling paths that do not write only through the same apply-controller head.
+- After `v200`, do not keep probing the same pre-present controller family with small local widening.
+- After `v201`, do not keep probing direct gate rewrite from the dual route through the existing gate head path.
+- After `v202`, do not reopen the same family by only changing which explicit gate tensor is supervised.
+- After `v205`, do not keep writing dual evidence back only through the existing overlap-cancel estimate path.
+- After `v208`, do not keep scaling the same dual residual-correction family without adding a disjoint keep-preserve route.
+- After `v209`, do not backpropagate keep-preserve losses through the same dual residual-correction heads.
+- After `v210`, do not treat trainable-path disjointness by itself as sufficient.
+  The next route must also be disjoint in downstream output application or control path.
 
 

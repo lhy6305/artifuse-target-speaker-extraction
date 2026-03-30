@@ -39,6 +39,8 @@ GATE_TARGET_CONFIG_KEYS = {
     "gate_target_min_value",
     "gate_target_max_value",
     "use_branch_prerefine_as_primary_prediction",
+    "overlap_dual_controller_distill_source",
+    "extra_prediction_source",
 }
 
 
@@ -113,6 +115,33 @@ def resolve_branch_extra_prediction(outputs: dict[str, torch.Tensor]) -> torch.T
     if outputs.get("branch_decoder_mask") is not None:
         return outputs["estimated_waveform"]
     return None
+
+
+def resolve_prediction_source(
+    outputs: dict[str, torch.Tensor],
+    source: str,
+) -> torch.Tensor | None:
+    normalized = str(source).strip().lower()
+    source_map = {
+        "estimated_waveform": outputs.get("estimated_waveform"),
+        "estimated_waveform_base": outputs.get("estimated_waveform_base"),
+        "estimated_waveform_branch_base": outputs.get("estimated_waveform_branch_base"),
+        "estimated_waveform_post_pre_present_controller": outputs.get(
+            "estimated_waveform_post_pre_present_controller"
+        ),
+        "estimated_waveform_pre_dual_residual_correction": outputs.get(
+            "estimated_waveform_pre_dual_residual_correction"
+        ),
+    }
+    if normalized not in source_map:
+        raise ValueError(
+            "Unsupported extra prediction source: "
+            f"{source}. Expected one of {tuple(source_map.keys())}."
+        )
+    resolved = source_map[normalized]
+    if resolved is not None:
+        return resolved
+    return outputs.get("estimated_waveform")
 
 
 def resolve_primary_prediction(

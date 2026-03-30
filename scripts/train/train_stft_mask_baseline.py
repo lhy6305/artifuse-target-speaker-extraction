@@ -31,6 +31,7 @@ from tse_prefix.pipeline.runtime_helpers import (
     build_compute_loss_kwargs,
     build_gate_target_values,
     resolve_branch_extra_prediction,
+    resolve_prediction_source,
     resolve_primary_prediction,
     resolve_selector_sample_weights,
 )
@@ -185,6 +186,22 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--model-enable-branch-overlap-dual-cancel-controller",
+        action="store_true",
+        help=(
+            "Add a dual-conditioned scalar controller that writes back through the existing "
+            "overlap-cancel estimate without reusing the legacy apply-controller or gate path."
+        ),
+    )
+    parser.add_argument(
+        "--model-enable-branch-overlap-dual-residual-correction-head",
+        action="store_true",
+        help=(
+            "Add a dual-conditioned complex residual-correction head that writes a small direct "
+            "correction on top of the current output residual through its own controller."
+        ),
+    )
+    parser.add_argument(
         "--model-enable-adapter-temporal-model",
         action="store_true",
         help="Add a dedicated bidirectional GRU inside the adapter branch before adapter mask prediction.",
@@ -281,6 +298,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model-branch-overlap-dual-decoder-max-blend", type=float, default=1.0)
     parser.add_argument("--model-branch-overlap-dual-decoder-gate-floor", type=float, default=0.0)
     parser.add_argument("--model-branch-overlap-dual-monitor-max-blend", type=float, default=0.0)
+    parser.add_argument("--model-branch-overlap-dual-cancel-max-blend", type=float, default=0.0)
+    parser.add_argument("--model-branch-overlap-dual-residual-correction-max-delta", type=float, default=0.15)
+    parser.add_argument("--model-branch-overlap-dual-residual-correction-max-blend", type=float, default=0.0)
     parser.add_argument("--loss-stft-weight", type=float, default=0.5)
     parser.add_argument("--loss-sisdr-weight", type=float, default=0.0)
     parser.add_argument("--loss-branch-protect-guard-sisdr-weight", type=float, default=0.0)
@@ -300,6 +320,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--loss-overlap-cancel-absent-mix-weight", type=float, default=0.0)
     parser.add_argument("--loss-overlap-dual-mix-consistency-weight", type=float, default=0.0)
     parser.add_argument("--loss-overlap-dual-residual-waveform-weight", type=float, default=0.0)
+    parser.add_argument("--loss-overlap-dual-monitor-waveform-weight", type=float, default=0.0)
+    parser.add_argument("--loss-overlap-dual-residual-correction-waveform-weight", type=float, default=0.0)
+    parser.add_argument("--loss-overlap-dual-controller-distill-weight", type=float, default=0.0)
+    parser.add_argument(
+        "--loss-overlap-dual-controller-distill-source",
+        choices=[
+            "overlap_cancel_apply_controller",
+            "overlap_cancel_pre_present_controller",
+        ],
+        default="overlap_cancel_apply_controller",
+    )
     parser.add_argument("--loss-overlap-dual-residual-target-projection-weight", type=float, default=0.0)
     parser.add_argument("--loss-overlap-dual-absent-mix-weight", type=float, default=0.0)
     parser.add_argument("--loss-absent-weight", type=float, default=0.0)
@@ -317,6 +348,9 @@ def parse_args() -> argparse.Namespace:
             "overlap_cancel_apply_controller",
             "overlap_cancel_apply_controller_split",
             "overlap_dual_monitor_controller",
+            "overlap_dual_cancel_controller",
+            "overlap_dual_residual_correction_controller",
+            "overlap_dual_controlled_gate",
         ],
         default="branch_decoder_frame_gate",
     )
@@ -336,6 +370,21 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--loss-gate-target-transient-db-weight", type=float, default=0.10)
     parser.add_argument("--loss-gate-target-min-value", type=float, default=0.0)
     parser.add_argument("--loss-gate-target-max-value", type=float, default=1.0)
+    parser.add_argument(
+        "--loss-extra-prediction-source",
+        choices=[
+            "estimated_waveform",
+            "estimated_waveform_base",
+            "estimated_waveform_branch_base",
+            "estimated_waveform_post_pre_present_controller",
+            "estimated_waveform_pre_dual_residual_correction",
+        ],
+        default="estimated_waveform",
+        help=(
+            "Select which model output tensor receives reconstruction-extra, branch-protect, "
+            "transient-extra, interference-extra, and absent-extra supervision."
+        ),
+    )
     parser.add_argument(
         "--loss-use-branch-prerefine-as-primary-prediction",
         action="store_true",
@@ -546,6 +595,12 @@ def build_model_config(args: argparse.Namespace) -> dict[str, int]:
         "enable_branch_overlap_dual_monitor_controller": (
             args.model_enable_branch_overlap_dual_monitor_controller
         ),
+        "enable_branch_overlap_dual_cancel_controller": (
+            args.model_enable_branch_overlap_dual_cancel_controller
+        ),
+        "enable_branch_overlap_dual_residual_correction_head": (
+            args.model_enable_branch_overlap_dual_residual_correction_head
+        ),
         "enable_adapter_temporal_model": args.model_enable_adapter_temporal_model,
         "adapter_gru_layers": args.model_adapter_gru_layers,
         "adapter_conditioning_mode": args.model_adapter_conditioning_mode,
@@ -586,6 +641,13 @@ def build_model_config(args: argparse.Namespace) -> dict[str, int]:
         "branch_overlap_dual_decoder_max_blend": args.model_branch_overlap_dual_decoder_max_blend,
         "branch_overlap_dual_decoder_gate_floor": args.model_branch_overlap_dual_decoder_gate_floor,
         "branch_overlap_dual_monitor_max_blend": args.model_branch_overlap_dual_monitor_max_blend,
+        "branch_overlap_dual_cancel_max_blend": args.model_branch_overlap_dual_cancel_max_blend,
+        "branch_overlap_dual_residual_correction_max_delta": (
+            args.model_branch_overlap_dual_residual_correction_max_delta
+        ),
+        "branch_overlap_dual_residual_correction_max_blend": (
+            args.model_branch_overlap_dual_residual_correction_max_blend
+        ),
     }
 
 
@@ -633,6 +695,12 @@ def build_loss_config(args: argparse.Namespace) -> dict[str, float]:
         "overlap_cancel_absent_mix_weight": args.loss_overlap_cancel_absent_mix_weight,
         "overlap_dual_mix_consistency_weight": args.loss_overlap_dual_mix_consistency_weight,
         "overlap_dual_residual_waveform_weight": args.loss_overlap_dual_residual_waveform_weight,
+        "overlap_dual_monitor_waveform_weight": args.loss_overlap_dual_monitor_waveform_weight,
+        "overlap_dual_residual_correction_waveform_weight": (
+            args.loss_overlap_dual_residual_correction_waveform_weight
+        ),
+        "overlap_dual_controller_distill_weight": args.loss_overlap_dual_controller_distill_weight,
+        "overlap_dual_controller_distill_source": args.loss_overlap_dual_controller_distill_source,
         "overlap_dual_residual_target_projection_weight": (
             args.loss_overlap_dual_residual_target_projection_weight
         ),
@@ -658,6 +726,7 @@ def build_loss_config(args: argparse.Namespace) -> dict[str, float]:
         "gate_target_transient_db_weight": args.loss_gate_target_transient_db_weight,
         "gate_target_min_value": args.loss_gate_target_min_value,
         "gate_target_max_value": args.loss_gate_target_max_value,
+        "extra_prediction_source": args.loss_extra_prediction_source,
         "use_branch_prerefine_as_primary_prediction": args.loss_use_branch_prerefine_as_primary_prediction,
         "interference_loss_mode": args.loss_interference_mode,
         "interference_extra_loss_mode": args.loss_interference_extra_mode,
@@ -777,6 +846,127 @@ def resolve_teacher_checkpoint_path(
     return (ROOT / candidate).resolve()
 
 
+def resolve_overlap_dual_controller_distill_prediction(
+    outputs: dict[str, torch.Tensor],
+    source: str,
+) -> torch.Tensor | None:
+    if source == "overlap_cancel_pre_present_controller":
+        return outputs.get("branch_overlap_cancel_pre_present_controller")
+    if source == "overlap_dual_cancel_controller":
+        return outputs.get("branch_overlap_dual_cancel_controller")
+    if source == "overlap_dual_residual_correction_controller":
+        return outputs.get("branch_overlap_dual_residual_correction_controller")
+    return outputs.get("branch_overlap_cancel_apply_controller")
+
+
+def resolve_gate_supervision_tensors(
+    *,
+    outputs: dict[str, torch.Tensor],
+    batch: dict[str, object],
+    loss_config: dict[str, object],
+    absent_presence_sample_weights: torch.Tensor | None,
+    absent_union_sample_weights: torch.Tensor | None,
+    interference_extra_sample_weights: torch.Tensor | None,
+    branch_protect_sample_weights: torch.Tensor | None,
+    overlap_cancel_sample_weights: torch.Tensor | None,
+    overlap_dual_sample_weights: torch.Tensor | None,
+) -> dict[str, object]:
+    gate_supervision_source = str(
+        loss_config.get("gate_supervision_source", "branch_decoder_frame_gate")
+    )
+    gate_values = outputs.get("branch_decoder_frame_gate")
+    gate_absent_values = None
+    gate_abstain_values = None
+    gate_keep_values = None
+    gate_pre_present_keep_values = outputs.get("branch_overlap_cancel_pre_present_controller")
+    gate_pre_present_abstain_values = gate_pre_present_keep_values
+    gate_target_source_values = None
+    gate_absent_sample_weights = absent_presence_sample_weights
+    gate_abstain_sample_weights = interference_extra_sample_weights
+    gate_keep_sample_weights = branch_protect_sample_weights
+    gate_pre_present_keep_sample_weights = overlap_cancel_sample_weights
+    gate_pre_present_abstain_sample_weights = overlap_cancel_sample_weights
+    gate_absent_intervals = None
+    gate_abstain_intervals = None
+    gate_keep_intervals = None
+    gate_pre_present_keep_intervals = batch["target_overlap_intervals"]
+    gate_pre_present_abstain_intervals = build_complement_intervals(
+        batch["target_overlap_intervals"],
+        batch["target_lengths"],
+        sample_rate=int(loss_config.get("sample_rate", 16000)),
+    )
+
+    if gate_supervision_source == "overlap_cancel_apply_controller":
+        gate_values = outputs.get("branch_overlap_cancel_apply_controller")
+        gate_absent_sample_weights = absent_union_sample_weights
+        gate_abstain_sample_weights = None
+        gate_keep_sample_weights = overlap_cancel_sample_weights
+        gate_absent_intervals = batch["target_absent_intervals"]
+        gate_keep_intervals = batch["target_overlap_intervals"]
+    elif gate_supervision_source == "overlap_cancel_apply_controller_split":
+        gate_values = outputs.get("branch_overlap_cancel_apply_controller")
+        gate_absent_values = outputs.get("branch_overlap_cancel_apply_absent_controller")
+        gate_keep_values = outputs.get("branch_overlap_cancel_apply_keep_controller")
+        gate_target_source_values = gate_values
+        gate_absent_sample_weights = absent_union_sample_weights
+        gate_abstain_sample_weights = None
+        gate_keep_sample_weights = overlap_cancel_sample_weights
+        gate_absent_intervals = batch["target_absent_intervals"]
+        gate_keep_intervals = batch["target_overlap_intervals"]
+    elif gate_supervision_source == "overlap_dual_monitor_controller":
+        gate_values = outputs.get("branch_overlap_dual_monitor_controller")
+        gate_target_source_values = gate_values
+        gate_absent_sample_weights = absent_union_sample_weights
+        gate_abstain_sample_weights = None
+        gate_keep_sample_weights = overlap_dual_sample_weights
+        gate_absent_intervals = batch["target_absent_intervals"]
+        gate_keep_intervals = batch["target_overlap_intervals"]
+    elif gate_supervision_source == "overlap_dual_cancel_controller":
+        gate_values = outputs.get("branch_overlap_dual_cancel_controller")
+        gate_target_source_values = gate_values
+        gate_absent_sample_weights = absent_union_sample_weights
+        gate_abstain_sample_weights = None
+        gate_keep_sample_weights = overlap_dual_sample_weights
+        gate_absent_intervals = batch["target_absent_intervals"]
+        gate_keep_intervals = batch["target_overlap_intervals"]
+    elif gate_supervision_source == "overlap_dual_residual_correction_controller":
+        gate_values = outputs.get("branch_overlap_dual_residual_correction_controller")
+        gate_target_source_values = gate_values
+        gate_absent_sample_weights = absent_union_sample_weights
+        gate_abstain_sample_weights = None
+        gate_keep_sample_weights = overlap_dual_sample_weights
+        gate_absent_intervals = batch["target_absent_intervals"]
+        gate_keep_intervals = batch["target_overlap_intervals"]
+    elif gate_supervision_source == "overlap_dual_controlled_gate":
+        gate_values = outputs.get("branch_overlap_dual_controlled_gate")
+        gate_target_source_values = gate_values
+        gate_absent_sample_weights = absent_union_sample_weights
+        gate_abstain_sample_weights = None
+        gate_keep_sample_weights = overlap_dual_sample_weights
+        gate_absent_intervals = batch["target_absent_intervals"]
+        gate_keep_intervals = batch["target_overlap_intervals"]
+
+    return {
+        "gate_values": gate_values,
+        "gate_absent_values": gate_absent_values,
+        "gate_abstain_values": gate_abstain_values,
+        "gate_keep_values": gate_keep_values,
+        "gate_pre_present_keep_values": gate_pre_present_keep_values,
+        "gate_pre_present_abstain_values": gate_pre_present_abstain_values,
+        "gate_target_source_values": gate_target_source_values,
+        "gate_absent_sample_weights": gate_absent_sample_weights,
+        "gate_abstain_sample_weights": gate_abstain_sample_weights,
+        "gate_keep_sample_weights": gate_keep_sample_weights,
+        "gate_pre_present_keep_sample_weights": gate_pre_present_keep_sample_weights,
+        "gate_pre_present_abstain_sample_weights": gate_pre_present_abstain_sample_weights,
+        "gate_absent_intervals": gate_absent_intervals,
+        "gate_abstain_intervals": gate_abstain_intervals,
+        "gate_keep_intervals": gate_keep_intervals,
+        "gate_pre_present_keep_intervals": gate_pre_present_keep_intervals,
+        "gate_pre_present_abstain_intervals": gate_pre_present_abstain_intervals,
+    }
+
+
 def load_model_state_dict_for_init(model: nn.Module, checkpoint_state_dict: dict[str, torch.Tensor]) -> None:
     missing_keys, unexpected_keys = model.load_state_dict(checkpoint_state_dict, strict=False)
     allowed_optional_prefixes = (
@@ -792,6 +982,9 @@ def load_model_state_dict_for_init(model: nn.Module, checkpoint_state_dict: dict
         "branch_overlap_dual_decoder_temporal_model.",
         "branch_overlap_dual_decoder_head.",
         "branch_overlap_dual_monitor_controller_head.",
+        "branch_overlap_dual_cancel_controller_head.",
+        "branch_overlap_dual_residual_correction_head.",
+        "branch_overlap_dual_residual_correction_controller_head.",
         "adapter_mask_head.",
         "adapter_condition_proj.",
         "adapter_condition_scale.",
@@ -966,6 +1159,9 @@ def evaluate(
     total_overlap_cancel_absent_mix = 0.0
     total_overlap_dual_mix_consistency = 0.0
     total_overlap_dual_residual_waveform = 0.0
+    total_overlap_dual_monitor_waveform = 0.0
+    total_overlap_dual_residual_correction_waveform = 0.0
+    total_overlap_dual_controller_distill = 0.0
     total_overlap_dual_residual_target_projection = 0.0
     total_overlap_dual_absent_mix = 0.0
     total_absent = 0.0
@@ -1104,56 +1300,25 @@ def evaluate(
                 if gate_target_values is not None
                 else None
             )
-            gate_supervision_source = str(
-                loss_config.get("gate_supervision_source", "branch_decoder_frame_gate")
+            extra_prediction = resolve_prediction_source(
+                outputs,
+                str(loss_config.get("extra_prediction_source", "estimated_waveform")),
             )
-            gate_values = outputs.get("branch_decoder_frame_gate")
-            gate_absent_values = None
-            gate_abstain_values = None
-            gate_keep_values = None
-            gate_pre_present_keep_values = outputs.get("branch_overlap_cancel_pre_present_controller")
-            gate_pre_present_abstain_values = gate_pre_present_keep_values
-            gate_target_source_values = None
-            gate_absent_sample_weights = absent_presence_sample_weights
-            gate_abstain_sample_weights = interference_extra_sample_weights
-            gate_keep_sample_weights = branch_protect_sample_weights
-            gate_pre_present_keep_sample_weights = overlap_cancel_sample_weights
-            gate_pre_present_abstain_sample_weights = overlap_cancel_sample_weights
+            overlap_dual_controller_distill_source = str(
+                loss_config.get("overlap_dual_controller_distill_source", "overlap_cancel_apply_controller")
+            )
             gate_target_intervals = None
-            gate_absent_intervals = None
-            gate_abstain_intervals = None
-            gate_keep_intervals = None
-            gate_pre_present_keep_intervals = batch["target_overlap_intervals"]
-            gate_pre_present_abstain_intervals = build_complement_intervals(
-                batch["target_overlap_intervals"],
-                batch["target_lengths"],
-                sample_rate=int(loss_config.get("sample_rate", 16000)),
+            gate_supervision = resolve_gate_supervision_tensors(
+                outputs=outputs,
+                batch=batch,
+                loss_config=loss_config,
+                absent_presence_sample_weights=absent_presence_sample_weights,
+                absent_union_sample_weights=absent_union_sample_weights,
+                interference_extra_sample_weights=interference_extra_sample_weights,
+                branch_protect_sample_weights=branch_protect_sample_weights,
+                overlap_cancel_sample_weights=overlap_cancel_sample_weights,
+                overlap_dual_sample_weights=overlap_dual_sample_weights,
             )
-            if gate_supervision_source == "overlap_cancel_apply_controller":
-                gate_values = outputs.get("branch_overlap_cancel_apply_controller")
-                gate_absent_sample_weights = absent_union_sample_weights
-                gate_abstain_sample_weights = None
-                gate_keep_sample_weights = overlap_cancel_sample_weights
-                gate_absent_intervals = batch["target_absent_intervals"]
-                gate_keep_intervals = batch["target_overlap_intervals"]
-            elif gate_supervision_source == "overlap_cancel_apply_controller_split":
-                gate_values = outputs.get("branch_overlap_cancel_apply_controller")
-                gate_absent_values = outputs.get("branch_overlap_cancel_apply_absent_controller")
-                gate_keep_values = outputs.get("branch_overlap_cancel_apply_keep_controller")
-                gate_target_source_values = gate_values
-                gate_absent_sample_weights = absent_union_sample_weights
-                gate_abstain_sample_weights = None
-                gate_keep_sample_weights = overlap_cancel_sample_weights
-                gate_absent_intervals = batch["target_absent_intervals"]
-                gate_keep_intervals = batch["target_overlap_intervals"]
-            elif gate_supervision_source == "overlap_dual_monitor_controller":
-                gate_values = outputs.get("branch_overlap_dual_monitor_controller")
-                gate_target_source_values = gate_values
-                gate_absent_sample_weights = absent_union_sample_weights
-                gate_abstain_sample_weights = None
-                gate_keep_sample_weights = overlap_dual_sample_weights
-                gate_absent_intervals = batch["target_absent_intervals"]
-                gate_keep_intervals = batch["target_overlap_intervals"]
             for prefix, weights in (
                 ("reconstruction", reconstruction_union_sample_weights),
                 ("reconstruction_extra", reconstruction_extra_sample_weights),
@@ -1181,25 +1346,35 @@ def evaluate(
                         loss_config.get("use_branch_prerefine_as_primary_prediction", False)
                     ),
                 ),
-                reconstruction_extra_prediction=outputs["estimated_waveform"],
-                extra_prediction=resolve_branch_extra_prediction(outputs),
+                reconstruction_extra_prediction=extra_prediction,
+                extra_prediction=extra_prediction,
                 teacher_prediction=teacher_prediction,
                 overlap_cancel_prediction=outputs.get("branch_overlap_cancel_estimate_waveform"),
                 overlap_dual_target_prediction=outputs.get("branch_overlap_dual_target_waveform"),
                 overlap_dual_residual_prediction=outputs.get("branch_overlap_dual_residual_waveform"),
+                overlap_dual_monitor_prediction=outputs.get("branch_overlap_dual_monitor_estimate_waveform"),
+                overlap_dual_residual_correction_prediction=outputs.get(
+                    "branch_overlap_dual_residual_correction_estimate_waveform"
+                ),
+                overlap_cancel_controller_prediction=outputs.get("branch_overlap_cancel_apply_controller"),
+                overlap_dual_controller_prediction=resolve_overlap_dual_controller_distill_prediction(
+                    outputs,
+                    overlap_dual_controller_distill_source,
+                ),
+                overlap_dual_controller_target=outputs.get("branch_overlap_dual_controller"),
                 mixture=batch["mixture"],
                 target=batch["target"],
                 lengths=batch["target_lengths"],
                 absent_intervals=batch["target_absent_intervals"],
                 overlap_intervals=batch["target_overlap_intervals"],
                 model=model,
-                gate_values=gate_values,
-                gate_absent_values=gate_absent_values,
-                gate_abstain_values=gate_abstain_values,
-                gate_keep_values=gate_keep_values,
-                gate_pre_present_keep_values=gate_pre_present_keep_values,
-                gate_pre_present_abstain_values=gate_pre_present_abstain_values,
-                gate_target_source_values=gate_target_source_values,
+                gate_values=gate_supervision["gate_values"],
+                gate_absent_values=gate_supervision["gate_absent_values"],
+                gate_abstain_values=gate_supervision["gate_abstain_values"],
+                gate_keep_values=gate_supervision["gate_keep_values"],
+                gate_pre_present_keep_values=gate_supervision["gate_pre_present_keep_values"],
+                gate_pre_present_abstain_values=gate_supervision["gate_pre_present_abstain_values"],
+                gate_target_source_values=gate_supervision["gate_target_source_values"],
                 reconstruction_sample_weights=reconstruction_sample_weights,
                 reconstruction_extra_sample_weights=reconstruction_extra_sample_weights,
                 transient_sample_weights=transient_sample_weights,
@@ -1215,18 +1390,18 @@ def evaluate(
                 branch_protect_teacher_sample_weights=branch_protect_teacher_sample_weights,
                 absent_sample_weights=absent_sample_weights,
                 absent_extra_sample_weights=absent_extra_sample_weights,
-                gate_absent_sample_weights=gate_absent_sample_weights,
-                gate_abstain_sample_weights=gate_abstain_sample_weights,
-                gate_keep_sample_weights=gate_keep_sample_weights,
-                gate_pre_present_keep_sample_weights=gate_pre_present_keep_sample_weights,
-                gate_pre_present_abstain_sample_weights=gate_pre_present_abstain_sample_weights,
+                gate_absent_sample_weights=gate_supervision["gate_absent_sample_weights"],
+                gate_abstain_sample_weights=gate_supervision["gate_abstain_sample_weights"],
+                gate_keep_sample_weights=gate_supervision["gate_keep_sample_weights"],
+                gate_pre_present_keep_sample_weights=gate_supervision["gate_pre_present_keep_sample_weights"],
+                gate_pre_present_abstain_sample_weights=gate_supervision["gate_pre_present_abstain_sample_weights"],
                 gate_target_sample_weights=gate_target_sample_weights,
                 gate_target_values=gate_target_values,
-                gate_absent_intervals=gate_absent_intervals,
-                gate_abstain_intervals=gate_abstain_intervals,
-                gate_keep_intervals=gate_keep_intervals,
-                gate_pre_present_keep_intervals=gate_pre_present_keep_intervals,
-                gate_pre_present_abstain_intervals=gate_pre_present_abstain_intervals,
+                gate_absent_intervals=gate_supervision["gate_absent_intervals"],
+                gate_abstain_intervals=gate_supervision["gate_abstain_intervals"],
+                gate_keep_intervals=gate_supervision["gate_keep_intervals"],
+                gate_pre_present_keep_intervals=gate_supervision["gate_pre_present_keep_intervals"],
+                gate_pre_present_abstain_intervals=gate_supervision["gate_pre_present_abstain_intervals"],
                 gate_target_intervals=gate_target_intervals,
                 **compute_loss_kwargs,
             )
@@ -1278,6 +1453,15 @@ def evaluate(
             total_overlap_dual_residual_waveform += float(
                 losses.overlap_dual_residual_waveform_l1.item()
             ) * batch_size
+            total_overlap_dual_monitor_waveform += float(
+                losses.overlap_dual_monitor_waveform_l1.item()
+            ) * batch_size
+            total_overlap_dual_residual_correction_waveform += float(
+                losses.overlap_dual_residual_correction_waveform_l1.item()
+            ) * batch_size
+            total_overlap_dual_controller_distill += float(
+                losses.overlap_dual_controller_distill_l1.item()
+            ) * batch_size
             total_overlap_dual_residual_target_projection += float(
                 losses.overlap_dual_residual_target_projection_ratio.item()
             ) * batch_size
@@ -1322,6 +1506,9 @@ def evaluate(
             "overlap_cancel_absent_mix_l1": 0.0,
             "overlap_dual_mix_consistency_l1": 0.0,
             "overlap_dual_residual_waveform_l1": 0.0,
+            "overlap_dual_monitor_waveform_l1": 0.0,
+            "overlap_dual_residual_correction_waveform_l1": 0.0,
+            "overlap_dual_controller_distill_l1": 0.0,
             "overlap_dual_residual_target_projection_ratio": 0.0,
             "overlap_dual_absent_mix_l1": 0.0,
             "absent_interval_l1": 0.0,
@@ -1374,6 +1561,15 @@ def evaluate(
             ),
             "overlap_dual_residual_waveform_l1": (
                 total_overlap_dual_residual_waveform / sample_count
+            ),
+            "overlap_dual_monitor_waveform_l1": (
+                total_overlap_dual_monitor_waveform / sample_count
+            ),
+            "overlap_dual_residual_correction_waveform_l1": (
+                total_overlap_dual_residual_correction_waveform / sample_count
+            ),
+            "overlap_dual_controller_distill_l1": (
+                total_overlap_dual_controller_distill / sample_count
             ),
             "overlap_dual_residual_target_projection_ratio": (
                 total_overlap_dual_residual_target_projection / sample_count
@@ -1512,6 +1708,9 @@ def main() -> None:
         epoch_overlap_cancel_absent_mix = 0.0
         epoch_overlap_dual_mix_consistency = 0.0
         epoch_overlap_dual_residual_waveform = 0.0
+        epoch_overlap_dual_monitor_waveform = 0.0
+        epoch_overlap_dual_residual_correction_waveform = 0.0
+        epoch_overlap_dual_controller_distill = 0.0
         epoch_overlap_dual_residual_target_projection = 0.0
         epoch_overlap_dual_absent_mix = 0.0
         epoch_absent = 0.0
@@ -1650,56 +1849,25 @@ def main() -> None:
                 if gate_target_values is not None
                 else None
             )
-            gate_supervision_source = str(
-                loss_config.get("gate_supervision_source", "branch_decoder_frame_gate")
+            extra_prediction = resolve_prediction_source(
+                outputs,
+                str(loss_config.get("extra_prediction_source", "estimated_waveform")),
             )
-            gate_values = outputs.get("branch_decoder_frame_gate")
-            gate_absent_values = None
-            gate_abstain_values = None
-            gate_keep_values = None
-            gate_pre_present_keep_values = outputs.get("branch_overlap_cancel_pre_present_controller")
-            gate_pre_present_abstain_values = gate_pre_present_keep_values
-            gate_target_source_values = None
-            gate_absent_sample_weights = absent_presence_sample_weights
-            gate_abstain_sample_weights = interference_extra_sample_weights
-            gate_keep_sample_weights = branch_protect_sample_weights
-            gate_pre_present_keep_sample_weights = overlap_cancel_sample_weights
-            gate_pre_present_abstain_sample_weights = overlap_cancel_sample_weights
+            overlap_dual_controller_distill_source = str(
+                loss_config.get("overlap_dual_controller_distill_source", "overlap_cancel_apply_controller")
+            )
             gate_target_intervals = None
-            gate_absent_intervals = None
-            gate_abstain_intervals = None
-            gate_keep_intervals = None
-            gate_pre_present_keep_intervals = batch["target_overlap_intervals"]
-            gate_pre_present_abstain_intervals = build_complement_intervals(
-                batch["target_overlap_intervals"],
-                batch["target_lengths"],
-                sample_rate=int(loss_config.get("sample_rate", 16000)),
+            gate_supervision = resolve_gate_supervision_tensors(
+                outputs=outputs,
+                batch=batch,
+                loss_config=loss_config,
+                absent_presence_sample_weights=absent_presence_sample_weights,
+                absent_union_sample_weights=absent_union_sample_weights,
+                interference_extra_sample_weights=interference_extra_sample_weights,
+                branch_protect_sample_weights=branch_protect_sample_weights,
+                overlap_cancel_sample_weights=overlap_cancel_sample_weights,
+                overlap_dual_sample_weights=overlap_dual_sample_weights,
             )
-            if gate_supervision_source == "overlap_cancel_apply_controller":
-                gate_values = outputs.get("branch_overlap_cancel_apply_controller")
-                gate_absent_sample_weights = absent_union_sample_weights
-                gate_abstain_sample_weights = None
-                gate_keep_sample_weights = overlap_cancel_sample_weights
-                gate_absent_intervals = batch["target_absent_intervals"]
-                gate_keep_intervals = batch["target_overlap_intervals"]
-            elif gate_supervision_source == "overlap_cancel_apply_controller_split":
-                gate_values = outputs.get("branch_overlap_cancel_apply_controller")
-                gate_absent_values = outputs.get("branch_overlap_cancel_apply_absent_controller")
-                gate_keep_values = outputs.get("branch_overlap_cancel_apply_keep_controller")
-                gate_target_source_values = gate_values
-                gate_absent_sample_weights = absent_union_sample_weights
-                gate_abstain_sample_weights = None
-                gate_keep_sample_weights = overlap_cancel_sample_weights
-                gate_absent_intervals = batch["target_absent_intervals"]
-                gate_keep_intervals = batch["target_overlap_intervals"]
-            elif gate_supervision_source == "overlap_dual_monitor_controller":
-                gate_values = outputs.get("branch_overlap_dual_monitor_controller")
-                gate_target_source_values = gate_values
-                gate_absent_sample_weights = absent_union_sample_weights
-                gate_abstain_sample_weights = None
-                gate_keep_sample_weights = overlap_dual_sample_weights
-                gate_absent_intervals = batch["target_absent_intervals"]
-                gate_keep_intervals = batch["target_overlap_intervals"]
             for prefix, weights in (
                 ("reconstruction", reconstruction_union_sample_weights),
                 ("reconstruction_extra", reconstruction_extra_sample_weights),
@@ -1727,25 +1895,35 @@ def main() -> None:
                         loss_config.get("use_branch_prerefine_as_primary_prediction", False)
                     ),
                 ),
-                reconstruction_extra_prediction=outputs["estimated_waveform"],
-                extra_prediction=resolve_branch_extra_prediction(outputs),
+                reconstruction_extra_prediction=extra_prediction,
+                extra_prediction=extra_prediction,
                 teacher_prediction=teacher_prediction,
                 overlap_cancel_prediction=outputs.get("branch_overlap_cancel_estimate_waveform"),
                 overlap_dual_target_prediction=outputs.get("branch_overlap_dual_target_waveform"),
                 overlap_dual_residual_prediction=outputs.get("branch_overlap_dual_residual_waveform"),
+                overlap_dual_monitor_prediction=outputs.get("branch_overlap_dual_monitor_estimate_waveform"),
+                overlap_dual_residual_correction_prediction=outputs.get(
+                    "branch_overlap_dual_residual_correction_estimate_waveform"
+                ),
+                overlap_cancel_controller_prediction=outputs.get("branch_overlap_cancel_apply_controller"),
+                overlap_dual_controller_prediction=resolve_overlap_dual_controller_distill_prediction(
+                    outputs,
+                    overlap_dual_controller_distill_source,
+                ),
+                overlap_dual_controller_target=outputs.get("branch_overlap_dual_controller"),
                 mixture=batch["mixture"],
                 target=batch["target"],
                 lengths=batch["target_lengths"],
                 absent_intervals=batch["target_absent_intervals"],
                 overlap_intervals=batch["target_overlap_intervals"],
                 model=model,
-                gate_values=gate_values,
-                gate_absent_values=gate_absent_values,
-                gate_abstain_values=gate_abstain_values,
-                gate_keep_values=gate_keep_values,
-                gate_pre_present_keep_values=gate_pre_present_keep_values,
-                gate_pre_present_abstain_values=gate_pre_present_abstain_values,
-                gate_target_source_values=gate_target_source_values,
+                gate_values=gate_supervision["gate_values"],
+                gate_absent_values=gate_supervision["gate_absent_values"],
+                gate_abstain_values=gate_supervision["gate_abstain_values"],
+                gate_keep_values=gate_supervision["gate_keep_values"],
+                gate_pre_present_keep_values=gate_supervision["gate_pre_present_keep_values"],
+                gate_pre_present_abstain_values=gate_supervision["gate_pre_present_abstain_values"],
+                gate_target_source_values=gate_supervision["gate_target_source_values"],
                 reconstruction_sample_weights=reconstruction_sample_weights,
                 reconstruction_extra_sample_weights=reconstruction_extra_sample_weights,
                 transient_sample_weights=transient_sample_weights,
@@ -1761,18 +1939,18 @@ def main() -> None:
                 branch_protect_teacher_sample_weights=branch_protect_teacher_sample_weights,
                 absent_sample_weights=absent_sample_weights,
                 absent_extra_sample_weights=absent_extra_sample_weights,
-                gate_absent_sample_weights=gate_absent_sample_weights,
-                gate_abstain_sample_weights=gate_abstain_sample_weights,
-                gate_keep_sample_weights=gate_keep_sample_weights,
-                gate_pre_present_keep_sample_weights=gate_pre_present_keep_sample_weights,
-                gate_pre_present_abstain_sample_weights=gate_pre_present_abstain_sample_weights,
+                gate_absent_sample_weights=gate_supervision["gate_absent_sample_weights"],
+                gate_abstain_sample_weights=gate_supervision["gate_abstain_sample_weights"],
+                gate_keep_sample_weights=gate_supervision["gate_keep_sample_weights"],
+                gate_pre_present_keep_sample_weights=gate_supervision["gate_pre_present_keep_sample_weights"],
+                gate_pre_present_abstain_sample_weights=gate_supervision["gate_pre_present_abstain_sample_weights"],
                 gate_target_sample_weights=gate_target_sample_weights,
                 gate_target_values=gate_target_values,
-                gate_absent_intervals=gate_absent_intervals,
-                gate_abstain_intervals=gate_abstain_intervals,
-                gate_keep_intervals=gate_keep_intervals,
-                gate_pre_present_keep_intervals=gate_pre_present_keep_intervals,
-                gate_pre_present_abstain_intervals=gate_pre_present_abstain_intervals,
+                gate_absent_intervals=gate_supervision["gate_absent_intervals"],
+                gate_abstain_intervals=gate_supervision["gate_abstain_intervals"],
+                gate_keep_intervals=gate_supervision["gate_keep_intervals"],
+                gate_pre_present_keep_intervals=gate_supervision["gate_pre_present_keep_intervals"],
+                gate_pre_present_abstain_intervals=gate_supervision["gate_pre_present_abstain_intervals"],
                 gate_target_intervals=gate_target_intervals,
                 **compute_loss_kwargs,
             )
@@ -1832,6 +2010,15 @@ def main() -> None:
             )
             epoch_overlap_dual_residual_waveform += float(
                 losses.overlap_dual_residual_waveform_l1.item()
+            ) * batch_size
+            epoch_overlap_dual_monitor_waveform += float(
+                losses.overlap_dual_monitor_waveform_l1.item()
+            ) * batch_size
+            epoch_overlap_dual_residual_correction_waveform += float(
+                losses.overlap_dual_residual_correction_waveform_l1.item()
+            ) * batch_size
+            epoch_overlap_dual_controller_distill += float(
+                losses.overlap_dual_controller_distill_l1.item()
             ) * batch_size
             epoch_overlap_dual_residual_target_projection += float(
                 losses.overlap_dual_residual_target_projection_ratio.item()
@@ -1919,6 +2106,16 @@ def main() -> None:
                             "overlap_dual_residual_waveform_l1": round(
                                 float(losses.overlap_dual_residual_waveform_l1.item()), 6
                             ),
+                            "overlap_dual_monitor_waveform_l1": round(
+                                float(losses.overlap_dual_monitor_waveform_l1.item()), 6
+                            ),
+                            "overlap_dual_residual_correction_waveform_l1": round(
+                                float(losses.overlap_dual_residual_correction_waveform_l1.item()),
+                                6,
+                            ),
+                            "overlap_dual_controller_distill_l1": round(
+                                float(losses.overlap_dual_controller_distill_l1.item()), 6
+                            ),
                             "overlap_dual_residual_target_projection_ratio": round(
                                 float(losses.overlap_dual_residual_target_projection_ratio.item()), 6
                             ),
@@ -1989,6 +2186,15 @@ def main() -> None:
             ),
             "overlap_dual_residual_waveform_l1": (
                 epoch_overlap_dual_residual_waveform / max(1, epoch_sample_count)
+            ),
+            "overlap_dual_monitor_waveform_l1": (
+                epoch_overlap_dual_monitor_waveform / max(1, epoch_sample_count)
+            ),
+            "overlap_dual_residual_correction_waveform_l1": (
+                epoch_overlap_dual_residual_correction_waveform / max(1, epoch_sample_count)
+            ),
+            "overlap_dual_controller_distill_l1": (
+                epoch_overlap_dual_controller_distill / max(1, epoch_sample_count)
             ),
             "overlap_dual_residual_target_projection_ratio": (
                 epoch_overlap_dual_residual_target_projection / max(1, epoch_sample_count)
@@ -2075,6 +2281,15 @@ def main() -> None:
                 "train_overlap_dual_residual_waveform_l1": (
                     train_metrics["overlap_dual_residual_waveform_l1"]
                 ),
+                "train_overlap_dual_monitor_waveform_l1": (
+                    train_metrics["overlap_dual_monitor_waveform_l1"]
+                ),
+                "train_overlap_dual_residual_correction_waveform_l1": (
+                    train_metrics["overlap_dual_residual_correction_waveform_l1"]
+                ),
+                "train_overlap_dual_controller_distill_l1": (
+                    train_metrics["overlap_dual_controller_distill_l1"]
+                ),
                 "train_overlap_dual_residual_target_projection_ratio": (
                     train_metrics["overlap_dual_residual_target_projection_ratio"]
                 ),
@@ -2135,6 +2350,15 @@ def main() -> None:
                 ),
                 "val_overlap_dual_residual_waveform_l1": (
                     val_metrics["overlap_dual_residual_waveform_l1"]
+                ),
+                "val_overlap_dual_monitor_waveform_l1": (
+                    val_metrics["overlap_dual_monitor_waveform_l1"]
+                ),
+                "val_overlap_dual_residual_correction_waveform_l1": (
+                    val_metrics["overlap_dual_residual_correction_waveform_l1"]
+                ),
+                "val_overlap_dual_controller_distill_l1": (
+                    val_metrics["overlap_dual_controller_distill_l1"]
                 ),
                 "val_overlap_dual_residual_target_projection_ratio": (
                     val_metrics["overlap_dual_residual_target_projection_ratio"]
