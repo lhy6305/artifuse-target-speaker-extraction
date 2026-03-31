@@ -167,6 +167,10 @@ def _compute_local_proxy_intervals(metadata: dict[str, Any]) -> list[dict[str, f
     ]
 
 
+def compute_local_proxy_intervals(metadata: dict[str, Any]) -> list[dict[str, float]]:
+    return _compute_local_proxy_intervals(metadata)
+
+
 def _infer_interference_speaker_name(audio_path: str | None) -> str:
     if not audio_path:
         return ""

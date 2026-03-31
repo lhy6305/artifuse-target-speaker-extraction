@@ -22,6 +22,8 @@ class STFTMaskBaseline(nn.Module):
         enable_branch_decoder_head: bool = False,
         enable_branch_abstention_gate: bool = False,
         enable_branch_overlap_refine_head: bool = False,
+        enable_branch_overlap_refine_apply_controller: bool = False,
+        enable_branch_overlap_refine_local_hard_mask: bool = False,
         enable_branch_overlap_refine_present_head: bool = False,
         enable_branch_overlap_cancel_head: bool = False,
         enable_branch_overlap_cancel_apply_controller: bool = False,
@@ -82,6 +84,12 @@ class STFTMaskBaseline(nn.Module):
         self.enable_branch_decoder_head = enable_branch_decoder_head
         self.enable_branch_abstention_gate = enable_branch_abstention_gate
         self.enable_branch_overlap_refine_head = enable_branch_overlap_refine_head
+        self.enable_branch_overlap_refine_apply_controller = (
+            enable_branch_overlap_refine_apply_controller
+        )
+        self.enable_branch_overlap_refine_local_hard_mask = (
+            enable_branch_overlap_refine_local_hard_mask
+        )
         self.enable_branch_overlap_refine_present_head = enable_branch_overlap_refine_present_head
         self.enable_branch_overlap_cancel_head = enable_branch_overlap_cancel_head
         self.enable_branch_overlap_cancel_apply_controller = enable_branch_overlap_cancel_apply_controller
@@ -155,6 +163,22 @@ class STFTMaskBaseline(nn.Module):
             raise ValueError("Branch abstention gate requires enable_branch_decoder_head.")
         if enable_branch_overlap_refine_head and not enable_branch_decoder_head:
             raise ValueError("Branch overlap refiner requires enable_branch_decoder_head.")
+        if enable_branch_overlap_refine_apply_controller and not enable_branch_overlap_refine_head:
+            raise ValueError(
+                "Branch overlap refine apply controller requires enable_branch_overlap_refine_head."
+            )
+        if enable_branch_overlap_refine_local_hard_mask and not enable_branch_overlap_refine_head:
+            raise ValueError(
+                "Branch overlap refine local hard mask requires enable_branch_overlap_refine_head."
+            )
+        if (
+            enable_branch_overlap_refine_local_hard_mask
+            and not enable_branch_overlap_cancel_pre_present_controller
+        ):
+            raise ValueError(
+                "Branch overlap refine local hard mask requires "
+                "enable_branch_overlap_cancel_pre_present_controller."
+            )
         if enable_branch_overlap_refine_present_head and not enable_branch_overlap_refine_head:
             raise ValueError("Branch overlap present refiner requires enable_branch_overlap_refine_head.")
         if enable_branch_overlap_refine_present_head and not enable_branch_abstention_gate:
@@ -401,6 +425,15 @@ class STFTMaskBaseline(nn.Module):
                 self.reset_branch_overlap_refine_head()
             else:
                 self.branch_overlap_refine_head = None
+            if enable_branch_overlap_refine_apply_controller:
+                self.branch_overlap_refine_apply_controller_head = nn.Sequential(
+                    nn.Linear(hidden_dim * 2, hidden_dim),
+                    nn.ReLU(),
+                    nn.Linear(hidden_dim, 1),
+                )
+                self.reset_branch_overlap_refine_apply_controller_head()
+            else:
+                self.branch_overlap_refine_apply_controller_head = None
             if enable_branch_overlap_refine_present_head:
                 self.branch_overlap_refine_present_head = nn.Sequential(
                     nn.Linear(hidden_dim * 2, hidden_dim),
@@ -531,6 +564,7 @@ class STFTMaskBaseline(nn.Module):
             self.branch_decoder_mask_head = None
             self.branch_decoder_gate_head = None
             self.branch_overlap_refine_head = None
+            self.branch_overlap_refine_apply_controller_head = None
             self.branch_overlap_refine_present_head = None
             self.branch_overlap_cancel_head = None
             self.branch_overlap_cancel_apply_controller_head = None
@@ -614,6 +648,13 @@ class STFTMaskBaseline(nn.Module):
         final_layer = self.branch_overlap_refine_head[-1]
         nn.init.zeros_(final_layer.weight)
         nn.init.zeros_(final_layer.bias)
+
+    def reset_branch_overlap_refine_apply_controller_head(self) -> None:
+        if self.branch_overlap_refine_apply_controller_head is None:
+            return
+        final_layer = self.branch_overlap_refine_apply_controller_head[-1]
+        nn.init.zeros_(final_layer.weight)
+        nn.init.constant_(final_layer.bias, 6.0)
 
     def reset_branch_overlap_refine_present_head(self) -> None:
         if self.branch_overlap_refine_present_head is None:
@@ -810,12 +851,43 @@ class STFTMaskBaseline(nn.Module):
         ref_summary = self.masked_attention_pool(ref_encoded, frame_lengths)
         return self.ref_encoder(ref_summary)
 
+    @staticmethod
+    def build_waveform_interval_mask(
+        intervals_batch: list[list[dict[str, float]]] | None,
+        lengths: torch.Tensor,
+        max_length: int,
+        device: torch.device,
+        dtype: torch.dtype,
+        sample_rate: int = 16000,
+    ) -> torch.Tensor | None:
+        if intervals_batch is None:
+            return None
+        batch_size = len(intervals_batch)
+        if batch_size != int(lengths.shape[0]):
+            raise ValueError("interval batch size must match waveform lengths.")
+        mask = torch.zeros((batch_size, max_length), device=device, dtype=dtype)
+        for sample_index, (intervals, length_value) in enumerate(
+            zip(intervals_batch, lengths.detach().cpu().tolist())
+        ):
+            valid_length = max(0, min(int(length_value), max_length))
+            if valid_length <= 0:
+                continue
+            for interval in intervals:
+                start_index = int(round(float(interval.get("start_sec", 0.0)) * sample_rate))
+                end_index = int(round(float(interval.get("end_sec", 0.0)) * sample_rate))
+                start_index = max(0, min(valid_length, start_index))
+                end_index = max(start_index, min(valid_length, end_index))
+                if end_index > start_index:
+                    mask[sample_index, start_index:end_index] = 1.0
+        return mask
+
     def forward(
         self,
         mixture: torch.Tensor,
         mixture_lengths: torch.Tensor,
         reference: torch.Tensor,
         reference_lengths: torch.Tensor | None = None,
+        local_proxy_intervals: list[list[dict[str, float]]] | None = None,
     ) -> dict[str, torch.Tensor]:
         mix_stft = self.stft(mixture)
         mix_mag = torch.abs(mix_stft)
@@ -867,6 +939,7 @@ class STFTMaskBaseline(nn.Module):
         branch_overlap_refine_ratio = None
         branch_overlap_refine_present_ratio = None
         branch_overlap_refine_present_veto = None
+        branch_overlap_refine_apply_controller = None
         branch_overlap_cancel_ratio = None
         branch_overlap_cancel_delta_blend = None
         branch_overlap_cancel_apply_controller = None
@@ -902,6 +975,7 @@ class STFTMaskBaseline(nn.Module):
         estimated_waveform_post_pre_present_controller = None
         estimated_stft_post_refine_present = None
         estimated_waveform_post_refine_present = None
+        estimated_waveform_split_localmasked = None
         estimated_stft_pre_dual_residual_correction = None
         estimated_waveform_pre_dual_residual_correction = None
         estimated_stft_post_dual_local_bridge = None
@@ -955,6 +1029,13 @@ class STFTMaskBaseline(nn.Module):
                                 self.branch_overlap_refine_gate_floor,
                             )
                         branch_overlap_refine_ratio = branch_overlap_refine_ratio * refine_gate
+                if self.branch_overlap_refine_apply_controller_head is not None:
+                    branch_overlap_refine_apply_controller = torch.sigmoid(
+                        self.branch_overlap_refine_apply_controller_head(branch_encoded)
+                    ).transpose(1, 2)
+                    branch_overlap_refine_ratio = (
+                        branch_overlap_refine_ratio * branch_overlap_refine_apply_controller
+                    )
                 refine_source_stft = mix_stft
                 if self.branch_overlap_refine_source_mode == "branch_base":
                     refine_source_stft = estimated_stft_branch_base
@@ -1449,6 +1530,28 @@ class STFTMaskBaseline(nn.Module):
                     estimated_stft_post_dual_local_bridge,
                     mixture_lengths,
                 )
+            if (
+                self.enable_branch_overlap_refine_local_hard_mask
+                and estimated_waveform_refine_base is not None
+                and estimated_waveform_post_pre_present_controller is not None
+            ):
+                local_interval_mask = self.build_waveform_interval_mask(
+                    intervals_batch=local_proxy_intervals,
+                    lengths=mixture_lengths,
+                    max_length=int(estimated_waveform_refine_base.shape[-1]),
+                    device=estimated_waveform_refine_base.device,
+                    dtype=estimated_waveform_refine_base.dtype,
+                )
+                if local_interval_mask is not None:
+                    estimated_waveform_split_localmasked = (
+                        estimated_waveform_post_pre_present_controller
+                        + (
+                            estimated_waveform_refine_base
+                            - estimated_waveform_post_pre_present_controller
+                        )
+                        * local_interval_mask
+                    )
+                    estimated_waveform = estimated_waveform_split_localmasked
         elif self.adapter_mask_head is not None:
             estimated_stft = mix_stft * mask
             estimated_waveform = self.istft(estimated_stft, mixture_lengths)
@@ -1462,6 +1565,9 @@ class STFTMaskBaseline(nn.Module):
             "branch_decoder_mask": branch_decoder_mask,
             "branch_decoder_frame_gate": branch_decoder_frame_gate,
             "branch_overlap_refine_ratio": branch_overlap_refine_ratio,
+            "branch_overlap_refine_apply_controller": (
+                branch_overlap_refine_apply_controller
+            ),
             "branch_overlap_refine_present_ratio": branch_overlap_refine_present_ratio,
             "branch_overlap_refine_present_veto": branch_overlap_refine_present_veto,
             "branch_overlap_cancel_ratio": branch_overlap_cancel_ratio,
@@ -1499,6 +1605,7 @@ class STFTMaskBaseline(nn.Module):
                 estimated_waveform_post_pre_present_controller
             ),
             "estimated_waveform_post_refine_present": estimated_waveform_post_refine_present,
+            "estimated_waveform_split_localmasked": estimated_waveform_split_localmasked,
             "estimated_waveform_pre_dual_residual_correction": (
                 estimated_waveform_pre_dual_residual_correction
             ),

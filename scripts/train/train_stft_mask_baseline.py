@@ -132,6 +132,23 @@ def parse_args() -> argparse.Namespace:
         help="Add a zero-init complex residual canceller on top of the branch decoder output.",
     )
     parser.add_argument(
+        "--model-enable-branch-overlap-refine-apply-controller",
+        action="store_true",
+        help=(
+            "Add a sigmoid controller head that only scales the branch overlap refine writeback, "
+            "so the refine-base local writer can attenuate harmful frames without changing the ratio head itself."
+        ),
+    )
+    parser.add_argument(
+        "--model-enable-branch-overlap-refine-local-hard-mask",
+        action="store_true",
+        help=(
+            "Replace the final output with a hard interval split that keeps the "
+            "post-pre-present output outside local proxy intervals and only applies "
+            "the refine-base local writer inside them."
+        ),
+    )
+    parser.add_argument(
         "--model-enable-branch-overlap-refine-present-head",
         action="store_true",
         help=(
@@ -316,6 +333,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--loss-branch-protect-guard-sisdr-weight", type=float, default=0.0)
     parser.add_argument("--loss-branch-protect-overlap-base-align-weight", type=float, default=0.0)
     parser.add_argument("--loss-branch-protect-teacher-overlap-weight", type=float, default=0.0)
+    parser.add_argument("--loss-branch-protect-teacher-overlap-extra-weight", type=float, default=0.0)
     parser.add_argument("--loss-interference-extra-guard-sisdr-weight", type=float, default=0.0)
     parser.add_argument("--loss-interference-extra-base-align-weight", type=float, default=0.0)
     parser.add_argument("--loss-interference-extra-base-delta-projection-weight", type=float, default=0.0)
@@ -334,6 +352,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--loss-overlap-dual-residual-correction-waveform-weight", type=float, default=0.0)
     parser.add_argument(
         "--loss-overlap-dual-residual-correction-local-waveform-weight",
+        type=float,
+        default=0.0,
+    )
+    parser.add_argument(
+        "--loss-overlap-dual-residual-correction-local-waveform-extra-weight",
         type=float,
         default=0.0,
     )
@@ -404,6 +427,7 @@ def parse_args() -> argparse.Namespace:
             "estimated_waveform_refine_base",
             "estimated_waveform_post_pre_present_controller",
             "estimated_waveform_post_refine_present",
+            "estimated_waveform_split_localmasked",
             "estimated_waveform_pre_dual_residual_correction",
             "estimated_waveform_post_dual_local_bridge",
         ],
@@ -422,6 +446,7 @@ def parse_args() -> argparse.Namespace:
             "estimated_waveform_refine_base",
             "estimated_waveform_post_pre_present_controller",
             "estimated_waveform_post_refine_present",
+            "estimated_waveform_split_localmasked",
             "estimated_waveform_pre_dual_residual_correction",
             "estimated_waveform_post_dual_local_bridge",
         ],
@@ -445,6 +470,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--loss-reconstruction-extra-waveform-weight", type=float, default=0.0)
     parser.add_argument("--loss-reconstruction-extra-stft-weight", type=float, default=0.0)
     parser.add_argument("--loss-extra-local-waveform-weight", type=float, default=0.0)
+    parser.add_argument("--loss-extra-local-nonlocal-waveform-weight", type=float, default=0.0)
     parser.add_argument("--loss-pre-present-applied-delta-local-waveform-weight", type=float, default=0.0)
     parser.add_argument("--loss-extra-local-sisdr-weight", type=float, default=0.0)
     parser.add_argument(
@@ -645,6 +671,12 @@ def build_model_config(args: argparse.Namespace) -> dict[str, int]:
         "enable_branch_decoder_head": args.model_enable_branch_decoder_head,
         "enable_branch_abstention_gate": args.model_enable_branch_abstention_gate,
         "enable_branch_overlap_refine_head": args.model_enable_branch_overlap_refine_head,
+        "enable_branch_overlap_refine_apply_controller": (
+            args.model_enable_branch_overlap_refine_apply_controller
+        ),
+        "enable_branch_overlap_refine_local_hard_mask": (
+            args.model_enable_branch_overlap_refine_local_hard_mask
+        ),
         "enable_branch_overlap_refine_present_head": args.model_enable_branch_overlap_refine_present_head,
         "enable_branch_overlap_cancel_head": args.model_enable_branch_overlap_cancel_head,
         "enable_branch_overlap_cancel_apply_controller": (
@@ -746,6 +778,7 @@ def build_loss_config(args: argparse.Namespace) -> dict[str, float]:
         "reconstruction_extra_waveform_weight": args.loss_reconstruction_extra_waveform_weight,
         "reconstruction_extra_stft_weight": args.loss_reconstruction_extra_stft_weight,
         "extra_local_waveform_weight": args.loss_extra_local_waveform_weight,
+        "extra_local_nonlocal_waveform_weight": args.loss_extra_local_nonlocal_waveform_weight,
         "pre_present_applied_delta_local_waveform_weight": (
             args.loss_pre_present_applied_delta_local_waveform_weight
         ),
@@ -760,6 +793,9 @@ def build_loss_config(args: argparse.Namespace) -> dict[str, float]:
         ),
         "branch_protect_teacher_overlap_weight": (
             args.loss_branch_protect_teacher_overlap_weight
+        ),
+        "branch_protect_teacher_overlap_extra_weight": (
+            args.loss_branch_protect_teacher_overlap_extra_weight
         ),
         "interference_extra_guard_sisdr_weight": args.loss_interference_extra_guard_sisdr_weight,
         "interference_extra_base_align_weight": args.loss_interference_extra_base_align_weight,
@@ -783,6 +819,9 @@ def build_loss_config(args: argparse.Namespace) -> dict[str, float]:
         ),
         "overlap_dual_residual_correction_local_waveform_weight": (
             args.loss_overlap_dual_residual_correction_local_waveform_weight
+        ),
+        "overlap_dual_residual_correction_local_waveform_extra_weight": (
+            args.loss_overlap_dual_residual_correction_local_waveform_extra_weight
         ),
         "overlap_dual_residual_correction_local_sisdr_weight": (
             args.loss_overlap_dual_residual_correction_local_sisdr_weight
@@ -1072,6 +1111,7 @@ def load_model_state_dict_for_init(model: nn.Module, checkpoint_state_dict: dict
         "branch_decoder_mask_head.",
         "branch_decoder_gate_head.",
         "branch_overlap_refine_head.",
+        "branch_overlap_refine_apply_controller_head.",
         "branch_overlap_refine_present_head.",
         "branch_overlap_cancel_head.",
         "branch_overlap_cancel_apply_controller_head.",
@@ -1241,12 +1281,14 @@ def evaluate(
     total_reconstruction_extra_wave = 0.0
     total_reconstruction_extra_stft = 0.0
     total_extra_local_waveform = 0.0
+    total_extra_local_nonlocal_waveform = 0.0
     total_pre_present_applied_delta_local_waveform = 0.0
     total_extra_local_sisdr = 0.0
     total_sisdr_loss = 0.0
     total_branch_protect_guard_sisdr_loss = 0.0
     total_branch_protect_overlap_base_align_l1 = 0.0
     total_branch_protect_teacher_overlap_l1 = 0.0
+    total_branch_protect_teacher_overlap_extra_l1 = 0.0
     total_interference_extra_guard_sisdr_loss = 0.0
     total_interference_extra_base_align_l1 = 0.0
     total_interference_extra_base_delta_projection_ratio = 0.0
@@ -1265,6 +1307,7 @@ def evaluate(
     total_overlap_dual_monitor_waveform = 0.0
     total_overlap_dual_residual_correction_waveform = 0.0
     total_overlap_dual_residual_correction_local_waveform = 0.0
+    total_overlap_dual_residual_correction_local_waveform_extra = 0.0
     total_overlap_dual_residual_correction_local_sisdr = 0.0
     total_overlap_dual_residual_correction_local_controller = 0.0
     total_overlap_dual_residual_correction_nonlocal_controller = 0.0
@@ -1297,10 +1340,12 @@ def evaluate(
             "overlap_interference_extra",
             "overlap_cancel",
             "overlap_dual",
+            "overlap_dual_extra",
             "absent",
             "absent_extra",
             "branch_protect",
             "branch_protect_teacher",
+            "branch_protect_teacher_extra",
         )
     }
     with torch.no_grad():
@@ -1312,6 +1357,7 @@ def evaluate(
                 mixture_lengths=batch["mixture_lengths"],
                 reference=batch["reference"],
                 reference_lengths=batch["reference_lengths"],
+                local_proxy_intervals=batch["local_proxy_intervals"],
             )
             teacher_prediction = None
             if teacher_model is not None:
@@ -1320,6 +1366,7 @@ def evaluate(
                     mixture_lengths=batch["mixture_lengths"],
                     reference=batch["reference"],
                     reference_lengths=batch["reference_lengths"],
+                    local_proxy_intervals=batch["local_proxy_intervals"],
                 )
                 teacher_prediction = teacher_outputs["estimated_waveform"]
             reconstruction_sample_weights, reconstruction_extra_sample_weights, reconstruction_union_sample_weights = (
@@ -1372,11 +1419,16 @@ def evaluate(
                 loss_config=loss_config,
                 prefix="overlap_cancel",
             )
-            overlap_dual_sample_weights = build_selector_sample_weights(
-                batch=batch,
-                device=device,
-                loss_config=loss_config,
-                prefix="overlap_dual",
+            overlap_dual_sample_weights, overlap_dual_extra_sample_weights, overlap_dual_union_sample_weights = (
+                resolve_selector_sample_weights(
+                    batch=batch,
+                    device=device,
+                    loss_config=loss_config,
+                    prefix="overlap_dual",
+                    extra_weight_keys=(
+                        "overlap_dual_residual_correction_local_waveform_extra_weight",
+                    ),
+                )
             )
             absent_sample_weights, absent_extra_sample_weights, absent_union_sample_weights = (
                 resolve_selector_sample_weights(
@@ -1397,11 +1449,14 @@ def evaluate(
                 loss_config=loss_config,
                 prefix="branch_protect",
             )
-            branch_protect_teacher_sample_weights = build_selector_sample_weights(
-                batch=batch,
-                device=device,
-                loss_config=loss_config,
-                prefix="branch_protect_teacher",
+            branch_protect_teacher_sample_weights, branch_protect_teacher_extra_sample_weights, branch_protect_teacher_union_sample_weights = (
+                resolve_selector_sample_weights(
+                    batch=batch,
+                    device=device,
+                    loss_config=loss_config,
+                    prefix="branch_protect_teacher",
+                    extra_weight_keys=("branch_protect_teacher_overlap_extra_weight",),
+                )
             )
             gate_target_values = build_gate_target_values(batch=batch, device=device, loss_config=loss_config)
             gate_target_sample_weights = (
@@ -1444,11 +1499,13 @@ def evaluate(
                 ("overlap_interference", overlap_interference_union_sample_weights),
                 ("overlap_interference_extra", overlap_interference_extra_sample_weights),
                 ("overlap_cancel", overlap_cancel_sample_weights),
-                ("overlap_dual", overlap_dual_sample_weights),
+                ("overlap_dual", overlap_dual_union_sample_weights),
+                ("overlap_dual_extra", overlap_dual_extra_sample_weights),
                 ("absent", absent_union_sample_weights),
                 ("absent_extra", absent_extra_sample_weights),
                 ("branch_protect", branch_protect_sample_weights),
-                ("branch_protect_teacher", branch_protect_teacher_sample_weights),
+                ("branch_protect_teacher", branch_protect_teacher_union_sample_weights),
+                ("branch_protect_teacher_extra", branch_protect_teacher_extra_sample_weights),
             ):
                 stats = summarize_selector_weights(weights, len(batch["sample_ids"]))
                 selector_totals[prefix]["active"] = selector_totals[prefix]["active"] or bool(stats["active"])
@@ -1513,8 +1570,10 @@ def evaluate(
                 overlap_cancel_sample_weights=overlap_cancel_sample_weights,
                 overlap_cancel_absent_mix_sample_weights=absent_union_sample_weights,
                 overlap_dual_sample_weights=overlap_dual_sample_weights,
+                overlap_dual_extra_sample_weights=overlap_dual_extra_sample_weights,
                 branch_protect_sample_weights=branch_protect_sample_weights,
                 branch_protect_teacher_sample_weights=branch_protect_teacher_sample_weights,
+                branch_protect_teacher_extra_sample_weights=branch_protect_teacher_extra_sample_weights,
                 absent_sample_weights=absent_sample_weights,
                 absent_extra_sample_weights=absent_extra_sample_weights,
                 gate_absent_sample_weights=gate_supervision["gate_absent_sample_weights"],
@@ -1540,6 +1599,9 @@ def evaluate(
             total_reconstruction_extra_wave += float(losses.reconstruction_extra_waveform_l1.item()) * batch_size
             total_reconstruction_extra_stft += float(losses.reconstruction_extra_stft_l1.item()) * batch_size
             total_extra_local_waveform += float(losses.extra_local_waveform_l1.item()) * batch_size
+            total_extra_local_nonlocal_waveform += float(
+                losses.extra_local_nonlocal_waveform_l1.item()
+            ) * batch_size
             total_pre_present_applied_delta_local_waveform += float(
                 losses.pre_present_applied_delta_local_waveform_l1.item()
             ) * batch_size
@@ -1553,6 +1615,9 @@ def evaluate(
             ) * batch_size
             total_branch_protect_teacher_overlap_l1 += float(
                 losses.branch_protect_teacher_overlap_l1.item()
+            ) * batch_size
+            total_branch_protect_teacher_overlap_extra_l1 += float(
+                losses.branch_protect_teacher_overlap_extra_l1.item()
             ) * batch_size
             total_interference_extra_guard_sisdr_loss += (
                 float(losses.interference_extra_guard_sisdr_loss.item()) * batch_size
@@ -1593,6 +1658,9 @@ def evaluate(
             ) * batch_size
             total_overlap_dual_residual_correction_local_waveform += float(
                 losses.overlap_dual_residual_correction_local_waveform_l1.item()
+            ) * batch_size
+            total_overlap_dual_residual_correction_local_waveform_extra += float(
+                losses.overlap_dual_residual_correction_local_waveform_extra_l1.item()
             ) * batch_size
             total_overlap_dual_residual_correction_local_sisdr += float(
                 losses.overlap_dual_residual_correction_local_sisdr_loss.item()
@@ -1638,12 +1706,14 @@ def evaluate(
             "reconstruction_extra_waveform_l1": 0.0,
             "reconstruction_extra_stft_l1": 0.0,
             "extra_local_waveform_l1": 0.0,
+            "extra_local_nonlocal_waveform_l1": 0.0,
             "pre_present_applied_delta_local_waveform_l1": 0.0,
             "extra_local_sisdr_loss": 0.0,
             "sisdr_loss": 0.0,
             "branch_protect_guard_sisdr_loss": 0.0,
             "branch_protect_overlap_base_align_l1": 0.0,
             "branch_protect_teacher_overlap_l1": 0.0,
+            "branch_protect_teacher_overlap_extra_l1": 0.0,
             "interference_extra_guard_sisdr_loss": 0.0,
             "interference_extra_base_align_l1": 0.0,
             "interference_extra_base_delta_projection_ratio": 0.0,
@@ -1662,6 +1732,7 @@ def evaluate(
             "overlap_dual_monitor_waveform_l1": 0.0,
             "overlap_dual_residual_correction_waveform_l1": 0.0,
             "overlap_dual_residual_correction_local_waveform_l1": 0.0,
+            "overlap_dual_residual_correction_local_waveform_extra_l1": 0.0,
             "overlap_dual_residual_correction_local_sisdr_loss": 0.0,
             "branch_overlap_dual_local_bridge_nonlocal_waveform_l1": 0.0,
             "overlap_dual_residual_correction_nonlocal_controller_l1": 0.0,
@@ -1688,6 +1759,9 @@ def evaluate(
             "reconstruction_extra_waveform_l1": total_reconstruction_extra_wave / sample_count,
             "reconstruction_extra_stft_l1": total_reconstruction_extra_stft / sample_count,
             "extra_local_waveform_l1": total_extra_local_waveform / sample_count,
+            "extra_local_nonlocal_waveform_l1": (
+                total_extra_local_nonlocal_waveform / sample_count
+            ),
             "pre_present_applied_delta_local_waveform_l1": (
                 total_pre_present_applied_delta_local_waveform / sample_count
             ),
@@ -1699,6 +1773,9 @@ def evaluate(
             ),
             "branch_protect_teacher_overlap_l1": (
                 total_branch_protect_teacher_overlap_l1 / sample_count
+            ),
+            "branch_protect_teacher_overlap_extra_l1": (
+                total_branch_protect_teacher_overlap_extra_l1 / sample_count
             ),
             "interference_extra_guard_sisdr_loss": total_interference_extra_guard_sisdr_loss / sample_count,
             "interference_extra_base_align_l1": total_interference_extra_base_align_l1 / sample_count,
@@ -1733,6 +1810,9 @@ def evaluate(
             ),
             "overlap_dual_residual_correction_local_waveform_l1": (
                 total_overlap_dual_residual_correction_local_waveform / sample_count
+            ),
+            "overlap_dual_residual_correction_local_waveform_extra_l1": (
+                total_overlap_dual_residual_correction_local_waveform_extra / sample_count
             ),
             "overlap_dual_residual_correction_local_sisdr_loss": (
                 total_overlap_dual_residual_correction_local_sisdr / sample_count
@@ -1871,12 +1951,14 @@ def main() -> None:
         epoch_reconstruction_extra_wave = 0.0
         epoch_reconstruction_extra_stft = 0.0
         epoch_extra_local_waveform = 0.0
+        epoch_extra_local_nonlocal_waveform = 0.0
         epoch_pre_present_applied_delta_local_waveform = 0.0
         epoch_extra_local_sisdr = 0.0
         epoch_sisdr_loss = 0.0
         epoch_branch_protect_guard_sisdr_loss = 0.0
         epoch_branch_protect_overlap_base_align_l1 = 0.0
         epoch_branch_protect_teacher_overlap_l1 = 0.0
+        epoch_branch_protect_teacher_overlap_extra_l1 = 0.0
         epoch_interference_extra_guard_sisdr_loss = 0.0
         epoch_interference_extra_base_align_l1 = 0.0
         epoch_interference_extra_base_delta_projection_ratio = 0.0
@@ -1895,6 +1977,7 @@ def main() -> None:
         epoch_overlap_dual_monitor_waveform = 0.0
         epoch_overlap_dual_residual_correction_waveform = 0.0
         epoch_overlap_dual_residual_correction_local_waveform = 0.0
+        epoch_overlap_dual_residual_correction_local_waveform_extra = 0.0
         epoch_overlap_dual_residual_correction_local_sisdr = 0.0
         epoch_overlap_dual_residual_correction_local_controller = 0.0
         epoch_overlap_dual_residual_correction_nonlocal_controller = 0.0
@@ -1925,13 +2008,15 @@ def main() -> None:
                 "overlap_interference",
                 "overlap_interference_extra",
                 "overlap_cancel",
-                 "overlap_dual",
-                 "absent",
-                 "absent_extra",
-                 "branch_protect",
-                 "branch_protect_teacher",
-             )
-         }
+                "overlap_dual",
+                "overlap_dual_extra",
+                "absent",
+                "absent_extra",
+                "branch_protect",
+                "branch_protect_teacher",
+                "branch_protect_teacher_extra",
+            )
+        }
 
         for batch in train_loader:
             batch = move_batch_to_device(batch, device)
@@ -1941,6 +2026,7 @@ def main() -> None:
                 mixture_lengths=batch["mixture_lengths"],
                 reference=batch["reference"],
                 reference_lengths=batch["reference_lengths"],
+                local_proxy_intervals=batch["local_proxy_intervals"],
             )
             teacher_prediction = None
             if teacher_model is not None:
@@ -1950,6 +2036,7 @@ def main() -> None:
                         mixture_lengths=batch["mixture_lengths"],
                         reference=batch["reference"],
                         reference_lengths=batch["reference_lengths"],
+                        local_proxy_intervals=batch["local_proxy_intervals"],
                     )
                 teacher_prediction = teacher_outputs["estimated_waveform"]
             reconstruction_sample_weights, reconstruction_extra_sample_weights, reconstruction_union_sample_weights = (
@@ -2002,11 +2089,16 @@ def main() -> None:
                 loss_config=loss_config,
                 prefix="overlap_cancel",
             )
-            overlap_dual_sample_weights = build_selector_sample_weights(
-                batch=batch,
-                device=device,
-                loss_config=loss_config,
-                prefix="overlap_dual",
+            overlap_dual_sample_weights, overlap_dual_extra_sample_weights, overlap_dual_union_sample_weights = (
+                resolve_selector_sample_weights(
+                    batch=batch,
+                    device=device,
+                    loss_config=loss_config,
+                    prefix="overlap_dual",
+                    extra_weight_keys=(
+                        "overlap_dual_residual_correction_local_waveform_extra_weight",
+                    ),
+                )
             )
             absent_sample_weights, absent_extra_sample_weights, absent_union_sample_weights = (
                 resolve_selector_sample_weights(
@@ -2027,11 +2119,14 @@ def main() -> None:
                 loss_config=loss_config,
                 prefix="branch_protect",
             )
-            branch_protect_teacher_sample_weights = build_selector_sample_weights(
-                batch=batch,
-                device=device,
-                loss_config=loss_config,
-                prefix="branch_protect_teacher",
+            branch_protect_teacher_sample_weights, branch_protect_teacher_extra_sample_weights, branch_protect_teacher_union_sample_weights = (
+                resolve_selector_sample_weights(
+                    batch=batch,
+                    device=device,
+                    loss_config=loss_config,
+                    prefix="branch_protect_teacher",
+                    extra_weight_keys=("branch_protect_teacher_overlap_extra_weight",),
+                )
             )
             gate_target_values = build_gate_target_values(batch=batch, device=device, loss_config=loss_config)
             gate_target_sample_weights = (
@@ -2074,11 +2169,13 @@ def main() -> None:
                 ("overlap_interference", overlap_interference_union_sample_weights),
                 ("overlap_interference_extra", overlap_interference_extra_sample_weights),
                 ("overlap_cancel", overlap_cancel_sample_weights),
-                ("overlap_dual", overlap_dual_sample_weights),
+                ("overlap_dual", overlap_dual_union_sample_weights),
+                ("overlap_dual_extra", overlap_dual_extra_sample_weights),
                 ("absent", absent_union_sample_weights),
                 ("absent_extra", absent_extra_sample_weights),
                 ("branch_protect", branch_protect_sample_weights),
-                ("branch_protect_teacher", branch_protect_teacher_sample_weights),
+                ("branch_protect_teacher", branch_protect_teacher_union_sample_weights),
+                ("branch_protect_teacher_extra", branch_protect_teacher_extra_sample_weights),
             ):
                 stats = summarize_selector_weights(weights, len(batch["sample_ids"]))
                 train_selector_totals[prefix]["active"] = train_selector_totals[prefix]["active"] or bool(stats["active"])
@@ -2143,8 +2240,10 @@ def main() -> None:
                 overlap_cancel_sample_weights=overlap_cancel_sample_weights,
                 overlap_cancel_absent_mix_sample_weights=absent_union_sample_weights,
                 overlap_dual_sample_weights=overlap_dual_sample_weights,
+                overlap_dual_extra_sample_weights=overlap_dual_extra_sample_weights,
                 branch_protect_sample_weights=branch_protect_sample_weights,
                 branch_protect_teacher_sample_weights=branch_protect_teacher_sample_weights,
+                branch_protect_teacher_extra_sample_weights=branch_protect_teacher_extra_sample_weights,
                 absent_sample_weights=absent_sample_weights,
                 absent_extra_sample_weights=absent_extra_sample_weights,
                 gate_absent_sample_weights=gate_supervision["gate_absent_sample_weights"],
@@ -2179,6 +2278,9 @@ def main() -> None:
             epoch_reconstruction_extra_wave += float(losses.reconstruction_extra_waveform_l1.item()) * batch_size
             epoch_reconstruction_extra_stft += float(losses.reconstruction_extra_stft_l1.item()) * batch_size
             epoch_extra_local_waveform += float(losses.extra_local_waveform_l1.item()) * batch_size
+            epoch_extra_local_nonlocal_waveform += float(
+                losses.extra_local_nonlocal_waveform_l1.item()
+            ) * batch_size
             epoch_pre_present_applied_delta_local_waveform += float(
                 losses.pre_present_applied_delta_local_waveform_l1.item()
             ) * batch_size
@@ -2192,6 +2294,9 @@ def main() -> None:
             ) * batch_size
             epoch_branch_protect_teacher_overlap_l1 += float(
                 losses.branch_protect_teacher_overlap_l1.item()
+            ) * batch_size
+            epoch_branch_protect_teacher_overlap_extra_l1 += float(
+                losses.branch_protect_teacher_overlap_extra_l1.item()
             ) * batch_size
             epoch_interference_extra_guard_sisdr_loss += (
                 float(losses.interference_extra_guard_sisdr_loss.item()) * batch_size
@@ -2232,6 +2337,9 @@ def main() -> None:
             ) * batch_size
             epoch_overlap_dual_residual_correction_local_waveform += float(
                 losses.overlap_dual_residual_correction_local_waveform_l1.item()
+            ) * batch_size
+            epoch_overlap_dual_residual_correction_local_waveform_extra += float(
+                losses.overlap_dual_residual_correction_local_waveform_extra_l1.item()
             ) * batch_size
             epoch_overlap_dual_residual_correction_local_sisdr += float(
                 losses.overlap_dual_residual_correction_local_sisdr_loss.item()
@@ -2296,6 +2404,9 @@ def main() -> None:
                             "branch_protect_teacher_overlap_l1": round(
                                 float(losses.branch_protect_teacher_overlap_l1.item()), 6
                             ),
+                            "branch_protect_teacher_overlap_extra_l1": round(
+                                float(losses.branch_protect_teacher_overlap_extra_l1.item()), 6
+                            ),
                             "interference_extra_guard_sisdr_loss": round(
                                 float(losses.interference_extra_guard_sisdr_loss.item()), 6
                             ),
@@ -2348,6 +2459,10 @@ def main() -> None:
                                 float(losses.overlap_dual_residual_correction_local_waveform_l1.item()),
                                 6,
                             ),
+                            "overlap_dual_residual_correction_local_waveform_extra_l1": round(
+                                float(losses.overlap_dual_residual_correction_local_waveform_extra_l1.item()),
+                                6,
+                            ),
                             "overlap_dual_residual_correction_local_sisdr_loss": round(
                                 float(losses.overlap_dual_residual_correction_local_sisdr_loss.item()),
                                 6,
@@ -2368,6 +2483,10 @@ def main() -> None:
                             ),
                             "extra_local_waveform_l1": round(
                                 float(losses.extra_local_waveform_l1.item()),
+                                6,
+                            ),
+                            "extra_local_nonlocal_waveform_l1": round(
+                                float(losses.extra_local_nonlocal_waveform_l1.item()),
                                 6,
                             ),
                             "pre_present_applied_delta_local_waveform_l1": round(
@@ -2424,6 +2543,9 @@ def main() -> None:
             "reconstruction_extra_waveform_l1": epoch_reconstruction_extra_wave / max(1, epoch_sample_count),
             "reconstruction_extra_stft_l1": epoch_reconstruction_extra_stft / max(1, epoch_sample_count),
             "extra_local_waveform_l1": epoch_extra_local_waveform / max(1, epoch_sample_count),
+            "extra_local_nonlocal_waveform_l1": (
+                epoch_extra_local_nonlocal_waveform / max(1, epoch_sample_count)
+            ),
             "pre_present_applied_delta_local_waveform_l1": (
                 epoch_pre_present_applied_delta_local_waveform / max(1, epoch_sample_count)
             ),
@@ -2435,6 +2557,9 @@ def main() -> None:
             ),
             "branch_protect_teacher_overlap_l1": (
                 epoch_branch_protect_teacher_overlap_l1 / max(1, epoch_sample_count)
+            ),
+            "branch_protect_teacher_overlap_extra_l1": (
+                epoch_branch_protect_teacher_overlap_extra_l1 / max(1, epoch_sample_count)
             ),
             "interference_extra_guard_sisdr_loss": epoch_interference_extra_guard_sisdr_loss / max(1, epoch_sample_count),
             "interference_extra_base_align_l1": epoch_interference_extra_base_align_l1 / max(1, epoch_sample_count),
@@ -2471,6 +2596,9 @@ def main() -> None:
             ),
             "overlap_dual_residual_correction_local_waveform_l1": (
                 epoch_overlap_dual_residual_correction_local_waveform / max(1, epoch_sample_count)
+            ),
+            "overlap_dual_residual_correction_local_waveform_extra_l1": (
+                epoch_overlap_dual_residual_correction_local_waveform_extra / max(1, epoch_sample_count)
             ),
             "overlap_dual_residual_correction_local_sisdr_loss": (
                 epoch_overlap_dual_residual_correction_local_sisdr / max(1, epoch_sample_count)
@@ -2541,6 +2669,9 @@ def main() -> None:
                 "train_reconstruction_extra_waveform_l1": train_metrics["reconstruction_extra_waveform_l1"],
                 "train_reconstruction_extra_stft_l1": train_metrics["reconstruction_extra_stft_l1"],
                 "train_extra_local_waveform_l1": train_metrics["extra_local_waveform_l1"],
+                "train_extra_local_nonlocal_waveform_l1": (
+                    train_metrics["extra_local_nonlocal_waveform_l1"]
+                ),
                 "train_pre_present_applied_delta_local_waveform_l1": (
                     train_metrics["pre_present_applied_delta_local_waveform_l1"]
                 ),
@@ -2552,6 +2683,9 @@ def main() -> None:
                 ),
                 "train_branch_protect_teacher_overlap_l1": (
                     train_metrics["branch_protect_teacher_overlap_l1"]
+                ),
+                "train_branch_protect_teacher_overlap_extra_l1": (
+                    train_metrics["branch_protect_teacher_overlap_extra_l1"]
                 ),
                 "train_interference_extra_guard_sisdr_loss": train_metrics["interference_extra_guard_sisdr_loss"],
                 "train_interference_extra_base_align_l1": train_metrics["interference_extra_base_align_l1"],
@@ -2590,6 +2724,9 @@ def main() -> None:
                 ),
                 "train_overlap_dual_residual_correction_local_waveform_l1": (
                     train_metrics["overlap_dual_residual_correction_local_waveform_l1"]
+                ),
+                "train_overlap_dual_residual_correction_local_waveform_extra_l1": (
+                    train_metrics["overlap_dual_residual_correction_local_waveform_extra_l1"]
                 ),
                 "train_overlap_dual_residual_correction_local_sisdr_loss": (
                     train_metrics["overlap_dual_residual_correction_local_sisdr_loss"]
@@ -2634,6 +2771,9 @@ def main() -> None:
                 "val_reconstruction_extra_waveform_l1": val_metrics["reconstruction_extra_waveform_l1"],
                 "val_reconstruction_extra_stft_l1": val_metrics["reconstruction_extra_stft_l1"],
                 "val_extra_local_waveform_l1": val_metrics["extra_local_waveform_l1"],
+                "val_extra_local_nonlocal_waveform_l1": (
+                    val_metrics["extra_local_nonlocal_waveform_l1"]
+                ),
                 "val_pre_present_applied_delta_local_waveform_l1": (
                     val_metrics["pre_present_applied_delta_local_waveform_l1"]
                 ),
@@ -2645,6 +2785,9 @@ def main() -> None:
                 ),
                 "val_branch_protect_teacher_overlap_l1": (
                     val_metrics["branch_protect_teacher_overlap_l1"]
+                ),
+                "val_branch_protect_teacher_overlap_extra_l1": (
+                    val_metrics["branch_protect_teacher_overlap_extra_l1"]
                 ),
                 "val_interference_extra_guard_sisdr_loss": val_metrics["interference_extra_guard_sisdr_loss"],
                 "val_interference_extra_base_align_l1": val_metrics["interference_extra_base_align_l1"],
@@ -2683,6 +2826,9 @@ def main() -> None:
                 ),
                 "val_overlap_dual_residual_correction_local_waveform_l1": (
                     val_metrics["overlap_dual_residual_correction_local_waveform_l1"]
+                ),
+                "val_overlap_dual_residual_correction_local_waveform_extra_l1": (
+                    val_metrics["overlap_dual_residual_correction_local_waveform_extra_l1"]
                 ),
                 "val_overlap_dual_residual_correction_local_sisdr_loss": (
                     val_metrics["overlap_dual_residual_correction_local_sisdr_loss"]

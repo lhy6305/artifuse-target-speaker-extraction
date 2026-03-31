@@ -7,9 +7,11 @@
   - 通过本目录 `README.md` 和 `index_YYYY-MM.md` 做月度索引与跳读入口。
 
 - 月度索引：
-  - `index_2026-03.md` | `228` 份文件 | 日期 `2026-03-16` 至 `2026-03-28`
+  - `index_2026-03.md` | 活跃 3 月索引
+  - `index_2026-04.md` | 活跃 4 月索引
 
 - 最近新增日报：
+  - `2026-04-01_refinebase_artifactlocalteacherextra_v250_v251_followup.md` | `210` 行
   - `2026-03-28_old_experiment_reevaluation.md` | `32` 行
   - `2026-03-28_repo_health_and_convention_audit.md` | `268` 行
   - `2026-03-28_overlap_refine_preservebypass_hardlocal_selector_v115_followup.md` | `228` 行

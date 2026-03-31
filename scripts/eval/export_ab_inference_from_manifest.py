@@ -19,6 +19,7 @@ if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
 from tse_prefix.models import STFTMaskBaseline
+from tse_prefix.data.synthetic_dataset import compute_local_proxy_intervals, load_json
 
 BETTER_OUTPUT_CHOICES = ["file_a", "file_b", "tie", "uncertain"]
 SOURCE_RETENTION_SCALE = ["excellent", "good", "fair", "weak", "lost"]
@@ -129,6 +130,16 @@ def resolve_optional_target_path(row: dict[str, Any]) -> Path | None:
     return None
 
 
+def resolve_local_proxy_intervals(row: dict[str, Any]) -> list[dict[str, float]]:
+    metadata_path_raw = str(row.get("metadata_path", "")).strip()
+    if not metadata_path_raw:
+        return []
+    metadata_path = ROOT / metadata_path_raw
+    if not metadata_path.exists():
+        return []
+    return compute_local_proxy_intervals(load_json(metadata_path))
+
+
 def rms_value(waveform: torch.Tensor) -> float:
     return float(torch.sqrt(torch.mean(torch.square(waveform)) + 1e-12).item())
 
@@ -193,6 +204,7 @@ def main() -> None:
         reference_batch = reference.unsqueeze(0).to(device)
         mixture_lengths = torch.tensor([mixture.shape[-1]], dtype=torch.long, device=device)
         reference_lengths = torch.tensor([reference.shape[-1]], dtype=torch.long, device=device)
+        local_proxy_intervals = [resolve_local_proxy_intervals(row)]
 
         with torch.no_grad():
             estimate_a = model_a(
@@ -200,12 +212,14 @@ def main() -> None:
                 mixture_lengths=mixture_lengths,
                 reference=reference_batch,
                 reference_lengths=reference_lengths,
+                local_proxy_intervals=local_proxy_intervals,
             )["estimated_waveform"][0, : mixture.shape[-1]].cpu()
             estimate_b = model_b(
                 mixture=mixture_batch,
                 mixture_lengths=mixture_lengths,
                 reference=reference_batch,
                 reference_lengths=reference_lengths,
+                local_proxy_intervals=local_proxy_intervals,
             )["estimated_waveform"][0, : mixture.shape[-1]].cpu()
 
         if args.blind:

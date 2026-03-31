@@ -77,6 +77,26 @@ def load_json(path: Path) -> Any:
         return json.load(fh)
 
 
+def resolve_original_sample_metadata_path(sample_meta: dict[str, Any]) -> Path:
+    metadata_path_value = str(sample_meta.get("metadata_path", "")).strip()
+    if metadata_path_value:
+        metadata_path = ROOT / metadata_path_value
+        if metadata_path.exists():
+            return metadata_path
+
+    original_mixture_path = ROOT / sample_meta["mixture_audio_path"]
+    candidate_paths = [
+        original_mixture_path.parent / "sample_meta.json",
+        original_mixture_path.parent / "metadata.json",
+    ]
+    for candidate_path in candidate_paths:
+        if candidate_path.exists():
+            return candidate_path
+    raise FileNotFoundError(
+        f"Could not resolve source metadata for mixture path: {serialize_repo_path(original_mixture_path)}"
+    )
+
+
 def load_listening_sheet(path: Path) -> dict[str, dict[str, str]]:
     rows: dict[str, dict[str, str]] = {}
     with path.open("r", encoding="utf-8-sig", newline="") as fh:
@@ -256,6 +276,22 @@ def component_cache_key(sample_id: str, index: int, component: dict[str, Any]) -
     ).replace(":", "_")
 
 
+def build_probe_component_tags(original_sample_meta: dict[str, Any]) -> list[str]:
+    tags: list[str] = []
+    if float(original_sample_meta.get("target_present_ratio", 0.0)) > 0.0:
+        tags.append("target_raw")
+    for layer in list(original_sample_meta.get("interference_layers", [])):
+        pool = str(layer.get("pool", "")).strip()
+        tags.append(pool or "interference")
+    return tags
+
+
+def get_component_kind_tags(original_sample_meta: dict[str, Any]) -> list[str]:
+    if "components" in original_sample_meta:
+        return [str(component["kind"]) for component in original_sample_meta["components"]]
+    return build_probe_component_tags(original_sample_meta)
+
+
 def build_component_track(
     component: dict[str, Any],
     cache_dir: Path,
@@ -286,10 +322,27 @@ def reconstruct_tracks(
     sample_id: str,
     original_sample_meta: dict[str, Any],
     pack_mixture: np.ndarray,
+    pack_target: np.ndarray | None,
     cache_dir: Path,
     sample_rate: int,
 ) -> dict[str, Any]:
     num_samples = pack_mixture.shape[0]
+
+    if "components" not in original_sample_meta:
+        if pack_target is None:
+            raise ValueError(f"pack_target is required for probe-style tradeoff reconstruction: {sample_id}")
+        aligned_target = fit_or_pad(pack_target, num_samples)
+        aligned_interference = pack_mixture - aligned_target
+        return {
+            "target_track": aligned_target,
+            "interference_track": aligned_interference,
+            "aligned_mix": pack_mixture,
+            "alignment_scale": 1.0,
+            "mixture_alignment_r2": 1.0,
+            "target_present": bool(energy(aligned_target) > 1e-12),
+            "interference_present": bool(energy(aligned_interference) > 1e-12),
+        }
+
     target_sum = np.zeros(num_samples, dtype=np.float32)
     interference_sum = np.zeros(num_samples, dtype=np.float32)
 
@@ -403,7 +456,7 @@ def categorize_component_kind(kind: str) -> str:
 
 
 def derive_group_labels(original_sample_meta: dict[str, Any]) -> dict[str, str]:
-    kinds = [component["kind"] for component in original_sample_meta["components"]]
+    kinds = get_component_kind_tags(original_sample_meta)
     categories = [categorize_component_kind(kind) for kind in kinds]
     target_present = "target" in categories
     interference_categories = sorted({category for category in categories if category != "target"})
@@ -520,18 +573,24 @@ def main() -> None:
         )
 
         mixture, sr_mix = load_audio(sample_dir / "mixture.wav")
+        target, sr_target = load_audio(sample_dir / "target.wav")
         candidate_a, sr_a = load_audio(sample_dir / candidate_info["file_a_name"])
         candidate_b, sr_b = load_audio(sample_dir / candidate_info["file_b_name"])
-        if sr_mix != args.sample_rate or sr_a != args.sample_rate or sr_b != args.sample_rate:
+        if (
+            sr_mix != args.sample_rate
+            or sr_target != args.sample_rate
+            or sr_a != args.sample_rate
+            or sr_b != args.sample_rate
+        ):
             raise ValueError(f"Sample rate mismatch in {sample_id}")
 
-        original_mixture_path = ROOT / sample_meta["mixture_audio_path"]
-        original_sample_meta = load_json(original_mixture_path.parent / "sample_meta.json")
+        original_sample_meta = load_json(resolve_original_sample_metadata_path(sample_meta))
         group_labels = derive_group_labels(original_sample_meta)
         recon = reconstruct_tracks(
             sample_id=sample_id,
             original_sample_meta=original_sample_meta,
             pack_mixture=mixture,
+            pack_target=target,
             cache_dir=cache_dir,
             sample_rate=args.sample_rate,
         )
@@ -580,7 +639,7 @@ def main() -> None:
             "file_b_name": candidate_info["file_b_name"],
             "file_a_label": candidate_info["file_a_label"],
             "file_b_label": candidate_info["file_b_label"],
-            "component_kinds": [component["kind"] for component in original_sample_meta["components"]],
+            "component_kinds": get_component_kind_tags(original_sample_meta),
             "target_present": recon["target_present"],
             "interference_present": recon["interference_present"],
             "mixture_alignment_scale": recon["alignment_scale"],

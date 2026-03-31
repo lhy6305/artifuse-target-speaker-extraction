@@ -170,12 +170,14 @@ def main() -> None:
                 mixture_lengths=mixture_lengths,
                 reference=reference,
                 reference_lengths=reference_lengths,
+                local_proxy_intervals=[item["local_proxy_intervals"]],
             )["estimated_waveform"]
             estimate_b = model_b(
                 mixture=mixture,
                 mixture_lengths=mixture_lengths,
                 reference=reference,
                 reference_lengths=reference_lengths,
+                local_proxy_intervals=[item["local_proxy_intervals"]],
             )["estimated_waveform"]
 
             common_length = min(int(estimate_a.shape[-1]), int(target.shape[-1]), int(estimate_b.shape[-1]))

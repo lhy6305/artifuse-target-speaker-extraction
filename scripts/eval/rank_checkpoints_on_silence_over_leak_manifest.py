@@ -17,6 +17,7 @@ if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
 from tse_prefix.models import STFTMaskBaseline
+from tse_prefix.data.synthetic_dataset import compute_local_proxy_intervals
 
 
 def parse_args() -> argparse.Namespace:
@@ -239,6 +240,13 @@ def main() -> None:
         interference = mixture - target
         mixture_energy = max(energy(mixture), 1e-12)
         target_energy_ratio = energy(target) / mixture_energy
+        metadata_path_raw = str(row.get("metadata_path", "")).strip()
+        metadata = {}
+        if metadata_path_raw:
+            metadata_path = ROOT / metadata_path_raw
+            if metadata_path.exists():
+                with metadata_path.open("r", encoding="utf-8") as fh:
+                    metadata = json.load(fh)
         sample_cache.append(
             {
                 "sample_id": row["sample_id"],
@@ -247,6 +255,7 @@ def main() -> None:
                 "target": target,
                 "reference": reference,
                 "interference": interference,
+                "local_proxy_intervals": compute_local_proxy_intervals(metadata),
                 "target_present": bool(target_energy_ratio > args.target_present_energy_threshold),
                 "target_energy_ratio": target_energy_ratio,
             }
@@ -273,6 +282,7 @@ def main() -> None:
                     mixture_lengths=mixture_lengths,
                     reference=reference,
                     reference_lengths=reference_lengths,
+                    local_proxy_intervals=[sample["local_proxy_intervals"]],
                 )["estimated_waveform"][0, : sample["mixture"].shape[-1]].cpu()
 
                 target_capture_db, _ = capture_db(estimate, sample["target"])

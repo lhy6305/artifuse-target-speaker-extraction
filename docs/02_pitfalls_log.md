@@ -1212,6 +1212,594 @@
   The first dedicated dual-local bridge is structurally new,
   but it still lands on a guardrail-for-local exchange surface.
 
+### 54. Simple nonlocal spill control on the first dedicated dual-local bridge is a practical tie, not a rescue
+
+- `v238`
+  kept the same
+  `branch_overlap_dual_local_bridge`
+  writer from
+  `v237`
+  and added only a complement-interval zero penalty on the bridge estimate.
+- The continuation was wired correctly:
+  the new metric appeared in train and val summaries,
+  but it stayed tiny at convergence
+  (`val_branch_overlap_dual_local_bridge_nonlocal_waveform_l1 = 8.06e-06`).
+- Fixed proxies stayed in a practical-tie band relative to
+  `v237`:
+  `+0.0057 / +0.0013 / +0.0016 / -0.0029 / -0.0010 dB`.
+- Relative
+  `v212`,
+  the same old tradeoff shape remained:
+  `-0.2215 / -0.1438 / -0.1377 / -0.1313 / +0.0713 dB`.
+- Rule:
+  do not assume that the first dedicated dual-local bridge is failing mainly because of a simple nonlocal spill term
+  that can be fixed by a small complement-interval zero penalty.
+  If this family continues,
+  it needs a more structural bridge application or a materially different objective.
+
+### 55. A keep-side abstention repair on top of `v233` is real and partly separable, but it still does not promote the split-route `refine_base` family
+
+- `v239`
+  kept the
+  `v233`
+  split-route
+  `refine_base`
+  local-only writer unchanged
+  and added a focused keep-side
+  `absent_extra`
+  guard on
+  `target_clean_speech`
+  plus
+  `target_absent_head/tail`
+  slices.
+- The continuation was clearly active:
+  absent-extra selector activity reached
+  `train 95 / 233, val 24 / 67`,
+  and final
+  `val_absent_extra_interval_l1 = 0.000242`.
+- Relative
+  `v233`,
+  fixed deltas became
+  `+0.2134 / -0.0051 / -0.0407 / +0.0917 / -0.0130 dB`.
+  So abstention and artifact repaired materially,
+  while same-gender keep and the blocker stayed near tie and only hard-present keep gave back a small amount.
+- Relative
+  `v224`,
+  the route still stayed materially negative on abstention and artifact:
+  `-0.5784 / +0.0566 / +0.0672 / -0.3280 / +0.6495 dB`.
+- Rule:
+  do not treat the
+  `v233`
+  split-route
+  `refine_base`
+  writer as a fully monolithic failure,
+  but also do not retune the same
+  `absent_extra`
+  scalar or the same local writer by default.
+  If this family continues after
+  `v239`,
+  repair the remaining artifact drag from the keep-side output instead.
+
+### 56. The first artifact-first teacher-overlap repair on top of `v239` can cross all five fixed checks, so do not keep treating this family as reject-only
+
+- `v240`
+  kept the
+  `v239`
+  split-route
+  `refine_base`
+  local writer unchanged
+  and added a focused keep-side
+  `branch_protect_teacher_overlap`
+  term against
+  teacher
+  `v157`
+  on
+  `target_clean_plus_music + target_hard_plus_music`
+  and
+  `target_full`.
+- The continuation was clearly active:
+  `branch_protect_teacher train 87 / 233, val 20 / 67`,
+  final
+  `val_branch_protect_teacher_overlap_l1 = 0.000396`.
+- Relative
+  `v157`,
+  fixed deltas became
+  `+0.2263 / +0.1787 / +0.2455 / +0.0762 / +0.5359 dB`.
+  This is the first point on the split-route
+  `refine_base`
+  family that is positive on all five active fixed synthetic checks versus the active base.
+- Relative
+  `v239`,
+  the route repaired abstention, same-gender keep, hard-present keep, and artifact strongly
+  (`+0.8098 / +0.1236 / +0.1752 / +0.4121 dB`)
+  while giving back only part of the blocker surplus
+  (`-0.1290 dB`).
+- Rule:
+  after
+  `v240`,
+  do not keep defaulting to more synthetic scalar retunes on this family.
+  First validate the candidate on near-real or listening checks before deciding whether this is a true promotion path.
+
+### 57. `v240` is a mixed near-real candidate, not a listening-ready promotion
+
+- The
+  `near_real_v1`
+  pack for
+  `legacy_stage2`
+  vs
+  `v240`
+  failed the whole tradeoff gate on
+  `target_present__speech`.
+- Inside that bucket,
+  `v240`
+  lost
+  `retention_minus_leak`
+  on all three active samples and was decoded as more interference-leaky on all three:
+  `near_real_0003 / 0004 / 0006`.
+- The transient heuristic was also materially negative:
+  decoded counts became
+  `v240 = 5`,
+  `legacy_stage2 = 1`,
+  `tie = 4`.
+- But the targeted
+  `near_real_speech_probe_v1`
+  compare is not globally negative.
+  It turned positive on
+  `friend_raw`
+  and on anchors
+  `near_real_0003 / 0004`,
+  while the remaining speech-side drag concentrated on
+  `near_real_0006`
+  and
+  `guodegang_raw / transient_like`.
+- Rule:
+  do not collapse
+  `v240`
+  into either "ready to promote" or "fully rejected".
+  Treat it as a bounded mixed candidate,
+  and if this family continues,
+  target the failed
+  `target_present__speech`
+  whole-tradeoff path and the
+  `guodegang_raw / transient_like`
+  transient drag before any new scalar retune.
+
+### 58. A synthetic speech-transient keep-side guard on top of `v240` over-regularizes instead of repairing near-real speech
+
+- `v241`
+  added
+  `branch_protect_guard_sisdr_weight = 0.001`
+  on speech-present transient-heavy synthetic slices
+  while keeping the
+  `v240`
+  split-route local writer and music artifact teacher repair unchanged.
+- The branch was training-real:
+  `branch_protect train 26 / 233, val 11 / 67`,
+  final
+  `val_branch_protect_guard_sisdr_loss = 2.491614`.
+- But relative
+  `v240`,
+  it moved
+  `abstention / same-gender / hard-present / artifact / local`
+  to
+  `+1.7442 / +0.8611 / +1.0843 / +0.7071 / -0.8490 dB`.
+- The targeted
+  `near_real_speech_probe_v1`
+  compare versus
+  `v240`
+  was also uniformly negative:
+  overall
+  `-0.1754 dB`,
+  `friend_raw = -0.1949 dB`,
+  `guodegang_raw = -0.1169 dB`,
+  and all three active anchors
+  `near_real_0003 / 0004 / 0006`
+  were negative.
+- Rule:
+  do not keep sweeping synthetic speech-transient keep-side
+  `branch_protect_guard_sisdr`
+  on top of the split-route
+  `refine_base`
+  mixed near-real candidate.
+  This axis over-regularizes the keep-side output and spends blocker margin
+  without repairing the near-real speech failure.
+
+### 59. A transient-heavy local retarget on top of `v240` is safer than `v241`, but it still does not move the near-real blocker beyond practical tie
+
+- `v242`
+  kept the
+  `v240`
+  split-route local writer and keep-side repairs unchanged,
+  but narrowed the
+  `overlap_dual`
+  selector from the full
+  `local_speech_leak_proxy_v1`
+  bundle to a transient-heavy subgroup only
+  (`interference_transient_presence_share_mean >= 0.35`,
+  `interference_transient_presence_minus_mid_db_mean >= 2.0`).
+- The new selector was real and meaningfully narrower:
+  `21`
+  ids total,
+  `overlap_dual train 18 / 233, val 3 / 67`.
+- Relative
+  `v240`,
+  fixed deltas became
+  `+0.5423 / +0.1739 / +0.2618 / +0.2894 / -0.1761 dB`.
+  So unlike
+  `v241`,
+  this branch does not collapse the mixed candidate.
+  It improves the four non-blocker axes and only gives back part of the blocker surplus.
+- But the targeted near-real follow-up still stayed practical tie:
+  `near_real_speech_probe_v1 = -0.0054 dB`
+  and
+  `near_real_guodegang_transient_probe_v1 = +0.0009 dB`
+  relative to
+  `v240`.
+- Rule:
+  do not overclaim a first local-selector-retarget continuation as a real near-real repair
+  just because it is safer than the rejected keep-side guard.
+  If this family continues,
+  use a different subgroup definition rather than micro-sweeping the same transient-heavy thresholds.
+
+### 60. Tightening the same local retarget toward a stronger transient-only subset crosses into real regression
+
+- `v243`
+  kept the
+  `v240`
+  split-route local writer and keep-side repairs unchanged,
+  but narrowed the
+  `overlap_dual`
+  selector further to
+  `interference_transient_presence_minus_mid_db_mean >= 5.0`
+  and
+  `interference_transient_presence_share_mean >= 0.35`.
+- The new selector was real:
+  `train 13 / 233, val 2 / 67`.
+- Relative
+  `v240`,
+  fixed deltas became
+  `+1.1033 / +0.5231 / +0.7379 / +0.5672 / -0.5148 dB`.
+  So the stricter selector strongly improves the four non-blocker axes,
+  but spends most of the blocker surplus.
+- The targeted near-real probes also turn clearly negative relative to
+  `v240`:
+  `near_real_speech_probe_v1 = -0.0882 dB`
+  and
+  `near_real_guodegang_transient_probe_v1 = -0.0784 dB`.
+- Rule:
+  do not continue a local-selector-retarget family by tightening transient-only thresholds alone.
+  Once the family moves past
+  `v242`,
+  stronger transient concentration becomes a keep-dominant regression,
+  not a near-real repair.
+
+### 61. A similarity-skewed bounded-peak local retarget can look strongly aligned in cheap synthetic validation and still fail the mixed near-real candidate
+
+- `v244`
+  kept the
+  `v240`
+  split-route local writer and keep-side repairs unchanged,
+  but replaced the transient-driven
+  `overlap_dual`
+  selector with a different discriminator:
+  `local_selection_mode = speech_target_share_bounded_peak`,
+  `target_interference_logspec_cosine >= 0.5`,
+  `local_fullmix_target_share <= 0.14`,
+  and
+  `local_music_share_of_interference >= 0.05`.
+- The new selector was real and the cheap validation looked strong:
+  `train 8 / 233, val 3 / 67`,
+  and
+  `v157 -> v240 = +0.8275 dB`
+  on that validation subset.
+- But relative
+  `v240`,
+  fixed deltas still became
+  `+1.1863 / +0.5492 / +0.7559 / +0.4353 / -0.5267 dB`.
+  So the new discriminator again pushes the family into a keep-dominant regime,
+  spending most blocker surplus.
+- The targeted near-real probes also turn clearly negative relative to
+  `v240`:
+  `near_real_speech_probe_v1 = -0.1064 dB`,
+  `friend_raw = -0.1149 dB`,
+  `guodegang_raw = -0.0811 dB`,
+  and
+  `near_real_guodegang_transient_probe_v1 = -0.0811 dB`.
+- Rule:
+  do not assume that a cheap synthetic subgroup with strong blocker alignment is enough to justify a selector-only retarget continuation on the split-route
+  `refine_base`
+  family.
+  After
+  `v244`,
+  neither tighter transient filters nor similarity-skewed bounded-peak filters are good default continuations.
+
+### 62. An additive guodegang-anchor local booster can stay positive against the base and still be the wrong continuation relative to the mixed candidate
+
+- `v245`
+  kept the
+  `v240`
+  split-route local writer,
+  the abstention repair,
+  the artifact teacher repair,
+  and the original
+  `overlap_dual`
+  local bundle unchanged,
+  then added a second
+  `overlap_dual_extra`
+  booster bucket with a new
+  `overlap_dual_residual_correction_local_waveform_extra`
+  term.
+- The new branch was clearly real:
+  base
+  `overlap_dual`
+  stayed at
+  `train 33 / 233, val 7 / 67`,
+  the booster bucket activated at
+  `train 7 / 233, val 3 / 67`,
+  and
+  `val_overlap_dual_residual_correction_local_waveform_extra_l1 = 0.000681`.
+- Relative
+  `v157`,
+  fixed deltas still looked strong:
+  `+1.0704 / +0.4994 / +0.7340 / +0.5112 / +0.2766 dB`.
+  But relative
+  `v240`,
+  the actual continuation shape was
+  `+0.8442 / +0.3207 / +0.4886 / +0.4350 / -0.2593 dB`.
+  So the additive booster improved the four non-blocker axes while spending blocker surplus.
+- The targeted near-real probes agreed with that read.
+  Relative
+  `v240`,
+  `near_real_speech_probe_v1 = -0.0185 dB`,
+  `near_real_guodegang_transient_probe_v1 = -0.0130 dB`,
+  and the actual anchor clip
+  `guodegang_anchor_120s = -0.0256 dB`.
+- Rule:
+  do not assume that an additive local booster is safer than selector replacement by default.
+  After
+  `v245`,
+  do not continue the same
+  `overlap_dual_extra`
+  additive-booster axis through weight micro-sweeps or extra-bucket swaps on the same local objective.
+
+### 63. A dedicated refine apply controller on top of `v240` still behaves like a keep-lean continuation, not a near-real repair
+
+- `v248`
+  kept the
+  `v240`
+  split-route local writer,
+  the keep-side absent repair,
+  the artifact teacher repair,
+  and the same
+  `overlap_dual`
+  local objective,
+  then added
+  `branch_overlap_refine_apply_controller_head`
+  as a separate per-frame scale head on top of the same
+  `branch_overlap_refine_head`
+  writeback.
+- The new branch was clearly real:
+  smoke loaded cleanly from the
+  `v240`
+  parent,
+  the widened trainable set increased to
+  `921607 / 8484497`
+  (`10.8622%`),
+  and full moved the fixed synthetic surface in a coherent direction.
+- Relative
+  `v240`,
+  fixed deltas became
+  `+0.1651 / +0.1168 / +0.3084 / +0.0156 / -0.0518 dB`.
+  So the added controller again improves the four non-blocker checks
+  while spending blocker surplus.
+- The targeted near-real probes agreed with that read.
+  Relative
+  `v240`,
+  `near_real_speech_probe_v1 = -0.0360 dB`,
+  `friend_raw = -0.0315 dB`,
+  `guodegang_raw = -0.0497 dB`,
+  `friend_absent_820s = -0.0779 dB`,
+  and
+  `guodegang_anchor_120s = -0.0922 dB`.
+- Rule:
+  do not assume that a dedicated per-frame apply controller on the same split-route local writer is enough to repair the mixed near-real candidate.
+  After
+  `v248`,
+  do not continue the same
+  `branch_overlap_refine_apply_controller`
+  family through scalar retunes or other low-weight penalties on the same writer.
+
+### 64. Interval-masked writer routes cannot be decisively gated on real-eval packs that do not carry `local_proxy`
+
+- `v249`
+  is the first split-route
+  `refine_base`
+  continuation whose fixed synthetic surface is clearly worse than
+  `v240`
+  while its targeted near-real blocker probes are clearly better.
+  Relative
+  `v240`,
+  the fixed synthetic vector becomes
+  `-0.5101 / -1.0948 / -0.5323 / -0.9349 / +0.3203 dB`,
+  but the targeted near-real probes become
+  `+0.7692 dB`
+  on
+  `near_real_speech_probe_v1`
+  and
+  `+0.2902 dB`
+  on
+  `near_real_guodegang_transient_probe_v1`,
+  with every probe sample improved.
+- The route only makes sense when
+  `local_proxy_intervals`
+  are actually present at inference,
+  because the final output is now a hard split between the keep route and the local writer.
+- The old whole
+  `near_real_v1`
+  real-eval manifest does not contain
+  `local_proxy`
+  annotations.
+  So running that pack would not activate the interval-masked route in the same way as the targeted probes.
+- Rule:
+  do not use the old whole
+  `near_real_v1`
+  pack as a decisive gate for interval-masked writer candidates by default.
+  After
+  `v249`,
+
+### 65. Probe-side listening-pack tradeoff analysis must not assume synthetic-style `components`
+
+- After
+  `v249`,
+  the next decisive follow-up moved from old whole-pack real eval to interval-aware probe-side listening assets.
+- The original
+  `scripts/eval/analyze_listening_pack_tradeoff.py`
+  path assumed source metadata lived beside the mixture as
+  `sample_meta.json`
+  and always exposed synthetic-style
+  `components`.
+- The probe assets instead store
+  `metadata.json`
+  and expose
+  `target_source`,
+  `interference_layers`,
+  and
+  `target_segments`.
+  Without a compatibility path,
+  the tradeoff analysis either crashes on missing
+  `sample_meta.json`
+  or crashes again on missing
+  `components`.
+- Rule:
+  when a listening pack is built from probe assets,
+  resolve metadata through the pack-recorded
+  `metadata_path`
+  first,
+  accept both
+  `sample_meta.json`
+  and
+  `metadata.json`,
+  and support probe-style reconstruction instead of assuming the synthetic
+  `components`
+  schema.
+
+### 66. Gain triplets inside the same probe anchor bucket can have low listening value
+
+- The original
+  `near_real_speech_probe_v1`
+  listening asset contains repeated
+  `anchor x speech_clip_tag`
+  buckets with only gain changed.
+- Partial listening on the
+  `v240`
+  versus
+  `v249`
+  packs indicated that those gain shifts did not materially change the audible verdict,
+  while still making the listening pass much longer.
+- Rule:
+  when the task is human listening rather than gain-sensitivity study,
+  collapse such triplets to a single representative by default and prioritize phenotype diversity instead.
+
+### 67. Target-conditioned telephone-like artifact can masquerade as leak behavior in probe listening
+
+- In the reduced
+  `near_real_speech_probe_v1_diverse8`
+  listening pass for
+  `v240`
+  versus
+  `v249`,
+  a short telephone-like or synthetic artifact appeared at the same target-audio position across different interference conditions.
+- That means some audible failure in this probe family is not safely attributable to interference leak alone.
+  It may instead be target-conditioned or target-frequency-triggered.
+- Rule:
+  when a probe listening note identifies the same artifact at the same target position across changed interference conditions,
+  do not treat that audible defect as clean evidence for or against a leak-repair route.
+  Split future assets so target-conditioned artifact and interference leak can be judged separately.
+
+### 68. Reuse fixed-target probe packs before expanding more generic near-real listening
+
+- After the
+  `diverse8`
+  listening pass,
+  the next useful asset was not another broader speech pack.
+  It was a fixed-target three-row probe where the target segment and gain stay fixed and only the interference clip position changes.
+- Rule:
+  when human notes suggest a target-conditioned artifact,
+  build a fixed-target pack first.
+  Do not default back to larger mixed packs until that artifact-vs-leak ambiguity is resolved.
+
+### 69. A fixed-target real probe can falsify an apparent leak-only explanation
+
+- The
+  `near_real_target_conditioned_artifact_probe_v1`
+  listening pack keeps the target segment and gain fixed and only changes interference position.
+- On
+  `v240`
+  versus
+  `v249`,
+  that pack still produced only
+  `tie / uncertain = 1 / 2`,
+  while the artifact remained at the corresponding target position.
+- One listening note explicitly observed that the artifact stayed even where the target-corresponding location had no interference audio.
+- Rule:
+  once a fixed-target probe shows that behavior,
+  do not continue interpreting the same candidate family mainly through leak metrics.
+  Treat the branch as artifact-confounded until a dedicated artifact-targeting path is introduced.
+  prefer interval-aware real assets or probe-side listening packs before declaring such a route validated or rejected.
+
+### 70. Preserve `branch_overlap_dual_decoder_max_blend = 0.0` when cloning `v240`-family continuations
+
+- The first artifact-local teacher continuation attempt
+  `v250`
+  accidentally omitted
+  `--model-branch-overlap-dual-decoder-max-blend 0.0`.
+- That silently restored parser default
+  `branch_overlap_dual_decoder_max_blend = 1.0`
+  and reopened the dual writer path,
+  so the run was no longer a clean continuation from
+  `v240`.
+- Rule:
+  when cloning any
+  `v240`
+  split-route continuation,
+  explicitly preserve
+  `branch_overlap_dual_decoder_max_blend = 0.0`
+  rather than assuming it will be inherited safely.
+
+### 71. Extra selector ideas must be audited against active-bundle overlap before being read as weak science
+
+- `v251`
+  used a valid additive artifact-local
+  `branch_protect_teacher_extra`
+  branch,
+  but the branch only touched
+  `train 3 / 233`
+  and
+  `val 3 / 67`
+  rows inside the current active bundle,
+  even though the explicit ids asset itself was much larger.
+- That means the branch was training-real,
+  but heavily coverage-limited.
+  A weak or mixed outcome on such a run does not close the underlying idea.
+- Rule:
+  before reading an additive extra-selector continuation as a real boundary,
+  audit how many of the explicit ids actually survive into the current train and val bundle.
+  If overlap is tiny,
+  treat the result as coverage-limited first.
+- `v252`
+  then completed the second half of the boundary:
+  once the same additive artifact-local
+  `branch_protect_teacher_extra`
+  axis is replayed on the merged bundle with
+  `train 33 / 263`
+  and
+  `val 7 / 71`
+  coverage,
+  it still steepens the keep-heavy tradeoff instead of repairing the artifact slice.
+- Rule:
+  after a coverage-fixed replay still points in the same wrong direction,
+  close the axis instead of continuing weight micro-sweeps.
+
 ## Current Do-Not-Continue List
 
 - `pre_present_max_blend` sweep
@@ -1257,6 +1845,7 @@
 - sparse local plus nonlocal controller shaping on the same family
 - simple upstream `branch_overlap_dual_decoder_head` widening on top of `v224`
 - first-launch `branch_overlap_dual_local_bridge` local-waveform continuation
+- simple absent-extra scalar retune on top of the split-route `refine_base` repair point
 - `extra_local_waveform_weight` micro-sweep on the writable pre-present main-output route
 - `extra_local_sisdr_weight` micro-sweep on the same writable pre-present main-output route
 - direct `pre_present_applied_delta_local_waveform_weight` continuation on the same writable pre-present family
@@ -1264,6 +1853,11 @@
 - output-position-only retargeting to `estimated_waveform_pre_dual_residual_correction`
 - simple `branch_overlap_refine_present_head` widening on that same pre-dual writable route
 - local-output retargeting through the same `branch_overlap_refine_present_head` writer, including `estimated_waveform_post_refine_present`
+- similarity-skewed bounded-peak selector-only retargeting on top of `v240`
+- additive `overlap_dual_extra` guodegang-anchor local booster on top of `v240`
+- dedicated `branch_overlap_refine_apply_controller` continuation on top of `v240`
+- additive artifact-local `branch_protect_teacher_extra` weight retunes on top of `v240`
+- additive artifact-local `branch_protect_teacher_extra` weight retunes on top of the merged coverage-fixed `v252` bundle
 
 ## Current Safe Defaults
 
@@ -1379,9 +1973,118 @@
   by default.
   This first broader-predictor continuation is clearly optimization-real,
   but it only steepens the same mild guardrail-for-local tradeoff.
-- After `v237`, do not keep micro-sweeping the same first-launch
+- After `v238`, do not keep micro-sweeping the same first-launch
   `branch_overlap_dual_local_bridge`
   writer by default.
-  This first dedicated bridge continuation is clearly optimization-real,
-  but it buys blocker gain mainly by spending material guardrail margin relative to
-  `v212`.
+  The first dedicated bridge family is now mapped through a direct local-waveform launch
+  and a simple nonlocal spill-control continuation,
+  and neither one opens a selective regime.
+- After `v239`, do not keep micro-sweeping
+  `absent_extra_weight`
+  on the split-route
+  `refine_base`
+  family by default.
+  The first keep-side abstention repair is clearly optimization-real
+  and partially recovers the
+  `v233`
+  bad surface,
+  but the family is still materially negative on abstention and artifact relative to
+  `v224`.
+  If this line continues,
+  repair artifact on the keep-side output rather than retuning the same abstention scalar or the same local writer.
+- After `v240`, do not start by micro-sweeping
+  `branch_protect_teacher_overlap_weight`
+  on the same split-route
+  `refine_base`
+  family.
+  This first artifact-first teacher-overlap repair already crosses all five active fixed synthetic checks relative to
+  `v157`.
+  Near-real validation is now complete and shows a mixed result:
+  failed whole-tradeoff on
+  `target_present__speech`,
+  positive
+  `friend_raw`
+  speech-probe movement,
+  and negative
+  `guodegang_raw / transient_like`
+  transient-side movement.
+  The next step should therefore repair those near-real failures,
+  not reopen the same synthetic scalar retune.
+- After `v241`, do not try to repair the same near-real speech failure
+  by adding another synthetic speech-transient keep-side
+  `branch_protect_guard_sisdr`
+  on the same split-route keep-side output.
+  This axis is training-real but wrong-way on both the active blocker
+  and the targeted near-real speech probe.
+- After `v242`, do not start by micro-sweeping the same transient-heavy selector thresholds
+  on top of
+  `v240`.
+  This first local-selector-retarget continuation is materially safer than
+  `v241`,
+  but both targeted near-real probes stay practical tie relative to
+  `v240`.
+  If the family continues,
+  use a different subgroup definition rather than another retune of the same transient-heavy filter.
+- After `v243`, do not keep tightening that same local-selector-retarget family
+  only by stronger transient-only thresholds.
+  This stricter continuation improves the four non-blocker axes
+  but burns most blocker surplus and turns both targeted near-real probes negative.
+- After `v244`, do not continue that same local-selector-retarget family
+  by switching only to similarity-skewed bounded-peak subgroup filters.
+  This continuation also improves the four non-blocker axes
+  but spends most blocker surplus and moves both targeted near-real probes negative.
+- After `v245`, do not continue the same additive
+  `overlap_dual_extra`
+  guodegang-anchor booster axis by default.
+  It is clearly training-real and stays positive versus
+  `v157`,
+  but it weakens the active blocker and both targeted near-real probes relative to
+  `v240`.
+- After `v246`, do not continue the same additive
+  speech-only
+  `branch_protect_teacher_extra`
+  keep-side teacher-overlap axis by default.
+  It is clearly training-real and stays strongly positive versus
+  `v157`,
+  but it weakens the active blocker
+  and both targeted near-real probes relative to
+  `v240`.
+- After `v247`, do not continue the same
+  `extra_local_nonlocal_waveform_weight`
+  complement-alignment axis by default.
+  It is training-real and stays positive versus
+  `v157`,
+  but it again weakens the active blocker
+  and the targeted near-real probes relative to
+  `v240`,
+  while the new nonlocal metric itself stays almost zero
+  (`val_extra_local_nonlocal_waveform_l1 = 0.000003`).
+  So the remaining
+  `v240`
+  failure is not a simple local-writer nonlocal spill that can be repaired by low-weight alignment to the keep-side output.
+- After `v248`, do not continue the same dedicated
+  `branch_overlap_refine_apply_controller`
+  axis by default.
+  It is clearly training-real and still stays positive versus
+  `v157`,
+  but it again weakens the active blocker
+  and both targeted near-real probes relative to
+  `v240`.
+- After `v249`, do not treat the old whole
+  `near_real_v1`
+  pack as a decisive gate for this interval-masked family by default.
+  That pack has no
+  `local_proxy`
+  annotations,
+  so it does not exercise the hard local-interval output split in the same way as the targeted probes.
+- After `v252`, treat the additive artifact-local
+  `branch_protect_teacher_extra`
+  axis on top of
+  `v240`
+  as closed.
+  Coverage was already fixed to
+  `33 / 263`
+  train rows and
+  `7 / 71`
+  val rows,
+  and the direction still stayed keep-heavy rather than artifact-repairing.

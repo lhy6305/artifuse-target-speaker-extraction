@@ -134,6 +134,9 @@ def resolve_prediction_source(
         "estimated_waveform_post_refine_present": outputs.get(
             "estimated_waveform_post_refine_present"
         ),
+        "estimated_waveform_split_localmasked": outputs.get(
+            "estimated_waveform_split_localmasked"
+        ),
         "estimated_waveform_pre_dual_residual_correction": outputs.get(
             "estimated_waveform_pre_dual_residual_correction"
         ),
