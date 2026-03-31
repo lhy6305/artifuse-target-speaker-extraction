@@ -742,6 +742,138 @@
   `-1.1727 / -0.9902 / -0.4938 / -0.7442 / +1.0956 dB`,
   so this axis just buys blocker gain by burning large guardrail margin.
 
+### `v231`
+
+- Route:
+  `v226 + estimated_waveform_post_refine_present + branch_overlap_refine_present_head`
+  with the same trainable writer shape as
+  `v230`,
+  but supervising before
+  `branch_overlap_cancel_head`
+- Status:
+  pre-cancel writable-output reject on the same `refine_present` writer family
+- Takeaway:
+  removing the frozen cancel path from the local supervision target does not rescue the family.
+  Relative
+  `v230`,
+  direct fixed deltas became
+  `-0.2026 / -0.1462 / -0.1320 / -0.1930 / +0.0673 dB`,
+  so the bad tradeoff is already present at the
+  `refine_present`
+  writer itself.
+
+### `v232`
+
+- Route:
+  `v226 + direct local supervision on branch_overlap_cancel_pre_present_controller applied delta`
+  while keeping the same writable pre-present family and trainable set as
+  `v226`
+- Status:
+  applied-delta practical-tie continuation reject
+- Takeaway:
+  exporting and directly supervising the actual pre-present applied delta is clearly optimization-real,
+  but it still does not improve the writable pre-present family.
+  Relative
+  `v226`,
+  direct fixed deltas became
+  `-0.0175 / -0.0068 / -0.0229 / +0.0135 / -0.0149 dB`,
+  so this axis is another practical tie to slight negative continuation,
+  not a new selective regime.
+
+### `v233`
+
+- Route:
+  `v224 + local_prediction_source estimated_waveform_refine_base + branch_overlap_refine_head`
+  while keep-side reconstruction still writes through
+  `estimated_waveform_post_pre_present_controller`
+- Status:
+  local-only `refine_base` writer exchange-surface reject
+- Takeaway:
+  splitting keep and local supervision onto different writable outputs is not sufficient by itself.
+  Relative
+  `v224`,
+  direct fixed deltas became
+  `-0.7918 / +0.0617 / +0.1080 / -0.4197 / +0.6625 dB`,
+  so this first
+  `branch_overlap_refine_head`
+  local-only writer buys large blocker gain mainly by spending abstention and artifact margin.
+
+### `v234`
+
+- Route:
+  `v224 + overlap_dual_residual_correction_local_sisdr_weight 0.001`
+  on the same writable
+  `branch_overlap_dual_residual_correction`
+  estimate and trainable set as
+  `v224`
+- Status:
+  local-window SI-SDR practical-tie-to-negative continuation reject
+- Takeaway:
+  the first more structural local-quality continuation on the writable residual-correction branch is clearly real,
+  but it nudges the route slightly toward better non-blocker checks and slightly worse local blocker behavior.
+  Relative
+  `v224`,
+  direct fixed deltas became
+  `+0.0320 / +0.0118 / +0.0037 / +0.0441 / -0.0373 dB`,
+  so this is not a useful blocker-positive regime.
+
+### `v235`
+
+- Route:
+  `v224 + sparse controller selectivity`
+  with local controller supervision inside
+  `local_proxy_intervals`
+  and complement-interval controller supervision outside them
+- Status:
+  sparse-controller practical-tie continuation reject
+- Takeaway:
+  the first controller-selectivity continuation on this writable residual-correction branch is clearly real,
+  but it still does not improve the blocker.
+  Relative
+  `v224`,
+  direct fixed deltas became
+  `-0.0055 / -0.0091 / -0.0054 / +0.0136 / -0.0040 dB`,
+  so this axis stays in the same practical-tie basin rather than opening a new local-positive regime.
+
+### `v236`
+
+- Route:
+  `v224 + branch_overlap_dual_decoder_head`
+  while keeping the full
+  `v224`
+  loss unchanged
+- Status:
+  broader-upstream-predictor mild-tradeoff continuation reject
+- Takeaway:
+  the first upstream widening on this writable residual-correction branch is clearly real,
+  but it does not open a new regime.
+  Relative
+  `v224`,
+  direct fixed deltas became
+  `-0.0320 / -0.0320 / -0.0163 / -0.0203 / +0.0323 dB`,
+  so unfreezing the upstream
+  `branch_overlap_dual_decoder_head`
+  only steepens the same mild guardrail-for-local surface instead of resolving the blocker.
+
+### `v237`
+
+- Route:
+  `v212 + dedicated branch_overlap_dual_local_bridge writer`
+  with keep-side supervision still on
+  `estimated_waveform_post_pre_present_controller`
+  and blocker-local waveform supervision moved onto
+  `estimated_waveform_post_dual_local_bridge`
+- Status:
+  dedicated dual-local writer tradeoff reject
+- Takeaway:
+  the first dedicated dual-local bridge is clearly real,
+  but it does not open a new selective regime.
+  Relative
+  `v212`,
+  direct fixed deltas became
+  `-0.2272 / -0.1451 / -0.1393 / -0.1284 / +0.0722 dB`,
+  so this new writer still buys blocker gain mainly by spending guardrail margin.
+
 ## Closed Branch Families
 
 - `predicted_activity` direct-apply family
@@ -789,10 +921,20 @@
 - `overlap_dual_residual_target_projection_weight` retune on the same pre-present keep-output plus dual residual-correction family
 - `overlap_dual_residual_correction_local_waveform_weight` micro-sweep on that same family
 - `overlap_dual_residual_correction_local_controller_weight` micro-sweep on that same family
+- `overlap_dual_residual_correction_local_sisdr_weight` retune on that same family
+- sparse local plus nonlocal controller shaping on that same family
+- simple upstream `branch_overlap_dual_decoder_head` widening on that same family
+- first-launch dedicated `branch_overlap_dual_local_bridge` local-waveform continuation
 - `extra_local_waveform_weight` micro-sweep on the writable pre-present main-output route
 - `extra_local_sisdr_weight` micro-sweep on that same writable pre-present main-output route
+- direct `pre_present_applied_delta_local_waveform_weight` continuation on that same writable pre-present family
+- split-route local-only writer continuation through
+  `estimated_waveform_refine_base`
+  and
+  `branch_overlap_refine_head`
 - output-position-only retargeting to `estimated_waveform_pre_dual_residual_correction`
 - simple `branch_overlap_refine_present_head` widening on that same later pre-dual writable route
+- local-output retargeting through the same `branch_overlap_refine_present_head` writer, including `estimated_waveform_post_refine_present`
 
 ## Next Valid Branches
 
@@ -812,13 +954,35 @@
 - a more expressive keep path on the same disjoint downstream route used by `v211` to `v213`
 - a qualitatively different keep objective or a more structurally disjoint keep path on the same downstream route after `v219`
 - a more structural local objective on the writable residual-correction branch after `v224`
+- if the writable residual-correction line continues after `v234`,
+  a route that does not only strengthen local-window quality on the same
+  `branch_overlap_dual_residual_correction`
+  estimate
+- if the writable residual-correction line continues after `v235`,
+  a route that does not only reshape the same
+  `branch_overlap_dual_residual_correction_controller`
+  with local versus complement sparsity targets
+- if the writable residual-correction line continues after `v236`,
+  a route that does not only widen the frozen upstream predictor through
+  `branch_overlap_dual_decoder_head`
+- if the dedicated dual-local bridge line continues after `v237`,
+  a route that does not only retune the same first-launch local-waveform writer
 - a more structural writable-path change than direct local-window waveform supervision on `estimated_waveform_post_pre_present_controller` after `v227`
 - a materially different local objective on that same writable pre-present main-output route after `v228`
 - if this writable-path line continues,
-  a cleaner intermediate output before the frozen cancel path,
-  not the same pre-dual route with simple
+  a route that does not rely on the same
   `refine_present`
-  widening
+  writer at all
+- if the writable pre-present line continues after
+  `v232`,
+  a route that does not rely only on direct applied-delta supervision through the same
+  `pre_present_controller`
+  writer
+- if a split-route writable-path line continues after
+  `v233`,
+  a route that does not rely on
+  `branch_overlap_refine_head`
+  as the dedicated local-only writer
 - a more structural writable-path change than direct local-window quality supervision on `estimated_waveform_post_pre_present_controller`
 - only if needed, a materially larger path change with disjoint keep and local supervision paths
 
@@ -856,4 +1020,11 @@
 - Do not replay `v228`-style micro-sweeps of the same local-window pre-present main-output SI-SDR weight by default.
 - Do not replay `v229`-style output-position-only retargeting to the same later pre-dual writable route by default.
 - Do not replay `v230`-style simple `branch_overlap_refine_present_head` widening on that same route by default.
+- Do not replay `v231`-style pre-cancel writable-output continuation on that same `refine_present` writer family by default.
+- Do not replay `v232`-style direct applied-delta supervision on that same writable pre-present family by default.
+- Do not replay `v233`-style split-route local-only writer continuation through `estimated_waveform_refine_base` and `branch_overlap_refine_head` by default.
+- Do not replay `v234`-style local-window SI-SDR continuation on the same writable residual-correction branch by default.
+- Do not replay `v235`-style sparse local plus nonlocal controller shaping on the same writable residual-correction branch by default.
+- Do not replay `v236`-style simple upstream dual-decoder widening on the same writable residual-correction branch by default.
+- Do not replay `v237`-style first-launch dedicated dual-local bridge local-waveform continuation by default.
 - Do not export listening packs from this family until the active local blocker turns the right way on fixed synthetic proxies.

@@ -16,6 +16,7 @@ class LossBreakdown:
     reconstruction_extra_waveform_l1: torch.Tensor
     reconstruction_extra_stft_l1: torch.Tensor
     extra_local_waveform_l1: torch.Tensor
+    pre_present_applied_delta_local_waveform_l1: torch.Tensor
     extra_local_sisdr_loss: torch.Tensor
     sisdr_loss: torch.Tensor
     branch_protect_guard_sisdr_loss: torch.Tensor
@@ -39,8 +40,11 @@ class LossBreakdown:
     overlap_dual_monitor_waveform_l1: torch.Tensor
     overlap_dual_residual_correction_waveform_l1: torch.Tensor
     overlap_dual_residual_correction_local_waveform_l1: torch.Tensor
+    overlap_dual_residual_correction_local_sisdr_loss: torch.Tensor
     overlap_dual_residual_correction_local_controller_l1: torch.Tensor
+    overlap_dual_residual_correction_nonlocal_controller_l1: torch.Tensor
     overlap_dual_residual_correction_local_target_projection_ratio: torch.Tensor
+    branch_overlap_dual_local_bridge_nonlocal_waveform_l1: torch.Tensor
     overlap_dual_controller_distill_l1: torch.Tensor
     overlap_dual_residual_target_projection_ratio: torch.Tensor
     overlap_dual_absent_mix_l1: torch.Tensor
@@ -787,6 +791,46 @@ def weighted_gate_target_loss(
     return average_sample_losses(sample_losses, sample_weights, gate_values)
 
 
+def build_complement_intervals(
+    intervals_batch: list[list[dict[str, float]]],
+    lengths: torch.Tensor,
+    sample_rate: int,
+) -> list[list[dict[str, float]]]:
+    complement_batch: list[list[dict[str, float]]] = []
+    for intervals, length in zip(intervals_batch, lengths.detach().cpu().tolist()):
+        valid_duration_sec = max(0.0, float(length) / float(sample_rate))
+        if valid_duration_sec <= 0.0:
+            complement_batch.append([])
+            continue
+
+        normalized_intervals: list[tuple[float, float]] = []
+        for interval in intervals:
+            start_sec = max(0.0, min(valid_duration_sec, float(interval.get("start_sec", 0.0))))
+            end_sec = max(start_sec, min(valid_duration_sec, float(interval.get("end_sec", start_sec))))
+            if end_sec > start_sec:
+                normalized_intervals.append((start_sec, end_sec))
+        normalized_intervals.sort()
+
+        merged_intervals: list[tuple[float, float]] = []
+        for start_sec, end_sec in normalized_intervals:
+            if not merged_intervals or start_sec > merged_intervals[-1][1]:
+                merged_intervals.append((start_sec, end_sec))
+            else:
+                merged_intervals[-1] = (merged_intervals[-1][0], max(merged_intervals[-1][1], end_sec))
+
+        cursor_sec = 0.0
+        complement_intervals: list[dict[str, float]] = []
+        for start_sec, end_sec in merged_intervals:
+            if start_sec > cursor_sec:
+                complement_intervals.append({"start_sec": cursor_sec, "end_sec": start_sec})
+            cursor_sec = max(cursor_sec, end_sec)
+        if cursor_sec < valid_duration_sec:
+            complement_intervals.append({"start_sec": cursor_sec, "end_sec": valid_duration_sec})
+        complement_batch.append(complement_intervals)
+
+    return complement_batch
+
+
 def compute_losses(
     prediction: torch.Tensor,
     mixture: torch.Tensor,
@@ -806,6 +850,9 @@ def compute_losses(
     overlap_cancel_prediction: torch.Tensor | None = None,
     reconstruction_extra_prediction: torch.Tensor | None = None,
     extra_prediction: torch.Tensor | None = None,
+    local_prediction: torch.Tensor | None = None,
+    pre_present_base_prediction: torch.Tensor | None = None,
+    pre_present_applied_delta_prediction: torch.Tensor | None = None,
     teacher_prediction: torch.Tensor | None = None,
     reconstruction_sample_weights: torch.Tensor | None = None,
     reconstruction_extra_sample_weights: torch.Tensor | None = None,
@@ -823,6 +870,7 @@ def compute_losses(
     overlap_dual_monitor_prediction: torch.Tensor | None = None,
     overlap_dual_residual_correction_prediction: torch.Tensor | None = None,
     overlap_dual_residual_correction_controller_prediction: torch.Tensor | None = None,
+    branch_overlap_dual_local_bridge_prediction: torch.Tensor | None = None,
     overlap_cancel_controller_prediction: torch.Tensor | None = None,
     overlap_dual_controller_prediction: torch.Tensor | None = None,
     overlap_dual_controller_target: torch.Tensor | None = None,
@@ -850,6 +898,7 @@ def compute_losses(
     reconstruction_extra_waveform_weight: float = 0.0,
     reconstruction_extra_stft_weight: float = 0.0,
     extra_local_waveform_weight: float = 0.0,
+    pre_present_applied_delta_local_waveform_weight: float = 0.0,
     extra_local_sisdr_weight: float = 0.0,
     sisdr_weight: float = 0.0,
     branch_protect_guard_sisdr_weight: float = 0.0,
@@ -872,8 +921,11 @@ def compute_losses(
     overlap_dual_monitor_waveform_weight: float = 0.0,
     overlap_dual_residual_correction_waveform_weight: float = 0.0,
     overlap_dual_residual_correction_local_waveform_weight: float = 0.0,
+    overlap_dual_residual_correction_local_sisdr_weight: float = 0.0,
     overlap_dual_residual_correction_local_controller_weight: float = 0.0,
+    overlap_dual_residual_correction_nonlocal_controller_weight: float = 0.0,
     overlap_dual_residual_correction_local_target_projection_weight: float = 0.0,
+    branch_overlap_dual_local_bridge_nonlocal_waveform_weight: float = 0.0,
     overlap_dual_controller_distill_weight: float = 0.0,
     overlap_dual_residual_target_projection_weight: float = 0.0,
     overlap_dual_absent_mix_weight: float = 0.0,
@@ -899,6 +951,8 @@ def compute_losses(
 ) -> LossBreakdown:
     reconstruction_extra_prediction = prediction if reconstruction_extra_prediction is None else reconstruction_extra_prediction
     extra_prediction = prediction if extra_prediction is None else extra_prediction
+    local_prediction = extra_prediction if local_prediction is None else local_prediction
+    pre_present_base_prediction = prediction if pre_present_base_prediction is None else pre_present_base_prediction
     overlap_cancel_prediction = (
         prediction.new_zeros(prediction.shape)
         if overlap_cancel_prediction is None
@@ -914,6 +968,11 @@ def compute_losses(
     )
     waveform_term = waveform_l1_loss(prediction, target, lengths)
     stft_term = stft_l1_loss(prediction, target, model)
+    nonlocal_proxy_intervals = build_complement_intervals(
+        local_proxy_intervals,
+        lengths,
+        sample_rate,
+    )
     if reconstruction_sample_weights is None:
         reconstruction_waveform_term = prediction.new_tensor(0.0)
         reconstruction_stft_term = prediction.new_tensor(0.0)
@@ -949,15 +1008,34 @@ def compute_losses(
             sample_weights=reconstruction_extra_sample_weights,
         )
     extra_local_waveform_term = interval_waveform_l1_loss(
-        prediction=extra_prediction,
+        prediction=local_prediction,
         target=target,
         lengths=lengths,
         intervals_batch=local_proxy_intervals,
         sample_rate=sample_rate,
         sample_weights=overlap_dual_sample_weights,
     )
+    if pre_present_applied_delta_prediction is None:
+        pre_present_applied_delta_local_waveform_term = prediction.new_tensor(0.0)
+    else:
+        (
+            pre_present_base_prediction_aligned,
+            pre_present_target_aligned,
+            _,
+        ) = align_waveforms(pre_present_base_prediction, target, lengths)
+        pre_present_applied_delta_local_waveform_target = (
+            pre_present_base_prediction_aligned - pre_present_target_aligned
+        )
+        pre_present_applied_delta_local_waveform_term = interval_waveform_l1_loss(
+            prediction=pre_present_applied_delta_prediction,
+            target=pre_present_applied_delta_local_waveform_target,
+            lengths=lengths,
+            intervals_batch=local_proxy_intervals,
+            sample_rate=sample_rate,
+            sample_weights=overlap_dual_sample_weights,
+        )
     extra_local_sisdr_term = interval_sisdr_loss(
-        prediction=extra_prediction,
+        prediction=local_prediction,
         target=target,
         lengths=lengths,
         intervals_batch=local_proxy_intervals,
@@ -1147,6 +1225,7 @@ def compute_losses(
     if overlap_dual_residual_correction_prediction is None:
         overlap_dual_residual_correction_term = prediction.new_tensor(0.0)
         overlap_dual_residual_correction_local_term = prediction.new_tensor(0.0)
+        overlap_dual_residual_correction_local_sisdr_term = prediction.new_tensor(0.0)
         overlap_dual_residual_correction_local_target_projection_term = prediction.new_tensor(0.0)
     else:
         overlap_dual_residual_correction_term = interval_waveform_l1_loss(
@@ -1165,6 +1244,15 @@ def compute_losses(
             sample_rate=sample_rate,
             sample_weights=overlap_dual_sample_weights,
         )
+        overlap_dual_residual_correction_local_sisdr_term = interval_sisdr_loss(
+            prediction=overlap_dual_residual_correction_prediction,
+            target=overlap_dual_monitor_target,
+            lengths=lengths,
+            intervals_batch=local_proxy_intervals,
+            sample_rate=sample_rate,
+            sample_weights=overlap_dual_sample_weights,
+            zero_mean=True,
+        )
         overlap_dual_residual_correction_local_target_projection_term = interval_projection_ratio_loss(
             prediction=overlap_dual_residual_correction_prediction,
             target=target_aligned,
@@ -1173,8 +1261,20 @@ def compute_losses(
             sample_rate=sample_rate,
             sample_weights=overlap_dual_sample_weights,
         )
+    if branch_overlap_dual_local_bridge_prediction is None:
+        branch_overlap_dual_local_bridge_nonlocal_term = prediction.new_tensor(0.0)
+    else:
+        branch_overlap_dual_local_bridge_nonlocal_term = interval_waveform_l1_loss(
+            prediction=branch_overlap_dual_local_bridge_prediction,
+            target=torch.zeros_like(branch_overlap_dual_local_bridge_prediction),
+            lengths=lengths,
+            intervals_batch=nonlocal_proxy_intervals,
+            sample_rate=sample_rate,
+            sample_weights=overlap_dual_sample_weights,
+        )
     if overlap_dual_residual_correction_controller_prediction is None:
         overlap_dual_residual_correction_local_controller_term = prediction.new_tensor(0.0)
+        overlap_dual_residual_correction_nonlocal_controller_term = prediction.new_tensor(0.0)
     else:
         overlap_dual_residual_correction_local_controller_term = weighted_gate_target_loss(
             gate_values=overlap_dual_residual_correction_controller_prediction,
@@ -1183,6 +1283,15 @@ def compute_losses(
             target_value=1.0,
             sample_weights=overlap_dual_sample_weights,
             intervals_batch=local_proxy_intervals,
+            sample_rate=sample_rate,
+        )
+        overlap_dual_residual_correction_nonlocal_controller_term = weighted_gate_target_loss(
+            gate_values=overlap_dual_residual_correction_controller_prediction,
+            lengths=lengths,
+            model=model,
+            target_value=0.0,
+            sample_weights=overlap_dual_sample_weights,
+            intervals_batch=nonlocal_proxy_intervals,
             sample_rate=sample_rate,
         )
     resolved_overlap_dual_controller_prediction = (
@@ -1313,6 +1422,10 @@ def compute_losses(
         + (reconstruction_extra_waveform_term * reconstruction_extra_waveform_weight)
         + (reconstruction_extra_stft_term * reconstruction_extra_stft_weight)
         + (extra_local_waveform_term * extra_local_waveform_weight)
+        + (
+            pre_present_applied_delta_local_waveform_term
+            * pre_present_applied_delta_local_waveform_weight
+        )
         + (extra_local_sisdr_term * extra_local_sisdr_weight)
         + (sisdr_term * sisdr_weight)
         + (branch_protect_guard_sisdr_term * branch_protect_guard_sisdr_weight)
@@ -1342,12 +1455,24 @@ def compute_losses(
             * overlap_dual_residual_correction_local_waveform_weight
         )
         + (
+            overlap_dual_residual_correction_local_sisdr_term
+            * overlap_dual_residual_correction_local_sisdr_weight
+        )
+        + (
             overlap_dual_residual_correction_local_controller_term
             * overlap_dual_residual_correction_local_controller_weight
         )
         + (
+            overlap_dual_residual_correction_nonlocal_controller_term
+            * overlap_dual_residual_correction_nonlocal_controller_weight
+        )
+        + (
             overlap_dual_residual_correction_local_target_projection_term
             * overlap_dual_residual_correction_local_target_projection_weight
+        )
+        + (
+            branch_overlap_dual_local_bridge_nonlocal_term
+            * branch_overlap_dual_local_bridge_nonlocal_waveform_weight
         )
         + (overlap_dual_controller_distill_term * overlap_dual_controller_distill_weight)
         + (
@@ -1373,6 +1498,9 @@ def compute_losses(
         reconstruction_extra_waveform_l1=reconstruction_extra_waveform_term,
         reconstruction_extra_stft_l1=reconstruction_extra_stft_term,
         extra_local_waveform_l1=extra_local_waveform_term,
+        pre_present_applied_delta_local_waveform_l1=(
+            pre_present_applied_delta_local_waveform_term
+        ),
         extra_local_sisdr_loss=extra_local_sisdr_term,
         sisdr_loss=sisdr_term,
         branch_protect_guard_sisdr_loss=branch_protect_guard_sisdr_term,
@@ -1398,11 +1526,20 @@ def compute_losses(
         overlap_dual_residual_correction_local_waveform_l1=(
             overlap_dual_residual_correction_local_term
         ),
+        overlap_dual_residual_correction_local_sisdr_loss=(
+            overlap_dual_residual_correction_local_sisdr_term
+        ),
         overlap_dual_residual_correction_local_controller_l1=(
             overlap_dual_residual_correction_local_controller_term
         ),
+        overlap_dual_residual_correction_nonlocal_controller_l1=(
+            overlap_dual_residual_correction_nonlocal_controller_term
+        ),
         overlap_dual_residual_correction_local_target_projection_ratio=(
             overlap_dual_residual_correction_local_target_projection_term
+        ),
+        branch_overlap_dual_local_bridge_nonlocal_waveform_l1=(
+            branch_overlap_dual_local_bridge_nonlocal_term
         ),
         overlap_dual_controller_distill_l1=overlap_dual_controller_distill_term,
         overlap_dual_residual_target_projection_ratio=overlap_dual_residual_target_projection_term,

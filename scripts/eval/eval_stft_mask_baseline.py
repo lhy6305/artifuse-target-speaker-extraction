@@ -293,6 +293,7 @@ def main() -> None:
         "overlap_dual_mix_consistency_l1": 0.0,
         "overlap_dual_monitor_waveform_l1": 0.0,
         "overlap_dual_residual_correction_waveform_l1": 0.0,
+        "branch_overlap_dual_local_bridge_nonlocal_waveform_l1": 0.0,
         "overlap_dual_controller_distill_l1": 0.0,
         "overlap_dual_residual_target_projection_ratio": 0.0,
         "absent_interval_l1": 0.0,
@@ -567,10 +568,18 @@ def main() -> None:
                 str(loss_config.get("extra_prediction_source", "estimated_waveform")),
             )
             extra_prediction = reconstruction_extra_prediction
+            local_prediction = resolve_prediction_source(
+                outputs,
+                str(loss_config.get("local_prediction_source", loss_config.get("extra_prediction_source", "estimated_waveform"))),
+            )
+            if local_prediction is None:
+                local_prediction = extra_prediction
             if extra_prediction is None:
                 extra_prediction = resolve_branch_extra_prediction(outputs)
             if reconstruction_extra_prediction is None:
                 reconstruction_extra_prediction = outputs["estimated_waveform"]
+            if local_prediction is None:
+                local_prediction = reconstruction_extra_prediction
             resolved_gate_values = resolve_gate_supervision_values(
                 outputs,
                 gate_supervision_source,
@@ -579,12 +588,18 @@ def main() -> None:
                 prediction=primary_prediction,
                 reconstruction_extra_prediction=reconstruction_extra_prediction,
                 extra_prediction=extra_prediction,
+                local_prediction=local_prediction,
+                pre_present_base_prediction=outputs.get("estimated_waveform_pre_pre_present_controller"),
+                pre_present_applied_delta_prediction=outputs.get(
+                    "branch_overlap_cancel_pre_present_applied_waveform"
+                ),
                 teacher_prediction=teacher_prediction,
                 mixture=batch["mixture"],
                 target=batch["target"],
                 lengths=batch["target_lengths"],
                 absent_intervals=batch["target_absent_intervals"],
                 overlap_intervals=batch["target_overlap_intervals"],
+                local_proxy_intervals=batch["local_proxy_intervals"],
                 model=model,
                 gate_values=resolved_gate_values,
                 reconstruction_sample_weights=reconstruction_sample_weights,
@@ -601,6 +616,9 @@ def main() -> None:
                 overlap_dual_monitor_prediction=outputs.get("branch_overlap_dual_monitor_estimate_waveform"),
                 overlap_dual_residual_correction_prediction=outputs.get(
                     "branch_overlap_dual_residual_correction_estimate_waveform"
+                ),
+                branch_overlap_dual_local_bridge_prediction=outputs.get(
+                    "branch_overlap_dual_local_bridge_estimate_waveform"
                 ),
                 overlap_cancel_controller_prediction=outputs.get("branch_overlap_cancel_apply_controller"),
                 overlap_dual_controller_prediction=resolve_overlap_dual_controller_distill_prediction(
@@ -675,6 +693,9 @@ def main() -> None:
             )
             totals["overlap_dual_residual_correction_waveform_l1"] += (
                 float(losses.overlap_dual_residual_correction_waveform_l1.item()) * batch_size
+            )
+            totals["branch_overlap_dual_local_bridge_nonlocal_waveform_l1"] += (
+                float(losses.branch_overlap_dual_local_bridge_nonlocal_waveform_l1.item()) * batch_size
             )
             totals["overlap_dual_controller_distill_l1"] += (
                 float(losses.overlap_dual_controller_distill_l1.item()) * batch_size

@@ -41,6 +41,7 @@ GATE_TARGET_CONFIG_KEYS = {
     "use_branch_prerefine_as_primary_prediction",
     "overlap_dual_controller_distill_source",
     "extra_prediction_source",
+    "local_prediction_source",
 }
 
 
@@ -126,6 +127,7 @@ def resolve_prediction_source(
         "estimated_waveform": outputs.get("estimated_waveform"),
         "estimated_waveform_base": outputs.get("estimated_waveform_base"),
         "estimated_waveform_branch_base": outputs.get("estimated_waveform_branch_base"),
+        "estimated_waveform_refine_base": outputs.get("estimated_waveform_refine_base"),
         "estimated_waveform_post_pre_present_controller": outputs.get(
             "estimated_waveform_post_pre_present_controller"
         ),
@@ -134,6 +136,9 @@ def resolve_prediction_source(
         ),
         "estimated_waveform_pre_dual_residual_correction": outputs.get(
             "estimated_waveform_pre_dual_residual_correction"
+        ),
+        "estimated_waveform_post_dual_local_bridge": outputs.get(
+            "estimated_waveform_post_dual_local_bridge"
         ),
     }
     if normalized not in source_map:
