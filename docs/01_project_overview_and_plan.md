@@ -65,6 +65,18 @@
   is now bounded through `v256`,
   and the first dedicated dual-local-bridge hardlocalmask-source swap on that same merged-bundle control
   is now bounded through `v257`,
+  and the first dedicated artifact-side bridge continuation on top of
+  `v249`
+  is now bounded through
+  `v258`,
+  where the new writer is strongly positive on the synthetic artifact-subspan asset
+  but mildly negative on the active real artifact probes,
+  and the first real-booster continuation on that same dedicated artifact-side bridge family
+  is now bounded through
+  `v259`,
+  where replacing the synthetic artifact-subspan booster with a tiny real artifact booster
+  makes the active real artifact probes even more negative relative to
+  `v249`,
   and the first refine-apply-controller continuation on top of that mixed candidate
   is now bounded through `v248`,
   the `refine_present` writer family is closed through `v231`,
@@ -1733,6 +1745,81 @@
   `window_duration_sec = target_duration_sec`),
   so whole-utterance and interval-only scoring are equivalent on this probe family.
   Future interval-aware real assets with subspan windows must use interval scoring by default.
+- The active target-conditioned artifact read is now the tighter
+  `near_real_interval_artifact_probe_v3_subspan`
+  asset,
+  not the older full-span
+  `v2`
+  read alone.
+  This new
+  `9`
+  row same-target asset narrows the local window to
+  `0.90s - 1.12s`
+  based on the stable cross-interference target-error peak near
+  `0.97s`
+  and
+  `1.08s`.
+  On this tighter artifact slice,
+  `v240 -> v249`
+  stays strongly positive
+  (`+0.9956 dB`,
+  `9 / 9`
+  improvements),
+  while
+  `v249 -> v253`
+  stays only mildly negative
+  (`-0.0483 dB`,
+  `2 / 9`
+  regressions).
+  More importantly,
+  the current
+  `split_localmasked`
+  artifact-objective continuations do not improve this tighter probe:
+  `v253 -> v255 = -0.0258 dB`,
+  `v249 -> v255 = -0.0741 dB`,
+  `v253 -> v256 = -0.0432 dB`,
+  and
+  `v249 -> v256 = -0.0916 dB`.
+  So the next branch should not be another small retune on the same
+  `v255 / v256`
+  family.
+- `v258 = v249 + dedicated artifact-side bridge on the artifact-subspan bundle`
+  is clearly training-real:
+  only the new artifact-side writer heads were trainable,
+  `overlap_dual_extra`
+  stayed active
+  (`train 33 / 266, val 7 / 74`),
+  and
+  `val_artifact_local_bridge_teacher_waveform_extra_l1 = 0.000083`.
+  But the real-side read is negative:
+  relative
+  `v249`,
+  `near_real_interval_artifact_probe_v2 = -0.1201 dB`
+  and
+  `near_real_interval_artifact_probe_v3_subspan = -0.1080 dB`,
+  while the same family is strongly positive on the matched synthetic subspan asset
+  (`+3.1363 dB`,
+  `7 / 7`
+  improvements).
+  So this first dedicated artifact-side bridge point is not a real artifact repair.
+  It is a synthetic-real mismatch read,
+  and the next step should change the training asset family or the target-conditioning mechanism,
+  not micro-retune the same bridge.
+- `v259 = v249 + dedicated artifact-side bridge with a tiny real artifact booster`
+  closes the next obvious asset-swap follow-up.
+  The real booster rows are actually seen during full training
+  (`train 6 / 239, val 3 / 70`),
+  but the real-side read becomes even more negative:
+  relative
+  `v249`,
+  `near_real_interval_artifact_probe_v2 = -0.2206 dB`
+  and
+  `near_real_interval_artifact_probe_v3_subspan = -0.2261 dB`.
+  Meanwhile the synthetic artifact-subspan gain also collapses to only
+  `+0.2022 dB`.
+  So the next blocker is no longer best read as
+  "pick a better booster asset for the same bridge."
+  The writer family or the target-conditioning mechanism itself is now the more likely bottleneck.
 
 ## Closed Axes
 
@@ -2229,5 +2316,7 @@
 - `reports/daily/2026-04-01_intervalaware_real_scouting_v240_v249_v253.md`
 - `reports/daily/2026-04-01_target_conditioned_artifact_probe_v2_asset_and_validation.md`
 - `reports/daily/2026-04-01_interval_scored_compare_validation.md`
+- `reports/daily/2026-04-01_artifactsubspanbridge_v258_followup.md`
+- `reports/daily/2026-04-01_realartifactbridge_v259_followup.md`
 - `reports/daily/2026-03-28_encoding_and_active_doc_audit.md`
 

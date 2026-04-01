@@ -139,14 +139,17 @@ def _compute_target_overlap_intervals(metadata: dict[str, Any]) -> list[dict[str
     return overlap_intervals
 
 
-def _compute_local_proxy_intervals(metadata: dict[str, Any]) -> list[dict[str, float]]:
-    local_proxy = metadata.get("local_proxy")
-    if not isinstance(local_proxy, dict):
+def _compute_proxy_intervals(
+    metadata: dict[str, Any],
+    proxy_key: str,
+) -> list[dict[str, float]]:
+    proxy = metadata.get(proxy_key)
+    if not isinstance(proxy, dict):
         return []
 
     duration_sec = float(metadata.get("target_duration_sec", 0.0))
-    window_start_sec = float(local_proxy.get("window_start_sec", 0.0))
-    window_duration_sec = float(local_proxy.get("window_duration_sec", 0.0))
+    window_start_sec = float(proxy.get("window_start_sec", 0.0))
+    window_duration_sec = float(proxy.get("window_duration_sec", 0.0))
     if window_duration_sec <= 0.0:
         return []
 
@@ -167,8 +170,20 @@ def _compute_local_proxy_intervals(metadata: dict[str, Any]) -> list[dict[str, f
     ]
 
 
+def _compute_local_proxy_intervals(metadata: dict[str, Any]) -> list[dict[str, float]]:
+    return _compute_proxy_intervals(metadata, "local_proxy")
+
+
+def _compute_artifact_local_proxy_intervals(metadata: dict[str, Any]) -> list[dict[str, float]]:
+    return _compute_proxy_intervals(metadata, "artifact_local_proxy")
+
+
 def compute_local_proxy_intervals(metadata: dict[str, Any]) -> list[dict[str, float]]:
     return _compute_local_proxy_intervals(metadata)
+
+
+def compute_artifact_local_proxy_intervals(metadata: dict[str, Any]) -> list[dict[str, float]]:
+    return _compute_artifact_local_proxy_intervals(metadata)
 
 
 def _infer_interference_speaker_name(audio_path: str | None) -> str:
@@ -362,6 +377,7 @@ class SyntheticTSEDataset(Dataset[dict[str, Any]]):
             "target_absent_intervals": list(metadata.get("target_absent_intervals", [])),
             "target_overlap_intervals": _compute_target_overlap_intervals(metadata),
             "local_proxy_intervals": _compute_local_proxy_intervals(metadata),
+            "artifact_local_proxy_intervals": _compute_artifact_local_proxy_intervals(metadata),
             "metadata_path": _serialize_repo_path(sample.metadata_path, self.root),
         }
 
@@ -443,5 +459,6 @@ def synthetic_collate_fn(batch: list[dict[str, Any]]) -> dict[str, Any]:
         "target_absent_intervals": [item["target_absent_intervals"] for item in batch],
         "target_overlap_intervals": [item["target_overlap_intervals"] for item in batch],
         "local_proxy_intervals": [item["local_proxy_intervals"] for item in batch],
+        "artifact_local_proxy_intervals": [item["artifact_local_proxy_intervals"] for item in batch],
         "metadata_paths": [item["metadata_path"] for item in batch],
     }

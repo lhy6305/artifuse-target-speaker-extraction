@@ -1666,6 +1666,52 @@
   `v257`
   is a bounded reject once its writer is schema-activated.
 
+### Target-Conditioned Artifact Probe v3 Subspan
+
+- Route:
+  narrow the active same-target artifact asset to the strongest shared local artifact window
+  (`0.90s - 1.12s`)
+  and re-screen
+  `v249`,
+  `v253`,
+  `v255`,
+  `v256`,
+  and
+  `v257`
+- Status:
+  active decision-shaping real-side asset, not a new checkpoint
+- Takeaway:
+  the tighter probe strengthens the
+  `v249`
+  read rather than weakening it.
+  Relative
+  `v240`,
+  `v249`
+  improves the subspan artifact probe by
+  `+0.9956 dB`
+  with
+  `9 / 9`
+  improvements.
+  Relative
+  `v249`,
+  `v253`
+  stays only mildly negative
+  (`-0.0483 dB`).
+  But the current
+  `split_localmasked`
+  artifact-objective continuations still do not repair this tighter target:
+  `v255`
+  and
+  `v256`
+  are both near tie to weak negative relative
+  `v253`
+  and clearly negative relative
+  `v249`.
+  So the next branch should change writer family or training asset family,
+  not continue the current
+  `v255 / v256`
+  route.
+
 ## Closed Branch Families
 
 - `predicted_activity` direct-apply family
@@ -1854,6 +1900,15 @@
   not directly against
   `v249`,
   because bundle shift alone already changes the targeted probe read
+- if the hardlocalmask family continues after
+  `v258`,
+  do not micro-retune the same dedicated artifact-side bridge through the same teacher-anchor scalar or the same bridge-blend scalar
+- if the hardlocalmask family continues after
+  `v258`,
+  do not assume the new synthetic artifact-subspan bundle is already aligned to the active real target-conditioned artifact confound
+- if the hardlocalmask family continues after
+  `v259`,
+  do not keep reusing the same dedicated artifact-side bridge with another small booster-asset swap
 - a more structural writable-path change than direct local-window quality supervision on `estimated_waveform_post_pre_present_controller`
 - only if needed, a materially larger path change with disjoint keep and local supervision paths
 
@@ -1962,3 +2017,15 @@
   `3 / 67`
   validation rows.
   Fix coverage first before reading more from that axis.
+- Do not replay `v258` as a simple weight or blend retune on the same dedicated artifact-side bridge family.
+  The first-launch point is clearly training-real and strongly positive on the matched synthetic artifact-subspan asset,
+  but both active real artifact probes still regress relative to
+  `v249`.
+  Treat that as an asset-alignment failure first,
+  not as a scalar-tuning problem.
+- Do not replay `v259` as another small booster-asset swap on the same dedicated artifact-side bridge family.
+  The first real-booster continuation is also clearly training-real,
+  but it makes both active real artifact probes more negative than
+  `v258`
+  and weakens the synthetic artifact-subspan read at the same time.
+  Treat that as evidence that the bridge family itself is the likely bottleneck.

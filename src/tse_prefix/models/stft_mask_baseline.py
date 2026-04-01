@@ -35,6 +35,7 @@ class STFTMaskBaseline(nn.Module):
         enable_branch_overlap_dual_cancel_controller: bool = False,
         enable_branch_overlap_dual_residual_correction_head: bool = False,
         enable_branch_overlap_dual_local_bridge_head: bool = False,
+        enable_branch_overlap_artifact_local_bridge_head: bool = False,
         enable_adapter_temporal_model: bool = False,
         adapter_gru_layers: int = 1,
         adapter_conditioning_mode: str = "none",
@@ -74,6 +75,9 @@ class STFTMaskBaseline(nn.Module):
         branch_overlap_dual_residual_correction_max_blend: float = 0.0,
         branch_overlap_dual_local_bridge_max_delta: float = 0.15,
         branch_overlap_dual_local_bridge_max_blend: float = 0.0,
+        branch_overlap_artifact_local_bridge_max_delta: float = 0.15,
+        branch_overlap_artifact_local_bridge_max_blend: float = 0.0,
+        branch_overlap_artifact_local_bridge_conditioning_mode: str = "none",
     ) -> None:
         super().__init__()
         self.n_fft = n_fft
@@ -111,6 +115,9 @@ class STFTMaskBaseline(nn.Module):
         )
         self.enable_branch_overlap_dual_local_bridge_head = (
             enable_branch_overlap_dual_local_bridge_head
+        )
+        self.enable_branch_overlap_artifact_local_bridge_head = (
+            enable_branch_overlap_artifact_local_bridge_head
         )
         self.enable_adapter_temporal_model = enable_adapter_temporal_model
         self.adapter_conditioning_mode = adapter_conditioning_mode
@@ -159,6 +166,15 @@ class STFTMaskBaseline(nn.Module):
         )
         self.branch_overlap_dual_local_bridge_max_blend = (
             branch_overlap_dual_local_bridge_max_blend
+        )
+        self.branch_overlap_artifact_local_bridge_max_delta = (
+            branch_overlap_artifact_local_bridge_max_delta
+        )
+        self.branch_overlap_artifact_local_bridge_max_blend = (
+            branch_overlap_artifact_local_bridge_max_blend
+        )
+        self.branch_overlap_artifact_local_bridge_conditioning_mode = (
+            branch_overlap_artifact_local_bridge_conditioning_mode
         )
 
         if enable_adapter_mask_head and enable_branch_decoder_head:
@@ -372,6 +388,21 @@ class STFTMaskBaseline(nn.Module):
             raise ValueError(
                 "branch_overlap_dual_local_bridge_max_blend must satisfy 0.0 <= blend <= 1.0."
             )
+        if branch_overlap_artifact_local_bridge_max_delta <= 0.0:
+            raise ValueError("branch_overlap_artifact_local_bridge_max_delta must be positive.")
+        if not 0.0 <= branch_overlap_artifact_local_bridge_max_blend <= 1.0:
+            raise ValueError(
+                "branch_overlap_artifact_local_bridge_max_blend must satisfy 0.0 <= blend <= 1.0."
+            )
+        if branch_overlap_artifact_local_bridge_conditioning_mode not in (
+            "none",
+            "ref_bias",
+            "ref_film",
+        ):
+            raise ValueError(
+                "branch_overlap_artifact_local_bridge_conditioning_mode must be one of: "
+                "none, ref_bias, ref_film."
+            )
         if branch_overlap_dual_decoder_apply_mode == "gate_controller" and not enable_branch_abstention_gate:
             raise ValueError("branch_overlap_dual_decoder_apply_mode=gate_controller requires enable_branch_abstention_gate.")
 
@@ -457,6 +488,48 @@ class STFTMaskBaseline(nn.Module):
                 self.reset_branch_overlap_refine_head()
             else:
                 self.branch_overlap_refine_head = None
+            if enable_branch_overlap_artifact_local_bridge_head:
+                artifact_bridge_hidden_dim = hidden_dim * 2
+                if branch_overlap_artifact_local_bridge_conditioning_mode == "none":
+                    self.branch_overlap_artifact_local_bridge_condition_proj = None
+                    self.branch_overlap_artifact_local_bridge_condition_scale = None
+                    self.branch_overlap_artifact_local_bridge_condition_shift = None
+                elif branch_overlap_artifact_local_bridge_conditioning_mode == "ref_bias":
+                    self.branch_overlap_artifact_local_bridge_condition_proj = nn.Linear(
+                        reference_dim,
+                        artifact_bridge_hidden_dim,
+                    )
+                    self.branch_overlap_artifact_local_bridge_condition_scale = None
+                    self.branch_overlap_artifact_local_bridge_condition_shift = None
+                else:
+                    self.branch_overlap_artifact_local_bridge_condition_proj = None
+                    self.branch_overlap_artifact_local_bridge_condition_scale = nn.Linear(
+                        reference_dim,
+                        artifact_bridge_hidden_dim,
+                    )
+                    self.branch_overlap_artifact_local_bridge_condition_shift = nn.Linear(
+                        reference_dim,
+                        artifact_bridge_hidden_dim,
+                    )
+                self.branch_overlap_artifact_local_bridge_head = nn.Sequential(
+                    nn.Linear(hidden_dim * 2, hidden_dim),
+                    nn.ReLU(),
+                    nn.Linear(hidden_dim, self.freq_bins * 2),
+                )
+                self.branch_overlap_artifact_local_bridge_controller_head = nn.Sequential(
+                    nn.Linear(hidden_dim * 2, hidden_dim),
+                    nn.ReLU(),
+                    nn.Linear(hidden_dim, 1),
+                )
+                self.reset_branch_overlap_artifact_local_bridge_head()
+                self.reset_branch_overlap_artifact_local_bridge_controller_head()
+                self.reset_branch_overlap_artifact_local_bridge_conditioning()
+            else:
+                self.branch_overlap_artifact_local_bridge_condition_proj = None
+                self.branch_overlap_artifact_local_bridge_condition_scale = None
+                self.branch_overlap_artifact_local_bridge_condition_shift = None
+                self.branch_overlap_artifact_local_bridge_head = None
+                self.branch_overlap_artifact_local_bridge_controller_head = None
             if enable_branch_overlap_refine_apply_controller:
                 self.branch_overlap_refine_apply_controller_head = nn.Sequential(
                     nn.Linear(hidden_dim * 2, hidden_dim),
@@ -602,6 +675,11 @@ class STFTMaskBaseline(nn.Module):
             self.branch_overlap_cancel_apply_controller_head = None
             self.branch_overlap_cancel_apply_absent_controller_head = None
             self.branch_overlap_cancel_pre_present_controller_head = None
+            self.branch_overlap_artifact_local_bridge_condition_proj = None
+            self.branch_overlap_artifact_local_bridge_condition_scale = None
+            self.branch_overlap_artifact_local_bridge_condition_shift = None
+            self.branch_overlap_artifact_local_bridge_head = None
+            self.branch_overlap_artifact_local_bridge_controller_head = None
             self.branch_overlap_dual_decoder_temporal_model = None
             self.branch_overlap_dual_decoder_head = None
             self.branch_overlap_dual_monitor_controller_head = None
@@ -785,6 +863,31 @@ class STFTMaskBaseline(nn.Module):
         nn.init.zeros_(final_layer.weight)
         nn.init.constant_(final_layer.bias, -4.0)
 
+    def reset_branch_overlap_artifact_local_bridge_head(self) -> None:
+        if self.branch_overlap_artifact_local_bridge_head is None:
+            return
+        final_layer = self.branch_overlap_artifact_local_bridge_head[-1]
+        nn.init.zeros_(final_layer.weight)
+        nn.init.zeros_(final_layer.bias)
+
+    def reset_branch_overlap_artifact_local_bridge_controller_head(self) -> None:
+        if self.branch_overlap_artifact_local_bridge_controller_head is None:
+            return
+        final_layer = self.branch_overlap_artifact_local_bridge_controller_head[-1]
+        nn.init.zeros_(final_layer.weight)
+        nn.init.constant_(final_layer.bias, -4.0)
+
+    def reset_branch_overlap_artifact_local_bridge_conditioning(self) -> None:
+        if self.branch_overlap_artifact_local_bridge_condition_proj is not None:
+            nn.init.zeros_(self.branch_overlap_artifact_local_bridge_condition_proj.weight)
+            nn.init.zeros_(self.branch_overlap_artifact_local_bridge_condition_proj.bias)
+        if self.branch_overlap_artifact_local_bridge_condition_scale is not None:
+            nn.init.zeros_(self.branch_overlap_artifact_local_bridge_condition_scale.weight)
+            nn.init.zeros_(self.branch_overlap_artifact_local_bridge_condition_scale.bias)
+        if self.branch_overlap_artifact_local_bridge_condition_shift is not None:
+            nn.init.zeros_(self.branch_overlap_artifact_local_bridge_condition_shift.weight)
+            nn.init.zeros_(self.branch_overlap_artifact_local_bridge_condition_shift.bias)
+
     @staticmethod
     def apply_blend_floor(
         blend: torch.Tensor,
@@ -920,6 +1023,7 @@ class STFTMaskBaseline(nn.Module):
         reference: torch.Tensor,
         reference_lengths: torch.Tensor | None = None,
         local_proxy_intervals: list[list[dict[str, float]]] | None = None,
+        artifact_local_proxy_intervals: list[list[dict[str, float]]] | None = None,
     ) -> dict[str, torch.Tensor]:
         mix_stft = self.stft(mixture)
         mix_mag = torch.abs(mix_stft)
@@ -1003,11 +1107,15 @@ class STFTMaskBaseline(nn.Module):
         branch_overlap_dual_cancel_estimate_waveform = None
         branch_overlap_dual_local_bridge_estimate_stft = None
         branch_overlap_dual_local_bridge_estimate_waveform = None
+        branch_overlap_artifact_local_bridge_controller = None
+        branch_overlap_artifact_local_bridge_estimate_stft = None
+        branch_overlap_artifact_local_bridge_estimate_waveform = None
         estimated_stft_post_pre_present_controller = None
         estimated_waveform_post_pre_present_controller = None
         estimated_stft_post_refine_present = None
         estimated_waveform_post_refine_present = None
         estimated_waveform_split_localmasked = None
+        estimated_waveform_post_artifact_local_bridge = None
         estimated_stft_pre_dual_residual_correction = None
         estimated_waveform_pre_dual_residual_correction = None
         estimated_stft_post_dual_local_bridge = None
@@ -1507,6 +1615,56 @@ class STFTMaskBaseline(nn.Module):
                     estimated_stft_refine_base,
                     mixture_lengths,
                 )
+            if (
+                self.branch_overlap_artifact_local_bridge_head is not None
+                and self.branch_overlap_artifact_local_bridge_controller_head is not None
+                and branch_encoded is not None
+            ):
+                current_output_residual_stft = mix_stft - estimated_stft
+                artifact_bridge_encoded = branch_encoded
+                if self.branch_overlap_artifact_local_bridge_condition_proj is not None:
+                    artifact_bridge_encoded = (
+                        artifact_bridge_encoded
+                        + self.branch_overlap_artifact_local_bridge_condition_proj(ref_embedding).unsqueeze(1)
+                    )
+                elif (
+                    self.branch_overlap_artifact_local_bridge_condition_scale is not None
+                    and self.branch_overlap_artifact_local_bridge_condition_shift is not None
+                ):
+                    artifact_bridge_gamma = torch.tanh(
+                        self.branch_overlap_artifact_local_bridge_condition_scale(ref_embedding)
+                    ).unsqueeze(1)
+                    artifact_bridge_beta = self.branch_overlap_artifact_local_bridge_condition_shift(
+                        ref_embedding
+                    ).unsqueeze(1)
+                    artifact_bridge_encoded = (
+                        artifact_bridge_encoded * (1.0 + artifact_bridge_gamma)
+                    ) + artifact_bridge_beta
+                artifact_local_bridge_params = (
+                    torch.tanh(
+                        self.branch_overlap_artifact_local_bridge_head(artifact_bridge_encoded)
+                    ).transpose(1, 2)
+                    * self.branch_overlap_artifact_local_bridge_max_delta
+                )
+                artifact_local_bridge_real, artifact_local_bridge_imag = torch.chunk(
+                    artifact_local_bridge_params,
+                    2,
+                    dim=1,
+                )
+                artifact_local_bridge_ratio = torch.complex(
+                    artifact_local_bridge_real,
+                    artifact_local_bridge_imag,
+                )
+                branch_overlap_artifact_local_bridge_controller = torch.sigmoid(
+                    self.branch_overlap_artifact_local_bridge_controller_head(artifact_bridge_encoded)
+                ).transpose(1, 2)
+                if self.branch_overlap_artifact_local_bridge_max_blend > 0.0:
+                    branch_overlap_artifact_local_bridge_estimate_stft = (
+                        current_output_residual_stft
+                        * artifact_local_bridge_ratio
+                        * branch_overlap_artifact_local_bridge_controller
+                        * self.branch_overlap_artifact_local_bridge_max_blend
+                    )
             if branch_overlap_cancel_pre_present_applied_stft is not None:
                 branch_overlap_cancel_pre_present_applied_waveform = self.istft(
                     branch_overlap_cancel_pre_present_applied_stft,
@@ -1557,6 +1715,11 @@ class STFTMaskBaseline(nn.Module):
                     branch_overlap_dual_local_bridge_estimate_stft,
                     mixture_lengths,
                 )
+            if branch_overlap_artifact_local_bridge_estimate_stft is not None:
+                branch_overlap_artifact_local_bridge_estimate_waveform = self.istft(
+                    branch_overlap_artifact_local_bridge_estimate_stft,
+                    mixture_lengths,
+                )
             if estimated_stft_post_dual_local_bridge is not None:
                 estimated_waveform_post_dual_local_bridge = self.istft(
                     estimated_stft_post_dual_local_bridge,
@@ -1587,6 +1750,23 @@ class STFTMaskBaseline(nn.Module):
                         * local_interval_mask
                     )
                     estimated_waveform = estimated_waveform_split_localmasked
+            if branch_overlap_artifact_local_bridge_estimate_waveform is not None:
+                artifact_interval_mask = self.build_waveform_interval_mask(
+                    intervals_batch=artifact_local_proxy_intervals,
+                    lengths=mixture_lengths,
+                    max_length=int(estimated_waveform.shape[-1]),
+                    device=estimated_waveform.device,
+                    dtype=estimated_waveform.dtype,
+                )
+                if artifact_interval_mask is not None:
+                    estimated_waveform_post_artifact_local_bridge = (
+                        estimated_waveform
+                        - (
+                            branch_overlap_artifact_local_bridge_estimate_waveform
+                            * artifact_interval_mask
+                        )
+                    )
+                    estimated_waveform = estimated_waveform_post_artifact_local_bridge
         elif self.adapter_mask_head is not None:
             estimated_stft = mix_stft * mask
             estimated_waveform = self.istft(estimated_stft, mixture_lengths)
@@ -1635,12 +1815,18 @@ class STFTMaskBaseline(nn.Module):
             "branch_overlap_dual_local_bridge_controller": (
                 branch_overlap_dual_local_bridge_controller
             ),
+            "branch_overlap_artifact_local_bridge_controller": (
+                branch_overlap_artifact_local_bridge_controller
+            ),
             "branch_overlap_dual_cancel_estimate_waveform": branch_overlap_dual_cancel_estimate_waveform,
             "estimated_waveform_post_pre_present_controller": (
                 estimated_waveform_post_pre_present_controller
             ),
             "estimated_waveform_post_refine_present": estimated_waveform_post_refine_present,
             "estimated_waveform_split_localmasked": estimated_waveform_split_localmasked,
+            "estimated_waveform_post_artifact_local_bridge": (
+                estimated_waveform_post_artifact_local_bridge
+            ),
             "estimated_waveform_pre_dual_residual_correction": (
                 estimated_waveform_pre_dual_residual_correction
             ),
@@ -1655,6 +1841,9 @@ class STFTMaskBaseline(nn.Module):
             ),
             "branch_overlap_dual_local_bridge_estimate_waveform": (
                 branch_overlap_dual_local_bridge_estimate_waveform
+            ),
+            "branch_overlap_artifact_local_bridge_estimate_waveform": (
+                branch_overlap_artifact_local_bridge_estimate_waveform
             ),
             "branch_overlap_dual_controlled_gate": branch_overlap_dual_controlled_gate,
         }

@@ -273,6 +273,7 @@ def main() -> None:
                 reference=reference,
                 reference_lengths=reference_lengths,
                 local_proxy_intervals=[item["local_proxy_intervals"]],
+                artifact_local_proxy_intervals=[item["artifact_local_proxy_intervals"]],
             )["estimated_waveform"]
             estimate_b = model_b(
                 mixture=mixture,
@@ -280,6 +281,7 @@ def main() -> None:
                 reference=reference,
                 reference_lengths=reference_lengths,
                 local_proxy_intervals=[item["local_proxy_intervals"]],
+                artifact_local_proxy_intervals=[item["artifact_local_proxy_intervals"]],
             )["estimated_waveform"]
 
             common_length = min(int(estimate_a.shape[-1]), int(target.shape[-1]), int(estimate_b.shape[-1]))

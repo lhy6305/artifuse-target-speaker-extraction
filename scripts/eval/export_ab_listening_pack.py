@@ -20,7 +20,12 @@ SRC_DIR = ROOT / "src"
 if str(SRC_DIR) not in sys.path:
     sys.path.insert(0, str(SRC_DIR))
 
-from tse_prefix.data.synthetic_dataset import compute_local_proxy_intervals, load_json, load_jsonl
+from tse_prefix.data.synthetic_dataset import (
+    compute_artifact_local_proxy_intervals,
+    compute_local_proxy_intervals,
+    load_json,
+    load_jsonl,
+)
 from tse_prefix.models import STFTMaskBaseline
 from tse_prefix.pipeline import masked_sisdr
 
@@ -357,6 +362,7 @@ def main() -> None:
             mixture_lengths = torch.tensor([mixture_waveform.shape[-1]], device=device, dtype=torch.long)
             source_metadata = load_json(sample.metadata_path) if sample.metadata_path.exists() else {}
             local_proxy_intervals = [compute_local_proxy_intervals(source_metadata)]
+            artifact_local_proxy_intervals = [compute_artifact_local_proxy_intervals(source_metadata)]
 
             outputs_a = model_a(
                 mixture=mixture,
@@ -364,6 +370,7 @@ def main() -> None:
                 reference=reference,
                 reference_lengths=reference_lengths,
                 local_proxy_intervals=local_proxy_intervals,
+                artifact_local_proxy_intervals=artifact_local_proxy_intervals,
             )
             outputs_b = model_b(
                 mixture=mixture,
@@ -371,6 +378,7 @@ def main() -> None:
                 reference=reference,
                 reference_lengths=reference_lengths,
                 local_proxy_intervals=local_proxy_intervals,
+                artifact_local_proxy_intervals=artifact_local_proxy_intervals,
             )
 
             pred_a, tgt, lengths = align_waveforms(outputs_a["estimated_waveform"], target, target_lengths)

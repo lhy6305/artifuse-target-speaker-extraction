@@ -277,6 +277,7 @@ def main() -> None:
         "extra_local_waveform_l1": 0.0,
         "extra_local_waveform_extra_l1": 0.0,
         "extra_local_teacher_waveform_extra_l1": 0.0,
+        "artifact_local_bridge_teacher_waveform_extra_l1": 0.0,
         "extra_local_nonlocal_waveform_l1": 0.0,
         "sisdr_loss": 0.0,
         "sisdr_db": 0.0,
@@ -452,6 +453,7 @@ def main() -> None:
                 reference=batch["reference"],
                 reference_lengths=batch["reference_lengths"],
                 local_proxy_intervals=batch["local_proxy_intervals"],
+                artifact_local_proxy_intervals=batch["artifact_local_proxy_intervals"],
             )
             teacher_prediction = None
             if teacher_model is not None:
@@ -461,6 +463,7 @@ def main() -> None:
                     reference=batch["reference"],
                     reference_lengths=batch["reference_lengths"],
                     local_proxy_intervals=batch["local_proxy_intervals"],
+                    artifact_local_proxy_intervals=batch["artifact_local_proxy_intervals"],
                 )
                 teacher_prediction = teacher_outputs["estimated_waveform"]
             reconstruction_sample_weights, reconstruction_extra_sample_weights, reconstruction_union_sample_weights = (
@@ -522,6 +525,7 @@ def main() -> None:
                     extra_weight_keys=(
                         "extra_local_waveform_extra_weight",
                         "extra_local_teacher_waveform_extra_weight",
+                        "artifact_local_bridge_teacher_waveform_extra_weight",
                         "overlap_dual_residual_correction_local_waveform_extra_weight",
                     ),
                 )
@@ -624,6 +628,7 @@ def main() -> None:
                 absent_intervals=batch["target_absent_intervals"],
                 overlap_intervals=batch["target_overlap_intervals"],
                 local_proxy_intervals=batch["local_proxy_intervals"],
+                artifact_local_proxy_intervals=batch["artifact_local_proxy_intervals"],
                 model=model,
                 gate_values=resolved_gate_values,
                 reconstruction_sample_weights=reconstruction_sample_weights,
@@ -643,6 +648,9 @@ def main() -> None:
                 ),
                 branch_overlap_dual_local_bridge_prediction=outputs.get(
                     "branch_overlap_dual_local_bridge_estimate_waveform"
+                ),
+                branch_overlap_artifact_local_bridge_prediction=outputs.get(
+                    "estimated_waveform_post_artifact_local_bridge"
                 ),
                 overlap_cancel_controller_prediction=outputs.get("branch_overlap_cancel_apply_controller"),
                 overlap_dual_controller_prediction=resolve_overlap_dual_controller_distill_prediction(
@@ -681,6 +689,9 @@ def main() -> None:
             )
             totals["extra_local_teacher_waveform_extra_l1"] += (
                 float(losses.extra_local_teacher_waveform_extra_l1.item()) * batch_size
+            )
+            totals["artifact_local_bridge_teacher_waveform_extra_l1"] += (
+                float(losses.artifact_local_bridge_teacher_waveform_extra_l1.item()) * batch_size
             )
             totals["extra_local_nonlocal_waveform_l1"] += (
                 float(losses.extra_local_nonlocal_waveform_l1.item()) * batch_size

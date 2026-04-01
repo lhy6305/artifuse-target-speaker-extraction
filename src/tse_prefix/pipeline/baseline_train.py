@@ -18,6 +18,7 @@ class LossBreakdown:
     extra_local_waveform_l1: torch.Tensor
     extra_local_waveform_extra_l1: torch.Tensor
     extra_local_teacher_waveform_extra_l1: torch.Tensor
+    artifact_local_bridge_teacher_waveform_extra_l1: torch.Tensor
     extra_local_nonlocal_waveform_l1: torch.Tensor
     pre_present_applied_delta_local_waveform_l1: torch.Tensor
     extra_local_sisdr_loss: torch.Tensor
@@ -844,6 +845,7 @@ def compute_losses(
     absent_intervals: list[list[dict[str, float]]],
     overlap_intervals: list[list[dict[str, float]]],
     local_proxy_intervals: list[list[dict[str, float]]],
+    artifact_local_proxy_intervals: list[list[dict[str, float]]],
     model,
     gate_values: torch.Tensor | None = None,
     gate_absent_values: torch.Tensor | None = None,
@@ -877,6 +879,7 @@ def compute_losses(
     overlap_dual_residual_correction_prediction: torch.Tensor | None = None,
     overlap_dual_residual_correction_controller_prediction: torch.Tensor | None = None,
     branch_overlap_dual_local_bridge_prediction: torch.Tensor | None = None,
+    branch_overlap_artifact_local_bridge_prediction: torch.Tensor | None = None,
     overlap_cancel_controller_prediction: torch.Tensor | None = None,
     overlap_dual_controller_prediction: torch.Tensor | None = None,
     overlap_dual_controller_target: torch.Tensor | None = None,
@@ -907,6 +910,7 @@ def compute_losses(
     extra_local_waveform_weight: float = 0.0,
     extra_local_waveform_extra_weight: float = 0.0,
     extra_local_teacher_waveform_extra_weight: float = 0.0,
+    artifact_local_bridge_teacher_waveform_extra_weight: float = 0.0,
     extra_local_nonlocal_waveform_weight: float = 0.0,
     pre_present_applied_delta_local_waveform_weight: float = 0.0,
     extra_local_sisdr_weight: float = 0.0,
@@ -1043,6 +1047,20 @@ def compute_losses(
             target=teacher_prediction,
             lengths=lengths,
             intervals_batch=local_proxy_intervals,
+            sample_rate=sample_rate,
+            sample_weights=overlap_dual_extra_sample_weights,
+        )
+    if (
+        teacher_prediction is None
+        or branch_overlap_artifact_local_bridge_prediction is None
+    ):
+        artifact_local_bridge_teacher_waveform_extra_term = prediction.new_tensor(0.0)
+    else:
+        artifact_local_bridge_teacher_waveform_extra_term = interval_waveform_l1_loss(
+            prediction=branch_overlap_artifact_local_bridge_prediction,
+            target=teacher_prediction,
+            lengths=lengths,
+            intervals_batch=artifact_local_proxy_intervals,
             sample_rate=sample_rate,
             sample_weights=overlap_dual_extra_sample_weights,
         )
@@ -1481,6 +1499,10 @@ def compute_losses(
         + (extra_local_waveform_term * extra_local_waveform_weight)
         + (extra_local_waveform_extra_term * extra_local_waveform_extra_weight)
         + (extra_local_teacher_waveform_extra_term * extra_local_teacher_waveform_extra_weight)
+        + (
+            artifact_local_bridge_teacher_waveform_extra_term
+            * artifact_local_bridge_teacher_waveform_extra_weight
+        )
         + (extra_local_nonlocal_waveform_term * extra_local_nonlocal_waveform_weight)
         + (
             pre_present_applied_delta_local_waveform_term
@@ -1568,6 +1590,9 @@ def compute_losses(
         extra_local_waveform_l1=extra_local_waveform_term,
         extra_local_waveform_extra_l1=extra_local_waveform_extra_term,
         extra_local_teacher_waveform_extra_l1=extra_local_teacher_waveform_extra_term,
+        artifact_local_bridge_teacher_waveform_extra_l1=(
+            artifact_local_bridge_teacher_waveform_extra_term
+        ),
         extra_local_nonlocal_waveform_l1=extra_local_nonlocal_waveform_term,
         pre_present_applied_delta_local_waveform_l1=(
             pre_present_applied_delta_local_waveform_term

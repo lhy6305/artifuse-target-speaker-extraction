@@ -2220,3 +2220,58 @@
   Rule:
   when a future interval-aware real asset uses subspan local windows,
   use explicit interval scoring by default and do not trust whole-utterance compare outputs.
+- After promoting the tighter
+  `near_real_interval_artifact_probe_v3_subspan`
+  asset,
+  do not keep assuming the current
+  `split_localmasked`
+  artifact-objective family merely needs a cleaner probe.
+  The tighter same-target subspan read strengthens
+  `v249`
+  itself,
+  but both
+  `v255`
+  and
+  `v256`
+  remain near tie to weak negative relative to
+  `v253`
+  and clearly negative relative to
+  `v249`.
+  Rule:
+  once a tighter local artifact probe still fails to show improvement for both the raw-target and teacher-anchor objectives on the same writer,
+  stop micro-tuning that writer family and move to a different writer or training-asset family.
+- After `v258`, do not read an exact-tie result on the old fixed synthetic five-pack
+  or on
+  `near_real_interval_leak_probe_v1`
+  as evidence that the new artifact-side writer is harmless, safe, or simply inactive in general.
+  Those assets do not activate
+  `artifact_local_proxy`
+  in a meaningful way for this family,
+  so they are schema-dormant checks here.
+  Rule:
+  before reading a dedicated artifact-side writer,
+  separate
+  activation-dormant exact ties
+  from
+  activation-positive probe results.
+- After `v258`, do not assume that a dedicated artifact-side writer plus a new synthetic artifact-subspan asset is automatically closer to the real target-conditioned artifact confound.
+  The first-launch point is strongly positive on
+  `val_manifest_hard_present_artifact_local_proxy_v2_subspan`
+  (`+3.1363 dB`,
+  `7 / 7`
+  improvements),
+  but still negative on both active real artifact probes relative to
+  `v249`.
+  Rule:
+  treat this as a synthetic-real mismatch signal and change the training asset family or target-conditioning mechanism before doing scalar retunes on the same bridge.
+- After `v259`, do not keep reading the dedicated artifact-side bridge family as
+  "probably fine, but still waiting for the right booster asset."
+  Swapping from the synthetic artifact-subspan booster to a tiny real artifact booster makes both active real artifact probes more negative relative to
+  `v249`,
+  while the matched synthetic subspan gain also collapses.
+  Rule:
+  once both the synthetic booster swap and the real booster swap fail on the same bridge family,
+  move the blocker diagnosis from
+  asset-family mismatch
+  to
+  writer-family or target-conditioning mismatch.
