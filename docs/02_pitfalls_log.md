@@ -2088,3 +2088,135 @@
   `7 / 71`
   val rows,
   and the direction still stayed keep-heavy rather than artifact-repairing.
+- After `v253`, do not compare future merged-bundle continuations in this
+  `v249`
+  family directly against
+  `v249`
+  by default.
+  The merged artifact-local bundle itself already changes the route:
+  relative
+  `v249`,
+  broad speech drops back to
+  `-0.0231 dB`,
+  focused guodegang transient shrinks to
+  `+0.0164 dB`,
+  and the target-conditioned artifact probe slips to
+  `-0.0519 dB`
+  even with no new booster objective.
+  So future merged-bundle reads must use
+  `v253`
+  as the control parent first.
+- After `v254`, do not continue the same merged-bundle additive artifact-local
+  `overlap_dual_extra`
+  local-booster axis through small weight sweeps by default.
+  The first valid point is clearly training-real,
+  but real-side all three probes stay practical tie
+  while abstention,
+  same-gender keep,
+  hard-present keep,
+  and artifact regress again relative to
+  `v253`.
+- After `v255`, do not continue the same merged-bundle direct artifact-local
+  extra-local final-output supervision axis through small weight sweeps by default.
+  The first structural point is clearly training-real,
+  but broad speech,
+  focused guodegang transient,
+  and the target-conditioned artifact probe all stay practical tie to mild negative,
+  while artifact and the active blocker still regress relative to
+  `v253`.
+- After `v256`, do not continue the same merged-bundle split-localmasked artifact-local
+  teacher-anchor axis through small weight sweeps by default.
+  The first point is clearly training-real and it repairs four synthetic guardrails,
+  including artifact,
+  but it does so by pushing the active blocker sharply negative
+  while broad speech and the target-conditioned artifact probe still stay negative relative to
+  `v253`.
+- After `v257`, do not interpret exact-tie results on current near-real probe assets
+  as evidence that an interval-gated local writer is harmless, inactive in general, or real-side safe.
+  The current near-real probe manifests do not carry
+  `local_window_start_sec`,
+  `local_window_duration_sec`,
+  or equivalent local-proxy interval metadata,
+  while the synthetic local-proxy manifests do.
+  So the
+  `v257`
+  hard local-mask writer family is active on interval-aware synthetic assets
+  but not activated on the current real probe packs.
+  Rule:
+  before judging any interval-gated writer family on real audio,
+  first verify that the real asset schema can actually activate that writer.
+- After the interval-aware real re-check on
+  `near_real_interval_leak_probe_v1`
+  and
+  `near_real_interval_artifact_probe_v1`,
+  do not keep
+  `v257`
+  open as an unresolved real-side branch.
+  Once the schema activates the writer,
+  `v257`
+  is uniformly worse than
+  `v253`
+  on both first-pass real probes
+  (`9 / 9`
+  leak regressions and
+  `3 / 3`
+  artifact regressions).
+  Rule:
+  distinguish
+  "schema-inactive exact tie"
+  from
+  "schema-activated bounded reject",
+  and close the branch after the second case.
+- After the interval-aware scouting on
+  `v240`,
+  `v249`,
+  and
+  `v253`,
+  do not keep blaming merged-bundle shift by default for failures on the later
+  `v253`
+  continuation family.
+  The new interval-aware probes show
+  `v249 -> v253`
+  is near tie on leak
+  and only mildly negative on artifact,
+  while
+  `v240 -> v249`
+  stays strongly positive on both.
+  Rule:
+  when a hardlocalmask family fails after
+  `v253`,
+  first ask whether the branch is mishandling the target-conditioned artifact confound,
+  not whether the merged bundle erased the whole real-side edge.
+- After promoting
+  `near_real_target_conditioned_artifact_probe_v2`,
+  do not keep using the old
+  `3`
+  row fixed-target artifact slice as the default target-conditioned artifact read.
+  The full
+  `9`
+  row same-target family confirms the same conclusion more robustly:
+  `v240 -> v249`
+  stays uniformly positive,
+  and
+  `v249 -> v253`
+  stays only mildly negative.
+  Rule:
+  use the
+  `v2`
+  asset as the default artifact-confound probe unless a deliberately smaller listening slice is needed.
+- Do not assume that any manifest with
+  `local_proxy`
+  metadata is automatically being scored inside that interval.
+  The compare script originally used whole-utterance SI-SDR even when
+  `local_proxy_intervals`
+  were passed into the model.
+  It now supports explicit
+  `--score-interval-source`,
+  but the current interval-aware real probes still reproduce the earlier numbers because their
+  `local_proxy`
+  windows are full-span
+  (`window_start_sec = 0.0`,
+  `window_duration_sec = target_duration_sec`).
+  Rule:
+  when a future interval-aware real asset uses subspan local windows,
+  use explicit interval scoring by default and do not trust whole-utterance compare outputs.

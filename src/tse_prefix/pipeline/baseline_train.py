@@ -16,6 +16,8 @@ class LossBreakdown:
     reconstruction_extra_waveform_l1: torch.Tensor
     reconstruction_extra_stft_l1: torch.Tensor
     extra_local_waveform_l1: torch.Tensor
+    extra_local_waveform_extra_l1: torch.Tensor
+    extra_local_teacher_waveform_extra_l1: torch.Tensor
     extra_local_nonlocal_waveform_l1: torch.Tensor
     pre_present_applied_delta_local_waveform_l1: torch.Tensor
     extra_local_sisdr_loss: torch.Tensor
@@ -903,6 +905,8 @@ def compute_losses(
     reconstruction_extra_waveform_weight: float = 0.0,
     reconstruction_extra_stft_weight: float = 0.0,
     extra_local_waveform_weight: float = 0.0,
+    extra_local_waveform_extra_weight: float = 0.0,
+    extra_local_teacher_waveform_extra_weight: float = 0.0,
     extra_local_nonlocal_waveform_weight: float = 0.0,
     pre_present_applied_delta_local_waveform_weight: float = 0.0,
     extra_local_sisdr_weight: float = 0.0,
@@ -1023,6 +1027,25 @@ def compute_losses(
         sample_rate=sample_rate,
         sample_weights=overlap_dual_sample_weights,
     )
+    extra_local_waveform_extra_term = interval_waveform_l1_loss(
+        prediction=local_prediction,
+        target=target,
+        lengths=lengths,
+        intervals_batch=local_proxy_intervals,
+        sample_rate=sample_rate,
+        sample_weights=overlap_dual_extra_sample_weights,
+    )
+    if teacher_prediction is None:
+        extra_local_teacher_waveform_extra_term = prediction.new_tensor(0.0)
+    else:
+        extra_local_teacher_waveform_extra_term = interval_waveform_l1_loss(
+            prediction=local_prediction,
+            target=teacher_prediction,
+            lengths=lengths,
+            intervals_batch=local_proxy_intervals,
+            sample_rate=sample_rate,
+            sample_weights=overlap_dual_extra_sample_weights,
+        )
     extra_local_nonlocal_waveform_term = interval_waveform_l1_loss(
         prediction=local_prediction,
         target=extra_prediction,
@@ -1456,6 +1479,8 @@ def compute_losses(
         + (reconstruction_extra_waveform_term * reconstruction_extra_waveform_weight)
         + (reconstruction_extra_stft_term * reconstruction_extra_stft_weight)
         + (extra_local_waveform_term * extra_local_waveform_weight)
+        + (extra_local_waveform_extra_term * extra_local_waveform_extra_weight)
+        + (extra_local_teacher_waveform_extra_term * extra_local_teacher_waveform_extra_weight)
         + (extra_local_nonlocal_waveform_term * extra_local_nonlocal_waveform_weight)
         + (
             pre_present_applied_delta_local_waveform_term
@@ -1541,6 +1566,8 @@ def compute_losses(
         reconstruction_extra_waveform_l1=reconstruction_extra_waveform_term,
         reconstruction_extra_stft_l1=reconstruction_extra_stft_term,
         extra_local_waveform_l1=extra_local_waveform_term,
+        extra_local_waveform_extra_l1=extra_local_waveform_extra_term,
+        extra_local_teacher_waveform_extra_l1=extra_local_teacher_waveform_extra_term,
         extra_local_nonlocal_waveform_l1=extra_local_nonlocal_waveform_term,
         pre_present_applied_delta_local_waveform_l1=(
             pre_present_applied_delta_local_waveform_term

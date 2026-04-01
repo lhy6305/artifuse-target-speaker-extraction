@@ -24,6 +24,7 @@ class STFTMaskBaseline(nn.Module):
         enable_branch_overlap_refine_head: bool = False,
         enable_branch_overlap_refine_apply_controller: bool = False,
         enable_branch_overlap_refine_local_hard_mask: bool = False,
+        branch_overlap_refine_local_hard_mask_source: str = "refine_base",
         enable_branch_overlap_refine_present_head: bool = False,
         enable_branch_overlap_cancel_head: bool = False,
         enable_branch_overlap_cancel_apply_controller: bool = False,
@@ -89,6 +90,9 @@ class STFTMaskBaseline(nn.Module):
         )
         self.enable_branch_overlap_refine_local_hard_mask = (
             enable_branch_overlap_refine_local_hard_mask
+        )
+        self.branch_overlap_refine_local_hard_mask_source = (
+            branch_overlap_refine_local_hard_mask_source
         )
         self.enable_branch_overlap_refine_present_head = enable_branch_overlap_refine_present_head
         self.enable_branch_overlap_cancel_head = enable_branch_overlap_cancel_head
@@ -178,6 +182,34 @@ class STFTMaskBaseline(nn.Module):
             raise ValueError(
                 "Branch overlap refine local hard mask requires "
                 "enable_branch_overlap_cancel_pre_present_controller."
+            )
+        if branch_overlap_refine_local_hard_mask_source not in (
+            "refine_base",
+            "post_dual_local_bridge",
+        ):
+            raise ValueError(
+                "branch_overlap_refine_local_hard_mask_source must be one of: "
+                "refine_base, post_dual_local_bridge."
+            )
+        if (
+            enable_branch_overlap_refine_local_hard_mask
+            and branch_overlap_refine_local_hard_mask_source == "post_dual_local_bridge"
+            and not enable_branch_overlap_dual_local_bridge_head
+        ):
+            raise ValueError(
+                "Branch overlap refine local hard mask with "
+                "post_dual_local_bridge source requires "
+                "enable_branch_overlap_dual_local_bridge_head."
+            )
+        if (
+            enable_branch_overlap_refine_local_hard_mask
+            and branch_overlap_refine_local_hard_mask_source == "post_dual_local_bridge"
+            and branch_overlap_dual_local_bridge_max_blend <= 0.0
+        ):
+            raise ValueError(
+                "Branch overlap refine local hard mask with "
+                "post_dual_local_bridge source requires "
+                "branch_overlap_dual_local_bridge_max_blend > 0.0."
             )
         if enable_branch_overlap_refine_present_head and not enable_branch_overlap_refine_head:
             raise ValueError("Branch overlap present refiner requires enable_branch_overlap_refine_head.")
@@ -1532,21 +1564,24 @@ class STFTMaskBaseline(nn.Module):
                 )
             if (
                 self.enable_branch_overlap_refine_local_hard_mask
-                and estimated_waveform_refine_base is not None
                 and estimated_waveform_post_pre_present_controller is not None
             ):
+                if self.branch_overlap_refine_local_hard_mask_source == "post_dual_local_bridge":
+                    hard_mask_local_source = estimated_waveform_post_dual_local_bridge
+                else:
+                    hard_mask_local_source = estimated_waveform_refine_base
                 local_interval_mask = self.build_waveform_interval_mask(
                     intervals_batch=local_proxy_intervals,
                     lengths=mixture_lengths,
-                    max_length=int(estimated_waveform_refine_base.shape[-1]),
-                    device=estimated_waveform_refine_base.device,
-                    dtype=estimated_waveform_refine_base.dtype,
+                    max_length=int(estimated_waveform_post_pre_present_controller.shape[-1]),
+                    device=estimated_waveform_post_pre_present_controller.device,
+                    dtype=estimated_waveform_post_pre_present_controller.dtype,
                 )
-                if local_interval_mask is not None:
+                if local_interval_mask is not None and hard_mask_local_source is not None:
                     estimated_waveform_split_localmasked = (
                         estimated_waveform_post_pre_present_controller
                         + (
-                            estimated_waveform_refine_base
+                            hard_mask_local_source
                             - estimated_waveform_post_pre_present_controller
                         )
                         * local_interval_mask

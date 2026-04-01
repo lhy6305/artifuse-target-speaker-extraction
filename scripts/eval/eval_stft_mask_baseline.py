@@ -274,6 +274,9 @@ def main() -> None:
         "reconstruction_stft_l1": 0.0,
         "reconstruction_extra_waveform_l1": 0.0,
         "reconstruction_extra_stft_l1": 0.0,
+        "extra_local_waveform_l1": 0.0,
+        "extra_local_waveform_extra_l1": 0.0,
+        "extra_local_teacher_waveform_extra_l1": 0.0,
         "extra_local_nonlocal_waveform_l1": 0.0,
         "sisdr_loss": 0.0,
         "sisdr_db": 0.0,
@@ -517,6 +520,8 @@ def main() -> None:
                     loss_config=loss_config,
                     prefix="overlap_dual",
                     extra_weight_keys=(
+                        "extra_local_waveform_extra_weight",
+                        "extra_local_teacher_waveform_extra_weight",
                         "overlap_dual_residual_correction_local_waveform_extra_weight",
                     ),
                 )
@@ -670,6 +675,13 @@ def main() -> None:
                 float(losses.reconstruction_extra_waveform_l1.item()) * batch_size
             )
             totals["reconstruction_extra_stft_l1"] += float(losses.reconstruction_extra_stft_l1.item()) * batch_size
+            totals["extra_local_waveform_l1"] += float(losses.extra_local_waveform_l1.item()) * batch_size
+            totals["extra_local_waveform_extra_l1"] += (
+                float(losses.extra_local_waveform_extra_l1.item()) * batch_size
+            )
+            totals["extra_local_teacher_waveform_extra_l1"] += (
+                float(losses.extra_local_teacher_waveform_extra_l1.item()) * batch_size
+            )
             totals["extra_local_nonlocal_waveform_l1"] += (
                 float(losses.extra_local_nonlocal_waveform_l1.item()) * batch_size
             )

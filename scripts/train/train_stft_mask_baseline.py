@@ -252,6 +252,11 @@ def parse_args() -> argparse.Namespace:
         choices=["mixture", "branch_base", "residual"],
         default="mixture",
     )
+    parser.add_argument(
+        "--model-branch-overlap-refine-local-hard-mask-source",
+        choices=["refine_base", "post_dual_local_bridge"],
+        default="refine_base",
+    )
     parser.add_argument("--model-branch-overlap-refine-present-max-delta", type=float, default=0.15)
     parser.add_argument(
         "--model-branch-overlap-refine-present-source-mode",
@@ -470,6 +475,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--loss-reconstruction-extra-waveform-weight", type=float, default=0.0)
     parser.add_argument("--loss-reconstruction-extra-stft-weight", type=float, default=0.0)
     parser.add_argument("--loss-extra-local-waveform-weight", type=float, default=0.0)
+    parser.add_argument("--loss-extra-local-waveform-extra-weight", type=float, default=0.0)
+    parser.add_argument("--loss-extra-local-teacher-waveform-extra-weight", type=float, default=0.0)
     parser.add_argument("--loss-extra-local-nonlocal-waveform-weight", type=float, default=0.0)
     parser.add_argument("--loss-pre-present-applied-delta-local-waveform-weight", type=float, default=0.0)
     parser.add_argument("--loss-extra-local-sisdr-weight", type=float, default=0.0)
@@ -710,6 +717,9 @@ def build_model_config(args: argparse.Namespace) -> dict[str, int]:
         "branch_overlap_refine_gate_power": args.model_branch_overlap_refine_gate_power,
         "branch_overlap_refine_gate_floor": args.model_branch_overlap_refine_gate_floor,
         "branch_overlap_refine_source_mode": args.model_branch_overlap_refine_source_mode,
+        "branch_overlap_refine_local_hard_mask_source": (
+            args.model_branch_overlap_refine_local_hard_mask_source
+        ),
         "branch_overlap_refine_present_max_delta": args.model_branch_overlap_refine_present_max_delta,
         "branch_overlap_refine_present_source_mode": args.model_branch_overlap_refine_present_source_mode,
         "branch_overlap_refine_present_gate_power": args.model_branch_overlap_refine_present_gate_power,
@@ -778,6 +788,8 @@ def build_loss_config(args: argparse.Namespace) -> dict[str, float]:
         "reconstruction_extra_waveform_weight": args.loss_reconstruction_extra_waveform_weight,
         "reconstruction_extra_stft_weight": args.loss_reconstruction_extra_stft_weight,
         "extra_local_waveform_weight": args.loss_extra_local_waveform_weight,
+        "extra_local_waveform_extra_weight": args.loss_extra_local_waveform_extra_weight,
+        "extra_local_teacher_waveform_extra_weight": args.loss_extra_local_teacher_waveform_extra_weight,
         "extra_local_nonlocal_waveform_weight": args.loss_extra_local_nonlocal_waveform_weight,
         "pre_present_applied_delta_local_waveform_weight": (
             args.loss_pre_present_applied_delta_local_waveform_weight
@@ -1281,6 +1293,8 @@ def evaluate(
     total_reconstruction_extra_wave = 0.0
     total_reconstruction_extra_stft = 0.0
     total_extra_local_waveform = 0.0
+    total_extra_local_waveform_extra = 0.0
+    total_extra_local_teacher_waveform_extra = 0.0
     total_extra_local_nonlocal_waveform = 0.0
     total_pre_present_applied_delta_local_waveform = 0.0
     total_extra_local_sisdr = 0.0
@@ -1426,6 +1440,8 @@ def evaluate(
                     loss_config=loss_config,
                     prefix="overlap_dual",
                     extra_weight_keys=(
+                        "extra_local_waveform_extra_weight",
+                        "extra_local_teacher_waveform_extra_weight",
                         "overlap_dual_residual_correction_local_waveform_extra_weight",
                     ),
                 )
@@ -1599,6 +1615,10 @@ def evaluate(
             total_reconstruction_extra_wave += float(losses.reconstruction_extra_waveform_l1.item()) * batch_size
             total_reconstruction_extra_stft += float(losses.reconstruction_extra_stft_l1.item()) * batch_size
             total_extra_local_waveform += float(losses.extra_local_waveform_l1.item()) * batch_size
+            total_extra_local_waveform_extra += float(losses.extra_local_waveform_extra_l1.item()) * batch_size
+            total_extra_local_teacher_waveform_extra += (
+                float(losses.extra_local_teacher_waveform_extra_l1.item()) * batch_size
+            )
             total_extra_local_nonlocal_waveform += float(
                 losses.extra_local_nonlocal_waveform_l1.item()
             ) * batch_size
@@ -1706,6 +1726,8 @@ def evaluate(
             "reconstruction_extra_waveform_l1": 0.0,
             "reconstruction_extra_stft_l1": 0.0,
             "extra_local_waveform_l1": 0.0,
+            "extra_local_waveform_extra_l1": 0.0,
+            "extra_local_teacher_waveform_extra_l1": 0.0,
             "extra_local_nonlocal_waveform_l1": 0.0,
             "pre_present_applied_delta_local_waveform_l1": 0.0,
             "extra_local_sisdr_loss": 0.0,
@@ -1759,6 +1781,10 @@ def evaluate(
             "reconstruction_extra_waveform_l1": total_reconstruction_extra_wave / sample_count,
             "reconstruction_extra_stft_l1": total_reconstruction_extra_stft / sample_count,
             "extra_local_waveform_l1": total_extra_local_waveform / sample_count,
+            "extra_local_waveform_extra_l1": total_extra_local_waveform_extra / sample_count,
+            "extra_local_teacher_waveform_extra_l1": (
+                total_extra_local_teacher_waveform_extra / sample_count
+            ),
             "extra_local_nonlocal_waveform_l1": (
                 total_extra_local_nonlocal_waveform / sample_count
             ),
@@ -1951,6 +1977,8 @@ def main() -> None:
         epoch_reconstruction_extra_wave = 0.0
         epoch_reconstruction_extra_stft = 0.0
         epoch_extra_local_waveform = 0.0
+        epoch_extra_local_waveform_extra = 0.0
+        epoch_extra_local_teacher_waveform_extra = 0.0
         epoch_extra_local_nonlocal_waveform = 0.0
         epoch_pre_present_applied_delta_local_waveform = 0.0
         epoch_extra_local_sisdr = 0.0
@@ -2096,6 +2124,8 @@ def main() -> None:
                     loss_config=loss_config,
                     prefix="overlap_dual",
                     extra_weight_keys=(
+                        "extra_local_waveform_extra_weight",
+                        "extra_local_teacher_waveform_extra_weight",
                         "overlap_dual_residual_correction_local_waveform_extra_weight",
                     ),
                 )
@@ -2278,6 +2308,10 @@ def main() -> None:
             epoch_reconstruction_extra_wave += float(losses.reconstruction_extra_waveform_l1.item()) * batch_size
             epoch_reconstruction_extra_stft += float(losses.reconstruction_extra_stft_l1.item()) * batch_size
             epoch_extra_local_waveform += float(losses.extra_local_waveform_l1.item()) * batch_size
+            epoch_extra_local_waveform_extra += float(losses.extra_local_waveform_extra_l1.item()) * batch_size
+            epoch_extra_local_teacher_waveform_extra += (
+                float(losses.extra_local_teacher_waveform_extra_l1.item()) * batch_size
+            )
             epoch_extra_local_nonlocal_waveform += float(
                 losses.extra_local_nonlocal_waveform_l1.item()
             ) * batch_size
@@ -2485,6 +2519,14 @@ def main() -> None:
                                 float(losses.extra_local_waveform_l1.item()),
                                 6,
                             ),
+                            "extra_local_waveform_extra_l1": round(
+                                float(losses.extra_local_waveform_extra_l1.item()),
+                                6,
+                            ),
+                            "extra_local_teacher_waveform_extra_l1": round(
+                                float(losses.extra_local_teacher_waveform_extra_l1.item()),
+                                6,
+                            ),
                             "extra_local_nonlocal_waveform_l1": round(
                                 float(losses.extra_local_nonlocal_waveform_l1.item()),
                                 6,
@@ -2543,6 +2585,12 @@ def main() -> None:
             "reconstruction_extra_waveform_l1": epoch_reconstruction_extra_wave / max(1, epoch_sample_count),
             "reconstruction_extra_stft_l1": epoch_reconstruction_extra_stft / max(1, epoch_sample_count),
             "extra_local_waveform_l1": epoch_extra_local_waveform / max(1, epoch_sample_count),
+            "extra_local_waveform_extra_l1": (
+                epoch_extra_local_waveform_extra / max(1, epoch_sample_count)
+            ),
+            "extra_local_teacher_waveform_extra_l1": (
+                epoch_extra_local_teacher_waveform_extra / max(1, epoch_sample_count)
+            ),
             "extra_local_nonlocal_waveform_l1": (
                 epoch_extra_local_nonlocal_waveform / max(1, epoch_sample_count)
             ),
@@ -2669,6 +2717,10 @@ def main() -> None:
                 "train_reconstruction_extra_waveform_l1": train_metrics["reconstruction_extra_waveform_l1"],
                 "train_reconstruction_extra_stft_l1": train_metrics["reconstruction_extra_stft_l1"],
                 "train_extra_local_waveform_l1": train_metrics["extra_local_waveform_l1"],
+                "train_extra_local_waveform_extra_l1": train_metrics["extra_local_waveform_extra_l1"],
+                "train_extra_local_teacher_waveform_extra_l1": (
+                    train_metrics["extra_local_teacher_waveform_extra_l1"]
+                ),
                 "train_extra_local_nonlocal_waveform_l1": (
                     train_metrics["extra_local_nonlocal_waveform_l1"]
                 ),
@@ -2771,6 +2823,10 @@ def main() -> None:
                 "val_reconstruction_extra_waveform_l1": val_metrics["reconstruction_extra_waveform_l1"],
                 "val_reconstruction_extra_stft_l1": val_metrics["reconstruction_extra_stft_l1"],
                 "val_extra_local_waveform_l1": val_metrics["extra_local_waveform_l1"],
+                "val_extra_local_waveform_extra_l1": val_metrics["extra_local_waveform_extra_l1"],
+                "val_extra_local_teacher_waveform_extra_l1": (
+                    val_metrics["extra_local_teacher_waveform_extra_l1"]
+                ),
                 "val_extra_local_nonlocal_waveform_l1": (
                     val_metrics["extra_local_nonlocal_waveform_l1"]
                 ),

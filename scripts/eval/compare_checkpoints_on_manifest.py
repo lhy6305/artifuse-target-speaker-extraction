@@ -52,6 +52,17 @@ def parse_args() -> argparse.Namespace:
         type=int,
         default=12,
     )
+    parser.add_argument(
+        "--score-interval-source",
+        type=str,
+        default="none",
+        choices=("none", "local_proxy", "target_overlap", "target_absent"),
+        help=(
+            "Optional interval source used for scoring. "
+            "When set, the model still runs normally, but SI-SDR and waveform L1 "
+            "are computed only inside the selected intervals."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -105,6 +116,97 @@ def target_present_ratio_bucket(ratio: float) -> str:
 
 def waveform_l1(prediction: torch.Tensor, target: torch.Tensor) -> float:
     return float(torch.mean(torch.abs(prediction - target)).item())
+
+
+def interval_waveform_l1(
+    prediction: torch.Tensor,
+    target: torch.Tensor,
+    length: torch.Tensor,
+    intervals: list[dict[str, float]],
+    sample_rate: int,
+) -> float:
+    length_int = int(length.item())
+    if length_int <= 0 or not intervals:
+        raise ValueError("interval_waveform_l1 requires at least one non-empty interval")
+
+    pred = prediction[0, :length_int]
+    tgt = target[0, :length_int]
+    total_error = pred.new_tensor(0.0)
+    total_samples = 0
+    for interval in intervals:
+        start_index = int(round(float(interval["start_sec"]) * sample_rate))
+        end_index = int(round(float(interval["end_sec"]) * sample_rate))
+        start_index = max(0, min(start_index, length_int))
+        end_index = max(start_index, min(end_index, length_int))
+        if end_index <= start_index:
+            continue
+        total_error = total_error + torch.abs(pred[start_index:end_index] - tgt[start_index:end_index]).sum()
+        total_samples += end_index - start_index
+
+    if total_samples <= 0:
+        raise ValueError("interval_waveform_l1 found no valid scoring samples after clipping intervals")
+    return float((total_error / float(total_samples)).item())
+
+
+def interval_sisdr_db(
+    prediction: torch.Tensor,
+    target: torch.Tensor,
+    length: torch.Tensor,
+    intervals: list[dict[str, float]],
+    sample_rate: int,
+    zero_mean: bool = True,
+) -> float:
+    length_int = int(length.item())
+    if length_int <= 0 or not intervals:
+        raise ValueError("interval_sisdr_db requires at least one non-empty interval")
+
+    pred = prediction[0, :length_int]
+    tgt = target[0, :length_int]
+    pred_slices: list[torch.Tensor] = []
+    tgt_slices: list[torch.Tensor] = []
+    for interval in intervals:
+        start_index = int(round(float(interval["start_sec"]) * sample_rate))
+        end_index = int(round(float(interval["end_sec"]) * sample_rate))
+        start_index = max(0, min(start_index, length_int))
+        end_index = max(start_index, min(end_index, length_int))
+        if end_index <= start_index:
+            continue
+        pred_slices.append(pred[start_index:end_index])
+        tgt_slices.append(tgt[start_index:end_index])
+
+    if not pred_slices:
+        raise ValueError("interval_sisdr_db found no valid scoring slices after clipping intervals")
+
+    pred_interval = torch.cat(pred_slices, dim=0)
+    tgt_interval = torch.cat(tgt_slices, dim=0)
+    if pred_interval.numel() <= 1 or tgt_interval.numel() <= 1:
+        raise ValueError("interval_sisdr_db requires at least two samples inside the scoring interval")
+
+    if zero_mean:
+        pred_interval = pred_interval - pred_interval.mean()
+        tgt_interval = tgt_interval - tgt_interval.mean()
+
+    eps = 1e-8
+    tgt_energy = torch.sum(tgt_interval * tgt_interval).clamp_min(eps)
+    proj = torch.sum(pred_interval * tgt_interval) * tgt_interval / tgt_energy
+    noise = pred_interval - proj
+    ratio = torch.sum(proj * proj).clamp_min(eps) / torch.sum(noise * noise).clamp_min(eps)
+    return float((10.0 * torch.log10(ratio + eps)).item())
+
+
+def resolve_scoring_intervals(
+    item: dict[str, Any],
+    source: str,
+) -> list[dict[str, float]] | None:
+    if source == "none":
+        return None
+    if source == "local_proxy":
+        return item["local_proxy_intervals"]
+    if source == "target_overlap":
+        return item["target_overlap_intervals"]
+    if source == "target_absent":
+        return item["target_absent_intervals"]
+    raise ValueError(f"Unsupported score interval source: {source}")
 
 
 def summarize_group(rows: list[dict[str, Any]], delta_threshold_db: float) -> dict[str, Any]:
@@ -185,11 +287,41 @@ def main() -> None:
             clipped_target = target[..., :common_length]
             clipped_a = estimate_a[..., :common_length]
             clipped_b = estimate_b[..., :common_length]
-
-            sisdr_a = float(masked_sisdr(clipped_a, clipped_target, clipped_length).item())
-            sisdr_b = float(masked_sisdr(clipped_b, clipped_target, clipped_length).item())
-            wave_l1_a = waveform_l1(clipped_a, clipped_target)
-            wave_l1_b = waveform_l1(clipped_b, clipped_target)
+            scoring_intervals = resolve_scoring_intervals(item, args.score_interval_source)
+            if scoring_intervals is None:
+                sisdr_a = float(masked_sisdr(clipped_a, clipped_target, clipped_length).item())
+                sisdr_b = float(masked_sisdr(clipped_b, clipped_target, clipped_length).item())
+                wave_l1_a = waveform_l1(clipped_a, clipped_target)
+                wave_l1_b = waveform_l1(clipped_b, clipped_target)
+            else:
+                sisdr_a = interval_sisdr_db(
+                    clipped_a,
+                    clipped_target,
+                    clipped_length,
+                    intervals=scoring_intervals,
+                    sample_rate=args.sample_rate,
+                )
+                sisdr_b = interval_sisdr_db(
+                    clipped_b,
+                    clipped_target,
+                    clipped_length,
+                    intervals=scoring_intervals,
+                    sample_rate=args.sample_rate,
+                )
+                wave_l1_a = interval_waveform_l1(
+                    clipped_a,
+                    clipped_target,
+                    clipped_length,
+                    intervals=scoring_intervals,
+                    sample_rate=args.sample_rate,
+                )
+                wave_l1_b = interval_waveform_l1(
+                    clipped_b,
+                    clipped_target,
+                    clipped_length,
+                    intervals=scoring_intervals,
+                    sample_rate=args.sample_rate,
+                )
 
             row = {
                 "sample_id": item["sample_id"],
@@ -198,6 +330,8 @@ def main() -> None:
                 "target_present_ratio": float(item["target_present_ratio"]),
                 "target_present_ratio_bucket": target_present_ratio_bucket(float(item["target_present_ratio"])),
                 "metadata_path": item["metadata_path"],
+                "score_interval_source": args.score_interval_source,
+                "score_interval_count": 0 if scoring_intervals is None else len(scoring_intervals),
                 "sisdr_a_db": sisdr_a,
                 "sisdr_b_db": sisdr_b,
                 "sisdr_delta_db": sisdr_b - sisdr_a,
@@ -221,6 +355,7 @@ def main() -> None:
         "label_a": args.label_a,
         "label_b": args.label_b,
         "focus_recipes": sorted(focus_recipes),
+        "score_interval_source": args.score_interval_source,
         "delta_threshold_db": args.delta_threshold_db,
         "num_samples": len(rows),
         "overall": summarize_group(rows, args.delta_threshold_db),

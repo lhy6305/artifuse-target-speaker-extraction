@@ -1407,6 +1407,265 @@
   family on top of
   `v240`.
 
+### `v253`
+
+- Route:
+  faithful
+  `v249`
+  replay on the merged artifact-local bundle
+  `train_manifest_local_speech_leak_artifact_paired_plus_artifactlocal_bundle_v1.jsonl`
+  and
+  `val_manifest_local_speech_leak_artifact_paired_plus_artifactlocal_bundle_v1.jsonl`,
+  with no new objective added
+- Status:
+  required merged-bundle control, not a candidate
+- Takeaway:
+  the merged bundle itself already changes the
+  `v249`
+  read.
+  Relative
+  `v249`,
+  the fixed surface becomes
+  `+0.2735 / +0.0599 / +0.1948 / -0.0617 / -0.0985 dB`,
+  while the targeted near-real probes collapse back to near-tie:
+  broad speech
+  `-0.0231 dB`,
+  focused guodegang transient
+  `+0.0164 dB`,
+  and the target-conditioned artifact probe
+  `-0.0519 dB`.
+  So future merged-bundle continuations must use
+  `v253`
+  as the control parent instead of comparing directly back to
+  `v249`.
+
+### `v254`
+
+- Route:
+  `v253 + overlap_dual_extra artifact-local local booster 0.5`
+- Status:
+  bounded reject / real-side tie
+- Takeaway:
+  this first merged-bundle additive artifact-local local booster is training-real,
+  but it does not repair the
+  `v253`
+  near-real tie.
+  Relative
+  `v253`,
+  the fixed surface becomes
+  `-0.2223 / -0.0489 / -0.1296 / -0.1599 / +0.0570 dB`,
+  while the targeted real probes stay practical tie:
+  broad speech
+  `-0.0009 dB`,
+  focused guodegang transient
+  `-0.0030 dB`,
+  and the target-conditioned artifact probe
+  `+0.0026 dB`.
+  Do not small-sweep this same merged-bundle additive artifact-local local-booster axis by default.
+
+### `v255`
+
+- Route:
+  `v253 + direct artifact-local extra_local waveform supervision on estimated_waveform_split_localmasked`
+- Status:
+  bounded reject / mild synthetic rebalance only
+- Takeaway:
+  this first merged-bundle direct artifact-local final-output extra-supervision point is training-real,
+  and it does change the fixed surface.
+  Relative
+  `v253`,
+  the fixed surface becomes
+  `+0.1098 / +0.1122 / +0.0958 / -0.0167 / -0.0401 dB`,
+  so abstention,
+  same-gender keep,
+  and hard-present keep improve,
+  but artifact and the active blocker both regress.
+  Real-side it still does not repair the merged-bundle read:
+  broad speech
+  `-0.0199 dB`,
+  focused guodegang transient
+  `-0.0145 dB`,
+  and the target-conditioned artifact probe
+  `-0.0312 dB`.
+  Do not small-sweep this same extra-local final-output supervision axis by default.
+
+### `v256`
+
+- Route:
+  `v253 + artifact-local teacher-anchor on estimated_waveform_split_localmasked`
+- Status:
+  bounded reject / synthetic artifact repair only
+- Takeaway:
+  this first merged-bundle split-localmasked teacher-anchor point is training-real
+  and strongly improves four synthetic axes.
+  Relative
+  `v253`,
+  the fixed surface becomes
+  `+0.3966 / +0.2600 / +0.2249 / +0.3684 / -0.3300 dB`,
+  so abstention,
+  same-gender keep,
+  hard-present keep,
+  and artifact all improve,
+  but the active blocker turns sharply negative.
+  Real-side it still does not repair the mixed read:
+  broad speech
+  `-0.0261 dB`,
+  focused guodegang transient
+  `+0.0153 dB`,
+  and the target-conditioned artifact probe
+  `-0.0482 dB`.
+  Do not small-sweep this same teacher-anchor axis by default.
+
+### `v257`
+
+- Route:
+  `v253 + hardlocalmask local writer source swap to estimated_waveform_post_dual_local_bridge`
+- Status:
+  bounded reject / interval-aware real probes close the family
+- Takeaway:
+  this first merged-bundle hard local-mask writer-family swap is training-real
+  and materially changes the interval-aware synthetic read.
+  Relative
+  `v253`,
+  the fixed surface becomes
+  `+0.0000 / +0.0000 / +0.0000 / +0.9739 / -0.4393 dB`,
+  so abstention,
+  same-gender keep,
+  and hard-present keep stay exact tie,
+  artifact improves sharply,
+  and the active blocker regresses sharply.
+  The original targeted near-real probes stay exact
+  `0.0 dB`
+  relative
+  `v253`,
+  not because the family is harmless,
+  but because the current real probe manifests do not carry the interval metadata needed to activate this writer.
+  A first-pass interval-aware real follow-up then resolves the ambiguity:
+  on
+  `near_real_interval_leak_probe_v1`,
+  `v253 -> v257`
+  is
+  `-0.5154 dB`
+  with
+  `9 / 9`
+  regressions,
+  and on
+  `near_real_interval_artifact_probe_v1`,
+  `v253 -> v257`
+  is
+  `-0.9569 dB`
+  with
+  `3 / 3`
+  regressions.
+  So this family is now closed as a bounded reject rather than a merely unread branch.
+
+### Interval-Aware Scouting
+
+- Route:
+  compare
+  `v240 -> v249`
+  and
+  `v249 -> v253`
+  on the first interval-aware leak and artifact real probes
+- Status:
+  decision-shaping evidence, not a new checkpoint
+- Takeaway:
+  the hardlocalmask family itself remains real-positive.
+  Relative
+  `v240`,
+  `v249`
+  improves the interval-aware leak probe by
+  `+0.4940 dB`
+  with
+  `9 / 9`
+  improvements
+  and improves the interval-aware artifact probe by
+  `+0.9545 dB`
+  with
+  `3 / 3`
+  improvements.
+  Relative
+  `v249`,
+  the merged-bundle replay
+  `v253`
+  is near exact tie on leak
+  (`+0.0045 dB`)
+  and only mildly negative on artifact
+  (`-0.0519 dB`).
+  So merged-bundle shift is not the main blocker.
+  The next continuation should target the target-conditioned artifact confound directly,
+  not keep assuming the whole hardlocalmask real edge has already collapsed.
+
+### Target-Conditioned Artifact Probe v2
+
+- Route:
+  expand the fixed-target artifact asset from
+  `3`
+  rows to all
+  `9`
+  rows that share
+  `segment_0010_0000058750_0000060100`,
+  then compare
+  `v240 -> v249`
+  and
+  `v249 -> v253`
+  on the interval-aware version
+- Status:
+  active real-side asset, not a new checkpoint
+- Takeaway:
+  the stronger same-target asset confirms the previous direction rather than weakening it.
+  Relative
+  `v240`,
+  `v249`
+  improves the interval-aware artifact probe v2 by
+  `+0.9545 dB`
+  with
+  `9 / 9`
+  improvements.
+  Relative
+  `v249`,
+  `v253`
+  regresses only
+  `-0.0525 dB`
+  with
+  `2 / 9`
+  regressions.
+  So
+  `near_real_target_conditioned_artifact_probe_v2`
+  should be the default target-conditioned artifact asset for the next branch.
+
+### Interval-Scored Compare Validation
+
+- Route:
+  add explicit
+  `local_proxy`
+  interval scoring to
+  `scripts/eval/compare_checkpoints_on_manifest.py`
+  and re-run the active
+  `v240 -> v249`,
+  `v249 -> v253`,
+  and
+  `v253 -> v257`
+  interval-aware real comparisons
+- Status:
+  tooling validation, not a new checkpoint
+- Takeaway:
+  the earlier branch conclusions stay unchanged.
+  On the current interval-aware real assets,
+  the new interval-only scores match the old whole-utterance scores because these manifests use full-span local windows
+  (`window_start_sec = 0.0`,
+  `window_duration_sec = target_duration_sec`).
+  So the active read remains:
+  `v249`
+  is real-positive relative
+  `v240`,
+  `v253`
+  is near tie to
+  `v249`,
+  and
+  `v257`
+  is a bounded reject once its writer is schema-activated.
+
 ## Closed Branch Families
 
 - `predicted_activity` direct-apply family
@@ -1582,12 +1841,19 @@
 - if the split-route
   `refine_base`
   family continues after
-  `v252`,
+  `v253`,
   do not continue the same additive artifact-local
   `branch_protect_teacher_extra`
   axis through weight micro-sweeps on either the current bundle
   or the merged coverage-fixed bundle;
   the family is already closed
+- if the same split-route family continues on the merged artifact-local bundle,
+  compare against
+  `v253`
+  by default,
+  not directly against
+  `v249`,
+  because bundle shift alone already changes the targeted probe read
 - a more structural writable-path change than direct local-window quality supervision on `estimated_waveform_post_pre_present_controller`
 - only if needed, a materially larger path change with disjoint keep and local supervision paths
 

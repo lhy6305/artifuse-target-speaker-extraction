@@ -1,0 +1,63 @@
+{
+  "sample_id": "probe_0012",
+  "probe_version": "near_real_speech_probe_v1",
+  "recipe_profile": "near_real_speech_probe_v1",
+  "recipe": "near_real_friend_speech_probe",
+  "temporal_pattern": "target_full",
+  "target_present_ratio": 1.0,
+  "target_duration_sec": 2.35,
+  "target_present_duration_sec": 2.35,
+  "reference_duration_sec": 2.01,
+  "near_real_anchor_sample_id": "near_real_0004",
+  "anchor_hypothesis": "speech_leak_like",
+  "speech_family": "friend_raw",
+  "speech_clip_tag": "friend_anchor_45s",
+  "speech_clip_start_sec": 45.0,
+  "speech_interference_gain_db": -4.0,
+  "target_source": {
+    "segment_id": "segment_0010_0000058750_0000060100",
+    "audio_path": "data_in/source_segments/segments/segment_0010_0000058750_0000060100.wav",
+    "pool": "target_speech_pool",
+    "clip_start_sec": 58.4,
+    "clip_duration_sec": 2.35
+  },
+  "reference_source": {
+    "segment_id": "segment_0034_0000154390_0000156400",
+    "audio_path": "data_in/source_segments/segments/segment_0034_0000154390_0000156400.wav",
+    "pool": "target_reference_pool"
+  },
+  "interference_layers": [
+    {
+      "pool": "friend_raw",
+      "audio_path": "data_in/friend_dataset_fuhuo_raw_concat.wav",
+      "gain_db": -4.0,
+      "start_offset_sec": 0.0,
+      "clip_start_sec": 45.0,
+      "clip_tag": "friend_anchor_45s"
+    }
+  ],
+  "target_segments": [
+    {
+      "output_start_sec": 0.0,
+      "source_start_sec": 58.4,
+      "duration_sec": 2.35
+    }
+  ],
+  "target_absent_intervals": [],
+  "output_paths": {
+    "mixture_audio_path": "data/probes/near_real_speech_probe_v1/probe_0012/mixture.wav",
+    "target_audio_path": "data/probes/near_real_speech_probe_v1/probe_0012/target.wav",
+    "reference_audio_path": "data/probes/near_real_speech_probe_v1/probe_0012/reference.wav",
+    "metadata_path": "data/probes/near_real_speech_probe_v1/probe_0012/metadata.json"
+  },
+  "local_proxy": {
+    "window_start_sec": 0.0,
+    "window_duration_sec": 2.35,
+    "selection_mode": "manual_fullspan_probe",
+    "probe_kind": "artifact",
+    "source": "near_real_interval_artifact_probe_v2"
+  },
+  "interval_probe_version": "near_real_interval_artifact_probe_v2",
+  "interval_probe_kind": "artifact",
+  "interval_probe_note": "interval-aware artifact probe v2 with manual full-span local proxy"
+}

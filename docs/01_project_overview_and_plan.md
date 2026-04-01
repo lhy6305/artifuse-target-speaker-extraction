@@ -55,6 +55,16 @@
   is now mapped through `v249` as a probe-positive but synthetic-guardrail-negative continuation,
   and the first additive artifact-local keep-side teacher continuation on top of that mixed candidate
   is now bounded through `v252`,
+  and the first merged-bundle hardlocalmask control replay of that same candidate
+  is now mapped through `v254`,
+  where `v253` is the necessary merged-bundle control whose near-real edge collapses back to near-tie
+  and `v254` is the first additive artifact-local local-booster continuation on that control,
+  while the first direct artifact-local final-output extra-supervision continuation on that same control
+  is now bounded through `v255`,
+  and the first artifact-local teacher-anchor continuation on that same split-localmasked writer
+  is now bounded through `v256`,
+  and the first dedicated dual-local-bridge hardlocalmask-source swap on that same merged-bundle control
+  is now bounded through `v257`,
   and the first refine-apply-controller continuation on top of that mixed candidate
   is now bounded through `v248`,
   the `refine_present` writer family is closed through `v231`,
@@ -1528,8 +1538,201 @@
   `branch_protect_teacher_extra`
   axis on top of
   `v240`:
-  after coverage fixing,
-  it is still a keep-heavy continuation rather than an artifact repair.
+  full coverage still produces the wrong keep-heavy direction.
+- `v253 = v249 replay on the same merged artifact-local bundle`
+  adds the missing bundle-shift control.
+  This run keeps the
+  `v249`
+  losses, selectors, and trainable prefixes unchanged and only replaces the manifests with the merged bundle.
+  Relative
+  `v249`,
+  fixed deltas become
+  `+0.2735 / +0.0599 / +0.1948 / -0.0617 / -0.0985 dB`,
+  so abstention, same-gender keep, and hard-present keep recover somewhat
+  while artifact and the active blocker regress.
+  More importantly, the targeted near-real edge mostly collapses to near-tie:
+  broad speech goes to
+  `-0.0231 dB`,
+  focused guodegang transient goes to
+  `+0.0164 dB`,
+  and the target-conditioned artifact probe slips to
+  `-0.0519 dB`.
+  The scientific read is that merged-bundle shift alone already changes the
+  `v249`
+  probe picture.
+  So any future merged-bundle continuation must use
+  `v253`
+  as the parent control, not
+  `v249`.
+- `v254 = v253 + overlap_dual_extra artifact-local local booster 0.5`
+  is the first valid merged-bundle local-booster continuation on top of that control.
+  Relative
+  `v253`,
+  fixed deltas become
+  `-0.2223 / -0.0489 / -0.1296 / -0.1599 / +0.0570 dB`,
+  so the active blocker recovers only a small amount while four synthetic guardrails regress again.
+  Real-side the read stays practical tie:
+  broad speech
+  `-0.0009 dB`,
+  focused guodegang transient
+  `-0.0030 dB`,
+  and the target-conditioned artifact probe
+  `+0.0026 dB`.
+  So this first additive artifact-local
+  `overlap_dual_extra`
+  local booster on the merged bundle is a bounded reject,
+  not the needed artifact repair.
+- `v255 = v253 + direct artifact-local extra_local waveform supervision on`
+  `estimated_waveform_split_localmasked`
+  is the first merged-bundle continuation that directly supervises the actual hard-masked final local output on the artifact-local extra bucket.
+  Relative
+  `v253`,
+  fixed deltas become
+  `+0.1098 / +0.1122 / +0.0958 / -0.0167 / -0.0401 dB`,
+  so three synthetic guardrails improve,
+  but artifact and the active blocker both regress.
+  Real-side this point is still not a repair:
+  broad speech
+  `-0.0199 dB`,
+  focused guodegang transient
+  `-0.0145 dB`,
+  and the target-conditioned artifact probe
+  `-0.0312 dB`.
+  So direct artifact-local supervision on the hard-masked final output mildly rebalances the synthetic surface
+  but does not recover the merged-bundle real-side edge.
+- `v256 = v253 + artifact-local teacher-anchor on`
+  `estimated_waveform_split_localmasked`
+  asks the same writer to match the artifact-free teacher on the artifact-local extra bucket.
+  Relative
+  `v253`,
+  fixed deltas become
+  `+0.3966 / +0.2600 / +0.2249 / +0.3684 / -0.3300 dB`,
+  so four synthetic guardrails all improve,
+  but the active blocker regresses sharply.
+  Real-side this is still not a repair:
+  broad speech
+  `-0.0261 dB`,
+  focused guodegang transient
+  `+0.0153 dB`,
+  and the target-conditioned artifact probe
+  `-0.0482 dB`.
+  So the teacher-anchor route repairs synthetic artifact margin only by over-regularizing away local-blocker gain,
+  without fixing the artifact-confounded real probe.
+- `v257 = v253 + hardlocalmask local writer source swap to`
+  `estimated_waveform_post_dual_local_bridge`
+  is the first merged-bundle continuation that changes the interval-local writer family itself
+  instead of retuning objectives on the same
+  `split_localmasked`
+  writer.
+  Relative
+  `v253`,
+  fixed deltas become
+  `+0.0000 / +0.0000 / +0.0000 / +0.9739 / -0.4393 dB`,
+  so abstention,
+  same-gender keep,
+  and hard-present keep stay exact tie,
+  artifact improves sharply,
+  and the active blocker regresses sharply.
+  Current targeted near-real probes stay exact
+  `0.0 dB`
+  relative
+  `v253`,
+  but this is not a harmless-stability read.
+  The active near-real probe manifests do not carry
+  `local_window_start_sec`
+  or related local-proxy interval fields,
+  so the hard local-mask route is not activated on those assets at all.
+  A first-pass interval-aware real follow-up then closed the remaining ambiguity.
+  On
+  `data/probes/near_real_interval_leak_probe_v1_manifest.jsonl`,
+  `v253 -> v257`
+  is
+  `-0.5154 dB`
+  overall with
+  `9 / 9`
+  regressions.
+  On
+  `data/probes/near_real_interval_artifact_probe_v1_manifest.jsonl`,
+  `v253 -> v257`
+  is
+  `-0.9569 dB`
+  overall with
+  `3 / 3`
+  regressions.
+  So the hardlocalmask source swap is now closed as a bounded reject:
+  the earlier whole-probe tie was a schema-inactive artifact,
+  not hidden real-side stability.
+- Interval-aware real scouting also sharpens the role split between
+  `v240`,
+  `v249`,
+  and
+  `v253`.
+  Relative
+  `v240`,
+  `v249`
+  improves the interval-aware leak probe by
+  `+0.4940 dB`
+  with
+  `9 / 9`
+  improvements
+  and improves the interval-aware artifact probe by
+  `+0.9545 dB`
+  with
+  `3 / 3`
+  improvements.
+  Relative
+  `v249`,
+  the merged-bundle replay
+  `v253`
+  is almost exact tie on the interval-aware leak probe
+  (`+0.0045 dB`)
+  and only mildly negative on the interval-aware artifact probe
+  (`-0.0519 dB`).
+  So merged-bundle shift is not the main blocker.
+  The active blocker is the target-conditioned artifact confound on top of an otherwise real-positive
+  `v249`
+  hardlocalmask family.
+- The active target-conditioned artifact asset is now the expanded
+  `near_real_target_conditioned_artifact_probe_v2`
+  family:
+  same target segment
+  `segment_0010_0000058750_0000060100`,
+  all
+  `9`
+  available rows across three friend clips and three gain levels.
+  On this stronger asset,
+  `v240 -> v249`
+  stays uniformly positive
+  (`+0.9545 dB`,
+  `9 / 9`
+  improvements),
+  while
+  `v249 -> v253`
+  stays only mildly negative
+  (`-0.0525 dB`,
+  `2 / 9`
+  regressions).
+  So the next branch should treat target-conditioned artifact as the primary blocker on top of
+  `v249`,
+  not merged-bundle replay itself.
+- The compare tool now also supports explicit interval scoring through
+  `--score-interval-source`.
+  Re-running the active
+  `v240 -> v249`,
+  `v249 -> v253`,
+  and
+  `v253 -> v257`
+  interval-aware real comparisons with
+  `local_proxy`
+  scoring leaves the numbers unchanged to rounding.
+  The reason is specific to the current assets:
+  their
+  `local_proxy`
+  windows are full-span
+  (`window_start_sec = 0.0`,
+  `window_duration_sec = target_duration_sec`),
+  so whole-utterance and interval-only scoring are equivalent on this probe family.
+  Future interval-aware real assets with subspan windows must use interval scoring by default.
 
 ## Closed Axes
 
@@ -2017,5 +2220,14 @@
 - `reports/daily/2026-03-31_refineapplycontroller_v248_followup.md`
 - `reports/daily/2026-04-01_refinebase_artifactlocalteacherextra_v250_v251_followup.md`
 - `reports/daily/2026-04-01_refinebase_artifactlocalteacherextra_v252_covfix_followup.md`
+- `reports/daily/2026-04-01_hardlocalmask_covctrl_v253_followup.md`
+- `reports/daily/2026-04-01_artifactlocallocalextra_v254_followup.md`
+- `reports/daily/2026-04-01_artifactlocalfinalextra_v255_followup.md`
+- `reports/daily/2026-04-01_artifactlocalteacherfinal_v256_followup.md`
+- `reports/daily/2026-04-01_dualbridgehardmask_v257_followup.md`
+- `reports/daily/2026-04-01_intervalaware_real_probe_v257_followup.md`
+- `reports/daily/2026-04-01_intervalaware_real_scouting_v240_v249_v253.md`
+- `reports/daily/2026-04-01_target_conditioned_artifact_probe_v2_asset_and_validation.md`
+- `reports/daily/2026-04-01_interval_scored_compare_validation.md`
 - `reports/daily/2026-03-28_encoding_and_active_doc_audit.md`
 
