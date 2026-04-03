@@ -277,7 +277,10 @@ def main() -> None:
         "extra_local_waveform_l1": 0.0,
         "extra_local_waveform_extra_l1": 0.0,
         "extra_local_teacher_waveform_extra_l1": 0.0,
+        "artifact_local_split_teacher_waveform_extra_l1": 0.0,
         "artifact_local_bridge_teacher_waveform_extra_l1": 0.0,
+        "artifact_local_refine_teacher_waveform_extra_l1": 0.0,
+        "artifact_local_mask_adapter_teacher_waveform_extra_l1": 0.0,
         "extra_local_nonlocal_waveform_l1": 0.0,
         "sisdr_loss": 0.0,
         "sisdr_db": 0.0,
@@ -525,7 +528,10 @@ def main() -> None:
                     extra_weight_keys=(
                         "extra_local_waveform_extra_weight",
                         "extra_local_teacher_waveform_extra_weight",
+                        "artifact_local_split_teacher_waveform_extra_weight",
                         "artifact_local_bridge_teacher_waveform_extra_weight",
+                        "artifact_local_refine_teacher_waveform_extra_weight",
+                        "artifact_local_mask_adapter_teacher_waveform_extra_weight",
                         "overlap_dual_residual_correction_local_waveform_extra_weight",
                     ),
                 )
@@ -652,6 +658,15 @@ def main() -> None:
                 branch_overlap_artifact_local_bridge_prediction=outputs.get(
                     "estimated_waveform_post_artifact_local_bridge"
                 ),
+                branch_overlap_artifact_split_prediction=outputs.get(
+                    "estimated_waveform_split_localmasked"
+                ),
+                branch_overlap_artifact_refine_prediction=outputs.get(
+                    "estimated_waveform_post_artifact_refine"
+                ),
+                branch_overlap_artifact_mask_adapter_prediction=outputs.get(
+                    "estimated_waveform_post_artifact_mask_adapter"
+                ),
                 overlap_cancel_controller_prediction=outputs.get("branch_overlap_cancel_apply_controller"),
                 overlap_dual_controller_prediction=resolve_overlap_dual_controller_distill_prediction(
                     outputs,
@@ -690,8 +705,17 @@ def main() -> None:
             totals["extra_local_teacher_waveform_extra_l1"] += (
                 float(losses.extra_local_teacher_waveform_extra_l1.item()) * batch_size
             )
+            totals["artifact_local_split_teacher_waveform_extra_l1"] += (
+                float(losses.artifact_local_split_teacher_waveform_extra_l1.item()) * batch_size
+            )
             totals["artifact_local_bridge_teacher_waveform_extra_l1"] += (
                 float(losses.artifact_local_bridge_teacher_waveform_extra_l1.item()) * batch_size
+            )
+            totals["artifact_local_refine_teacher_waveform_extra_l1"] += (
+                float(losses.artifact_local_refine_teacher_waveform_extra_l1.item()) * batch_size
+            )
+            totals["artifact_local_mask_adapter_teacher_waveform_extra_l1"] += (
+                float(losses.artifact_local_mask_adapter_teacher_waveform_extra_l1.item()) * batch_size
             )
             totals["extra_local_nonlocal_waveform_l1"] += (
                 float(losses.extra_local_nonlocal_waveform_l1.item()) * batch_size

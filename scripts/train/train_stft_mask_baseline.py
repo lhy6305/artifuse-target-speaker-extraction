@@ -117,6 +117,32 @@ def parse_args() -> argparse.Namespace:
         help="Enable a zero-init residual mask adapter head on top of the shared encoder output.",
     )
     parser.add_argument(
+        "--model-enable-adapter-artifact-local-hard-mask",
+        action="store_true",
+        help=(
+            "When adapter_mask_head is enabled, only apply the adapter branch inside "
+            "artifact-local intervals and keep base output outside them."
+        ),
+    )
+    parser.add_argument(
+        "--model-adapter-artifact-local-hard-mask-strict-base-fallback",
+        action="store_true",
+        help=(
+            "When adapter artifact local hard mask is enabled and no artifact-local "
+            "interval is provided, force the final output to fall back to the base "
+            "prediction."
+        ),
+    )
+    parser.add_argument(
+        "--model-enable-adapter-artifact-overlay-on-branch-output",
+        action="store_true",
+        help=(
+            "When adapter_mask_head and branch_decoder_head are both enabled, apply the "
+            "adapter branch only inside artifact-local intervals on top of the current "
+            "branch-decoder output."
+        ),
+    )
+    parser.add_argument(
         "--model-enable-branch-decoder-head",
         action="store_true",
         help="Enable a second decoder branch with its own temporal model and mask head.",
@@ -146,6 +172,14 @@ def parse_args() -> argparse.Namespace:
             "Replace the final output with a hard interval split that keeps the "
             "post-pre-present output outside local proxy intervals and only applies "
             "the refine-base local writer inside them."
+        ),
+    )
+    parser.add_argument(
+        "--model-enable-branch-overlap-refine-artifact-hard-mask",
+        action="store_true",
+        help=(
+            "After the local hard split, force artifact-local intervals back to the "
+            "post-pre-present keep-side output."
         ),
     )
     parser.add_argument(
@@ -232,6 +266,30 @@ def parse_args() -> argparse.Namespace:
         help=(
             "Add a dedicated artifact-side bridge head that writes a separate bounded local "
             "correction through its own controller and artifact-local interval mask."
+        ),
+    )
+    parser.add_argument(
+        "--model-enable-branch-overlap-artifact-refine-head",
+        action="store_true",
+        help=(
+            "Add a dedicated artifact-side refine head that rewrites the current output in "
+            "mask/refine space and only applies inside artifact-local intervals."
+        ),
+    )
+    parser.add_argument(
+        "--model-enable-branch-overlap-artifact-mask-adapter-head",
+        action="store_true",
+        help=(
+            "Add a dedicated artifact-side mask adapter head that constructs an alternate "
+            "artifact-window reconstruction from branch decoder mask space."
+        ),
+    )
+    parser.add_argument(
+        "--model-enable-branch-overlap-artifact-rep-adapter-head",
+        action="store_true",
+        help=(
+            "Add a dedicated artifact-side shared-representation adapter on branch decoder "
+            "hidden states before the existing writer family."
         ),
     )
     parser.add_argument(
@@ -344,7 +402,28 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model-branch-overlap-artifact-local-bridge-max-delta", type=float, default=0.15)
     parser.add_argument("--model-branch-overlap-artifact-local-bridge-max-blend", type=float, default=0.0)
     parser.add_argument(
+        "--model-branch-overlap-artifact-local-bridge-source-mode",
+        choices=["branch_encoded", "dual_encoded"],
+        default="branch_encoded",
+    )
+    parser.add_argument(
         "--model-branch-overlap-artifact-local-bridge-conditioning-mode",
+        choices=["none", "ref_bias", "ref_film"],
+        default="none",
+    )
+    parser.add_argument("--model-branch-overlap-artifact-refine-max-delta", type=float, default=0.15)
+    parser.add_argument("--model-branch-overlap-artifact-refine-max-blend", type=float, default=0.0)
+    parser.add_argument(
+        "--model-branch-overlap-artifact-refine-conditioning-mode",
+        choices=["none", "ref_bias", "ref_film"],
+        default="none",
+    )
+    parser.add_argument("--model-branch-overlap-artifact-mask-adapter-max-delta", type=float, default=0.15)
+    parser.add_argument("--model-branch-overlap-artifact-mask-adapter-max-blend", type=float, default=0.0)
+    parser.add_argument("--model-branch-overlap-artifact-rep-adapter-max-delta", type=float, default=0.5)
+    parser.add_argument("--model-branch-overlap-artifact-rep-adapter-max-blend", type=float, default=0.0)
+    parser.add_argument(
+        "--model-branch-overlap-artifact-rep-adapter-conditioning-mode",
         choices=["none", "ref_bias", "ref_film"],
         default="none",
     )
@@ -448,6 +527,7 @@ def parse_args() -> argparse.Namespace:
             "estimated_waveform_post_pre_present_controller",
             "estimated_waveform_post_refine_present",
             "estimated_waveform_split_localmasked",
+            "estimated_waveform_post_adapter_artifact_overlay",
             "estimated_waveform_pre_dual_residual_correction",
             "estimated_waveform_post_dual_local_bridge",
         ],
@@ -467,6 +547,7 @@ def parse_args() -> argparse.Namespace:
             "estimated_waveform_post_pre_present_controller",
             "estimated_waveform_post_refine_present",
             "estimated_waveform_split_localmasked",
+            "estimated_waveform_post_adapter_artifact_overlay",
             "estimated_waveform_pre_dual_residual_correction",
             "estimated_waveform_post_dual_local_bridge",
         ],
@@ -492,7 +573,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--loss-extra-local-waveform-weight", type=float, default=0.0)
     parser.add_argument("--loss-extra-local-waveform-extra-weight", type=float, default=0.0)
     parser.add_argument("--loss-extra-local-teacher-waveform-extra-weight", type=float, default=0.0)
+    parser.add_argument("--loss-artifact-local-split-teacher-waveform-extra-weight", type=float, default=0.0)
     parser.add_argument("--loss-artifact-local-bridge-teacher-waveform-extra-weight", type=float, default=0.0)
+    parser.add_argument("--loss-artifact-local-refine-teacher-waveform-extra-weight", type=float, default=0.0)
+    parser.add_argument("--loss-artifact-local-mask-adapter-teacher-waveform-extra-weight", type=float, default=0.0)
     parser.add_argument("--loss-extra-local-nonlocal-waveform-weight", type=float, default=0.0)
     parser.add_argument("--loss-pre-present-applied-delta-local-waveform-weight", type=float, default=0.0)
     parser.add_argument("--loss-extra-local-sisdr-weight", type=float, default=0.0)
@@ -691,6 +775,15 @@ def build_model_config(args: argparse.Namespace) -> dict[str, int]:
         "gru_layers": args.model_gru_layers,
         "conditioning_mode": args.model_conditioning_mode,
         "enable_adapter_mask_head": args.model_enable_adapter_mask_head,
+        "enable_adapter_artifact_local_hard_mask": (
+            args.model_enable_adapter_artifact_local_hard_mask
+        ),
+        "adapter_artifact_local_hard_mask_strict_base_fallback": (
+            args.model_adapter_artifact_local_hard_mask_strict_base_fallback
+        ),
+        "enable_adapter_artifact_overlay_on_branch_output": (
+            args.model_enable_adapter_artifact_overlay_on_branch_output
+        ),
         "enable_branch_decoder_head": args.model_enable_branch_decoder_head,
         "enable_branch_abstention_gate": args.model_enable_branch_abstention_gate,
         "enable_branch_overlap_refine_head": args.model_enable_branch_overlap_refine_head,
@@ -699,6 +792,9 @@ def build_model_config(args: argparse.Namespace) -> dict[str, int]:
         ),
         "enable_branch_overlap_refine_local_hard_mask": (
             args.model_enable_branch_overlap_refine_local_hard_mask
+        ),
+        "enable_branch_overlap_refine_artifact_hard_mask": (
+            args.model_enable_branch_overlap_refine_artifact_hard_mask
         ),
         "enable_branch_overlap_refine_present_head": args.model_enable_branch_overlap_refine_present_head,
         "enable_branch_overlap_cancel_head": args.model_enable_branch_overlap_cancel_head,
@@ -726,6 +822,15 @@ def build_model_config(args: argparse.Namespace) -> dict[str, int]:
         ),
         "enable_branch_overlap_artifact_local_bridge_head": (
             args.model_enable_branch_overlap_artifact_local_bridge_head
+        ),
+        "enable_branch_overlap_artifact_refine_head": (
+            args.model_enable_branch_overlap_artifact_refine_head
+        ),
+        "enable_branch_overlap_artifact_mask_adapter_head": (
+            args.model_enable_branch_overlap_artifact_mask_adapter_head
+        ),
+        "enable_branch_overlap_artifact_rep_adapter_head": (
+            args.model_enable_branch_overlap_artifact_rep_adapter_head
         ),
         "enable_adapter_temporal_model": args.model_enable_adapter_temporal_model,
         "adapter_gru_layers": args.model_adapter_gru_layers,
@@ -789,8 +894,35 @@ def build_model_config(args: argparse.Namespace) -> dict[str, int]:
         "branch_overlap_artifact_local_bridge_max_blend": (
             args.model_branch_overlap_artifact_local_bridge_max_blend
         ),
+        "branch_overlap_artifact_local_bridge_source_mode": (
+            args.model_branch_overlap_artifact_local_bridge_source_mode
+        ),
         "branch_overlap_artifact_local_bridge_conditioning_mode": (
             args.model_branch_overlap_artifact_local_bridge_conditioning_mode
+        ),
+        "branch_overlap_artifact_refine_max_delta": (
+            args.model_branch_overlap_artifact_refine_max_delta
+        ),
+        "branch_overlap_artifact_refine_max_blend": (
+            args.model_branch_overlap_artifact_refine_max_blend
+        ),
+        "branch_overlap_artifact_refine_conditioning_mode": (
+            args.model_branch_overlap_artifact_refine_conditioning_mode
+        ),
+        "branch_overlap_artifact_mask_adapter_max_delta": (
+            args.model_branch_overlap_artifact_mask_adapter_max_delta
+        ),
+        "branch_overlap_artifact_mask_adapter_max_blend": (
+            args.model_branch_overlap_artifact_mask_adapter_max_blend
+        ),
+        "branch_overlap_artifact_rep_adapter_max_delta": (
+            args.model_branch_overlap_artifact_rep_adapter_max_delta
+        ),
+        "branch_overlap_artifact_rep_adapter_max_blend": (
+            args.model_branch_overlap_artifact_rep_adapter_max_blend
+        ),
+        "branch_overlap_artifact_rep_adapter_conditioning_mode": (
+            args.model_branch_overlap_artifact_rep_adapter_conditioning_mode
         ),
     }
 
@@ -818,8 +950,17 @@ def build_loss_config(args: argparse.Namespace) -> dict[str, float]:
         "extra_local_waveform_weight": args.loss_extra_local_waveform_weight,
         "extra_local_waveform_extra_weight": args.loss_extra_local_waveform_extra_weight,
         "extra_local_teacher_waveform_extra_weight": args.loss_extra_local_teacher_waveform_extra_weight,
+        "artifact_local_split_teacher_waveform_extra_weight": (
+            args.loss_artifact_local_split_teacher_waveform_extra_weight
+        ),
         "artifact_local_bridge_teacher_waveform_extra_weight": (
             args.loss_artifact_local_bridge_teacher_waveform_extra_weight
+        ),
+        "artifact_local_refine_teacher_waveform_extra_weight": (
+            args.loss_artifact_local_refine_teacher_waveform_extra_weight
+        ),
+        "artifact_local_mask_adapter_teacher_waveform_extra_weight": (
+            args.loss_artifact_local_mask_adapter_teacher_waveform_extra_weight
         ),
         "extra_local_nonlocal_waveform_weight": args.loss_extra_local_nonlocal_waveform_weight,
         "pre_present_applied_delta_local_waveform_weight": (
@@ -1173,6 +1314,18 @@ def load_model_state_dict_for_init(model: nn.Module, checkpoint_state_dict: dict
         "branch_overlap_artifact_local_bridge_condition_shift.",
         "branch_overlap_artifact_local_bridge_head.",
         "branch_overlap_artifact_local_bridge_controller_head.",
+        "branch_overlap_artifact_refine_condition_proj.",
+        "branch_overlap_artifact_refine_condition_scale.",
+        "branch_overlap_artifact_refine_condition_shift.",
+        "branch_overlap_artifact_refine_head.",
+        "branch_overlap_artifact_refine_controller_head.",
+        "branch_overlap_artifact_mask_adapter_head.",
+        "branch_overlap_artifact_mask_adapter_controller_head.",
+        "branch_overlap_artifact_rep_adapter_condition_proj.",
+        "branch_overlap_artifact_rep_adapter_condition_scale.",
+        "branch_overlap_artifact_rep_adapter_condition_shift.",
+        "branch_overlap_artifact_rep_adapter_head.",
+        "branch_overlap_artifact_rep_adapter_controller_head.",
         "adapter_mask_head.",
         "adapter_condition_proj.",
         "adapter_condition_scale.",
@@ -1331,7 +1484,10 @@ def evaluate(
     total_extra_local_waveform = 0.0
     total_extra_local_waveform_extra = 0.0
     total_extra_local_teacher_waveform_extra = 0.0
+    total_artifact_local_split_teacher_waveform_extra = 0.0
     total_artifact_local_bridge_teacher_waveform_extra = 0.0
+    total_artifact_local_refine_teacher_waveform_extra = 0.0
+    total_artifact_local_mask_adapter_teacher_waveform_extra = 0.0
     total_extra_local_nonlocal_waveform = 0.0
     total_pre_present_applied_delta_local_waveform = 0.0
     total_extra_local_sisdr = 0.0
@@ -1481,7 +1637,10 @@ def evaluate(
                     extra_weight_keys=(
                         "extra_local_waveform_extra_weight",
                         "extra_local_teacher_waveform_extra_weight",
+                        "artifact_local_split_teacher_waveform_extra_weight",
                         "artifact_local_bridge_teacher_waveform_extra_weight",
+                        "artifact_local_refine_teacher_waveform_extra_weight",
+                        "artifact_local_mask_adapter_teacher_waveform_extra_weight",
                         "overlap_dual_residual_correction_local_waveform_extra_weight",
                     ),
                 )
@@ -1598,6 +1757,15 @@ def evaluate(
                 branch_overlap_artifact_local_bridge_prediction=outputs.get(
                     "estimated_waveform_post_artifact_local_bridge"
                 ),
+                branch_overlap_artifact_split_prediction=outputs.get(
+                    "estimated_waveform_split_localmasked"
+                ),
+                branch_overlap_artifact_refine_prediction=outputs.get(
+                    "estimated_waveform_post_artifact_refine"
+                ),
+                branch_overlap_artifact_mask_adapter_prediction=outputs.get(
+                    "estimated_waveform_post_artifact_mask_adapter"
+                ),
                 overlap_cancel_controller_prediction=outputs.get("branch_overlap_cancel_apply_controller"),
                 overlap_dual_controller_prediction=resolve_overlap_dual_controller_distill_prediction(
                     outputs,
@@ -1663,8 +1831,17 @@ def evaluate(
             total_extra_local_teacher_waveform_extra += (
                 float(losses.extra_local_teacher_waveform_extra_l1.item()) * batch_size
             )
+            total_artifact_local_split_teacher_waveform_extra += (
+                float(losses.artifact_local_split_teacher_waveform_extra_l1.item()) * batch_size
+            )
             total_artifact_local_bridge_teacher_waveform_extra += (
                 float(losses.artifact_local_bridge_teacher_waveform_extra_l1.item()) * batch_size
+            )
+            total_artifact_local_refine_teacher_waveform_extra += (
+                float(losses.artifact_local_refine_teacher_waveform_extra_l1.item()) * batch_size
+            )
+            total_artifact_local_mask_adapter_teacher_waveform_extra += (
+                float(losses.artifact_local_mask_adapter_teacher_waveform_extra_l1.item()) * batch_size
             )
             total_extra_local_nonlocal_waveform += float(
                 losses.extra_local_nonlocal_waveform_l1.item()
@@ -1775,7 +1952,10 @@ def evaluate(
             "extra_local_waveform_l1": 0.0,
             "extra_local_waveform_extra_l1": 0.0,
             "extra_local_teacher_waveform_extra_l1": 0.0,
+            "artifact_local_split_teacher_waveform_extra_l1": 0.0,
             "artifact_local_bridge_teacher_waveform_extra_l1": 0.0,
+            "artifact_local_refine_teacher_waveform_extra_l1": 0.0,
+            "artifact_local_mask_adapter_teacher_waveform_extra_l1": 0.0,
             "extra_local_nonlocal_waveform_l1": 0.0,
             "pre_present_applied_delta_local_waveform_l1": 0.0,
             "extra_local_sisdr_loss": 0.0,
@@ -1833,8 +2013,17 @@ def evaluate(
             "extra_local_teacher_waveform_extra_l1": (
                 total_extra_local_teacher_waveform_extra / sample_count
             ),
+            "artifact_local_split_teacher_waveform_extra_l1": (
+                total_artifact_local_split_teacher_waveform_extra / sample_count
+            ),
             "artifact_local_bridge_teacher_waveform_extra_l1": (
                 total_artifact_local_bridge_teacher_waveform_extra / sample_count
+            ),
+            "artifact_local_refine_teacher_waveform_extra_l1": (
+                total_artifact_local_refine_teacher_waveform_extra / sample_count
+            ),
+            "artifact_local_mask_adapter_teacher_waveform_extra_l1": (
+                total_artifact_local_mask_adapter_teacher_waveform_extra / sample_count
             ),
             "extra_local_nonlocal_waveform_l1": (
                 total_extra_local_nonlocal_waveform / sample_count
@@ -2030,7 +2219,10 @@ def main() -> None:
         epoch_extra_local_waveform = 0.0
         epoch_extra_local_waveform_extra = 0.0
         epoch_extra_local_teacher_waveform_extra = 0.0
+        epoch_artifact_local_split_teacher_waveform_extra = 0.0
         epoch_artifact_local_bridge_teacher_waveform_extra = 0.0
+        epoch_artifact_local_refine_teacher_waveform_extra = 0.0
+        epoch_artifact_local_mask_adapter_teacher_waveform_extra = 0.0
         epoch_extra_local_nonlocal_waveform = 0.0
         epoch_pre_present_applied_delta_local_waveform = 0.0
         epoch_extra_local_sisdr = 0.0
@@ -2180,7 +2372,10 @@ def main() -> None:
                     extra_weight_keys=(
                         "extra_local_waveform_extra_weight",
                         "extra_local_teacher_waveform_extra_weight",
+                        "artifact_local_split_teacher_waveform_extra_weight",
                         "artifact_local_bridge_teacher_waveform_extra_weight",
+                        "artifact_local_refine_teacher_waveform_extra_weight",
+                        "artifact_local_mask_adapter_teacher_waveform_extra_weight",
                         "overlap_dual_residual_correction_local_waveform_extra_weight",
                     ),
                 )
@@ -2297,6 +2492,15 @@ def main() -> None:
                 branch_overlap_artifact_local_bridge_prediction=outputs.get(
                     "estimated_waveform_post_artifact_local_bridge"
                 ),
+                branch_overlap_artifact_split_prediction=outputs.get(
+                    "estimated_waveform_split_localmasked"
+                ),
+                branch_overlap_artifact_refine_prediction=outputs.get(
+                    "estimated_waveform_post_artifact_refine"
+                ),
+                branch_overlap_artifact_mask_adapter_prediction=outputs.get(
+                    "estimated_waveform_post_artifact_mask_adapter"
+                ),
                 overlap_cancel_controller_prediction=outputs.get("branch_overlap_cancel_apply_controller"),
                 overlap_dual_controller_prediction=resolve_overlap_dual_controller_distill_prediction(
                     outputs,
@@ -2371,8 +2575,17 @@ def main() -> None:
             epoch_extra_local_teacher_waveform_extra += (
                 float(losses.extra_local_teacher_waveform_extra_l1.item()) * batch_size
             )
+            epoch_artifact_local_split_teacher_waveform_extra += (
+                float(losses.artifact_local_split_teacher_waveform_extra_l1.item()) * batch_size
+            )
             epoch_artifact_local_bridge_teacher_waveform_extra += (
                 float(losses.artifact_local_bridge_teacher_waveform_extra_l1.item()) * batch_size
+            )
+            epoch_artifact_local_refine_teacher_waveform_extra += (
+                float(losses.artifact_local_refine_teacher_waveform_extra_l1.item()) * batch_size
+            )
+            epoch_artifact_local_mask_adapter_teacher_waveform_extra += (
+                float(losses.artifact_local_mask_adapter_teacher_waveform_extra_l1.item()) * batch_size
             )
             epoch_extra_local_nonlocal_waveform += float(
                 losses.extra_local_nonlocal_waveform_l1.item()
@@ -2589,8 +2802,20 @@ def main() -> None:
                                 float(losses.extra_local_teacher_waveform_extra_l1.item()),
                                 6,
                             ),
+                            "artifact_local_split_teacher_waveform_extra_l1": round(
+                                float(losses.artifact_local_split_teacher_waveform_extra_l1.item()),
+                                6,
+                            ),
                             "artifact_local_bridge_teacher_waveform_extra_l1": round(
                                 float(losses.artifact_local_bridge_teacher_waveform_extra_l1.item()),
+                                6,
+                            ),
+                            "artifact_local_refine_teacher_waveform_extra_l1": round(
+                                float(losses.artifact_local_refine_teacher_waveform_extra_l1.item()),
+                                6,
+                            ),
+                            "artifact_local_mask_adapter_teacher_waveform_extra_l1": round(
+                                float(losses.artifact_local_mask_adapter_teacher_waveform_extra_l1.item()),
                                 6,
                             ),
                             "extra_local_nonlocal_waveform_l1": round(
@@ -2657,8 +2882,17 @@ def main() -> None:
             "extra_local_teacher_waveform_extra_l1": (
                 epoch_extra_local_teacher_waveform_extra / max(1, epoch_sample_count)
             ),
+            "artifact_local_split_teacher_waveform_extra_l1": (
+                epoch_artifact_local_split_teacher_waveform_extra / max(1, epoch_sample_count)
+            ),
             "artifact_local_bridge_teacher_waveform_extra_l1": (
                 epoch_artifact_local_bridge_teacher_waveform_extra / max(1, epoch_sample_count)
+            ),
+            "artifact_local_refine_teacher_waveform_extra_l1": (
+                epoch_artifact_local_refine_teacher_waveform_extra / max(1, epoch_sample_count)
+            ),
+            "artifact_local_mask_adapter_teacher_waveform_extra_l1": (
+                epoch_artifact_local_mask_adapter_teacher_waveform_extra / max(1, epoch_sample_count)
             ),
             "extra_local_nonlocal_waveform_l1": (
                 epoch_extra_local_nonlocal_waveform / max(1, epoch_sample_count)
@@ -2790,8 +3024,17 @@ def main() -> None:
                 "train_extra_local_teacher_waveform_extra_l1": (
                     train_metrics["extra_local_teacher_waveform_extra_l1"]
                 ),
+                "train_artifact_local_split_teacher_waveform_extra_l1": (
+                    train_metrics["artifact_local_split_teacher_waveform_extra_l1"]
+                ),
                 "train_artifact_local_bridge_teacher_waveform_extra_l1": (
                     train_metrics["artifact_local_bridge_teacher_waveform_extra_l1"]
+                ),
+                "train_artifact_local_refine_teacher_waveform_extra_l1": (
+                    train_metrics["artifact_local_refine_teacher_waveform_extra_l1"]
+                ),
+                "train_artifact_local_mask_adapter_teacher_waveform_extra_l1": (
+                    train_metrics["artifact_local_mask_adapter_teacher_waveform_extra_l1"]
                 ),
                 "train_extra_local_nonlocal_waveform_l1": (
                     train_metrics["extra_local_nonlocal_waveform_l1"]
@@ -2899,8 +3142,17 @@ def main() -> None:
                 "val_extra_local_teacher_waveform_extra_l1": (
                     val_metrics["extra_local_teacher_waveform_extra_l1"]
                 ),
+                "val_artifact_local_split_teacher_waveform_extra_l1": (
+                    val_metrics["artifact_local_split_teacher_waveform_extra_l1"]
+                ),
                 "val_artifact_local_bridge_teacher_waveform_extra_l1": (
                     val_metrics["artifact_local_bridge_teacher_waveform_extra_l1"]
+                ),
+                "val_artifact_local_refine_teacher_waveform_extra_l1": (
+                    val_metrics["artifact_local_refine_teacher_waveform_extra_l1"]
+                ),
+                "val_artifact_local_mask_adapter_teacher_waveform_extra_l1": (
+                    val_metrics["artifact_local_mask_adapter_teacher_waveform_extra_l1"]
                 ),
                 "val_extra_local_nonlocal_waveform_l1": (
                     val_metrics["extra_local_nonlocal_waveform_l1"]

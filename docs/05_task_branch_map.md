@@ -1712,6 +1712,312 @@
   `v255 / v256`
   route.
 
+### `v261`
+
+- Route:
+  `v249 + inference-only artifact hard keep-mask`
+  that reuses the exact
+  `v249`
+  weights and forces
+  `artifact_local_proxy_intervals`
+  back to
+  `estimated_waveform_post_pre_present_controller`
+  after the existing hard local split
+- Status:
+  application-only tie-to-tiny-negative closure on the same hardlocalmask family
+- Takeaway:
+  this is a clean application-level test with no optimizer noise.
+  Relative
+  `v249`,
+  the interval-aware leak probe and the fixed synthetic five-pack stay exact tie,
+  the active real artifact probes stay only tiny negative,
+  and the matched synthetic artifact-subspan read stays positive.
+  So the current real blocker is not best explained by
+  "the local writer is simply still applied inside the artifact subspan itself."
+  The next branch should change writer family or target or shared representation,
+  not keep replaying application-only vetoes on the same writer.
+
+### `v262`
+
+- Route:
+  `v249 + dedicated artifact-side bridge source swap to dual_encoded`
+  while keeping the same
+  artifact-subspan bundle,
+  teacher-anchor loss,
+  and trainable two-head bridge setup as
+  `v258`
+- Status:
+  shared-representation continuation reject on the same dedicated artifact-side bridge family
+- Takeaway:
+  this continuation is still training-real and stays strongly positive on the matched synthetic artifact-subspan asset.
+  But the active real artifact probes remain negative relative to
+  `v249`,
+  and they are also slightly worse than
+  `v258`.
+  So the bridge family is not failing only because it reads
+  `branch_encoded`
+  instead of
+  `dual_encoded`.
+  The next branch should leave this bridge shape itself,
+  not keep swapping existing encoder sources into it.
+
+### `v263` and `v264`
+
+- Route:
+  `v249 + dedicated artifact-refine writer`
+  with the same
+  artifact-subspan bundle and teacher-anchor target used by
+  `v258`,
+  but with a new writer family that rewrites the current output in refine or mask space
+  and only applies inside
+  `artifact_local_proxy_intervals`
+- Status:
+  closed dedicated artifact-refine writer family
+- Takeaway:
+  `v263`
+  is a dormant first-launch point:
+  training-real,
+  but practical tie to tiny negative on the active real artifact probes
+  and only
+  `+0.0109 dB`
+  on the matched synthetic artifact-subspan asset.
+  `v264`
+  then opens the same family through
+  `branch_overlap_artifact_refine_max_blend = 0.2`
+  and makes the synthetic read clearly positive
+  (`+0.5939 dB`,
+  `7 / 7`
+  improved relative to
+  `v249`),
+  but the active real artifact probes still move slightly negative
+  (`-0.0287 / -0.0217 dB`)
+  while the fixed synthetic five-pack and the interval-aware leak probe stay exact tie.
+  So this writer family is now closed:
+  once it is opened enough to be non-trivial,
+  it reproduces the same synthetic-positive and real-negative mismatch instead of repairing the active target-conditioned artifact confound.
+
+### `v265`
+
+- Route:
+  `v249 + dedicated artifact-mask-adapter writer`
+  with the same
+  artifact-subspan bundle and teacher-anchor target used by
+  `v258`,
+  but with a new writer family that adapts
+  `branch_decoder_mask`
+  inside
+  `artifact_local_proxy_intervals`
+- Status:
+  closed dedicated artifact-mask-adapter writer family
+- Takeaway:
+  `v265`
+  is not another dormant first-launch point.
+  The route is training-real,
+  but relative to
+  `v249`
+  the fixed synthetic five-pack and the interval-aware leak probe stay exact tie,
+  both active real artifact probes move negative
+  (`-0.1288 / -0.0859 dB`),
+  and the matched synthetic artifact-subspan asset collapses hard negative
+  (`-6.3211 dB`,
+  `7 / 7`
+  regressed).
+  So this writer family is closed immediately:
+  once activated,
+  it is already wrong on every asset that should meaningfully read it.
+
+### `v266`
+
+- Route:
+  `v249 + shared-representation artifact adapter on branch_encoded + split_localmasked artifact teacher anchor`
+- Status:
+  bounded reject
+- Good:
+  the continuation is training-real;
+  `val_artifact_local_split_teacher_waveform_extra_l1 = 0.000108`
+- Bad:
+  relative to
+  `v249`,
+  the fixed synthetic five-pack and interval-aware leak probe stay exact tie,
+  the active real artifact probes stay practical tie to tiny negative
+  (`-0.0061 / -0.0006 dB`),
+  and the matched synthetic artifact-subspan asset regresses
+  `-1.7634 dB`
+- Takeaway:
+  adding artifact-only shared-representation capacity on
+  `branch_encoded`
+  is not enough with the current
+  `split_localmasked`
+  teacher-anchor target
+
+### `v267-smoke`
+
+- Route:
+  `v249 + ref-conditioned shared-representation artifact adapter + split_localmasked artifact teacher anchor`
+- Status:
+  bounded smoke reject
+- Good:
+  the new conditioning path is training-real;
+  `val_artifact_local_split_teacher_waveform_extra_l1 = 0.000116`
+- Bad:
+  relative to
+  `v249`,
+  the active real artifact probes stay practical tie to tiny negative
+  (`-0.0002 / -0.0001 dB`),
+  the interval-aware leak probe stays exact tie,
+  and the matched synthetic artifact-subspan asset is already slightly negative
+  (`-0.0011 dB`)
+- Takeaway:
+  explicit `ref_film` conditioning does not rescue the current
+  shared-representation artifact adapter family on top of the
+  `split_localmasked`
+  teacher-anchor target
+
+### `v268-smoke`
+
+- Route:
+  `v249 + ref-conditioned artifact-refine writer + artifact-subspan teacher anchor`
+- Status:
+  bounded smoke reject
+- Good:
+  the new conditioning path is training-real;
+  `val_artifact_local_refine_teacher_waveform_extra_l1 = 0.000116`
+- Bad:
+  relative to
+  `v249`,
+  the active real artifact probes stay practical tie to tiny negative
+  (`-0.0002 / -0.0001 dB`),
+  the interval-aware leak probe stays exact tie,
+  and the matched synthetic artifact-subspan asset only reaches a tiny positive
+  (`+0.0042 dB`)
+- Takeaway:
+  explicit `ref_film` conditioning does not rescue the current
+  artifact-refine writer family on top of the
+  artifact-subspan teacher-anchor target
+
+### `v269-smoke`
+
+- Route:
+  `v249 trunk init + adapter_mask_head + adapter ref_film + adapter temporal model + artifact-subspan teacher anchor`
+- Status:
+  bounded smoke reject, but scientifically useful
+- Good:
+  the branch is clearly training-real;
+  both active real artifact probes improve strongly
+  (`+0.5616 / +0.6922 dB`)
+- Bad:
+  relative to
+  `v249`,
+  the interval-aware leak probe regresses
+  `-0.1445 dB`,
+  the matched synthetic artifact-subspan asset collapses
+  `-6.6013 dB`,
+  and the fixed synthetic five-pack collapses
+  (`-5.5675 / -2.2940 / -2.1554 / -2.6716 / +0.2287 dB`)
+- Takeaway:
+  a much more independent adapter branch can reach the real artifact blocker,
+  but not with acceptable guardrail control under the current objective family
+
+### `v270-smoke`
+
+- Route:
+  `v249 trunk init + adapter_mask_head + adapter ref_film + adapter temporal model + adapter artifact-local hard mask + artifact-subspan teacher anchor`
+- Status:
+  bounded smoke reject, but scientifically useful
+- Good:
+  the branch stays clearly training-real;
+  both active real artifact probes remain strongly positive
+  (`+0.3988 / +0.5629 dB`)
+  and the interval-aware leak probe is largely repaired back to near tie
+  (`-0.0125 dB`)
+- Bad:
+  relative to
+  `v249`,
+  the matched synthetic artifact-subspan asset still collapses
+  `-6.5835 dB`,
+  and the fixed synthetic five-pack still collapses
+  (`-8.0302 / -2.4539 / -2.1597 / -2.9470 / +0.4976 dB`)
+- Takeaway:
+  localizing the adapter writeback helps,
+  but the current adapter family still needs explicit guardrail control,
+  not just a tighter application window
+
+### `v271-smoke`
+
+- Route:
+  `v270-smoke + strict base fallback when no artifact-local interval exists`
+- Status:
+  bounded smoke reject
+- Good:
+  none beyond confirming the new semantics are safely measurable
+- Bad:
+  relative to
+  `v270-smoke`,
+  the smoke read is exact tie on the active real artifact probes,
+  the interval-aware leak probe,
+  and the checked fixed synthetic guardrail reads;
+  relative to
+  `v249`,
+  the branch still reads
+  `-8.0302 / -2.4539 / -2.1597 / -2.9470 / +0.4976 dB`
+  on the fixed synthetic five-pack,
+  `-0.0125 dB`
+  on the interval-aware leak probe,
+  and
+  `+0.3988 / +0.5629 dB`
+  on the active real artifact probes
+- Takeaway:
+  the strict-fallback semantic axis is operationally dormant on the current adapter family
+
+### `v272-smoke`
+
+- Route:
+  `v270-smoke + 5x reconstruction-extra or teacher-overlap or absent-extra guardrail weights`
+- Status:
+  bounded smoke reject
+- Good:
+  none beyond showing that the branch is not blocked on small guardrail scalars
+- Bad:
+  relative to
+  `v249`,
+  the branch still reads
+  `-8.0302 / -2.4539 / -2.1597 / -2.9470 / +0.4976 dB`
+  on the fixed synthetic five-pack,
+  `-0.0125 dB`
+  on the interval-aware leak probe,
+  `+0.3966 / +0.5626 dB`
+  on the active real artifact probes,
+  and
+  `-6.5616 dB`
+  on the matched synthetic artifact-subspan asset;
+  relative to
+  `v270-smoke`,
+  the branch is practical tie
+- Takeaway:
+  simple scalar guardrail retunes do not move the current adapter artifact family into a controlled regime
+
+### `v273`
+
+- Route:
+  `v249 trunk route + adapter_mask_head + adapter ref_film + adapter temporal model + adapter artifact overlay on branch output + artifact-subspan teacher anchor`
+- Status:
+  active frontier mixed candidate
+- Good:
+  relative to
+  `v249`,
+  the fixed synthetic five-pack and the interval-aware leak probe stay exact tie,
+  while
+  `near_real_interval_artifact_probe_v2 / near_real_interval_artifact_probe_v3_subspan`
+  stay clearly positive
+  (`+0.3936 / +0.5627 dB`)
+- Bad:
+  the matched synthetic artifact-subspan asset remains strongly negative
+  (`-6.5760 dB`,
+  `1 improved / 6 regressed`)
+- Takeaway:
+  the hybrid overlay appears to solve the earlier guardrail-control problem on the adapter family,
+  but it does not yet align the matched synthetic artifact-subspan asset with the real target-conditioned artifact confound
+
 ## Closed Branch Families
 
 - `predicted_activity` direct-apply family
@@ -1725,6 +2031,10 @@
 - same-head outside-overlap abstain reweight
 - cancel-head plus controller joint unfreeze alone
 - target-projection weight sweep
+- dedicated artifact-side bridge family
+- dedicated artifact-refine writer family
+- dedicated artifact-mask-adapter writer family
+- artifact representation adapter family on top of `split_localmasked`
 - broader-path waveform-local weight sweep
 - broader-path `gate_pre_present_keep_weight` sweep on top of `v179`
 - broader-path keep-critical reconstruction guard on top of `v179`
@@ -1909,6 +2219,20 @@
 - if the hardlocalmask family continues after
   `v259`,
   do not keep reusing the same dedicated artifact-side bridge with another small booster-asset swap
+- if the hardlocalmask family continues after
+  `v261`,
+  do not keep replaying application-only artifact hard keep-mask or veto variants on the same
+  `split_localmasked`
+  writer
+- if the hardlocalmask family continues after
+  `v262`,
+  do not keep replaying source-mode swaps on the same dedicated artifact-side bridge family
+  and do not keep replaying the same artifact-refine writer through
+  `max_blend`
+  or teacher-anchor scalar retunes
+- do not replay `v265` as a dormant launch or as a promising writer that only needs
+  `max_blend`
+  or teacher-anchor micro-sweeps
 - a more structural writable-path change than direct local-window quality supervision on `estimated_waveform_post_pre_present_controller`
 - only if needed, a materially larger path change with disjoint keep and local supervision paths
 
@@ -2029,3 +2353,76 @@
   `v258`
   and weakens the synthetic artifact-subspan read at the same time.
   Treat that as evidence that the bridge family itself is the likely bottleneck.
+- Do not replay `v260` as another conditioning-mode sweep on the same dedicated artifact-side bridge family.
+  The explicit
+  `ref_film`
+  continuation keeps the matched synthetic artifact-subspan read strongly positive,
+  but both active real artifact probes still regress relative to
+  `v249`,
+  while the fixed synthetic five-pack and the interval-aware leak probe stay exact tie.
+  Treat that as evidence that the next change must leave this writer family,
+  not just change its conditioning.
+- Do not replay `v261` as another application-only artifact hard keep-mask or veto variant on top of
+  `v249`.
+  The inference-only replay is a clean downstream-application test with no optimizer noise,
+  and it still leaves the active real artifact probes at practical tie to tiny negative relative to
+  `v249`.
+  Treat that as evidence that the next change must leave simple application-only vetoes on the same writer.
+- Do not replay `v262` as another source-mode sweep on the same dedicated artifact-side bridge family.
+  The `dual_encoded` continuation stays strongly positive on the matched synthetic artifact-subspan asset,
+  but both active real artifact probes still regress relative to
+  `v249`
+  and are slightly worse than
+  `v258`.
+  Treat that as evidence that the next change must leave this bridge shape,
+  not only choose a different existing encoder source for it.
+- Do not replay `v263` as a dormant first-launch point that only needs more patience on the same settings.
+  The first artifact-refine writer point is training-real but effectively dormant on all active reads.
+  Use it only as the family launch control,
+  not as evidence that the family is safe or promising.
+- Do not replay `v264` as another `max_blend` or teacher-anchor small sweep on the same artifact-refine writer family.
+  Once the family is opened enough to become clearly positive on the matched synthetic artifact-subspan asset,
+  it still moves the active real artifact probes slightly negative relative to
+  `v249`
+  while leaving the fixed synthetic five-pack and the interval-aware leak probe exact tie.
+  Treat that as evidence that the next change must leave this writer family,
+  not keep opening the same application scale.
+- Do not replay `v265` as another first-launch artifact writer that only needs more patience.
+  The dedicated artifact-mask-adapter family is already wrong-way on both active real artifact probes and on the matched synthetic artifact-subspan asset,
+  while the fixed synthetic five-pack and interval-aware leak probe stay exact tie.
+  Treat that as evidence that the next artifact-side branch must leave this writer family entirely.
+- Do not replay `v266` as a representation-only `max_blend` micro-sweep on the same
+  `split_localmasked`
+  writer and teacher-anchor target family.
+  The continuation is training-real,
+  but output-facing real reads stay dormant
+  while the matched synthetic artifact-subspan asset already turns negative relative to
+  `v249`.
+- Do not replay `v267-smoke` as a same-family conditioning retune.
+  Explicit `ref_film` conditioning is already training-real on the current
+  shared-representation artifact adapter family,
+  but the active real artifact probes still stay practical tie to tiny negative
+  while the matched synthetic artifact-subspan asset is still slightly negative.
+- Do not replay `v268-smoke` as a same-family conditioning retune.
+  Explicit `ref_film` conditioning is already training-real on the current
+  artifact-refine writer family,
+  but the active real artifact probes still stay practical tie to tiny negative
+  while the matched synthetic artifact-subspan asset only reaches a tiny positive.
+- Do not replay `v269-smoke` as a simple full run or `adapter_mask_max_delta` retune.
+  The current adapter-branch artifact family is already strongly positive on both active real artifact probes,
+  but it collapses the interval-aware leak probe and the fixed synthetic guardrails.
+  Treat that as evidence that any continuation on this family must add explicit keep or leak control,
+  not simply open the same adapter branch further.
+- Do not replay `v270-smoke` as another hard-mask localization or `adapter_mask_max_delta` retune.
+  The hard local mask already preserves most of the real artifact gain
+  and largely repairs the interval-aware leak probe,
+  but the fixed synthetic guardrails and the matched synthetic artifact-subspan asset still collapse.
+  Treat that as evidence that the next continuation on this family must add explicit guardrail control,
+  not merely tighter localization.
+- Do not replay `v273` as another keep or abstention scalar retune on the same adapter family.
+  The hybrid overlay already leaves the fixed synthetic five-pack and the interval-aware leak probe
+  exact tie to
+  `v249`
+  while keeping both active real artifact probes clearly positive.
+  Treat the remaining blocker as the still-negative matched synthetic artifact-subspan asset,
+  not as another fixed-synthetic guardrail-control problem.

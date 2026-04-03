@@ -19,11 +19,15 @@ class STFTMaskBaseline(nn.Module):
         gru_layers: int = 2,
         conditioning_mode: str = "ref_film",
         enable_adapter_mask_head: bool = False,
+        enable_adapter_artifact_local_hard_mask: bool = False,
+        adapter_artifact_local_hard_mask_strict_base_fallback: bool = False,
+        enable_adapter_artifact_overlay_on_branch_output: bool = False,
         enable_branch_decoder_head: bool = False,
         enable_branch_abstention_gate: bool = False,
         enable_branch_overlap_refine_head: bool = False,
         enable_branch_overlap_refine_apply_controller: bool = False,
         enable_branch_overlap_refine_local_hard_mask: bool = False,
+        enable_branch_overlap_refine_artifact_hard_mask: bool = False,
         branch_overlap_refine_local_hard_mask_source: str = "refine_base",
         enable_branch_overlap_refine_present_head: bool = False,
         enable_branch_overlap_cancel_head: bool = False,
@@ -36,6 +40,9 @@ class STFTMaskBaseline(nn.Module):
         enable_branch_overlap_dual_residual_correction_head: bool = False,
         enable_branch_overlap_dual_local_bridge_head: bool = False,
         enable_branch_overlap_artifact_local_bridge_head: bool = False,
+        enable_branch_overlap_artifact_refine_head: bool = False,
+        enable_branch_overlap_artifact_mask_adapter_head: bool = False,
+        enable_branch_overlap_artifact_rep_adapter_head: bool = False,
         enable_adapter_temporal_model: bool = False,
         adapter_gru_layers: int = 1,
         adapter_conditioning_mode: str = "none",
@@ -77,7 +84,16 @@ class STFTMaskBaseline(nn.Module):
         branch_overlap_dual_local_bridge_max_blend: float = 0.0,
         branch_overlap_artifact_local_bridge_max_delta: float = 0.15,
         branch_overlap_artifact_local_bridge_max_blend: float = 0.0,
+        branch_overlap_artifact_local_bridge_source_mode: str = "branch_encoded",
         branch_overlap_artifact_local_bridge_conditioning_mode: str = "none",
+        branch_overlap_artifact_refine_max_delta: float = 0.15,
+        branch_overlap_artifact_refine_max_blend: float = 0.0,
+        branch_overlap_artifact_refine_conditioning_mode: str = "none",
+        branch_overlap_artifact_mask_adapter_max_delta: float = 0.15,
+        branch_overlap_artifact_mask_adapter_max_blend: float = 0.0,
+        branch_overlap_artifact_rep_adapter_max_delta: float = 0.5,
+        branch_overlap_artifact_rep_adapter_max_blend: float = 0.0,
+        branch_overlap_artifact_rep_adapter_conditioning_mode: str = "none",
     ) -> None:
         super().__init__()
         self.n_fft = n_fft
@@ -86,6 +102,13 @@ class STFTMaskBaseline(nn.Module):
         self.freq_bins = (n_fft // 2) + 1
         self.conditioning_mode = conditioning_mode
         self.enable_adapter_mask_head = enable_adapter_mask_head
+        self.enable_adapter_artifact_local_hard_mask = enable_adapter_artifact_local_hard_mask
+        self.adapter_artifact_local_hard_mask_strict_base_fallback = (
+            adapter_artifact_local_hard_mask_strict_base_fallback
+        )
+        self.enable_adapter_artifact_overlay_on_branch_output = (
+            enable_adapter_artifact_overlay_on_branch_output
+        )
         self.enable_branch_decoder_head = enable_branch_decoder_head
         self.enable_branch_abstention_gate = enable_branch_abstention_gate
         self.enable_branch_overlap_refine_head = enable_branch_overlap_refine_head
@@ -94,6 +117,9 @@ class STFTMaskBaseline(nn.Module):
         )
         self.enable_branch_overlap_refine_local_hard_mask = (
             enable_branch_overlap_refine_local_hard_mask
+        )
+        self.enable_branch_overlap_refine_artifact_hard_mask = (
+            enable_branch_overlap_refine_artifact_hard_mask
         )
         self.branch_overlap_refine_local_hard_mask_source = (
             branch_overlap_refine_local_hard_mask_source
@@ -118,6 +144,15 @@ class STFTMaskBaseline(nn.Module):
         )
         self.enable_branch_overlap_artifact_local_bridge_head = (
             enable_branch_overlap_artifact_local_bridge_head
+        )
+        self.enable_branch_overlap_artifact_refine_head = (
+            enable_branch_overlap_artifact_refine_head
+        )
+        self.enable_branch_overlap_artifact_mask_adapter_head = (
+            enable_branch_overlap_artifact_mask_adapter_head
+        )
+        self.enable_branch_overlap_artifact_rep_adapter_head = (
+            enable_branch_overlap_artifact_rep_adapter_head
         )
         self.enable_adapter_temporal_model = enable_adapter_temporal_model
         self.adapter_conditioning_mode = adapter_conditioning_mode
@@ -173,12 +208,65 @@ class STFTMaskBaseline(nn.Module):
         self.branch_overlap_artifact_local_bridge_max_blend = (
             branch_overlap_artifact_local_bridge_max_blend
         )
+        self.branch_overlap_artifact_local_bridge_source_mode = (
+            branch_overlap_artifact_local_bridge_source_mode
+        )
         self.branch_overlap_artifact_local_bridge_conditioning_mode = (
             branch_overlap_artifact_local_bridge_conditioning_mode
         )
+        self.branch_overlap_artifact_refine_max_delta = (
+            branch_overlap_artifact_refine_max_delta
+        )
+        self.branch_overlap_artifact_refine_max_blend = (
+            branch_overlap_artifact_refine_max_blend
+        )
+        self.branch_overlap_artifact_refine_conditioning_mode = (
+            branch_overlap_artifact_refine_conditioning_mode
+        )
+        self.branch_overlap_artifact_mask_adapter_max_delta = (
+            branch_overlap_artifact_mask_adapter_max_delta
+        )
+        self.branch_overlap_artifact_mask_adapter_max_blend = (
+            branch_overlap_artifact_mask_adapter_max_blend
+        )
+        self.branch_overlap_artifact_rep_adapter_max_delta = (
+            branch_overlap_artifact_rep_adapter_max_delta
+        )
+        self.branch_overlap_artifact_rep_adapter_max_blend = (
+            branch_overlap_artifact_rep_adapter_max_blend
+        )
+        self.branch_overlap_artifact_rep_adapter_conditioning_mode = (
+            branch_overlap_artifact_rep_adapter_conditioning_mode
+        )
 
-        if enable_adapter_mask_head and enable_branch_decoder_head:
-            raise ValueError("Adapter mask head and branch decoder head are mutually exclusive for now.")
+        if (
+            enable_adapter_mask_head
+            and enable_branch_decoder_head
+            and not enable_adapter_artifact_overlay_on_branch_output
+        ):
+            raise ValueError(
+                "Adapter mask head and branch decoder head are mutually exclusive unless "
+                "enable_adapter_artifact_overlay_on_branch_output is set."
+            )
+        if enable_adapter_artifact_local_hard_mask and not enable_adapter_mask_head:
+            raise ValueError(
+                "Adapter artifact local hard mask requires enable_adapter_mask_head."
+            )
+        if (
+            adapter_artifact_local_hard_mask_strict_base_fallback
+            and not enable_adapter_artifact_local_hard_mask
+        ):
+                raise ValueError(
+                    "Adapter artifact local hard mask strict base fallback requires "
+                    "enable_adapter_artifact_local_hard_mask."
+                )
+        if enable_adapter_artifact_overlay_on_branch_output and not (
+            enable_adapter_mask_head and enable_branch_decoder_head
+        ):
+            raise ValueError(
+                "Adapter artifact overlay on branch output requires both "
+                "enable_adapter_mask_head and enable_branch_decoder_head."
+            )
         if enable_branch_abstention_gate and not enable_branch_decoder_head:
             raise ValueError("Branch abstention gate requires enable_branch_decoder_head.")
         if enable_branch_overlap_refine_head and not enable_branch_decoder_head:
@@ -190,6 +278,14 @@ class STFTMaskBaseline(nn.Module):
         if enable_branch_overlap_refine_local_hard_mask and not enable_branch_overlap_refine_head:
             raise ValueError(
                 "Branch overlap refine local hard mask requires enable_branch_overlap_refine_head."
+            )
+        if (
+            enable_branch_overlap_refine_artifact_hard_mask
+            and not enable_branch_overlap_refine_local_hard_mask
+        ):
+            raise ValueError(
+                "Branch overlap refine artifact hard mask requires "
+                "enable_branch_overlap_refine_local_hard_mask."
             )
         if (
             enable_branch_overlap_refine_local_hard_mask
@@ -260,6 +356,25 @@ class STFTMaskBaseline(nn.Module):
         if enable_branch_overlap_dual_local_bridge_head and not enable_branch_overlap_dual_decoder_head:
             raise ValueError(
                 "Branch overlap dual local bridge head requires enable_branch_overlap_dual_decoder_head."
+            )
+        if enable_branch_overlap_artifact_refine_head and not enable_branch_decoder_head:
+            raise ValueError("Branch overlap artifact refine head requires enable_branch_decoder_head.")
+        if enable_branch_overlap_artifact_mask_adapter_head and not enable_branch_decoder_head:
+            raise ValueError(
+                "Branch overlap artifact mask adapter head requires enable_branch_decoder_head."
+            )
+        if enable_branch_overlap_artifact_rep_adapter_head and not enable_branch_decoder_head:
+            raise ValueError(
+                "Branch overlap artifact representation adapter requires enable_branch_decoder_head."
+            )
+        if (
+            enable_branch_overlap_artifact_local_bridge_head
+            and branch_overlap_artifact_local_bridge_source_mode == "dual_encoded"
+            and not enable_branch_overlap_dual_decoder_head
+        ):
+            raise ValueError(
+                "Branch overlap artifact local bridge with dual_encoded source requires "
+                "enable_branch_overlap_dual_decoder_head."
             )
         if branch_overlap_refine_gate_mode not in ("none", "gate", "complement"):
             raise ValueError(
@@ -394,6 +509,14 @@ class STFTMaskBaseline(nn.Module):
             raise ValueError(
                 "branch_overlap_artifact_local_bridge_max_blend must satisfy 0.0 <= blend <= 1.0."
             )
+        if branch_overlap_artifact_local_bridge_source_mode not in (
+            "branch_encoded",
+            "dual_encoded",
+        ):
+            raise ValueError(
+                "branch_overlap_artifact_local_bridge_source_mode must be one of: "
+                "branch_encoded, dual_encoded."
+            )
         if branch_overlap_artifact_local_bridge_conditioning_mode not in (
             "none",
             "ref_bias",
@@ -401,6 +524,42 @@ class STFTMaskBaseline(nn.Module):
         ):
             raise ValueError(
                 "branch_overlap_artifact_local_bridge_conditioning_mode must be one of: "
+                "none, ref_bias, ref_film."
+            )
+        if branch_overlap_artifact_refine_max_delta <= 0.0:
+            raise ValueError("branch_overlap_artifact_refine_max_delta must be positive.")
+        if not 0.0 <= branch_overlap_artifact_refine_max_blend <= 1.0:
+            raise ValueError(
+                "branch_overlap_artifact_refine_max_blend must satisfy 0.0 <= blend <= 1.0."
+            )
+        if branch_overlap_artifact_refine_conditioning_mode not in (
+            "none",
+            "ref_bias",
+            "ref_film",
+        ):
+            raise ValueError(
+                "branch_overlap_artifact_refine_conditioning_mode must be one of: "
+                "none, ref_bias, ref_film."
+            )
+        if branch_overlap_artifact_mask_adapter_max_delta <= 0.0:
+            raise ValueError("branch_overlap_artifact_mask_adapter_max_delta must be positive.")
+        if not 0.0 <= branch_overlap_artifact_mask_adapter_max_blend <= 1.0:
+            raise ValueError(
+                "branch_overlap_artifact_mask_adapter_max_blend must satisfy 0.0 <= blend <= 1.0."
+            )
+        if branch_overlap_artifact_rep_adapter_max_delta <= 0.0:
+            raise ValueError("branch_overlap_artifact_rep_adapter_max_delta must be positive.")
+        if not 0.0 <= branch_overlap_artifact_rep_adapter_max_blend <= 1.0:
+            raise ValueError(
+                "branch_overlap_artifact_rep_adapter_max_blend must satisfy 0.0 <= blend <= 1.0."
+            )
+        if branch_overlap_artifact_rep_adapter_conditioning_mode not in (
+            "none",
+            "ref_bias",
+            "ref_film",
+        ):
+            raise ValueError(
+                "branch_overlap_artifact_rep_adapter_conditioning_mode must be one of: "
                 "none, ref_bias, ref_film."
             )
         if branch_overlap_dual_decoder_apply_mode == "gate_controller" and not enable_branch_abstention_gate:
@@ -530,6 +689,106 @@ class STFTMaskBaseline(nn.Module):
                 self.branch_overlap_artifact_local_bridge_condition_shift = None
                 self.branch_overlap_artifact_local_bridge_head = None
                 self.branch_overlap_artifact_local_bridge_controller_head = None
+            if enable_branch_overlap_artifact_refine_head:
+                artifact_refine_hidden_dim = hidden_dim * 2
+                if branch_overlap_artifact_refine_conditioning_mode == "none":
+                    self.branch_overlap_artifact_refine_condition_proj = None
+                    self.branch_overlap_artifact_refine_condition_scale = None
+                    self.branch_overlap_artifact_refine_condition_shift = None
+                elif branch_overlap_artifact_refine_conditioning_mode == "ref_bias":
+                    self.branch_overlap_artifact_refine_condition_proj = nn.Linear(
+                        reference_dim,
+                        artifact_refine_hidden_dim,
+                    )
+                    self.branch_overlap_artifact_refine_condition_scale = None
+                    self.branch_overlap_artifact_refine_condition_shift = None
+                else:
+                    self.branch_overlap_artifact_refine_condition_proj = None
+                    self.branch_overlap_artifact_refine_condition_scale = nn.Linear(
+                        reference_dim,
+                        artifact_refine_hidden_dim,
+                    )
+                    self.branch_overlap_artifact_refine_condition_shift = nn.Linear(
+                        reference_dim,
+                        artifact_refine_hidden_dim,
+                    )
+                self.branch_overlap_artifact_refine_head = nn.Sequential(
+                    nn.Linear(hidden_dim * 2, hidden_dim),
+                    nn.ReLU(),
+                    nn.Linear(hidden_dim, self.freq_bins * 2),
+                )
+                self.branch_overlap_artifact_refine_controller_head = nn.Sequential(
+                    nn.Linear(hidden_dim * 2, hidden_dim),
+                    nn.ReLU(),
+                    nn.Linear(hidden_dim, 1),
+                )
+                self.reset_branch_overlap_artifact_refine_head()
+                self.reset_branch_overlap_artifact_refine_controller_head()
+                self.reset_branch_overlap_artifact_refine_conditioning()
+            else:
+                self.branch_overlap_artifact_refine_condition_proj = None
+                self.branch_overlap_artifact_refine_condition_scale = None
+                self.branch_overlap_artifact_refine_condition_shift = None
+                self.branch_overlap_artifact_refine_head = None
+                self.branch_overlap_artifact_refine_controller_head = None
+            if enable_branch_overlap_artifact_mask_adapter_head:
+                self.branch_overlap_artifact_mask_adapter_head = nn.Sequential(
+                    nn.Linear(hidden_dim * 2, hidden_dim),
+                    nn.ReLU(),
+                    nn.Linear(hidden_dim, self.freq_bins),
+                )
+                self.branch_overlap_artifact_mask_adapter_controller_head = nn.Sequential(
+                    nn.Linear(hidden_dim * 2, hidden_dim),
+                    nn.ReLU(),
+                    nn.Linear(hidden_dim, 1),
+                )
+                self.reset_branch_overlap_artifact_mask_adapter_head()
+                self.reset_branch_overlap_artifact_mask_adapter_controller_head()
+            else:
+                self.branch_overlap_artifact_mask_adapter_head = None
+                self.branch_overlap_artifact_mask_adapter_controller_head = None
+            if enable_branch_overlap_artifact_rep_adapter_head:
+                artifact_rep_adapter_hidden_dim = hidden_dim * 2
+                if branch_overlap_artifact_rep_adapter_conditioning_mode == "none":
+                    self.branch_overlap_artifact_rep_adapter_condition_proj = None
+                    self.branch_overlap_artifact_rep_adapter_condition_scale = None
+                    self.branch_overlap_artifact_rep_adapter_condition_shift = None
+                elif branch_overlap_artifact_rep_adapter_conditioning_mode == "ref_bias":
+                    self.branch_overlap_artifact_rep_adapter_condition_proj = nn.Linear(
+                        reference_dim,
+                        artifact_rep_adapter_hidden_dim,
+                    )
+                    self.branch_overlap_artifact_rep_adapter_condition_scale = None
+                    self.branch_overlap_artifact_rep_adapter_condition_shift = None
+                else:
+                    self.branch_overlap_artifact_rep_adapter_condition_proj = None
+                    self.branch_overlap_artifact_rep_adapter_condition_scale = nn.Linear(
+                        reference_dim,
+                        artifact_rep_adapter_hidden_dim,
+                    )
+                    self.branch_overlap_artifact_rep_adapter_condition_shift = nn.Linear(
+                        reference_dim,
+                        artifact_rep_adapter_hidden_dim,
+                    )
+                self.branch_overlap_artifact_rep_adapter_head = nn.Sequential(
+                    nn.Linear(hidden_dim * 2, hidden_dim),
+                    nn.ReLU(),
+                    nn.Linear(hidden_dim, hidden_dim * 2),
+                )
+                self.branch_overlap_artifact_rep_adapter_controller_head = nn.Sequential(
+                    nn.Linear(hidden_dim * 2, hidden_dim),
+                    nn.ReLU(),
+                    nn.Linear(hidden_dim, 1),
+                )
+                self.reset_branch_overlap_artifact_rep_adapter_head()
+                self.reset_branch_overlap_artifact_rep_adapter_controller_head()
+                self.reset_branch_overlap_artifact_rep_adapter_conditioning()
+            else:
+                self.branch_overlap_artifact_rep_adapter_condition_proj = None
+                self.branch_overlap_artifact_rep_adapter_condition_scale = None
+                self.branch_overlap_artifact_rep_adapter_condition_shift = None
+                self.branch_overlap_artifact_rep_adapter_head = None
+                self.branch_overlap_artifact_rep_adapter_controller_head = None
             if enable_branch_overlap_refine_apply_controller:
                 self.branch_overlap_refine_apply_controller_head = nn.Sequential(
                     nn.Linear(hidden_dim * 2, hidden_dim),
@@ -680,6 +939,18 @@ class STFTMaskBaseline(nn.Module):
             self.branch_overlap_artifact_local_bridge_condition_shift = None
             self.branch_overlap_artifact_local_bridge_head = None
             self.branch_overlap_artifact_local_bridge_controller_head = None
+            self.branch_overlap_artifact_refine_head = None
+            self.branch_overlap_artifact_refine_controller_head = None
+            self.branch_overlap_artifact_refine_condition_proj = None
+            self.branch_overlap_artifact_refine_condition_scale = None
+            self.branch_overlap_artifact_refine_condition_shift = None
+            self.branch_overlap_artifact_mask_adapter_head = None
+            self.branch_overlap_artifact_mask_adapter_controller_head = None
+            self.branch_overlap_artifact_rep_adapter_head = None
+            self.branch_overlap_artifact_rep_adapter_controller_head = None
+            self.branch_overlap_artifact_rep_adapter_condition_proj = None
+            self.branch_overlap_artifact_rep_adapter_condition_scale = None
+            self.branch_overlap_artifact_rep_adapter_condition_shift = None
             self.branch_overlap_dual_decoder_temporal_model = None
             self.branch_overlap_dual_decoder_head = None
             self.branch_overlap_dual_monitor_controller_head = None
@@ -888,6 +1159,70 @@ class STFTMaskBaseline(nn.Module):
             nn.init.zeros_(self.branch_overlap_artifact_local_bridge_condition_shift.weight)
             nn.init.zeros_(self.branch_overlap_artifact_local_bridge_condition_shift.bias)
 
+    def reset_branch_overlap_artifact_refine_head(self) -> None:
+        if self.branch_overlap_artifact_refine_head is None:
+            return
+        final_layer = self.branch_overlap_artifact_refine_head[-1]
+        nn.init.zeros_(final_layer.weight)
+        nn.init.zeros_(final_layer.bias)
+
+    def reset_branch_overlap_artifact_refine_controller_head(self) -> None:
+        if self.branch_overlap_artifact_refine_controller_head is None:
+            return
+        final_layer = self.branch_overlap_artifact_refine_controller_head[-1]
+        nn.init.zeros_(final_layer.weight)
+        nn.init.constant_(final_layer.bias, -4.0)
+
+    def reset_branch_overlap_artifact_refine_conditioning(self) -> None:
+        if self.branch_overlap_artifact_refine_condition_proj is not None:
+            nn.init.zeros_(self.branch_overlap_artifact_refine_condition_proj.weight)
+            nn.init.zeros_(self.branch_overlap_artifact_refine_condition_proj.bias)
+        if self.branch_overlap_artifact_refine_condition_scale is not None:
+            nn.init.zeros_(self.branch_overlap_artifact_refine_condition_scale.weight)
+            nn.init.zeros_(self.branch_overlap_artifact_refine_condition_scale.bias)
+        if self.branch_overlap_artifact_refine_condition_shift is not None:
+            nn.init.zeros_(self.branch_overlap_artifact_refine_condition_shift.weight)
+            nn.init.zeros_(self.branch_overlap_artifact_refine_condition_shift.bias)
+
+    def reset_branch_overlap_artifact_mask_adapter_head(self) -> None:
+        if self.branch_overlap_artifact_mask_adapter_head is None:
+            return
+        final_layer = self.branch_overlap_artifact_mask_adapter_head[-1]
+        nn.init.zeros_(final_layer.weight)
+        nn.init.zeros_(final_layer.bias)
+
+    def reset_branch_overlap_artifact_mask_adapter_controller_head(self) -> None:
+        if self.branch_overlap_artifact_mask_adapter_controller_head is None:
+            return
+        final_layer = self.branch_overlap_artifact_mask_adapter_controller_head[-1]
+        nn.init.zeros_(final_layer.weight)
+        nn.init.constant_(final_layer.bias, -4.0)
+
+    def reset_branch_overlap_artifact_rep_adapter_head(self) -> None:
+        if self.branch_overlap_artifact_rep_adapter_head is None:
+            return
+        final_layer = self.branch_overlap_artifact_rep_adapter_head[-1]
+        nn.init.zeros_(final_layer.weight)
+        nn.init.zeros_(final_layer.bias)
+
+    def reset_branch_overlap_artifact_rep_adapter_controller_head(self) -> None:
+        if self.branch_overlap_artifact_rep_adapter_controller_head is None:
+            return
+        final_layer = self.branch_overlap_artifact_rep_adapter_controller_head[-1]
+        nn.init.zeros_(final_layer.weight)
+        nn.init.constant_(final_layer.bias, -4.0)
+
+    def reset_branch_overlap_artifact_rep_adapter_conditioning(self) -> None:
+        if self.branch_overlap_artifact_rep_adapter_condition_proj is not None:
+            nn.init.zeros_(self.branch_overlap_artifact_rep_adapter_condition_proj.weight)
+            nn.init.zeros_(self.branch_overlap_artifact_rep_adapter_condition_proj.bias)
+        if self.branch_overlap_artifact_rep_adapter_condition_scale is not None:
+            nn.init.zeros_(self.branch_overlap_artifact_rep_adapter_condition_scale.weight)
+            nn.init.zeros_(self.branch_overlap_artifact_rep_adapter_condition_scale.bias)
+        if self.branch_overlap_artifact_rep_adapter_condition_shift is not None:
+            nn.init.zeros_(self.branch_overlap_artifact_rep_adapter_condition_shift.weight)
+            nn.init.zeros_(self.branch_overlap_artifact_rep_adapter_condition_shift.bias)
+
     @staticmethod
     def apply_blend_floor(
         blend: torch.Tensor,
@@ -1016,6 +1351,46 @@ class STFTMaskBaseline(nn.Module):
                     mask[sample_index, start_index:end_index] = 1.0
         return mask
 
+    @staticmethod
+    def build_frame_interval_mask(
+        intervals_batch: list[list[dict[str, float]]] | None,
+        lengths: torch.Tensor,
+        max_frames: int,
+        device: torch.device,
+        dtype: torch.dtype,
+        sample_rate: int = 16000,
+        hop_length: int = 128,
+    ) -> torch.Tensor | None:
+        if intervals_batch is None:
+            return None
+        batch_size = len(intervals_batch)
+        if batch_size != int(lengths.shape[0]):
+            raise ValueError("interval batch size must match waveform lengths.")
+        frame_lengths = torch.div(
+            lengths + hop_length - 1,
+            hop_length,
+            rounding_mode="floor",
+        ) + 1
+        frame_lengths = torch.clamp(frame_lengths, min=1, max=max_frames)
+        mask = torch.zeros((batch_size, max_frames), device=device, dtype=dtype)
+        for sample_index, (intervals, frame_length_value) in enumerate(
+            zip(intervals_batch, frame_lengths.detach().cpu().tolist())
+        ):
+            valid_frames = max(0, min(int(frame_length_value), max_frames))
+            if valid_frames <= 0:
+                continue
+            for interval in intervals:
+                start_index = int(round(float(interval.get("start_sec", 0.0)) * sample_rate))
+                end_index = int(round(float(interval.get("end_sec", 0.0)) * sample_rate))
+                start_frame = max(0, min(start_index // hop_length, valid_frames))
+                end_frame = max(
+                    start_frame,
+                    min(((end_index + hop_length - 1) // hop_length) + 1, valid_frames),
+                )
+                if end_frame > start_frame:
+                    mask[sample_index, start_frame:end_frame] = 1.0
+        return mask
+
     def forward(
         self,
         mixture: torch.Tensor,
@@ -1068,6 +1443,11 @@ class STFTMaskBaseline(nn.Module):
 
         estimated_stft_base = mix_stft * base_mask
         estimated_waveform_base = self.istft(estimated_stft_base, mixture_lengths)
+        estimated_stft_adapter = None
+        estimated_waveform_adapter = None
+        if self.adapter_mask_head is not None:
+            estimated_stft_adapter = mix_stft * mask
+            estimated_waveform_adapter = self.istft(estimated_stft_adapter, mixture_lengths)
         estimated_stft = estimated_stft_base
         estimated_waveform = estimated_waveform_base
         branch_decoder_mask = None
@@ -1110,12 +1490,24 @@ class STFTMaskBaseline(nn.Module):
         branch_overlap_artifact_local_bridge_controller = None
         branch_overlap_artifact_local_bridge_estimate_stft = None
         branch_overlap_artifact_local_bridge_estimate_waveform = None
+        branch_overlap_artifact_refine_controller = None
+        branch_overlap_artifact_refine_estimate_stft = None
+        branch_overlap_artifact_refine_estimate_waveform = None
+        branch_overlap_artifact_mask_adapter_controller = None
+        branch_overlap_artifact_mask_adapter_estimate_stft = None
+        branch_overlap_artifact_mask_adapter_estimate_waveform = None
+        branch_overlap_artifact_rep_adapter_controller = None
         estimated_stft_post_pre_present_controller = None
         estimated_waveform_post_pre_present_controller = None
         estimated_stft_post_refine_present = None
         estimated_waveform_post_refine_present = None
         estimated_waveform_split_localmasked = None
+        estimated_waveform_post_artifact_keepmasked = None
+        estimated_waveform_post_adapter_artifact_localmasked = None
+        estimated_waveform_post_adapter_artifact_overlay = None
         estimated_waveform_post_artifact_local_bridge = None
+        estimated_waveform_post_artifact_refine = None
+        estimated_waveform_post_artifact_mask_adapter = None
         estimated_stft_pre_dual_residual_correction = None
         estimated_waveform_pre_dual_residual_correction = None
         estimated_stft_post_dual_local_bridge = None
@@ -1126,9 +1518,68 @@ class STFTMaskBaseline(nn.Module):
         branch_overlap_dual_controlled_gate = None
         if self.branch_decoder_temporal_model is not None and self.branch_decoder_mask_head is not None:
             branch_encoded, _ = self.branch_decoder_temporal_model(temporal_input)
-            branch_decoder_mask = self.branch_decoder_mask_head(branch_encoded).transpose(1, 2)
+            branch_encoded_for_heads = branch_encoded
+            if (
+                self.branch_overlap_artifact_rep_adapter_head is not None
+                and self.branch_overlap_artifact_rep_adapter_controller_head is not None
+                and self.branch_overlap_artifact_rep_adapter_max_blend > 0.0
+            ):
+                artifact_frame_interval_mask = self.build_frame_interval_mask(
+                    intervals_batch=artifact_local_proxy_intervals,
+                    lengths=mixture_lengths,
+                    max_frames=branch_encoded.shape[1],
+                    device=branch_encoded.device,
+                    dtype=branch_encoded.dtype,
+                    hop_length=self.hop_length,
+                )
+                if artifact_frame_interval_mask is not None:
+                    artifact_rep_adapter_encoded = branch_encoded
+                    if self.branch_overlap_artifact_rep_adapter_condition_proj is not None:
+                        artifact_rep_adapter_encoded = (
+                            artifact_rep_adapter_encoded
+                            + self.branch_overlap_artifact_rep_adapter_condition_proj(ref_embedding).unsqueeze(1)
+                        )
+                    elif (
+                        self.branch_overlap_artifact_rep_adapter_condition_scale is not None
+                        and self.branch_overlap_artifact_rep_adapter_condition_shift is not None
+                    ):
+                        artifact_rep_adapter_gamma = (
+                            self.branch_overlap_artifact_rep_adapter_condition_scale(ref_embedding)
+                            .unsqueeze(1)
+                        )
+                        artifact_rep_adapter_beta = (
+                            self.branch_overlap_artifact_rep_adapter_condition_shift(ref_embedding)
+                            .unsqueeze(1)
+                        )
+                        artifact_rep_adapter_encoded = (
+                            artifact_rep_adapter_encoded * (1.0 + artifact_rep_adapter_gamma)
+                            + artifact_rep_adapter_beta
+                        )
+                    branch_overlap_artifact_rep_adapter_delta = (
+                        torch.tanh(
+                            self.branch_overlap_artifact_rep_adapter_head(artifact_rep_adapter_encoded)
+                        )
+                        * self.branch_overlap_artifact_rep_adapter_max_delta
+                    )
+                    branch_overlap_artifact_rep_adapter_controller = torch.sigmoid(
+                        self.branch_overlap_artifact_rep_adapter_controller_head(
+                            artifact_rep_adapter_encoded
+                        )
+                    ).transpose(1, 2)
+                    branch_overlap_artifact_rep_adapter_blend = (
+                        branch_overlap_artifact_rep_adapter_controller
+                        * self.branch_overlap_artifact_rep_adapter_max_blend
+                        * artifact_frame_interval_mask.unsqueeze(1)
+                    ).transpose(1, 2)
+                    branch_encoded_for_heads = branch_encoded + (
+                        branch_overlap_artifact_rep_adapter_delta
+                        * branch_overlap_artifact_rep_adapter_blend
+                    )
+            branch_decoder_mask = self.branch_decoder_mask_head(branch_encoded_for_heads).transpose(1, 2)
             if self.branch_decoder_gate_head is not None:
-                branch_decoder_frame_gate = torch.sigmoid(self.branch_decoder_gate_head(branch_encoded)).transpose(1, 2)
+                branch_decoder_frame_gate = torch.sigmoid(
+                    self.branch_decoder_gate_head(branch_encoded_for_heads)
+                ).transpose(1, 2)
                 mask = branch_decoder_mask * branch_decoder_frame_gate
             else:
                 mask = branch_decoder_mask
@@ -1137,7 +1588,7 @@ class STFTMaskBaseline(nn.Module):
             estimated_waveform_branch_base = self.istft(estimated_stft_branch_base, mixture_lengths)
             if self.branch_overlap_refine_head is not None:
                 branch_overlap_refine_params = (
-                    torch.tanh(self.branch_overlap_refine_head(branch_encoded)).transpose(1, 2)
+                    torch.tanh(self.branch_overlap_refine_head(branch_encoded_for_heads)).transpose(1, 2)
                     * self.branch_overlap_refine_max_delta
                 )
                 refine_real, refine_imag = torch.chunk(branch_overlap_refine_params, 2, dim=1)
@@ -1171,7 +1622,7 @@ class STFTMaskBaseline(nn.Module):
                         branch_overlap_refine_ratio = branch_overlap_refine_ratio * refine_gate
                 if self.branch_overlap_refine_apply_controller_head is not None:
                     branch_overlap_refine_apply_controller = torch.sigmoid(
-                        self.branch_overlap_refine_apply_controller_head(branch_encoded)
+                        self.branch_overlap_refine_apply_controller_head(branch_encoded_for_heads)
                     ).transpose(1, 2)
                     branch_overlap_refine_ratio = (
                         branch_overlap_refine_ratio * branch_overlap_refine_apply_controller
@@ -1189,7 +1640,7 @@ class STFTMaskBaseline(nn.Module):
                 and self.branch_overlap_cancel_pre_present_controller_head is not None
                 and self.branch_overlap_cancel_pre_present_max_blend > 0.0
             ):
-                pre_present_cancel_logits = self.branch_overlap_cancel_head(branch_encoded).transpose(1, 2)
+                pre_present_cancel_logits = self.branch_overlap_cancel_head(branch_encoded_for_heads).transpose(1, 2)
                 if self.branch_overlap_cancel_ratio_mode == "phase_preserve":
                     pre_present_cancel_params = (
                         torch.sigmoid(pre_present_cancel_logits) * self.branch_overlap_cancel_max_delta
@@ -1240,7 +1691,7 @@ class STFTMaskBaseline(nn.Module):
                 if pre_present_delta_blend is None:
                     pre_present_delta_blend = torch.ones_like(branch_decoder_mask[:, :1, :])
                 branch_overlap_cancel_pre_present_controller = torch.sigmoid(
-                    self.branch_overlap_cancel_pre_present_controller_head(branch_encoded)
+                    self.branch_overlap_cancel_pre_present_controller_head(branch_encoded_for_heads)
                 ).transpose(1, 2)
                 if self.branch_overlap_cancel_pre_present_controller_floor > 0.0:
                     floor = self.branch_overlap_cancel_pre_present_controller_floor
@@ -1262,7 +1713,7 @@ class STFTMaskBaseline(nn.Module):
             estimated_stft_post_pre_present_controller = estimated_stft
             if self.branch_overlap_refine_present_head is not None:
                 branch_overlap_refine_present_params = (
-                    torch.tanh(self.branch_overlap_refine_present_head(branch_encoded)).transpose(1, 2)
+                    torch.tanh(self.branch_overlap_refine_present_head(branch_encoded_for_heads)).transpose(1, 2)
                     * self.branch_overlap_refine_present_max_delta
                 )
                 present_real, present_imag = torch.chunk(branch_overlap_refine_present_params, 2, dim=1)
@@ -1315,7 +1766,7 @@ class STFTMaskBaseline(nn.Module):
                     )
             estimated_stft_post_refine_present = estimated_stft
             if self.branch_overlap_cancel_head is not None:
-                branch_overlap_cancel_logits = self.branch_overlap_cancel_head(branch_encoded).transpose(1, 2)
+                branch_overlap_cancel_logits = self.branch_overlap_cancel_head(branch_encoded_for_heads).transpose(1, 2)
                 if self.branch_overlap_cancel_ratio_mode == "phase_preserve":
                     branch_overlap_cancel_params = (
                         torch.sigmoid(branch_overlap_cancel_logits) * self.branch_overlap_cancel_max_delta
@@ -1363,7 +1814,7 @@ class STFTMaskBaseline(nn.Module):
                         branch_overlap_cancel_delta_blend = torch.ones_like(branch_decoder_mask[:, :1, :])
                     if self.branch_overlap_cancel_apply_controller_head is not None:
                         branch_overlap_cancel_apply_keep_controller = torch.sigmoid(
-                            self.branch_overlap_cancel_apply_controller_head(branch_encoded)
+                            self.branch_overlap_cancel_apply_controller_head(branch_encoded_for_heads)
                         ).transpose(1, 2)
                         if self.branch_overlap_cancel_apply_controller_floor > 0.0:
                             floor = self.branch_overlap_cancel_apply_controller_floor
@@ -1375,7 +1826,9 @@ class STFTMaskBaseline(nn.Module):
                         branch_overlap_cancel_apply_controller = branch_overlap_cancel_apply_keep_controller
                         if self.branch_overlap_cancel_apply_absent_controller_head is not None:
                             branch_overlap_cancel_apply_absent_controller = torch.sigmoid(
-                                self.branch_overlap_cancel_apply_absent_controller_head(branch_encoded)
+                                self.branch_overlap_cancel_apply_absent_controller_head(
+                                    branch_encoded_for_heads
+                                )
                             ).transpose(1, 2)
                             branch_overlap_cancel_apply_controller = (
                                 branch_overlap_cancel_apply_controller
@@ -1618,53 +2071,59 @@ class STFTMaskBaseline(nn.Module):
             if (
                 self.branch_overlap_artifact_local_bridge_head is not None
                 and self.branch_overlap_artifact_local_bridge_controller_head is not None
-                and branch_encoded is not None
             ):
                 current_output_residual_stft = mix_stft - estimated_stft
-                artifact_bridge_encoded = branch_encoded
-                if self.branch_overlap_artifact_local_bridge_condition_proj is not None:
-                    artifact_bridge_encoded = (
-                        artifact_bridge_encoded
-                        + self.branch_overlap_artifact_local_bridge_condition_proj(ref_embedding).unsqueeze(1)
+                artifact_bridge_encoded = None
+                if self.branch_overlap_artifact_local_bridge_source_mode == "dual_encoded":
+                    artifact_bridge_encoded = dual_encoded
+                else:
+                    artifact_bridge_encoded = branch_encoded_for_heads
+                if artifact_bridge_encoded is None:
+                    artifact_bridge_encoded = None
+                else:
+                    if self.branch_overlap_artifact_local_bridge_condition_proj is not None:
+                        artifact_bridge_encoded = (
+                            artifact_bridge_encoded
+                            + self.branch_overlap_artifact_local_bridge_condition_proj(ref_embedding).unsqueeze(1)
+                        )
+                    elif (
+                        self.branch_overlap_artifact_local_bridge_condition_scale is not None
+                        and self.branch_overlap_artifact_local_bridge_condition_shift is not None
+                    ):
+                        artifact_bridge_gamma = torch.tanh(
+                            self.branch_overlap_artifact_local_bridge_condition_scale(ref_embedding)
+                        ).unsqueeze(1)
+                        artifact_bridge_beta = self.branch_overlap_artifact_local_bridge_condition_shift(
+                            ref_embedding
+                        ).unsqueeze(1)
+                        artifact_bridge_encoded = (
+                            artifact_bridge_encoded * (1.0 + artifact_bridge_gamma)
+                        ) + artifact_bridge_beta
+                    artifact_local_bridge_params = (
+                        torch.tanh(
+                            self.branch_overlap_artifact_local_bridge_head(artifact_bridge_encoded)
+                        ).transpose(1, 2)
+                        * self.branch_overlap_artifact_local_bridge_max_delta
                     )
-                elif (
-                    self.branch_overlap_artifact_local_bridge_condition_scale is not None
-                    and self.branch_overlap_artifact_local_bridge_condition_shift is not None
-                ):
-                    artifact_bridge_gamma = torch.tanh(
-                        self.branch_overlap_artifact_local_bridge_condition_scale(ref_embedding)
-                    ).unsqueeze(1)
-                    artifact_bridge_beta = self.branch_overlap_artifact_local_bridge_condition_shift(
-                        ref_embedding
-                    ).unsqueeze(1)
-                    artifact_bridge_encoded = (
-                        artifact_bridge_encoded * (1.0 + artifact_bridge_gamma)
-                    ) + artifact_bridge_beta
-                artifact_local_bridge_params = (
-                    torch.tanh(
-                        self.branch_overlap_artifact_local_bridge_head(artifact_bridge_encoded)
+                    artifact_local_bridge_real, artifact_local_bridge_imag = torch.chunk(
+                        artifact_local_bridge_params,
+                        2,
+                        dim=1,
+                    )
+                    artifact_local_bridge_ratio = torch.complex(
+                        artifact_local_bridge_real,
+                        artifact_local_bridge_imag,
+                    )
+                    branch_overlap_artifact_local_bridge_controller = torch.sigmoid(
+                        self.branch_overlap_artifact_local_bridge_controller_head(artifact_bridge_encoded)
                     ).transpose(1, 2)
-                    * self.branch_overlap_artifact_local_bridge_max_delta
-                )
-                artifact_local_bridge_real, artifact_local_bridge_imag = torch.chunk(
-                    artifact_local_bridge_params,
-                    2,
-                    dim=1,
-                )
-                artifact_local_bridge_ratio = torch.complex(
-                    artifact_local_bridge_real,
-                    artifact_local_bridge_imag,
-                )
-                branch_overlap_artifact_local_bridge_controller = torch.sigmoid(
-                    self.branch_overlap_artifact_local_bridge_controller_head(artifact_bridge_encoded)
-                ).transpose(1, 2)
-                if self.branch_overlap_artifact_local_bridge_max_blend > 0.0:
-                    branch_overlap_artifact_local_bridge_estimate_stft = (
-                        current_output_residual_stft
-                        * artifact_local_bridge_ratio
-                        * branch_overlap_artifact_local_bridge_controller
-                        * self.branch_overlap_artifact_local_bridge_max_blend
-                    )
+                    if self.branch_overlap_artifact_local_bridge_max_blend > 0.0:
+                        branch_overlap_artifact_local_bridge_estimate_stft = (
+                            current_output_residual_stft
+                            * artifact_local_bridge_ratio
+                            * branch_overlap_artifact_local_bridge_controller
+                            * self.branch_overlap_artifact_local_bridge_max_blend
+                        )
             if branch_overlap_cancel_pre_present_applied_stft is not None:
                 branch_overlap_cancel_pre_present_applied_waveform = self.istft(
                     branch_overlap_cancel_pre_present_applied_stft,
@@ -1750,6 +2209,27 @@ class STFTMaskBaseline(nn.Module):
                         * local_interval_mask
                     )
                     estimated_waveform = estimated_waveform_split_localmasked
+            if (
+                self.enable_branch_overlap_refine_artifact_hard_mask
+                and estimated_waveform_post_pre_present_controller is not None
+            ):
+                artifact_interval_mask = self.build_waveform_interval_mask(
+                    intervals_batch=artifact_local_proxy_intervals,
+                    lengths=mixture_lengths,
+                    max_length=int(estimated_waveform.shape[-1]),
+                    device=estimated_waveform.device,
+                    dtype=estimated_waveform.dtype,
+                )
+                if artifact_interval_mask is not None:
+                    estimated_waveform_post_artifact_keepmasked = (
+                        estimated_waveform
+                        + (
+                            estimated_waveform_post_pre_present_controller
+                            - estimated_waveform
+                        )
+                        * artifact_interval_mask
+                    )
+                    estimated_waveform = estimated_waveform_post_artifact_keepmasked
             if branch_overlap_artifact_local_bridge_estimate_waveform is not None:
                 artifact_interval_mask = self.build_waveform_interval_mask(
                     intervals_batch=artifact_local_proxy_intervals,
@@ -1767,9 +2247,183 @@ class STFTMaskBaseline(nn.Module):
                         )
                     )
                     estimated_waveform = estimated_waveform_post_artifact_local_bridge
+            if (
+                self.branch_overlap_artifact_refine_head is not None
+                and self.branch_overlap_artifact_refine_controller_head is not None
+            ):
+                artifact_interval_mask = self.build_waveform_interval_mask(
+                    intervals_batch=artifact_local_proxy_intervals,
+                    lengths=mixture_lengths,
+                    max_length=int(estimated_waveform.shape[-1]),
+                    device=estimated_waveform.device,
+                    dtype=estimated_waveform.dtype,
+                )
+                if artifact_interval_mask is not None:
+                    artifact_refine_source_stft = self.stft(estimated_waveform)
+                    artifact_refine_encoded = branch_encoded_for_heads
+                    if self.branch_overlap_artifact_refine_condition_proj is not None:
+                        artifact_refine_encoded = (
+                            artifact_refine_encoded
+                            + self.branch_overlap_artifact_refine_condition_proj(ref_embedding).unsqueeze(1)
+                        )
+                    elif (
+                        self.branch_overlap_artifact_refine_condition_scale is not None
+                        and self.branch_overlap_artifact_refine_condition_shift is not None
+                    ):
+                        artifact_refine_gamma = (
+                            self.branch_overlap_artifact_refine_condition_scale(ref_embedding)
+                            .unsqueeze(1)
+                        )
+                        artifact_refine_beta = (
+                            self.branch_overlap_artifact_refine_condition_shift(ref_embedding)
+                            .unsqueeze(1)
+                        )
+                        artifact_refine_encoded = (
+                            artifact_refine_encoded * (1.0 + artifact_refine_gamma)
+                            + artifact_refine_beta
+                        )
+                    artifact_refine_params = (
+                        torch.tanh(
+                            self.branch_overlap_artifact_refine_head(artifact_refine_encoded)
+                        ).transpose(1, 2)
+                        * self.branch_overlap_artifact_refine_max_delta
+                    )
+                    artifact_refine_real, artifact_refine_imag = torch.chunk(
+                        artifact_refine_params,
+                        2,
+                        dim=1,
+                    )
+                    artifact_refine_ratio = torch.complex(
+                        artifact_refine_real,
+                        artifact_refine_imag,
+                    )
+                    branch_overlap_artifact_refine_controller = torch.sigmoid(
+                        self.branch_overlap_artifact_refine_controller_head(artifact_refine_encoded)
+                    ).transpose(1, 2)
+                    if self.branch_overlap_artifact_refine_max_blend > 0.0:
+                        branch_overlap_artifact_refine_estimate_stft = (
+                            artifact_refine_source_stft
+                            * artifact_refine_ratio
+                            * branch_overlap_artifact_refine_controller
+                            * self.branch_overlap_artifact_refine_max_blend
+                        )
+                        artifact_refined_stft = (
+                            artifact_refine_source_stft
+                            - branch_overlap_artifact_refine_estimate_stft
+                        )
+                        branch_overlap_artifact_refine_estimate_waveform = self.istft(
+                            artifact_refined_stft,
+                            mixture_lengths,
+                        )
+                        estimated_waveform_post_artifact_refine = (
+                            estimated_waveform
+                            + (
+                                branch_overlap_artifact_refine_estimate_waveform
+                                - estimated_waveform
+                            )
+                            * artifact_interval_mask
+                        )
+                        estimated_waveform = estimated_waveform_post_artifact_refine
+            if (
+                self.branch_overlap_artifact_mask_adapter_head is not None
+                and self.branch_overlap_artifact_mask_adapter_controller_head is not None
+                and branch_decoder_mask is not None
+            ):
+                artifact_interval_mask = self.build_waveform_interval_mask(
+                    intervals_batch=artifact_local_proxy_intervals,
+                    lengths=mixture_lengths,
+                    max_length=int(estimated_waveform.shape[-1]),
+                    device=estimated_waveform.device,
+                    dtype=estimated_waveform.dtype,
+                )
+                if artifact_interval_mask is not None:
+                    artifact_mask_delta = (
+                        torch.tanh(
+                            self.branch_overlap_artifact_mask_adapter_head(branch_encoded_for_heads)
+                        ).transpose(1, 2)
+                        * self.branch_overlap_artifact_mask_adapter_max_delta
+                    )
+                    branch_overlap_artifact_mask_adapter_controller = torch.sigmoid(
+                        self.branch_overlap_artifact_mask_adapter_controller_head(
+                            branch_encoded_for_heads
+                        )
+                    ).transpose(1, 2)
+                    if self.branch_overlap_artifact_mask_adapter_max_blend > 0.0:
+                        artifact_adapter_mask = torch.clamp(
+                            branch_decoder_mask
+                            + (
+                                artifact_mask_delta
+                                * branch_overlap_artifact_mask_adapter_controller
+                                * self.branch_overlap_artifact_mask_adapter_max_blend
+                            ),
+                            min=0.0,
+                            max=1.0,
+                        )
+                        if branch_decoder_frame_gate is not None:
+                            artifact_adapter_mask = (
+                                artifact_adapter_mask * branch_decoder_frame_gate
+                            )
+                        branch_overlap_artifact_mask_adapter_estimate_stft = (
+                            mix_stft * artifact_adapter_mask
+                        )
+                        branch_overlap_artifact_mask_adapter_estimate_waveform = self.istft(
+                            branch_overlap_artifact_mask_adapter_estimate_stft,
+                            mixture_lengths,
+                        )
+                        estimated_waveform_post_artifact_mask_adapter = (
+                            estimated_waveform
+                            + (
+                                branch_overlap_artifact_mask_adapter_estimate_waveform
+                                - estimated_waveform
+                            )
+                            * artifact_interval_mask
+                        )
+                        estimated_waveform = estimated_waveform_post_artifact_mask_adapter
+            if (
+                self.enable_adapter_artifact_overlay_on_branch_output
+                and estimated_waveform_adapter is not None
+            ):
+                artifact_interval_mask = self.build_waveform_interval_mask(
+                    intervals_batch=artifact_local_proxy_intervals,
+                    lengths=mixture_lengths,
+                    max_length=int(estimated_waveform.shape[-1]),
+                    device=estimated_waveform.device,
+                    dtype=estimated_waveform.dtype,
+                )
+                if artifact_interval_mask is not None:
+                    estimated_waveform_post_adapter_artifact_overlay = (
+                        estimated_waveform
+                        + (
+                            estimated_waveform_adapter
+                            - estimated_waveform
+                        )
+                        * artifact_interval_mask
+                    )
+                    estimated_waveform = estimated_waveform_post_adapter_artifact_overlay
         elif self.adapter_mask_head is not None:
             estimated_stft = mix_stft * mask
             estimated_waveform = self.istft(estimated_stft, mixture_lengths)
+            if self.enable_adapter_artifact_local_hard_mask:
+                artifact_interval_mask = self.build_waveform_interval_mask(
+                    intervals_batch=artifact_local_proxy_intervals,
+                    lengths=mixture_lengths,
+                    max_length=int(estimated_waveform.shape[-1]),
+                    device=estimated_waveform.device,
+                    dtype=estimated_waveform.dtype,
+                )
+                if artifact_interval_mask is not None:
+                    estimated_waveform_post_adapter_artifact_localmasked = (
+                        estimated_waveform_base
+                        + (
+                            estimated_waveform
+                            - estimated_waveform_base
+                        )
+                        * artifact_interval_mask
+                    )
+                    estimated_waveform = estimated_waveform_post_adapter_artifact_localmasked
+                elif self.adapter_artifact_local_hard_mask_strict_base_fallback:
+                    estimated_waveform_post_adapter_artifact_localmasked = estimated_waveform_base
+                    estimated_waveform = estimated_waveform_base
 
         return {
             "estimated_waveform": estimated_waveform,
@@ -1779,6 +2433,9 @@ class STFTMaskBaseline(nn.Module):
             "adapter_mask_delta": adapter_mask_delta,
             "branch_decoder_mask": branch_decoder_mask,
             "branch_decoder_frame_gate": branch_decoder_frame_gate,
+            "branch_overlap_artifact_rep_adapter_controller": (
+                branch_overlap_artifact_rep_adapter_controller
+            ),
             "branch_overlap_refine_ratio": branch_overlap_refine_ratio,
             "branch_overlap_refine_apply_controller": (
                 branch_overlap_refine_apply_controller
@@ -1818,14 +2475,35 @@ class STFTMaskBaseline(nn.Module):
             "branch_overlap_artifact_local_bridge_controller": (
                 branch_overlap_artifact_local_bridge_controller
             ),
+            "branch_overlap_artifact_refine_controller": (
+                branch_overlap_artifact_refine_controller
+            ),
+            "branch_overlap_artifact_mask_adapter_controller": (
+                branch_overlap_artifact_mask_adapter_controller
+            ),
             "branch_overlap_dual_cancel_estimate_waveform": branch_overlap_dual_cancel_estimate_waveform,
             "estimated_waveform_post_pre_present_controller": (
                 estimated_waveform_post_pre_present_controller
             ),
             "estimated_waveform_post_refine_present": estimated_waveform_post_refine_present,
             "estimated_waveform_split_localmasked": estimated_waveform_split_localmasked,
+            "estimated_waveform_post_artifact_keepmasked": (
+                estimated_waveform_post_artifact_keepmasked
+            ),
+            "estimated_waveform_post_adapter_artifact_localmasked": (
+                estimated_waveform_post_adapter_artifact_localmasked
+            ),
+            "estimated_waveform_post_adapter_artifact_overlay": (
+                estimated_waveform_post_adapter_artifact_overlay
+            ),
             "estimated_waveform_post_artifact_local_bridge": (
                 estimated_waveform_post_artifact_local_bridge
+            ),
+            "estimated_waveform_post_artifact_refine": (
+                estimated_waveform_post_artifact_refine
+            ),
+            "estimated_waveform_post_artifact_mask_adapter": (
+                estimated_waveform_post_artifact_mask_adapter
             ),
             "estimated_waveform_pre_dual_residual_correction": (
                 estimated_waveform_pre_dual_residual_correction
@@ -1844,6 +2522,12 @@ class STFTMaskBaseline(nn.Module):
             ),
             "branch_overlap_artifact_local_bridge_estimate_waveform": (
                 branch_overlap_artifact_local_bridge_estimate_waveform
+            ),
+            "branch_overlap_artifact_refine_estimate_waveform": (
+                branch_overlap_artifact_refine_estimate_waveform
+            ),
+            "branch_overlap_artifact_mask_adapter_estimate_waveform": (
+                branch_overlap_artifact_mask_adapter_estimate_waveform
             ),
             "branch_overlap_dual_controlled_gate": branch_overlap_dual_controlled_gate,
         }

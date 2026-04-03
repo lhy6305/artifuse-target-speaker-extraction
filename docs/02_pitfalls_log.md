@@ -2275,3 +2275,207 @@
   asset-family mismatch
   to
   writer-family or target-conditioning mismatch.
+- After `v260`, do not keep assuming that the same dedicated artifact-side bridge family only needs more explicit target conditioning.
+  The explicit
+  `ref_film`
+  continuation keeps the matched synthetic artifact-subspan read strongly positive,
+  but both active real artifact probes still regress relative to
+  `v249`,
+  while the fixed synthetic five-pack and the interval-aware leak probe stay exact tie.
+  Rule:
+  once booster-asset swaps and an explicit reference-conditioned continuation all fail on the same bridge family,
+  move the blocker diagnosis from
+  target-conditioning mismatch
+  to
+  writer-family mismatch.
+- After `v261`, do not keep assuming that the remaining target-conditioned artifact confound on top of
+  `v249`
+  is mainly a simple downstream application error inside the artifact subspan.
+  The inference-only artifact hard keep-mask replay leaves the interval-aware leak probe and the fixed synthetic five-pack at exact tie,
+  pushes the active real artifact probes only to tiny negative relative to
+  `v249`,
+  and still stays positive on the matched synthetic artifact-subspan asset.
+  Rule:
+  once an inference-only artifact-window overwrite fails to improve the active real artifact probes,
+  move the blocker diagnosis away from
+  application-only veto mistakes inside the same writer
+  and toward
+  upstream or representational mismatch.
+- After `v262`, do not keep assuming that the same dedicated artifact-side bridge family only needs
+  `dual_encoded`
+  instead of
+  `branch_encoded`
+  as its shared-representation input.
+  The source-swap continuation keeps the matched synthetic artifact-subspan read strongly positive
+  and even slightly above
+  `v258`,
+  but both active real artifact probes still regress relative to
+  `v249`
+  and are slightly worse than
+  `v258`.
+  Rule:
+  once the same dedicated artifact-side bridge stays synthetic-positive but real-negative under
+  branch-input,
+  real-booster,
+  reference-conditioned,
+  application-only,
+  and dual-source continuations,
+  stop reusing that bridge shape and move to a different writer family.
+- After `v263`, do not read a training-real but nearly exact-tie first-launch artifact writer as
+  "safe by default"
+  or
+  "close enough that more epochs will reveal it."
+  The dedicated artifact-refine writer is real enough to measure
+  (`val_artifact_local_refine_teacher_waveform_extra_l1 = 0.000116`)
+  but still dormant on all active reads at
+  `max_blend 0.05`.
+  Treat that as a launch control only,
+  not as positive evidence for the family.
+- After `v264`, do not keep sweeping the same dedicated artifact-refine writer through
+  `max_blend`
+  or the same teacher-anchor scalar.
+  Opening that family to
+  `max_blend 0.2`
+  makes the matched synthetic artifact-subspan read clearly positive
+  (`+0.5939 dB`,
+  `7 / 7`
+  improved relative to
+  `v249`),
+  but both active real artifact probes still move negative
+  (`-0.0287 / -0.0217 dB`)
+  while the interval-aware leak probe and the fixed synthetic five-pack stay exact tie.
+  Rule:
+  once the same artifact-refine writer turns synthetic-positive and real-negative under a simple scale-open continuation,
+  stop reusing that writer family and move to a different writer or representation family.
+- After `v265`, do not read a new artifact-specific writer as "probably another dormant launch"
+  when it is already wrong on both the active real artifact probes and the matched synthetic artifact-subspan asset.
+  The dedicated artifact-mask-adapter writer is training-real,
+  but relative to
+  `v249`
+  it stays exact tie on the fixed synthetic five-pack and interval-aware leak probe,
+  while moving
+  `artifact_probe_v2 / artifact_probe_v3_subspan = -0.1288 / -0.0859 dB`
+  and matched synthetic artifact-subspan
+  `= -6.3211 dB`
+  with
+  `7 / 7`
+  regressions.
+  Rule:
+  once a first-launch artifact writer is already wrong on every asset that should activate it,
+  close that writer family immediately instead of doing blend or teacher-anchor retunes.
+- After `v266`, do not keep sweeping a shared-representation artifact adapter family
+  when the new artifact-only extra term is non-zero
+  but output-facing reads stay dormant and the matched synthetic artifact-subspan asset already turns negative.
+  Relative to
+  `v249`,
+  the fixed synthetic five-pack and the interval-aware leak probe stay exact tie,
+  the active real artifact probes stay near tie to tiny negative
+  (`-0.0061 / -0.0006 dB`),
+  and the matched synthetic artifact-subspan asset regresses
+  `-1.7634 dB`.
+  Rule:
+  treat that shape as output-dormant shared-representation mismatch,
+  not as a useful dormant first-launch point that only needs a larger blend sweep.
+- After `v267-smoke`, do not replay the same shared-representation artifact adapter family
+  with explicit `ref_bias` or `ref_film` conditioning
+  when the new conditioning path is training-real
+  but both active real artifact probes still stay practical tie to tiny negative,
+  the interval-aware leak probe stays exact tie,
+  and the matched synthetic artifact-subspan asset stays slightly negative.
+  Relative to
+  `v249`,
+  the smoke readout is
+  `-0.0002 / -0.0001 / 0.0 / -0.0011 dB`
+  on
+  `artifact_probe_v2 / artifact_probe_v3_subspan / interval_leak / matched synthetic artifact-subspan`.
+  Rule:
+  treat that shape as evidence that the current artifact representation adapter family is fully closed,
+  not as a conditioning-only branch that still deserves a full run.
+- After `v268-smoke`, do not replay the current artifact-refine writer family
+  with explicit `ref_bias` or `ref_film` conditioning
+  when the new conditioning path is training-real
+  but the active real artifact probes still stay practical tie to tiny negative,
+  the interval-aware leak probe stays exact tie,
+  and the matched synthetic artifact-subspan asset only reaches a tiny positive.
+  Relative to
+  `v249`,
+  the smoke readout is
+  `-0.0002 / -0.0001 / 0.0 / +0.0042 dB`
+  on
+  `artifact_probe_v2 / artifact_probe_v3_subspan / interval_leak / matched synthetic artifact-subspan`.
+  Rule:
+  treat that shape as evidence that the current artifact-refine writer family is fully closed,
+  not as a writer that only needs target conditioning before a full run.
+- After `v269-smoke`, do not replay the current adapter-branch artifact family
+  as a simple full run or `adapter_mask_max_delta` micro-sweep.
+  The branch is already clearly training-real and strongly positive on both active real artifact probes,
+  but it regresses the interval-aware leak probe,
+  collapses the matched synthetic artifact-subspan asset,
+  and collapses the fixed synthetic five-pack.
+  Relative to
+  `v249`,
+  the smoke readout is
+  `+0.5616 / +0.6922 / -0.1445 / -6.6013 dB`
+  on
+  `artifact_probe_v2 / artifact_probe_v3_subspan / interval_leak / matched synthetic artifact-subspan`,
+  with fixed synthetic five-pack deltas
+  `-5.5675 / -2.2940 / -2.1554 / -2.6716 / +0.2287 dB`.
+  Rule:
+  treat that shape as a mixed evidence point that requires explicit guardrail control,
+  not as a branch that only needs a longer run or a small delta retune.
+- After `v270-smoke`, do not replay the same adapter-branch artifact family
+  as a simple hard-mask localization or `adapter_mask_max_delta` retune.
+  The hard local mask preserves most of the real artifact gain
+  and largely repairs the interval-aware leak probe,
+  but the matched synthetic artifact-subspan asset still collapses
+  and the fixed synthetic guardrails still fail badly.
+  Relative to
+  `v249`,
+  the smoke readout is
+  `+0.3988 / +0.5629 / -0.0125 / -6.5835 dB`
+  on
+  `artifact_probe_v2 / artifact_probe_v3_subspan / interval_leak / matched synthetic artifact-subspan`,
+  with fixed synthetic five-pack deltas
+  `-8.0302 / -2.4539 / -2.1597 / -2.9470 / +0.4976 dB`.
+  Rule:
+  treat that shape as evidence that the next useful continuation on this family
+  must add explicit guardrail control,
+  not merely a tighter spatial mask or a smaller delta.
+- After `v271-smoke`, do not read a new strict-fallback semantic switch
+  as meaningful progress on the current adapter artifact family
+  when the full smoke read is exact tie to
+  `v270-smoke`.
+  Rule:
+  if the new fallback semantics leave the fixed synthetic five-pack,
+  the interval-aware leak probe,
+  and the active real artifact probes unchanged,
+  close that semantic axis instead of retesting it with more masks or more fallback variants.
+- After `v272-smoke`, do not keep increasing the current
+  `reconstruction_extra`,
+  `branch_protect_teacher_overlap`,
+  or
+  `absent_extra`
+  weights on the current adapter artifact family.
+  A
+  `5x`
+  increase still leaves the branch at practical tie to
+  `v270-smoke`
+  while preserving the same bad fixed synthetic five-pack collapse and the same near-tie leak read.
+  Rule:
+  once a large scalar increase on the current guardrail route stays practical tie,
+  stop reading that family as weight-limited and switch to a structural guardrail path instead.
+- After `v273`, do not keep reading the current hybrid adapter artifact family
+  as a fixed-synthetic guardrail-control problem.
+  The full run stays exact tie to
+  `v249`
+  on the fixed synthetic five-pack and on
+  `near_real_interval_leak_probe_v1`,
+  while both active real artifact probes stay clearly positive
+  (`+0.3936 / +0.5627 dB`).
+  The remaining blocker is the still-strongly-negative matched synthetic artifact-subspan asset
+  (`-6.5760 dB`).
+  Rule:
+  once the hybrid overlay repairs the synthetic guardrail and leak collapse
+  without losing the real artifact gains,
+  stop retuning the same keep or abstention routes
+  and treat the frontier as a training-asset mismatch problem instead.
